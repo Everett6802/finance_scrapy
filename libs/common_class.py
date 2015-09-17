@@ -5,11 +5,6 @@ import common as CMN
 from libs.web_sracpy_base import WebSracpyBase
 
 
-class WebSracpyInf(object):
-	def scrapy_web_data(self, select_year, select_month, select_day):
-		raise NotImplementedError
-
-
 class WebSracpyThread(threading.Thread):
 
 	def __init__(self, delegation_obj, datetime_range_start = None, datetime_range_end = None):

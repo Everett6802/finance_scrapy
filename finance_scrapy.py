@@ -1,10 +1,11 @@
 #! /usr/bin/python
 
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 from libs import common as CMN
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
+import csv
 
 if __name__ == "__main__":
     # time_range_list = CMN.get_time_range_list(2014, 3)
@@ -17,6 +18,11 @@ if __name__ == "__main__":
 
     # ggm_obj = GrabVolume(2015,'volume.csv')
     # ggm_obj.do_grab()
+
+    with open('test.csv', 'w') as fp:
+        a = csv.writer(fp, delimiter=',')
+        data = [['Me', 'You'], ['293', '219'], ['54', '13']]
+        a.writerows(data)
 
 # import requests
 # from bs4 import BeautifulSoup
