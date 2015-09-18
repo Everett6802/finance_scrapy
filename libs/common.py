@@ -5,6 +5,8 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
+DEF_CSV_FILE_PATH = "/var/tmp"
+
 # def get_web_data(self, url, encoding, select_flag):
 #     web_data = None
 #     try:

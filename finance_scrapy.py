@@ -2,16 +2,19 @@
 
 # from datetime import datetime, timedelta
 from libs import common as CMN
+from libs import web_scrapy_mgr as MGR
+g_mgr = MGR.WebSracpyMgr()
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 import csv
 
 if __name__ == "__main__":
+    g_mgr.get_future_top10_dealers_and_legal_persons()
     # time_range_list = CMN.get_time_range_list(2014, 3)
     # web_scrapy_logging = WebScrapyLogging()
     # logging.basicConfig(level=logging.INFO)
-    g_logger.info("Fuck You, too ! Damn")
+    # g_logger.info("Fuck You, too ! Damn")
     # logging.warning('Hello world!')
     # logging.info('Hello world again!')
     # logging.error('Fuck')
@@ -19,10 +22,10 @@ if __name__ == "__main__":
     # ggm_obj = GrabVolume(2015,'volume.csv')
     # ggm_obj.do_grab()
 
-    with open('test.csv', 'w') as fp:
-        a = csv.writer(fp, delimiter=',')
-        data = [['Me', 'You'], ['293', '219'], ['54', '13']]
-        a.writerows(data)
+    # with open('test.csv', 'w') as fp:
+    #     a = csv.writer(fp, delimiter=',')
+    #     data = [['Me', 'You'], ['293', '219'], ['54', '13']]
+    #     a.writerows(data)
 
 # import requests
 # from bs4 import BeautifulSoup
