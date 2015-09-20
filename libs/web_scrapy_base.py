@@ -21,7 +21,7 @@ class WebSracpyBase(object):
         g_logger.debug("Write data to: %s" % self.csv_filepath)
 
     	self.__generate_time_range_list(datetime_range_start, datetime_range_end)
-        g_logger.debug("There are totally %d days to be downloaded" % len(self.time_range_list))
+        g_logger.debug("There are totally %d day(s) to be downloaded" % len(self.datetime_range_list))
 
 
     def __generate_time_string_filename(self, datetime_cfg=None):
@@ -61,12 +61,14 @@ class WebSracpyBase(object):
         		datetime_end = datetime_today
         	g_logger.debug("Grab the data from date[%s-%s-%s] to date[%s-%s-%s]" % (datetime_start.year, datetime_start.month, datetime_start.day, datetime_end.year, datetime_end.month, datetime_end.day))
 
+        # import pdb; pdb.set_trace()
         day_offset = 1
-        while True:
-            datetime_offset = datetime_start + timedelta(days = day_offset)
+        datetime_offset = datetime_start
+        while True: 
             self.datetime_range_list.append(datetime_offset)
             if datetime_offset == datetime_end:
             	break
+            datetime_offset = datetime_start + timedelta(days = day_offset)
 
 
     def assemble_web_url(self, datetime_cfg):
@@ -80,6 +82,7 @@ class WebSracpyBase(object):
     def do_scrapy(self):
         csv_data_list = []
         web_data = None
+        # import pdb; pdb.set_trace()
         with open(self.csv_filepath, 'w') as fp:
             fp_writer = csv.writer(fp, delimiter=',')
             filtered_web_data_date = None
@@ -89,10 +92,14 @@ class WebSracpyBase(object):
                 g_logger.debug("Get the data from URL: %s" % url)
                 try:
 # Grab the data from website and assemble the data to the entry of CSV
-                    csv_data = ["%04d-%02d-%02d" % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)] + self.parse_web_data(self.__get_web_data(url))
+                    web_data = self.parse_web_data(self.__get_web_data(url))
+                    if web_data is None:
+                        raise RuntimeError(url)
+                    csv_data = ["%04d-%02d-%02d" % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)] + web_data
                     g_logger.debug("Get the data[%s] to %s" % (csv_data, self.csv_filename))
                     csv_data_list.append(csv_data)
                 except Exception as e:
-                    g_logger.warn("Fail to scrapy URL[%s], due to: %s" % (url, str(e)))
+                    g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
             g_logger.debug("Write %d data to %s" % (len(csv_data_list), self.csv_filepath))
-            fp_writer.writerows(csv_data_list)
+            if len(csv_data_list) > 0:
+                fp_writer.writerows(csv_data_list)
