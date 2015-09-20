@@ -26,7 +26,7 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
         if len(web_data) == 0:
             return None
         data_list = []
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         for tr in web_data[4:6]:
             td = tr.select('td')
             for i in range(1, 9):
