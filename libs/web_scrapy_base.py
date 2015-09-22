@@ -79,7 +79,7 @@ class WebSracpyBase(object):
         raise NotImplementedError
 
 
-    def do_scrapy(self):
+    def scrap_web_to_csv(self):
         csv_data_list = []
         web_data = None
         # import pdb; pdb.set_trace()

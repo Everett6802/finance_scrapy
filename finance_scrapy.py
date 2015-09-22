@@ -1,16 +1,24 @@
 #! /usr/bin/python
 
-# from datetime import datetime, timedelta
+import sys
 from libs import common as CMN
 from libs import web_scrapy_mgr as MGR
 g_mgr = MGR.WebSracpyMgr()
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
-import csv
 
 if __name__ == "__main__":
-    g_mgr.get_future_top10_dealers_and_legal_persons()
+    argc = len(sys.argv)
+    if argc < 2:
+        sys.stderr.write('Usage: %s..........\n' % sys.argv[0])
+        sys.exit(1)    
+    conf_filename = sys.argv[1]
+    config_list = CMN.parse_config(conf_filename)
+    if config_list is None:
+        raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
+    g_mgr.do_scrapy(config_list)
+    # g_mgr.scrap_future_top10_dealers_and_legal_persons()
     # time_range_list = CMN.get_time_range_list(2014, 3)
     # web_scrapy_logging = WebScrapyLogging()
     # logging.basicConfig(level=logging.INFO)

@@ -32,5 +32,3 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
             for i in range(1, 9):
                 data_list.append(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text))
         return data_list
-
-    #print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text, td[6].text, td[7].text, td[8].text
