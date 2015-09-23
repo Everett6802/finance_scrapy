@@ -15,6 +15,17 @@ DEF_FINANCE_DATA_INDEX_MAPPING = [
     u'三大法人期貨留倉淨額',
     u'三大法人現貨買賣超',
 ]
+DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
+    "web_scrapy_future_top10_dealers_and_legal_persons",
+    "web_scrapy_stock_top3_legal_persons_net_buy_or_sell",
+    "web_scrapy_future_top3_legal_persons_open_interest",
+]
+
+DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
+    "WebSracpyFutureTop10DealersAndLegalPersons",
+    "WebSracpyFutureTop3LegalPersonsNetInterest",
+    "WebSracpyFutureTop3LegalPersonsNetBuyOrSell",
+]
 
 def parse_config(conf_filename):
     conf_filepath = "%s/%s/%s" % (os.getcwd(), DEF_CONF_FOLDER, conf_filename)
@@ -22,17 +33,20 @@ def parse_config(conf_filename):
     # import pdb; pdb.set_trace()
     total_param_list = []
     def transform_string2datetime(date_string):
-    	element_arr = date_string.split('-')
-    	if len(element_arr) != 3:
-    		raise ValueError("Incorrect config date format: %s" % date_string)
-    	return datetime(element_arr[0], element_arr[1], element_arr[2])
+        element_arr = date_string.split('-')
+        if len(element_arr) != 3:
+            raise ValueError("Incorrect config date format: %s" % date_string)
+        return datetime(int(element_arr[0]), int(element_arr[1]), int(element_arr[2]))
+
     try:
         with open(conf_filepath, 'r') as fp:
             for line in fp:
-                param_list = line.strip('\n').split(' ')
+                # import pdb; pdb.set_trace()
+                line_strip = line.strip('\n')
+                if len(line_strip) == 0:
+                    continue
+                param_list = line_strip.split(' ')
                 param_list_len = len(param_list)
-                if param_list_len == 0:
-                	continue
                 finance_data_index = DEF_FINANCE_DATA_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
                 datetime_range_start = None
                 if param_list_len >= 2:
@@ -66,22 +80,22 @@ def parse_config(conf_filename):
 #     return web_data
 
 
-# def get_time_range_list(start_year, start_month):
-# # Parse the current time
-#     today = datetime.today()
-#     end_year = today.year
-#     end_month = today.month
-# # Generate the time range list
-#     time_range_list = []
-#     cur_year = start_year
-#     cur_month = start_month
-#     while True:
-#         time_range_list.append({"year": cur_year, "month": cur_month})
-#         cur_month += 1
-#         if cur_month > 12:
-#             cur_year += 1
-#             cur_month = 1
-#         if cur_year == end_year and cur_month == end_month:
-#             break
+def get_datetime_range_by_month_list(datetime_range_start, datetime_range_end=None):
+# Parse the current time
+    today = datetime.today()
+    end_year = today.year
+    end_month = today.month
+# Generate the time range list
+    time_range_list = []
+    cur_year = start_year
+    cur_month = start_month
+    while True:
+        time_range_list.append({"year": cur_year, "month": cur_month})
+        cur_month += 1
+        if cur_month > 12:
+            cur_year += 1
+            cur_month = 1
+        if cur_year == end_year and cur_month == end_month:
+            break
 
-# 	return time_range_list
+	return time_range_list

@@ -14,6 +14,7 @@ if __name__ == "__main__":
         sys.stderr.write('Usage: %s..........\n' % sys.argv[0])
         sys.exit(1)    
     conf_filename = sys.argv[1]
+    # import pdb; pdb.set_trace()
     config_list = CMN.parse_config(conf_filename)
     if config_list is None:
         raise RuntimeError("Fail to parse the config file: %s" % conf_filename)

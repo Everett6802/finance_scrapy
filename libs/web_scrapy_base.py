@@ -103,3 +103,7 @@ class WebSracpyBase(object):
             g_logger.debug("Write %d data to %s" % (len(csv_data_list), self.csv_filepath))
             if len(csv_data_list) > 0:
                 fp_writer.writerows(csv_data_list)
+
+
+    def print_test(self):
+        print "This is a test\n"
