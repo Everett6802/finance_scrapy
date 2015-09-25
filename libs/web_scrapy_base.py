@@ -9,12 +9,13 @@ g_logger = WSL.get_web_scrapy_logger()
 
 class WebSracpyBase(object):
 
-    def __init__(self, url_format, csv_filename_format, encoding, select_flag, datetime_range_start=None, datetime_range_end=None):
+    def __init__(self, url_format, csv_filename_format, encoding, select_flag, description, datetime_range_start=None, datetime_range_end=None):
         self.url_format = url_format
         self.csv_filename_format = csv_filename_format
         self.encoding = encoding
         self.select_flag = select_flag
         self.datetime_range_list = []
+        self.description = description
 
         csv_filename = self.csv_filename_format % self. __generate_time_string_filename(datetime_range_start)
         self.csv_filepath = "%s/%s" % (CMN.DEF_CSV_FILE_PATH, csv_filename)
@@ -22,6 +23,31 @@ class WebSracpyBase(object):
 
     	self.__generate_time_range_list(datetime_range_start, datetime_range_end)
         g_logger.debug("There are totally %d day(s) to be downloaded" % len(self.datetime_range_list))
+
+        if len(self.datetime_range_list) == 1:
+            datetime_oneday = self.datetime_range_list[0]
+            self.description = "%s[%04d%02d%02d]" % (
+                description, 
+                datetime_oneday.year, 
+                datetime_oneday.month, 
+                datetime_oneday.day
+            )
+        else:
+            datetime_startday = self.datetime_range_list[0]
+            datetime_endday = self.datetime_range_list[-1]
+            self.description = "%s[%04d%02d%02d-%04d%02d%02d]" % (
+                description, 
+                datetime_startday.year, 
+                datetime_startday.month, 
+                datetime_startday.day,
+                datetime_endday.year, 
+                datetime_endday.month, 
+                datetime_endday.day
+            )
+
+
+    def get_description(self):
+        return self.description
 
 
     def __generate_time_string_filename(self, datetime_cfg=None):
@@ -103,7 +129,3 @@ class WebSracpyBase(object):
             g_logger.debug("Write %d data to %s" % (len(csv_data_list), self.csv_filepath))
             if len(csv_data_list) > 0:
                 fp_writer.writerows(csv_data_list)
-
-
-    def print_test(self):
-        print "This is a test\n"

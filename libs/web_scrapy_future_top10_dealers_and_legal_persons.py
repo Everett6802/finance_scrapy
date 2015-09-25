@@ -14,7 +14,15 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
         url_format = "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++"
         csv_filename_format = "web_scrapy_future_top10_dealers_and_legal_persons_%s.csv"
         
-        super(WebSracpyFutureTop10DealersAndLegalPersons, self).__init__(url_format, csv_filename_format, 'utf-8', '.table_f tr', datetime_range_start, datetime_range_end)
+        super(WebSracpyFutureTop10DealersAndLegalPersons, self).__init__(
+            url_format, 
+            csv_filename_format, 
+            'utf-8', 
+            '.table_f tr', 
+            CMN.DEF_FINANCE_DATA_INDEX_MAPPING[0],
+            datetime_range_start, 
+            datetime_range_end
+        )
         
 
     def assemble_web_url(self, datetime_cfg):

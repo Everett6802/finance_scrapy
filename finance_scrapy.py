@@ -18,7 +18,9 @@ if __name__ == "__main__":
     config_list = CMN.parse_config(conf_filename)
     if config_list is None:
         raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
+    # print "%s\n" % CMN.DEF_FINANCE_DATA_INDEX_MAPPING[0]
     g_mgr.do_scrapy(config_list)
+
     # g_mgr.scrap_future_top10_dealers_and_legal_persons()
     # time_range_list = CMN.get_time_range_list(2014, 3)
     # web_scrapy_logging = WebScrapyLogging()

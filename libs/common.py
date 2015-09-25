@@ -3,6 +3,7 @@
 import os
 import re
 import logging
+import calendar
 from datetime import datetime, timedelta
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -66,36 +67,26 @@ def parse_config(conf_filename):
         return None
     return total_param_list
 
-# def get_web_data(self, url, encoding, select_flag):
-#     web_data = None
-#     try:
-#         res = requests.get(url)
-#         res.encoding = encoding
-#         #print res.text
-#         soup = BeautifulSoup(res.text)
-#         web_data = soup.select(select_flag)
-#     except Exception as e:
-#         print "Fail to scrapy URL[%s], due to: %s" % (url, str(e))
-
-#     return web_data
-
 
 def get_datetime_range_by_month_list(datetime_range_start, datetime_range_end=None):
 # Parse the current time
-    today = datetime.today()
-    end_year = today.year
-    end_month = today.month
-# Generate the time range list
-    time_range_list = []
-    cur_year = start_year
-    cur_month = start_month
+    if datetime_range_end is None:
+        datetime_range_end = datetime.today()
+    datetime_range_list = []
+    datetime_cur = datetime_range_start
     while True:
-        time_range_list.append({"year": cur_year, "month": cur_month})
-        cur_month += 1
-        if cur_month > 12:
-            cur_year += 1
-            cur_month = 1
-        if cur_year == end_year and cur_month == end_month:
+        last_day = calendar.monthrange(datetime_cur.year, datetime_cur.month)[1]
+        datetime_range_list.append(
+            {
+                'start': datetime(datetime_cur.year, datetime_cur.month, 1),
+                'end': datetime(datetime_cur.year, datetime_cur.month, last_day),
+            }
+        )
+        if datetime_range_end.year == datetime_cur.year and datetime_range_end.month == datetime_cur.month:
             break
+    if len(datetime_range_list) == 0:
+        raise RuntimeError("The length of the datetime_range_list list should NOT be 0")
+    datetime_range_list[0]['start'].day = datetime_range_start.day
+    datetime_range_list[-1]['end'].day = datetime_range_end.day
 
-	return time_range_list
+    return datetime_range_list
