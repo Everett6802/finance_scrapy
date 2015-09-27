@@ -28,16 +28,22 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebSracpyFutureTop3LegalPersonsNetBuyOrSell",
 ]
 
-def parse_config(conf_filename):
+DEF_TODAY_CONFIG_FILENAME = "today.conf"
+DEF_HISTORY_CONFIG_FILENAME = "history.conf"
+
+
+def transform_string2datetime(date_string):
+    element_arr = date_string.split('-')
+    if len(element_arr) != 3:
+        raise ValueError("Incorrect config date format: %s" % date_string)
+    return datetime(int(element_arr[0]), int(element_arr[1]), int(element_arr[2]))
+
+
+def parse_config_file(conf_filename):
     conf_filepath = "%s/%s/%s" % (os.getcwd(), DEF_CONF_FOLDER, conf_filename)
     g_logger.debug("Parse the config file: %s" % conf_filepath)
     # import pdb; pdb.set_trace()
     total_param_list = []
-    def transform_string2datetime(date_string):
-        element_arr = date_string.split('-')
-        if len(element_arr) != 3:
-            raise ValueError("Incorrect config date format: %s" % date_string)
-        return datetime(int(element_arr[0]), int(element_arr[1]), int(element_arr[2]))
 
     try:
         with open(conf_filepath, 'r') as fp:

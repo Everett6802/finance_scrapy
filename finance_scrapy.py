@@ -1,5 +1,6 @@
 #! /usr/bin/python
 
+import re
 import sys
 from libs import common as CMN
 from libs import web_scrapy_mgr as MGR
@@ -8,18 +9,68 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-if __name__ == "__main__":
+def show_usage():
+    print "================= Usage =================\n"
+    print "-H\n--help\nDescription: The usage\n"
+    print "-s\n--source\nDescription: The date source from the website\nDefault: All data sources"
+    for index, source in enumerate(CMN.DEF_FINANCE_DATA_INDEX_MAPPING):
+        print "  %d: %s\n" % (index, CMN.DEF_FINANCE_DATA_INDEX_MAPPING[index])
+    print "-t\n--time\nTime: The time range of the data source\nDefault: Today"
+    print "  Format 1 (start_time): 2015-01-01\n"
+    print "  Format 2 (start_time end_time): 2015-01-01 2015-09-04\n"
+    print "-d\n--definition\nMethod: The time range of the data source\nDefault: TODAY"
+    print "  TODAY: Read the today.conf file and only scrap today's data\n"
+    print "  HISTORY: Read the history.conf file and scrap data in the specific time interval\n"
+    print "  USER_DEFINED: User define the data source and time interval"
+
+
+def parse_param():
+    source = None
+    time = None
+    definition = None
+
     argc = len(sys.argv)
-    if argc < 2:
-        sys.stderr.write('Usage: %s..........\n' % sys.argv[0])
-        sys.exit(1)    
-    conf_filename = sys.argv[1]
-    # import pdb; pdb.set_trace()
+    index = 1
+    while index < argc:
+        if not sys.argv[index].startswith('-'):
+            raise RuntimeError("Incorrect Parameter format: %s" % sys.argv[index])
+
+        if re.search("(-h|--help)", sys.argv[index]):
+            show_usage()
+            system.exit(0)
+        elif re.search("(-s|--source)", sys.argv[index]):
+            source = sys.argv[index + 1]
+            g_logger.debug("Param source: %s", source)
+        elif re.search("(-t|--time)", sys.argv[index]):
+            time = sys.argv[index + 1]
+            g_logger.debug("Param time: %s", time)
+        elif re.search("(-d|--definition)", sys.argv[index]):
+            definition = sys.argv[index + 1]
+            g_logger.debug("Param definition: %s", definition)
+        else:
+            raise RuntimeError("Unknown Parameter: %s" % sys.argv[index])
+        index += 2
+
     config_list = CMN.parse_config(conf_filename)
     if config_list is None:
         raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
-    # print "%s\n" % CMN.DEF_FINANCE_DATA_INDEX_MAPPING[0]
-    g_mgr.do_scrapy(config_list)
+
+
+
+
+if __name__ == "__main__":
+
+    # argc = len(sys.argv)
+    # if argc < 2:
+    #     sys.stderr.write('Usage: %s..........\n' % sys.argv[0])
+    #     sys.exit(1)    
+    # conf_filename = sys.argv[1]
+
+    # config_list = CMN.parse_config(conf_filename)
+    # if config_list is None:
+    #     raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
+
+    # g_mgr.do_scrapy(config_list)
 
     # g_mgr.scrap_future_top10_dealers_and_legal_persons()
     # time_range_list = CMN.get_time_range_list(2014, 3)
