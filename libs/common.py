@@ -16,6 +16,7 @@ DEF_FINANCE_DATA_INDEX_MAPPING = [
     u'三大法人期貨留倉淨額',
     u'三大法人現貨買賣超',
 ]
+
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "web_scrapy_future_top10_dealers_and_legal_persons",
     "web_scrapy_stock_top3_legal_persons_net_buy_or_sell",
@@ -27,6 +28,15 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebSracpyFutureTop3LegalPersonsNetInterest",
     "WebSracpyFutureTop3LegalPersonsNetBuyOrSell",
 ]
+
+DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [
+    "TODAY",
+    "HISTORY",
+    "USER_DEFINED",
+]
+DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX = DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index("TODAY")
+DEF_WEB_SCRAPY_DATA_SOURCE_HISTORY_INDEX = DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index("HISTORY")
+DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX = DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index("USER_DEFINED")
 
 DEF_TODAY_CONFIG_FILENAME = "today.conf"
 DEF_HISTORY_CONFIG_FILENAME = "history.conf"

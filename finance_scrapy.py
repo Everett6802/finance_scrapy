@@ -24,10 +24,17 @@ def show_usage():
     print "  USER_DEFINED: User define the data source and time interval"
 
 
+def show_error_and_exit(errmsg):
+    sys.stderr.write(errmsg)
+    g_logger.error(errmsg)
+    sys.exit(1)  
+
+
 def parse_param():
-    source = None
-    time = None
-    definition = None
+    source_index = None
+    timerange_start = None
+    timerange_end = None
+    definition_index = None
 
     argc = len(sys.argv)
     index = 1
@@ -40,21 +47,38 @@ def parse_param():
             system.exit(0)
         elif re.search("(-s|--source)", sys.argv[index]):
             source = sys.argv[index + 1]
+            try:
+                source_index = CMN.DEF_FINANCE_DATA_INDEX_MAPPING.index(source)
+            except ValueError:
+                errmsg = "Unsupoorted source: %s", source
+                show_error_and_exit(errmsg)
             g_logger.debug("Param source: %s", source)
         elif re.search("(-t|--time)", sys.argv[index]):
             time = sys.argv[index + 1]
             g_logger.debug("Param time: %s", time)
+            if mobj = re.search("([\d]{4})-([\d]{1,2})-([\d]{1,2})", time):
+
         elif re.search("(-d|--definition)", sys.argv[index]):
             definition = sys.argv[index + 1]
+            try:
+                definition_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(definition)
+            except ValueError:
+                errmsg = "Unsupoorted definition: %s", definition
+                show_error_and_exit(errmsg)
             g_logger.debug("Param definition: %s", definition)
         else:
             raise RuntimeError("Unknown Parameter: %s" % sys.argv[index])
         index += 2
 
-    config_list = CMN.parse_config(conf_filename)
-    if config_list is None:
-        raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
-
+    config_list = None
+    if definition_index !=  CMD.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE_INDEX:
+        if source_index is not None or timerange_start is not None or definition_index is not None:
+            sys.stdout.write("Ignore other parameters when the defintion is %s" % CMD.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE_INDEX])
+        config_list = CMN.parse_config_file()
+        if config_list is None:
+            raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
+    else:
+        system.out.printf
 
 
 
@@ -66,11 +90,11 @@ if __name__ == "__main__":
     #     sys.exit(1)    
     # conf_filename = sys.argv[1]
 
-    # config_list = CMN.parse_config(conf_filename)
-    # if config_list is None:
-    #     raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
+    config_list = CMN.parse_config(conf_filename)
+    if config_list is None:
+        raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
 
-    # g_mgr.do_scrapy(config_list)
+    g_mgr.do_scrapy(config_list)
 
     # g_mgr.scrap_future_top10_dealers_and_legal_persons()
     # time_range_list = CMN.get_time_range_list(2014, 3)
