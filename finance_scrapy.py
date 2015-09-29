@@ -2,6 +2,7 @@
 
 import re
 import sys
+from datetime import datetime
 from libs import common as CMN
 from libs import web_scrapy_mgr as MGR
 g_mgr = MGR.WebSracpyMgr()
@@ -10,18 +11,19 @@ g_logger = WSL.get_web_scrapy_logger()
 
 
 def show_usage():
-    print "================= Usage =================\n"
-    print "-H\n--help\nDescription: The usage\n"
-    print "-s\n--source\nDescription: The date source from the website\nDefault: All data sources"
+    print "====================== Usage ======================"
+    print "-H --help\nDescription: The usage"
+    print "-s --source\nDescription: The date source from the website\nDefault: All data sources"
     for index, source in enumerate(CMN.DEF_FINANCE_DATA_INDEX_MAPPING):
-        print "  %d: %s\n" % (index, CMN.DEF_FINANCE_DATA_INDEX_MAPPING[index])
-    print "-t\n--time\nTime: The time range of the data source\nDefault: Today"
-    print "  Format 1 (start_time): 2015-01-01\n"
-    print "  Format 2 (start_time end_time): 2015-01-01 2015-09-04\n"
-    print "-d\n--definition\nMethod: The time range of the data source\nDefault: TODAY"
-    print "  TODAY: Read the today.conf file and only scrap today's data\n"
-    print "  HISTORY: Read the history.conf file and scrap data in the specific time interval\n"
-    print "  USER_DEFINED: User define the data source and time interval"
+        print "  %d: %s" % (index, CMN.DEF_FINANCE_DATA_INDEX_MAPPING[index])
+    print "-t --time\nTime: The time range of the data source\nDefault: Today"
+    print "  Format 1 (start_time): 2015-01-01"
+    print "  Format 2 (start_time end_time): 2015-01-01 2015-09-04"
+    print "-d --definition\nMethod: The time range of the data source\nDefault: TODAY"
+    print "  TODAY: Read the today.conf file and only scrap today's data"
+    print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
+    print "  USER_DEFINED: User define the data source and time interval (1;2;3)"
+    print "==================================================="
 
 
 def show_error_and_exit(errmsg):
@@ -31,55 +33,85 @@ def show_error_and_exit(errmsg):
 
 
 def parse_param():
-    source_index = None
-    timerange_start = None
-    timerange_end = None
+    source_index_list = None
+    datetime_range_start = None
+    datetime_range_end = None
     definition_index = None
 
     argc = len(sys.argv)
     index = 1
+    # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
             raise RuntimeError("Incorrect Parameter format: %s" % sys.argv[index])
 
         if re.search("(-h|--help)", sys.argv[index]):
             show_usage()
-            system.exit(0)
+            sys.exit(0)
         elif re.search("(-s|--source)", sys.argv[index]):
             source = sys.argv[index + 1]
-            try:
-                source_index = CMN.DEF_FINANCE_DATA_INDEX_MAPPING.index(source)
-            except ValueError:
-                errmsg = "Unsupoorted source: %s", source
-                show_error_and_exit(errmsg)
+            source_index_str_list = source.split(";")
+            source_index_list = []
+            for source_index_str in source_index_str_list:
+                source_index = int(source_index_str)
+                if source_index < 0 or source_index >= CMN.DEF_FINANCE_DATA_INDEX_MAPPING_LEN:
+                    errmsg = "Unsupoorted source: %s" % source
+                    show_error_and_exit(errmsg)
+                source_index_list.append(source_index)
             g_logger.debug("Param source: %s", source)
         elif re.search("(-t|--time)", sys.argv[index]):
             time = sys.argv[index + 1]
             g_logger.debug("Param time: %s", time)
-            if mobj = re.search("([\d]{4})-([\d]{1,2})-([\d]{1,2})", time):
-
+            mobj = re.search("([\d]{4})-([\d]{1,2})-([\d]{1,2}) ([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
+            if mobj is not None:
+                datetime_range_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
+                datetime_range_end = datetime(int(mobj.group(4)), int(mobj.group(5)), int(mobj.group(6)))
+            else:
+                mobj = re.search("([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
+                if mobj is not None:
+                    datetime_range_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
+                else:
+                    errmsg = "Unsupoorted time: %s" % time
+                    show_error_and_exit(errmsg)                
         elif re.search("(-d|--definition)", sys.argv[index]):
             definition = sys.argv[index + 1]
+            # import pdb; pdb.set_trace()
             try:
                 definition_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(definition)
-            except ValueError:
-                errmsg = "Unsupoorted definition: %s", definition
+            except ValueError as e:
+                errmsg = "Unsupoorted definition: %s" % definition
                 show_error_and_exit(errmsg)
             g_logger.debug("Param definition: %s", definition)
         else:
             raise RuntimeError("Unknown Parameter: %s" % sys.argv[index])
         index += 2
 
+# Set the default value is it is None
+    if definition_index is None:
+        definition_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
+
+# Create the time range list
     config_list = None
-    if definition_index !=  CMD.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE_INDEX:
-        if source_index is not None or timerange_start is not None or definition_index is not None:
-            sys.stdout.write("Ignore other parameters when the defintion is %s" % CMD.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE_INDEX])
-        config_list = CMN.parse_config_file()
+    if definition_index != CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
+        if source_index_list is not None or datetime_range_start is not None:
+            sys.stdout.write("Ignore other parameters when the defintion is %s" % CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE_INDEX])
+        conf_filename = CMN.DEF_TODAY_CONFIG_FILENAME if definition_index == CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF_HISTORY_CONFIG_FILENAME
+        config_list = CMN.parse_config_file(conf_filename)
         if config_list is None:
             raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
     else:
-        system.out.printf
-
+        config_list = []
+        if source_index_list is None:
+            source_index_list = range(CMN.DEF_FINANCE_DATA_INDEX_MAPPING_LEN)
+        for source_index in source_index_list:
+            config_list.append(
+                {
+                    "index": source_index,
+                    "start": datetime_range_start,
+                    "end": datetime_range_end,
+                }
+            )
+    return config_list
 
 
 if __name__ == "__main__":
@@ -90,10 +122,11 @@ if __name__ == "__main__":
     #     sys.exit(1)    
     # conf_filename = sys.argv[1]
 
-    config_list = CMN.parse_config(conf_filename)
+    config_list = parse_param()
     if config_list is None:
         raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
 
+    import pdb; pdb.set_trace()
     g_mgr.do_scrapy(config_list)
 
     # g_mgr.scrap_future_top10_dealers_and_legal_persons()

@@ -64,7 +64,7 @@ class WebSracpyMgr(object):
         end_index = start_index + self.max_concurrent_thread_amount
         thread_list = []
         while True:
-            for datetime_range in datetime_range_list[start_index, end_index]:
+            for datetime_range in datetime_range_list[start_index : end_index]:
                 web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
                 thread_list.append(web_scrapy_thread.WebScrapyThread(web_scrapy_class_obj))
                 thread_list_len = len(thread_list)
@@ -78,7 +78,7 @@ class WebSracpyMgr(object):
                     #     datetime_range['end'].day,
                     #     )
                     # )
-                    g_logger.debug("Start the thread for scraping %s", thread_list[index])
+                    g_logger.debug("Start the thread for scraping %s......", thread_list[index])
                     thread_list[index].start()
                 while True:
                     time.sleep(self.sleep_interval_for_each_loop)
@@ -113,14 +113,14 @@ class WebSracpyMgr(object):
                     g_logger.debug("Start to scrap %s data today" % CMN.DEF_FINANCE_DATA_INDEX_MAPPING[config['index']])
                     self.__do_scrapy_today(module_name, class_name)
                 else:
-                    g_logger.debug("Start to scrap %s data during %d/%d - %d/%d" % (
-                        CMN.DEF_FINANCE_DATA_INDEX_MAPPING[config['index']], 
-                        config['start'].year, 
-                        config['start'].month, 
-                        config['end'].year, 
-                        config['end'].month
-                        )
-                    )
-                    self.__do_scrapy_history(module_name, class_name, (config['start'], config['end']))
+                    # g_logger.debug("Start to scrap %s data during %d/%d - %d/%d" % (
+                    #     CMN.DEF_FINANCE_DATA_INDEX_MAPPING[config['index']], 
+                    #     config['start'].year, 
+                    #     config['start'].month, 
+                    #     config['end'].year, 
+                    #     config['end'].month
+                    #     )
+                    # )
+                    self.__do_scrapy_history(module_name, class_name, config['start'], config['end'])
             except Exception as e:
                 g_logger.error("Error occur while scraping %s data, due to: %s" % (CMN.DEF_FINANCE_DATA_INDEX_MAPPING[config['index']], str(e)))

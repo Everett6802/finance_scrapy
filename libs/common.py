@@ -16,12 +16,14 @@ DEF_FINANCE_DATA_INDEX_MAPPING = [
     u'三大法人期貨留倉淨額',
     u'三大法人現貨買賣超',
 ]
+DEF_FINANCE_DATA_INDEX_MAPPING_LEN = len(DEF_FINANCE_DATA_INDEX_MAPPING)
 
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "web_scrapy_future_top10_dealers_and_legal_persons",
     "web_scrapy_stock_top3_legal_persons_net_buy_or_sell",
     "web_scrapy_future_top3_legal_persons_open_interest",
 ]
+DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
 DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebSracpyFutureTop10DealersAndLegalPersons",
@@ -37,6 +39,7 @@ DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [
 DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX = DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index("TODAY")
 DEF_WEB_SCRAPY_DATA_SOURCE_HISTORY_INDEX = DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index("HISTORY")
 DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX = DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index("USER_DEFINED")
+DEF_WEB_SCRAPY_DATA_SOURCE_TYPE_LEN = len(DEF_WEB_SCRAPY_DATA_SOURCE_TYPE)
 
 DEF_TODAY_CONFIG_FILENAME = "today.conf"
 DEF_HISTORY_CONFIG_FILENAME = "history.conf"
@@ -84,7 +87,7 @@ def parse_config_file(conf_filename):
     return total_param_list
 
 
-def get_datetime_range_by_month_list(datetime_range_start, datetime_range_end=None):
+def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_end=None):
 # Parse the current time
     if datetime_range_end is None:
         datetime_range_end = datetime.today()
@@ -100,9 +103,12 @@ def get_datetime_range_by_month_list(datetime_range_start, datetime_range_end=No
         )
         if datetime_range_end.year == datetime_cur.year and datetime_range_end.month == datetime_cur.month:
             break
+    # import pdb; pdb.set_trace()
     if len(datetime_range_list) == 0:
         raise RuntimeError("The length of the datetime_range_list list should NOT be 0")
-    datetime_range_list[0]['start'].day = datetime_range_start.day
-    datetime_range_list[-1]['end'].day = datetime_range_end.day
+    if datetime_range_start is not None:
+        datetime_range_list[0]['start'] = datetime_range_start
+    if datetime_range_end is not None:
+        datetime_range_list[-1]['end'] = datetime_range_end
 
     return datetime_range_list
