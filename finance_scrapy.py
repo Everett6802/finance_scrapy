@@ -126,7 +126,6 @@ if __name__ == "__main__":
     if config_list is None:
         raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
 
-    import pdb; pdb.set_trace()
     g_mgr.do_scrapy(config_list)
 
     # g_mgr.scrap_future_top10_dealers_and_legal_persons()

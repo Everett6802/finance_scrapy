@@ -4,14 +4,15 @@ from datetime import datetime, timedelta
 import common as CMN
 
 
-class WebSrapyThread(threading.Thread):
+class WebScrapyThread(threading.Thread):
 
     def __init__(self, delegation_obj):
+    	super(WebScrapyThread, self).__init__()
         self.delegation_obj = delegation_obj
 
 
     def __str__(self):
-        return self.delegation_obj.get_descrption()
+        return self.delegation_obj.get_description()
 
 
     def run(self):

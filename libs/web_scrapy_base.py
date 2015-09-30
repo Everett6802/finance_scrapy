@@ -1,3 +1,4 @@
+import re
 import requests
 import csv
 from bs4 import BeautifulSoup
@@ -17,8 +18,8 @@ class WebSracpyBase(object):
         self.datetime_range_list = []
         self.description = description
 
-        csv_filename = self.csv_filename_format % self. __generate_time_string_filename(datetime_range_start)
-        self.csv_filepath = "%s/%s" % (CMN.DEF_CSV_FILE_PATH, csv_filename)
+        self.csv_filename = self.csv_filename_format % self. __generate_time_string_filename(datetime_range_start)
+        self.csv_filepath = "%s/%s" % (CMN.DEF_CSV_FILE_PATH, self.csv_filename)
         g_logger.debug("Write data to: %s" % self.csv_filepath)
 
     	self.__generate_time_range_list(datetime_range_start, datetime_range_end)
@@ -92,9 +93,10 @@ class WebSracpyBase(object):
         datetime_offset = datetime_start
         while True: 
             self.datetime_range_list.append(datetime_offset)
+            # g_logger.debug("Grab the data in date[%s-%s-%s]" % (datetime_offset.year, datetime_offset.month, datetime_offset.day))
             if datetime_offset == datetime_end:
             	break
-            datetime_offset = datetime_start + timedelta(days = day_offset)
+            datetime_offset = datetime_offset + timedelta(days = day_offset)
 
 
     def assemble_web_url(self, datetime_cfg):
@@ -122,7 +124,7 @@ class WebSracpyBase(object):
                     if web_data is None:
                         raise RuntimeError(url)
                     csv_data = ["%04d-%02d-%02d" % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)] + web_data
-                    g_logger.debug("Get the data[%s] to %s" % (csv_data, self.csv_filename))
+                    g_logger.debug("Write the data[%s] to %s" % (csv_data, self.csv_filename))
                     csv_data_list.append(csv_data)
                 except Exception as e:
                     g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))

@@ -1,3 +1,4 @@
+import re
 import requests
 import csv
 from bs4 import BeautifulSoup
@@ -38,5 +39,6 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
         for tr in web_data[4:6]:
             td = tr.select('td')
             for i in range(1, 9):
-                data_list.append(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text))
+                element = str(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)).strip(' ')
+                data_list.append(element)
         return data_list

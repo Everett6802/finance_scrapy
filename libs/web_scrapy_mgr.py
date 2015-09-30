@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 import common as CMN
 import web_scrapy_thread
-import web_scrapy_future_top10_dealers_and_legal_persons
+# import web_scrapy_future_top10_dealers_and_legal_persons
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
@@ -15,9 +15,6 @@ class WebSracpyMgr(object):
         self.max_concurrent_thread_amount = 4
         self.sleep_interval_for_each_loop = 15
         self.thread_pool_list = []
-        self.web_scrapy_module_name = [
-            "scrap_future_top10_dealers_and_legal_persons",
-        ]
 
 
     def __import_module(self, name):
@@ -104,8 +101,10 @@ class WebSracpyMgr(object):
 
 
     def do_scrapy(self, config_list):
+        # import pdb; pdb.set_trace()
         for config in config_list:
             try:
+                # import pdb; pdb.set_trace()
                 module_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[config['index']]
                 class_name = CMN.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[config['index']]
                 g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
