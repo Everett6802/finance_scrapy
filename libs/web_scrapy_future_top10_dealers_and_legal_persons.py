@@ -12,15 +12,16 @@ g_logger = WSL.get_web_scrapy_logger()
 class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
+        data_source_index = 0
         url_format = "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++"
-        csv_filename_format = "web_scrapy_future_top10_dealers_and_legal_persons_%s.csv"
-        
+        csv_filename_format = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%s.csv"
+
         super(WebSracpyFutureTop10DealersAndLegalPersons, self).__init__(
             url_format, 
             csv_filename_format, 
             'utf-8', 
             '.table_f tr', 
-            CMN.DEF_FINANCE_DATA_INDEX_MAPPING[0],
+            CMN.DEF_DATA_SOURCE_INDEX_MAPPING[data_source_index],
             datetime_range_start, 
             datetime_range_end
         )
@@ -42,3 +43,15 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
                 element = str(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)).strip(' ')
                 data_list.append(element)
         return data_list
+
+
+    def debug_only(self):
+        res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=2015&mmtemp=9&ddtemp=10&chooseitemtemp=ALL&goday=&choose_yy=2015&choose_mm=9&choose_dd=10&datestart=2015%2F9%2F10&choose_item=TX+++++")
+        res.encoding = 'utf-8'
+        #print res.text
+        soup = BeautifulSoup(res.text)
+        g_data = soup.select('.table_f tr')
+        for tr in g_data[4:6]:
+            td = tr.select('td')
+            for i in range(9):
+                print re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)

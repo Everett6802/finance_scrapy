@@ -11,24 +11,24 @@ g_logger = WSL.get_web_scrapy_logger()
 
 DEF_CONF_FOLDER = "config"
 DEF_CSV_FILE_PATH = "/var/tmp"
-DEF_FINANCE_DATA_INDEX_MAPPING = [
+DEF_DATA_SOURCE_INDEX_MAPPING = [
     u'十大交易人及特定法人期貨資訊',
     u'三大法人期貨留倉淨額',
     u'三大法人現貨買賣超',
 ]
-DEF_FINANCE_DATA_INDEX_MAPPING_LEN = len(DEF_FINANCE_DATA_INDEX_MAPPING)
+DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
 
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "web_scrapy_future_top10_dealers_and_legal_persons",
-    "web_scrapy_stock_top3_legal_persons_net_buy_or_sell",
     "web_scrapy_future_top3_legal_persons_open_interest",
+    "web_scrapy_stock_top3_legal_persons_net_buy_or_sell",
 ]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
 DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebSracpyFutureTop10DealersAndLegalPersons",
-    "WebSracpyFutureTop3LegalPersonsNetInterest",
-    "WebSracpyFutureTop3LegalPersonsNetBuyOrSell",
+    "WebSracpyFutureTop3LegalPersonsOpenInterest",
+    "WebSracpyStockTop3LegalPersonsNetBuyOrSell",
 ]
 
 DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [
@@ -67,7 +67,7 @@ def parse_config_file(conf_filename):
                     continue
                 param_list = line_strip.split(' ')
                 param_list_len = len(param_list)
-                finance_data_index = DEF_FINANCE_DATA_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
+                data_source_index = DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
                 datetime_range_start = None
                 if param_list_len >= 2:
                     datetime_range_start = transform_string2datetime(param_list[1])
@@ -76,7 +76,7 @@ def parse_config_file(conf_filename):
                     datetime_range_end = transform_string2datetime(param_list[2])
                 total_param_list.append(
                     {
-                        "index": finance_data_index,
+                        "index": data_source_index,
                         "start": datetime_range_start,
                         "end": datetime_range_end,
                     }

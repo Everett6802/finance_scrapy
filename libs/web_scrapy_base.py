@@ -79,21 +79,17 @@ class WebSracpyBase(object):
         		datetime_start = datetime_end = datetime_today
         		g_logger.debug("Only grab the data today[%s-%s-%s]" % (datetime_today.year, datetime_today.month, datetime_today.day))
         else:
-        	# datetime_start = datetime(datetime_range_start['year'], datetime_range_start['month'], datetime_range_start['day'])
         	datetime_start = datetime_range_start
         	if datetime_range_end is not None:
-        		# datetime_end = datetime(datetime_range_end['year'], datetime_range_end['month'], datetime_range_end['day'])
         		datetime_end = datetime_range_end
         	else:
         		datetime_end = datetime_today
         	g_logger.debug("Grab the data from date[%s-%s-%s] to date[%s-%s-%s]" % (datetime_start.year, datetime_start.month, datetime_start.day, datetime_end.year, datetime_end.month, datetime_end.day))
 
-        # import pdb; pdb.set_trace()
         day_offset = 1
         datetime_offset = datetime_start
         while True: 
             self.datetime_range_list.append(datetime_offset)
-            # g_logger.debug("Grab the data in date[%s-%s-%s]" % (datetime_offset.year, datetime_offset.month, datetime_offset.day))
             if datetime_offset == datetime_end:
             	break
             datetime_offset = datetime_offset + timedelta(days = day_offset)
