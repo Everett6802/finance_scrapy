@@ -16,4 +16,5 @@ class WebScrapyThread(threading.Thread):
 
 
     def run(self):
+    	# import pdb; pdb.set_trace()
         self.delegation_obj.scrap_web_to_csv()

@@ -103,6 +103,7 @@ def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_e
         )
         if datetime_range_end.year == datetime_cur.year and datetime_range_end.month == datetime_cur.month:
             break
+        datetime_cur +=  timedelta(days = last_day)
     # import pdb; pdb.set_trace()
     if len(datetime_range_list) == 0:
         raise RuntimeError("The length of the datetime_range_list list should NOT be 0")
