@@ -9,18 +9,19 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
+# 三大法人買賣金額統計表
 class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         data_source_index = 2
-        url_format = "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++"
+        url_format = "http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date={0}%2F{1}%2F{2}&mSubmit=%ACd%B8%DF&yr=1979&w_date=19790904&m_date=19790904"
         csv_filename_format = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%s.csv"
         
         super(WebSracpyStockTop3LegalPersonsNetBuyOrSell, self).__init__(
             url_format, 
             csv_filename_format, 
-            'utf-8', 
-            '.table_f tr', 
+            'big5', 
+            '.board_trad tr', 
             CMN.DEF_DATA_SOURCE_INDEX_MAPPING[data_source_index],
             datetime_range_start, 
             datetime_range_end
@@ -28,7 +29,13 @@ class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
         
 
     def assemble_web_url(self, datetime_cfg):
-        url = self.url_format.format(*(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+        url = self.url_format.format(
+            *(
+                datetime_cfg.year, 
+                "%02" % datetime_cfg.month,
+                "%02" % datetime_cfg.day
+            )
+        )
         return url
 
 
@@ -36,11 +43,10 @@ class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
         if len(web_data) == 0:
             return None
         data_list = []
-        # import pdb; pdb.set_trace()
-        for tr in web_data[4:6]:
+        for tr in web_data[2:6]:
             td = tr.select('td')
-            for i in range(1, 9):
-                element = str(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)).strip(' ')
+            for i in range(4):
+                element = str(td[i].text)
                 data_list.append(element)
         return data_list
 
@@ -53,3 +59,8 @@ class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
         for tr in soup.select('.board_trad tr')[2:6]:
             td = tr.select('td')
             print td[0].text, td[1].text, td[2].text, td[3].text 
+# ==== result: ====
+# 自營商(自行買賣) 976,637,210 830,450,307 146,186,903
+# 自營商(避險) 4,858,793,774 5,360,634,883 -501,841,109
+# 投信 842,037,060 1,269,238,502 -427,201,442
+# 外資及陸資 12,382,715,256 15,582,342,791 -3,199,627,535

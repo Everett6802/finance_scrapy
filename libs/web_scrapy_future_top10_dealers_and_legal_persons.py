@@ -9,6 +9,7 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
+# 期貨大額交易人未沖銷部位結構表 : 臺股期貨
 class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
@@ -55,3 +56,23 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
             td = tr.select('td')
             for i in range(9):
                 print re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)
+# ==== result: ====
+# 201509
+# 20,642  
+# 36                                       
+# 27,681                                      
+# 48.3                                       
+# 16,918                                       
+# 29.5                                       
+# 25,055                                      
+# 43.7                                       
+# 所有契約
+# 25,538  
+# 32.5                                       
+# 37,821                                      
+# 48.1                                       
+# 18,363                                       
+# 23.4                                       
+# 28,093                                      
+# 35.7                                       
+

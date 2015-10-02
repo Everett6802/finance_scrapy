@@ -122,4 +122,3 @@ if __name__ == "__main__":
 # Try to scrap the web data
     g_mgr.do_scrapy(config_list)
 
-
