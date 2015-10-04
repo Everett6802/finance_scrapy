@@ -1,3 +1,5 @@
+# -*- coding: utf8 -*-
+
 import os
 import sys
 import time
@@ -32,6 +34,7 @@ class WebSracpyMgr(object):
 
 
     def __get_class_for_name(self, module_name, class_name):
+        # import pdb; pdb.set_trace()
         m = self.__import_module(module_name)
         parts = module_name.split('.')
         parts.append(class_name)
@@ -106,4 +109,4 @@ class WebSracpyMgr(object):
                 else:
                     self.__do_scrapy_history(module_name, class_name, config['start'], config['end'])
             except Exception as e:
-                g_logger.error("Error occur while scraping %s data, due to: %s" % (CMN.DEF_FINANCE_DATA_INDEX_MAPPING[config['index']], str(e)))
+                g_logger.error("Error occur while scraping %s data, due to: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], str(e)))

@@ -62,6 +62,8 @@ def parse_config_file(conf_filename):
         with open(conf_filepath, 'r') as fp:
             for line in fp:
                 # import pdb; pdb.set_trace()
+                if line.startswith('#'):
+                    continue
                 line_strip = line.strip('\n')
                 if len(line_strip) == 0:
                     continue
