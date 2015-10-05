@@ -43,7 +43,7 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
         for tr in web_data[4:6]:
             td = tr.select('td')
             for i in range(1, 9):
-                element = str(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)).strip(' ')
+                element = str(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)).strip(' ').replace(',', '')
                 data_list.append(element)
         return data_list
 

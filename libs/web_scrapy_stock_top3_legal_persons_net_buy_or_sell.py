@@ -33,9 +33,9 @@ class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
     def assemble_web_url(self, datetime_cfg):
         url = self.url_format.format(
             *(
-                datetime_cfg.year, 
-                "%02" % datetime_cfg.month,
-                "%02" % datetime_cfg.day
+                datetime_cfg.year - 1911, 
+                "%02d" % datetime_cfg.month,
+                "%02d" % datetime_cfg.day
             )
         )
         return url
@@ -47,8 +47,8 @@ class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
         data_list = []
         for tr in web_data[2:6]:
             td = tr.select('td')
-            for i in range(4):
-                element = str(td[i].text)
+            for i in range(1, 4):
+                element = str(td[i].text).replace(',', '')
                 data_list.append(element)
         return data_list
 

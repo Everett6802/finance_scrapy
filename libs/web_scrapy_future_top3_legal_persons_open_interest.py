@@ -42,7 +42,7 @@ class WebSracpyFutureTop3LegalPersonsOpenInterest(web_scrapy_base.WebSracpyBase)
         for tr in web_data[3:6]:
             td = tr.select('td')
             for i in range(6):
-                element = str(td[i].text)
+                element = str(td[i].text).replace(',', '')
                 data_list.append(element)
         return data_list
 
