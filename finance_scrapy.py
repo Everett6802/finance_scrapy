@@ -3,6 +3,7 @@
 
 import re
 import sys
+import time
 from datetime import datetime
 from libs import common as CMN
 from libs import web_scrapy_mgr as MGR
@@ -13,7 +14,7 @@ g_logger = WSL.get_web_scrapy_logger()
 
 def show_usage():
     print "====================== Usage ======================"
-    print "-H --help\nDescription: The usage"
+    print "-h --help\nDescription: The usage"
     print "-s --source\nDescription: The date source from the website\nDefault: All data sources"
     for index, source in enumerate(CMN.DEF_FINANCE_DATA_INDEX_MAPPING):
         print "  %d: %s" % (index, CMN.DEF_FINANCE_DATA_INDEX_MAPPING[index])
@@ -23,7 +24,7 @@ def show_usage():
     print "-d --definition\nMethod: The time range of the data source\nDefault: TODAY"
     print "  TODAY: Read the today.conf file and only scrap today's data"
     print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
-    print "  USER_DEFINED: User define the data source and time interval (1;2;3)"
+    print "  USER_DEFINED: User define the data source (1;2;3) and time interval (None for Today)"
     print "==================================================="
 
 
@@ -44,7 +45,7 @@ def parse_param():
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
-            raise RuntimeError("Incorrect Parameter format: %s" % sys.argv[index])
+            show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
 
         if re.search("(-h|--help)", sys.argv[index]):
             show_usage()
@@ -84,7 +85,7 @@ def parse_param():
                 show_error_and_exit(errmsg)
             g_logger.debug("Param definition: %s", definition)
         else:
-            raise RuntimeError("Unknown Parameter: %s" % sys.argv[index])
+            show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += 2
 
 # Set the default value is it is None
@@ -99,7 +100,7 @@ def parse_param():
         conf_filename = CMN.DEF_TODAY_CONFIG_FILENAME if definition_index == CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF_HISTORY_CONFIG_FILENAME
         config_list = CMN.parse_config_file(conf_filename)
         if config_list is None:
-            raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
+            show_error_and_exit("Fail to parse the config file: %s" % conf_filename)
     else:
         config_list = []
         if source_index_list is None:
@@ -117,9 +118,12 @@ def parse_param():
 
 if __name__ == "__main__":
 # Parse the parameters
+    sys.stdout.write("Try to parse the parameters\n")
     config_list = parse_param()
-    if config_list is None:
-        raise RuntimeError("Fail to parse the config file: %s" % conf_filename)
-# Try to scrap the web data
-    g_mgr.do_scrapy(config_list)
 
+# Try to scrap the web data
+    sys.stdout.write("Scrap the data from the website......\n")
+    time_start_second = int(time.time())
+    g_mgr.do_scrapy(config_list)
+    time_end_second = int(time.time())
+    sys.stdout.write("Scrap the data from the website...... DONE.\n######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second))

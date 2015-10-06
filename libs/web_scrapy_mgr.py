@@ -14,7 +14,7 @@ class WebSracpyMgr(object):
 
     def __init__(self):
         self.max_concurrent_thread_amount = 4
-        self.sleep_interval_for_each_loop = 15
+        self.sleep_interval_for_each_loop = 10
         self.thread_pool_list = []
 
 
