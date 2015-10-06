@@ -1,6 +1,7 @@
 #! /usr/bin/python
 # -*- coding: utf8 -*-
 
+import os
 import re
 import sys
 import time
@@ -120,7 +121,9 @@ if __name__ == "__main__":
 # Parse the parameters
     sys.stdout.write("Try to parse the parameters\n")
     config_list = parse_param()
-
+# Create the folder for CSV files if not exist
+    if not os.path.exists(CMN.DEF_CSV_FILE_PATH):
+        os.makedirs(CMN.DEF_CSV_FILE_PATH)
 # Try to scrap the web data
     sys.stdout.write("Scrap the data from the website......\n")
     time_start_second = int(time.time())

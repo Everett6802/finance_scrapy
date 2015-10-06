@@ -10,7 +10,7 @@ g_logger = WSL.get_web_scrapy_logger()
 
 
 DEF_CONF_FOLDER = "config"
-DEF_CSV_FILE_PATH = "/var/tmp"
+DEF_CSV_FILE_PATH = "/var/tmp/finance"
 DEF_DATA_SOURCE_INDEX_MAPPING = [
     u'十大交易人及特定法人期貨資訊',
     u'三大法人期貨留倉淨額',
