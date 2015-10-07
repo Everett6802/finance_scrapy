@@ -51,10 +51,22 @@ class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
                 element = str(td[i].text).replace(',', '')
                 data_list.append(element)
         return data_list
+# 自營商(自行買賣)_買進金額
+# 自營商(自行買賣)_賣出金額
+# 自營商(自行買賣)_買賣差額
+# 自營商(避險)_買進金額
+# 自營商(避險)_賣出金額
+# 自營商(避險)_買賣差額
+# 投信_買進金額
+# 投信_賣出金額
+# 投信_買賣差額
+# 外資及陸資_買進金額
+# 外資及陸資_賣出金額
+# 外資及陸資_買賣差額
 
 
     def debug_only(self):
-        res = requests.get("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=20150907&m_date=20150901")
+        res = requests.get("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
         res.encoding = 'big5'
         soup = BeautifulSoup(res.text)
         # print soup

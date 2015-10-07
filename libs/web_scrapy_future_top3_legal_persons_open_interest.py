@@ -45,10 +45,28 @@ class WebSracpyFutureTop3LegalPersonsOpenInterest(web_scrapy_base.WebSracpyBase)
                 element = str(td[i].text).replace(',', '')
                 data_list.append(element)
         return data_list
+# "自營商_多方_口數",
+# "自營商_多方_契約金額",
+# "自營商_空方_口數",
+# "自營商_空方_契約金額",
+# "自營商_多空淨額_口數",
+# "自營商_多空淨額_契約金額",
+# "投信_多方_口數",
+# "投信_多方_契約金額",
+# "投信_空方_口數",
+# "投信_空方_契約金額",
+# "投信_多空淨額_口數",
+# "投信_多空淨額_契約金額",
+# "外資_多方_口數",
+# "外資_多方_契約金額",
+# "外資_空方_口數",
+# "外資_空方_契約金額",
+# "外資_多空淨額_口數",
+# "外資_多空淨額_契約金額",
 
 
     def debug_only(self):
-        res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=10&sday=1&datestart=1979%2F9%2F4")
+        res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=10&sday=1&datestart=1979%2F09%2F04")
         res.encoding = 'utf-8'
         #print res.text
         soup = BeautifulSoup(res.text)

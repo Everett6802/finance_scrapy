@@ -101,7 +101,7 @@ class WebSracpyMgr(object):
     def do_scrapy(self, config_list):
         for config in config_list:
             try:
-                module_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[config['index']]
+                module_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[config['index']]
                 class_name = CMN.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[config['index']]
                 g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
                 if config['start'] is None and config['end'] is None:

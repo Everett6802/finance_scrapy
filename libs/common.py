@@ -18,10 +18,11 @@ DEF_DATA_SOURCE_INDEX_MAPPING = [
 ]
 DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
 
+DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
-    "web_scrapy_future_top10_dealers_and_legal_persons",
-    "web_scrapy_future_top3_legal_persons_open_interest",
-    "web_scrapy_stock_top3_legal_persons_net_buy_or_sell",
+    "future_top10_dealers_and_legal_persons",
+    "future_top3_legal_persons_open_interest",
+    "stock_top3_legal_persons_net_buy_or_sell",
 ]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
