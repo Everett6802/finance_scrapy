@@ -57,7 +57,59 @@ class WebSracpyMgr(object):
         web_scrapy_class_obj.scrap_web_to_csv()
 
 
-    def __do_scrapy_history(self, module_name, class_name, datetime_range_start, datetime_range_end):
+    def __do_scrapy_history(self, module_name, class_name, datetime_range_start, datetime_range_end):  
+        datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
+        datetime_range_list_len = len(datetime_range_list)
+        start_index = 0
+        end_index = 0
+        # import pdb; pdb.set_trace()
+        thread_list = []
+        all_trigger = False
+        check_dead_times = 0
+        while True:
+            if not all_trigger:
+                thread_list_len = len(thread_list)
+# There are max max_concurrent_thread_amount cocurrent threads simultaneously
+                if thread_list_len < self.max_concurrent_thread_amount:
+                    new_concurrent_thread_amount = self.max_concurrent_thread_amount - len(thread_list)
+                    end_index = start_index + new_concurrent_thread_amount
+# Initiate a list of thread classes to wrap the object
+                    for datetime_range in datetime_range_list[start_index : end_index]:
+                        web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
+# Start the thread for scraping web data
+                        web_scrapy_thread_obj = web_scrapy_thread.WebScrapyThread(web_scrapy_class_obj)
+                        g_logger.debug("Start the thread for scraping %s......", web_scrapy_thread_obj)
+                        web_scrapy_thread_obj.start()                
+                        thread_list.append(web_scrapy_thread_obj)
+
+# Sleep for a while before checking
+            time.sleep(self.sleep_interval_for_each_loop)
+# Check each worker thread is done
+            check_dead_times += 1
+            g_logger.debug("Check the thread status in the thread pool......%d", check_dead_times)
+            index_to_be_delete_list = [index for index, thread in enumerate(thread_list) if not thread.isAlive()]
+            if len(index_to_be_delete_list) != 0:
+                index_to_be_delete_list.reverse()
+# Remove the dead worker thread
+                for index_to_be_delete in index_to_be_delete_list:
+                    thread = thread_list[index_to_be_delete]
+# Keep track of the error message
+                        # self.thread_errmsg_list[thread.index_in_threadpool] = thread.return_errmsg()
+                    g_logger.debug("The Thread for scraping %s...... DONE", thread)
+                    del thread_list[index_to_be_delete]
+# Check if all worker threads are done
+            if all_trigger:
+                if len(thread_list) == 0:
+                    break
+
+            start_index = end_index
+            # end_index += self.max_concurrent_thread_amount            
+            if end_index > datetime_range_list_len:
+                all_trigger = True
+
+
+
+    def __do_scrapy_history_old(self, module_name, class_name, datetime_range_start, datetime_range_end):
         datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
         datetime_range_list_len = len(datetime_range_list)
         start_index = 0
