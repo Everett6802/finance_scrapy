@@ -5,6 +5,7 @@ import os
 import re
 import sys
 import time
+import shutil
 from datetime import datetime
 from libs import common as CMN
 from libs import web_scrapy_mgr as MGR
@@ -16,6 +17,7 @@ g_logger = WSL.get_web_scrapy_logger()
 def show_usage():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage"
+    print "-remove_old\nDescription: Remove the old CSV file in %s\n" % CMN.DEF_CSV_FILE_PATH
     print "-s --source\nDescription: The date source from the website\nDefault: All data sources"
     for index, source in enumerate(CMN.DEF_FINANCE_DATA_INDEX_MAPPING):
         print "  %d: %s" % (index, CMN.DEF_FINANCE_DATA_INDEX_MAPPING[index])
@@ -43,6 +45,8 @@ def parse_param():
 
     argc = len(sys.argv)
     index = 1
+    index_offset = None
+    remove_old = False
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
@@ -51,6 +55,9 @@ def parse_param():
         if re.search("(-h|--help)", sys.argv[index]):
             show_usage()
             sys.exit(0)
+        elif re.search("--remove_old", sys.argv[index]):
+            remove_old = True
+            index_offset = 1
         elif re.search("(-s|--source)", sys.argv[index]):
             source = sys.argv[index + 1]
             source_index_str_list = source.split(";")
@@ -62,6 +69,7 @@ def parse_param():
                     show_error_and_exit(errmsg)
                 source_index_list.append(source_index)
             g_logger.debug("Param source: %s", source)
+            index_offset = 2
         elif re.search("(-t|--time)", sys.argv[index]):
             time = sys.argv[index + 1]
             g_logger.debug("Param time: %s", time)
@@ -75,7 +83,8 @@ def parse_param():
                     datetime_range_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
                 else:
                     errmsg = "Unsupoorted time: %s" % time
-                    show_error_and_exit(errmsg)                
+                    show_error_and_exit(errmsg)
+            index_offset = 2           
         elif re.search("(-d|--definition)", sys.argv[index]):
             definition = sys.argv[index + 1]
             # import pdb; pdb.set_trace()
@@ -85,13 +94,24 @@ def parse_param():
                 errmsg = "Unsupoorted definition: %s" % definition
                 show_error_and_exit(errmsg)
             g_logger.debug("Param definition: %s", definition)
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
-        index += 2
+        index += index_offset
 
-# Set the default value is it is None
+# Set the default value if it is None
     if definition_index is None:
         definition_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
+
+# Remove the old data if necessary
+    if remove_old:
+        shutil.rmtree(CMN.DEF_CSV_FILE_PATH, ignore_errors=True)
+        # try:
+        #     os.rmdir(CMN.DEF_CSV_FILE_PATH)
+        # except OSError as e:
+        #     g_logger.debug("The %s folder does NOT exist" % CMN.DEF_CSV_FILE_PATH)
+        # except Exception as e:
+        #     sys.stdout.write("Fail to remove the folder[%s], due to: %s" % (CMN.DEF_CSV_FILE_PATH, str(e)))
 
 # Create the time range list
     config_list = None
