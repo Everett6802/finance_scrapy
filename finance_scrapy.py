@@ -17,17 +17,17 @@ g_logger = WSL.get_web_scrapy_logger()
 def show_usage():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage"
-    print "-remove_old\nDescription: Remove the old CSV file in %s\n" % CMN.DEF_CSV_FILE_PATH
-    print "-s --source\nDescription: The date source from the website\nDefault: All data sources"
+    print "--remove_old\nDescription: Remove the old CSV file in %s\n" % CMN.DEF_CSV_FILE_PATH
+    print "-s --source\nDescription: The date source from the website\nDefault: All data sources\nCaution:Only work when Method is USER_DEFINED"
     for index, source in enumerate(CMN.DEF_FINANCE_DATA_INDEX_MAPPING):
         print "  %d: %s" % (index, CMN.DEF_FINANCE_DATA_INDEX_MAPPING[index])
-    print "-t --time\nTime: The time range of the data source\nDefault: Today"
+    print "-t --time\nTime: The time range of the data source\nDefault: Today\nCaution:Only work when Method is USER_DEFINED"
     print "  Format 1 (start_time): 2015-01-01"
-    print "  Format 2 (start_time end_time): 2015-01-01 2015-09-04"
-    print "-d --definition\nMethod: The time range of the data source\nDefault: TODAY"
+    print "  Format 2 (start_time end_time): 2015-01-01,2015-09-04"
+    print "-m --method\nMethod: The method of setting the parameters\nDefault: TODAY"
     print "  TODAY: Read the today.conf file and only scrap today's data"
     print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
-    print "  USER_DEFINED: User define the data source (1;2;3) and time interval (None for Today)"
+    print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
     print "==================================================="
 
 
@@ -41,7 +41,7 @@ def parse_param():
     source_index_list = None
     datetime_range_start = None
     datetime_range_end = None
-    definition_index = None
+    method_index = None
 
     argc = len(sys.argv)
     index = 1
@@ -60,7 +60,7 @@ def parse_param():
             index_offset = 1
         elif re.search("(-s|--source)", sys.argv[index]):
             source = sys.argv[index + 1]
-            source_index_str_list = source.split(";")
+            source_index_str_list = source.split(",")
             source_index_list = []
             for source_index_str in source_index_str_list:
                 source_index = int(source_index_str)
@@ -73,7 +73,7 @@ def parse_param():
         elif re.search("(-t|--time)", sys.argv[index]):
             time = sys.argv[index + 1]
             g_logger.debug("Param time: %s", time)
-            mobj = re.search("([\d]{4})-([\d]{1,2})-([\d]{1,2}) ([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
+            mobj = re.search("([\d]{4})-([\d]{1,2})-([\d]{1,2}),([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
             if mobj is not None:
                 datetime_range_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
                 datetime_range_end = datetime(int(mobj.group(4)), int(mobj.group(5)), int(mobj.group(6)))
@@ -85,40 +85,34 @@ def parse_param():
                     errmsg = "Unsupoorted time: %s" % time
                     show_error_and_exit(errmsg)
             index_offset = 2           
-        elif re.search("(-d|--definition)", sys.argv[index]):
-            definition = sys.argv[index + 1]
+        elif re.search("(-m|--method)", sys.argv[index]):
+            method = sys.argv[index + 1]
             # import pdb; pdb.set_trace()
             try:
-                definition_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(definition)
+                method_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(method)
             except ValueError as e:
-                errmsg = "Unsupoorted definition: %s" % definition
+                errmsg = "Unsupoorted method: %s" % method
                 show_error_and_exit(errmsg)
-            g_logger.debug("Param definition: %s", definition)
+            g_logger.debug("Param method: %s", method)
             index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
 
 # Set the default value if it is None
-    if definition_index is None:
-        definition_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
+    if method_index is None:
+        method_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
 
 # Remove the old data if necessary
     if remove_old:
         shutil.rmtree(CMN.DEF_CSV_FILE_PATH, ignore_errors=True)
-        # try:
-        #     os.rmdir(CMN.DEF_CSV_FILE_PATH)
-        # except OSError as e:
-        #     g_logger.debug("The %s folder does NOT exist" % CMN.DEF_CSV_FILE_PATH)
-        # except Exception as e:
-        #     sys.stdout.write("Fail to remove the folder[%s], due to: %s" % (CMN.DEF_CSV_FILE_PATH, str(e)))
 
 # Create the time range list
     config_list = None
-    if definition_index != CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
+    if method_index != CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
         if source_index_list is not None or datetime_range_start is not None:
-            sys.stdout.write("Ignore other parameters when the defintion is %s" % CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE_INDEX])
-        conf_filename = CMN.DEF_TODAY_CONFIG_FILENAME if definition_index == CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF_HISTORY_CONFIG_FILENAME
+            sys.stdout.write("Ignore other parameters when the method is %s" % CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX])
+        conf_filename = CMN.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF_HISTORY_CONFIG_FILENAME
         config_list = CMN.parse_config_file(conf_filename)
         if config_list is None:
             show_error_and_exit("Fail to parse the config file: %s" % conf_filename)
