@@ -17,13 +17,13 @@ g_logger = WSL.get_web_scrapy_logger()
 def show_usage():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage"
-    print "--remove_old\nDescription: Remove the old CSV file in %s\n" % CMN.DEF_CSV_FILE_PATH
-    print "-s --source\nDescription: The date source from the website\nDefault: All data sources\nCaution:Only work when Method is USER_DEFINED"
-    for index, source in enumerate(CMN.DEF_FINANCE_DATA_INDEX_MAPPING):
-        print "  %d: %s" % (index, CMN.DEF_FINANCE_DATA_INDEX_MAPPING[index])
-    print "-t --time\nTime: The time range of the data source\nDefault: Today\nCaution:Only work when Method is USER_DEFINED"
+    print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF_CSV_FILE_PATH
+    print "-s --source\nDescription: The date source from the website\nDefault: All data sources\nCaution: Only work when Method is USER_DEFINED"
+    for index, source in enumerate(CMN.DEF_DATA_SOURCE_INDEX_MAPPING):
+        print "  %d: %s" % (index, CMN.DEF_DATA_SOURCE_INDEX_MAPPING[index])
+    print "-t --time\nTime: The time range of the data source\nDefault: Today\nCaution: Only work when Method is USER_DEFINED"
     print "  Format 1 (start_time): 2015-01-01"
-    print "  Format 2 (start_time end_time): 2015-01-01,2015-09-04"
+    print "  Format 2 (start_time,end_time): 2015-01-01,2015-09-04"
     print "-m --method\nMethod: The method of setting the parameters\nDefault: TODAY"
     print "  TODAY: Read the today.conf file and only scrap today's data"
     print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
@@ -33,6 +33,7 @@ def show_usage():
 
 def show_error_and_exit(errmsg):
     sys.stderr.write(errmsg)
+    sys.stderr.write("\n")
     g_logger.error(errmsg)
     sys.exit(1)  
 
@@ -65,7 +66,7 @@ def parse_param():
             for source_index_str in source_index_str_list:
                 source_index = int(source_index_str)
                 if source_index < 0 or source_index >= CMN.DEF_FINANCE_DATA_INDEX_MAPPING_LEN:
-                    errmsg = "Unsupoorted source: %s" % source
+                    errmsg = "Unsupported source: %s" % source
                     show_error_and_exit(errmsg)
                 source_index_list.append(source_index)
             g_logger.debug("Param source: %s", source)
