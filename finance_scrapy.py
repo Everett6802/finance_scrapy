@@ -17,7 +17,6 @@ g_logger = WSL.get_web_scrapy_logger()
 def show_usage():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage"
-    print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF_CSV_FILE_PATH
     print "-s --source\nDescription: The date source from the website\nDefault: All data sources\nCaution: Only work when Method is USER_DEFINED"
     for index, source in enumerate(CMN.DEF_DATA_SOURCE_INDEX_MAPPING):
         print "  %d: %s" % (index, CMN.DEF_DATA_SOURCE_INDEX_MAPPING[index])
@@ -28,6 +27,8 @@ def show_usage():
     print "  TODAY: Read the today.conf file and only scrap today's data"
     print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
     print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
+    print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF_CSV_FILE_PATH
+    print "--multi_thread\nDescription: Scrap Web data by using multiple threads"
     print "==================================================="
 
 
@@ -48,18 +49,16 @@ def parse_param():
     index = 1
     index_offset = None
     remove_old = False
+    multi_thread = False
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
 
-        if re.search("(-h|--help)", sys.argv[index]):
+        if re.match("(-h|--help)", sys.argv[index]):
             show_usage()
             sys.exit(0)
-        elif re.search("--remove_old", sys.argv[index]):
-            remove_old = True
-            index_offset = 1
-        elif re.search("(-s|--source)", sys.argv[index]):
+        elif re.match("(-s|--source)", sys.argv[index]):
             source = sys.argv[index + 1]
             source_index_str_list = source.split(",")
             source_index_list = []
@@ -71,22 +70,22 @@ def parse_param():
                 source_index_list.append(source_index)
             g_logger.debug("Param source: %s", source)
             index_offset = 2
-        elif re.search("(-t|--time)", sys.argv[index]):
+        elif re.match("(-t|--time)", sys.argv[index]):
             time = sys.argv[index + 1]
             g_logger.debug("Param time: %s", time)
-            mobj = re.search("([\d]{4})-([\d]{1,2})-([\d]{1,2}),([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
+            mobj = re.match("([\d]{4})-([\d]{1,2})-([\d]{1,2}),([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
             if mobj is not None:
                 datetime_range_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
                 datetime_range_end = datetime(int(mobj.group(4)), int(mobj.group(5)), int(mobj.group(6)))
             else:
-                mobj = re.search("([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
+                mobj = re.match("([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
                 if mobj is not None:
                     datetime_range_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
                 else:
                     errmsg = "Unsupoorted time: %s" % time
                     show_error_and_exit(errmsg)
             index_offset = 2           
-        elif re.search("(-m|--method)", sys.argv[index]):
+        elif re.match("(-m|--method)", sys.argv[index]):
             method = sys.argv[index + 1]
             # import pdb; pdb.set_trace()
             try:
@@ -96,6 +95,12 @@ def parse_param():
                 show_error_and_exit(errmsg)
             g_logger.debug("Param method: %s", method)
             index_offset = 2
+        elif re.match("--remove_old", sys.argv[index]):
+            remove_old = True
+            index_offset = 1
+        elif re.match("--multi_thread", sys.argv[index]):
+            multi_thread = True
+            index_offset = 1
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -129,19 +134,20 @@ def parse_param():
                     "end": datetime_range_end,
                 }
             )
-    return config_list
+    return (config_list, multi_thread)
 
 
 if __name__ == "__main__":
 # Parse the parameters
     sys.stdout.write("Try to parse the parameters\n")
-    config_list = parse_param()
+    (config_list, multi_thread) = parse_param()
 # Create the folder for CSV files if not exist
     if not os.path.exists(CMN.DEF_CSV_FILE_PATH):
         os.makedirs(CMN.DEF_CSV_FILE_PATH)
 # Try to scrap the web data
     sys.stdout.write("Scrap the data from the website......\n")
     time_start_second = int(time.time())
-    g_mgr.do_scrapy(config_list)
+    # import pdb; pdb.set_trace()
+    g_mgr.do_scrapy(config_list, multi_thread)
     time_end_second = int(time.time())
     sys.stdout.write("Scrap the data from the website...... DONE.\n######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second))

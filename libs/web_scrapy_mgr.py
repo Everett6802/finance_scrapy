@@ -49,15 +49,17 @@ class WebSracpyMgr(object):
         return web_scrapy_class_obj
 
 
-    def __do_scrapy_today(self, module_name, class_name):
-        web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name)
-        if web_scrapy_class_obj is None:
-            raise RuntimeError("Fail to allocate WebScrapyBase derived class")
-        g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
-        web_scrapy_class_obj.scrap_web_to_csv()
+    def __do_scrapy(self, module_name, class_name, datetime_range_start, datetime_range_end):
+        datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
+        for datetime_range in datetime_range_list:
+            web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
+            if web_scrapy_class_obj is None:
+                raise RuntimeError("Fail to allocate WebScrapyBase derived class")
+            g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
+            web_scrapy_class_obj.scrap_web_to_csv()
 
 
-    def __do_scrapy_history(self, module_name, class_name, datetime_range_start, datetime_range_end):  
+    def __do_scrapy_by_multithread(self, module_name, class_name, datetime_range_start, datetime_range_end):  
         datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
         datetime_range_list_len = len(datetime_range_list)
         start_index = 0
@@ -149,15 +151,19 @@ class WebSracpyMgr(object):
 #                 break
 
 
-    def do_scrapy(self, config_list):
+    def do_scrapy(self, config_list, multi_thread=False):
         for config in config_list:
             try:
                 module_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[config['index']]
                 class_name = CMN.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[config['index']]
                 g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
-                if config['start'] is None and config['end'] is None:
-                    self.__do_scrapy_today(module_name, class_name)
+                if not multi_thread:
+                    self.__do_scrapy(module_name, class_name, config['start'], config['end'])
                 else:
-                    self.__do_scrapy_history(module_name, class_name, config['start'], config['end'])
+                    self.__do_scrapy_by_multithread(module_name, class_name, config['start'], config['end'])
+                # if config['start'] is None and config['end'] is None:
+                #     self.__do_scrapy_today(module_name, class_name)
+                # else:
+                #     self.__do_scrapy_history(module_name, class_name, config['start'], config['end'])
             except Exception as e:
                 g_logger.error("Error occur while scraping %s data, due to: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], str(e)))

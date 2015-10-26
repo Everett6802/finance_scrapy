@@ -12,24 +12,24 @@ g_logger = WSL.get_web_scrapy_logger()
 DEF_CONF_FOLDER = "config"
 DEF_CSV_FILE_PATH = "/var/tmp/finance"
 DEF_DATA_SOURCE_INDEX_MAPPING = [
-    u'十大交易人及特定法人期貨資訊',
-    u'三大法人期貨留倉淨額',
     u'三大法人現貨買賣超',
+    u'三大法人期貨留倉淨額',
+    u'十大交易人及特定法人期貨資訊',
 ]
 DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
 
 DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
-    "future_top10_dealers_and_legal_persons",
-    "future_top3_legal_persons_open_interest",
     "stock_top3_legal_persons_net_buy_or_sell",
+    "future_top3_legal_persons_open_interest",
+    "future_top10_dealers_and_legal_persons",
 ]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
 DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
-    "WebSracpyFutureTop10DealersAndLegalPersons",
-    "WebSracpyFutureTop3LegalPersonsOpenInterest",
     "WebSracpyStockTop3LegalPersonsNetBuyOrSell",
+    "WebSracpyFutureTop3LegalPersonsOpenInterest",
+    "WebSracpyFutureTop10DealersAndLegalPersons",
 ]
 
 DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [

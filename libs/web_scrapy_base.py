@@ -70,6 +70,7 @@ class WebSracpyBase(object):
 
 
     def __generate_time_range_list(self, datetime_range_start=None, datetime_range_end=None):
+        # import pdb; pdb.set_trace()
         datetime_tmp = datetime.today()
         datetime_today = datetime(datetime_tmp.year, datetime_tmp.month, datetime_tmp.day)
     	datetime_start = None
@@ -92,9 +93,9 @@ class WebSracpyBase(object):
         datetime_offset = datetime_start
         while True: 
             self.datetime_range_list.append(datetime_offset)
-            if datetime_offset == datetime_end:
-            	break
             datetime_offset = datetime_offset + timedelta(days = day_offset)
+            if datetime_offset >= datetime_end:
+            	break
 
 
     def assemble_web_url(self, datetime_cfg):
