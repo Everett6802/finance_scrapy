@@ -1,8 +1,11 @@
 # -*- coding: utf8 -*-
 
+import os
 import re
 import requests
 import csv
+import time
+from random import randint
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
@@ -13,6 +16,9 @@ g_logger = WSL.get_web_scrapy_logger()
 class WebSracpyBase(object):
 
     def __init__(self, url_format, csv_filename_format, encoding, select_flag, description, datetime_range_start=None, datetime_range_end=None):
+        self.SCRAPY_WAIT_TIMEOUT = 8
+        self.SCRAPY_RETRY_TIMES = 3
+
         self.url_format = url_format
         self.csv_filename_format = csv_filename_format
         self.encoding = encoding
@@ -60,7 +66,29 @@ class WebSracpyBase(object):
 
 
     def __get_web_data(self, url):
-        res = requests.get(url)
+        # import pdb; pdb.set_trace()
+        # res = requests.get(url)
+        try:
+            # g_logger.debug("Try to Scrap data [%s]" % url)
+            res = requests.get(url, timeout=self.SCRAPY_WAIT_TIMEOUT)
+        except requests.exceptions.Timeout as e:
+            # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
+            fail_to_scrap = False
+            for index in range(self.SCRAPY_RETRY_TIMES):
+                time.sleep(randint(3,9))
+                try:
+                    # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
+                    res = requests.get(url, timeout=self.SCRAPY_WAIT_TIMEOUT)
+                except requests.exceptions.Timeout as ex:
+                    # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
+                    fail_to_scrap = True
+                if not fail_to_scrap:
+                    break
+            if fail_to_scrap:
+                # import pdb; pdb.set_trace()
+                g_logger.error("Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, self.SCRAPY_RETRY_TIMES))
+                raise e
+
         res.encoding = self.encoding
         # print res.text
         soup = BeautifulSoup(res.text)
@@ -114,7 +142,20 @@ class WebSracpyBase(object):
             fp_writer = csv.writer(fp, delimiter=',')
             filtered_web_data_date = None
             filtered_web_data = None
+
+            datetime_first_day_cfg = self.datetime_range_list[0]
+            day_of_week = datetime_first_day_cfg.weekday()
+            is_weekend = False
             for datetime_cfg in self.datetime_range_list:
+                if day_of_week in [5, 6]: # 5: Saturday, 6: Sunday
+                    is_weekend = True
+                else:
+                    is_weekend = False
+                day_of_week = (day_of_week + 1) % 7
+                if is_weekend:
+                    g_logger.debug("%s is weekend, Skip..." % day_of_week)
+                    continue
+
                 url = self.assemble_web_url(datetime_cfg)
                 g_logger.debug("Get the data from URL: %s" % url)
                 try:
@@ -123,10 +164,20 @@ class WebSracpyBase(object):
                     if web_data is None:
                         raise RuntimeError(url)
                     csv_data = ["%04d-%02d-%02d" % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)] + web_data
-                    g_logger.debug("Write the data[%s] to %s" % (csv_data, self.csv_filename))
+                    # g_logger.debug("Write the data[%s] to %s" % (csv_data, self.csv_filename))
                     csv_data_list.append(csv_data)
+                except requests.exceptions.Timeout as e:
+                    errmsg = "Fail to scrap URL[%s], due to: Time-out" % url
+                    g_logger.error(errmsg)
+                    raise RuntimeError(errmsg)
                 except Exception as e:
                     g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
-            g_logger.debug("Write %d data to %s" % (len(csv_data_list), self.csv_filepath))
             if len(csv_data_list) > 0:
+                g_logger.debug("Write %d data to %s" % (len(csv_data_list), self.csv_filepath))
                 fp_writer.writerows(csv_data_list)
+            else:
+                g_logger.warn("Emtpy data, remove the CSV file: %s" % self.csv_filepath)
+                try:
+                    os.remove(self.csv_filepath)
+                except OSError as e:  ## if failed, report it back to the user ##
+                    g_logger.error("Fail to remove the CSV file: %s, due to: %s" % (self.csv_filepath, str(e)))
