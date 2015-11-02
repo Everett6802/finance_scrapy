@@ -24,7 +24,7 @@ class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
             csv_filename_format, 
             'big5', 
             '.board_trad tr', 
-            CMN.DEF_DATA_SOURCE_INDEX_MAPPING[data_source_index],
+            data_source_index,
             datetime_range_start, 
             datetime_range_end
         )

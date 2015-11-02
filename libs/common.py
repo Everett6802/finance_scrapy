@@ -9,6 +9,16 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
+RET_SUCCESS = 0
+
+RET_WARN_BASE = 100
+RET_WARN_URL_NOT_EXIST = RET_WARN_BASE + 1
+
+RET_FAILURE_BASE = 100
+RET_FAILURE_UNKNOWN = RET_FAILURE_BASE + 1
+RET_FAILURE_TIMEOUT = RET_FAILURE_BASE + 2
+
+
 DEF_CONF_FOLDER = "config"
 DEF_CSV_FILE_PATH = "/var/tmp/finance"
 DEF_DATA_SOURCE_INDEX_MAPPING = [
@@ -96,6 +106,7 @@ def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_e
         datetime_range_end = datetime.today()
     datetime_range_list = []
     datetime_cur = datetime_range_start
+    # import pdb; pdb.set_trace()
     while True:
         last_day = calendar.monthrange(datetime_cur.year, datetime_cur.month)[1]
         datetime_range_list.append(
@@ -106,7 +117,8 @@ def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_e
         )
         if datetime_range_end.year == datetime_cur.year and datetime_range_end.month == datetime_cur.month:
             break
-        datetime_cur +=  timedelta(days = last_day)
+        offset_day = 15 if datetime_cur.day > 20 else last_day
+        datetime_cur +=  timedelta(days = offset_day)
     # import pdb; pdb.set_trace()
     if len(datetime_range_list) == 0:
         raise RuntimeError("The length of the datetime_range_list list should NOT be 0")
@@ -116,3 +128,11 @@ def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_e
         datetime_range_list[-1]['end'] = datetime_range_end
 
     return datetime_range_list
+
+
+def check_success(ret):
+    return True if ret == RET_SUCCESS else False
+
+
+def check_failure(ret):
+    return True if ret > RET_FAILURE_BASE else False

@@ -24,7 +24,7 @@ class WebSracpyFutureTop3LegalPersonsOpenInterest(web_scrapy_base.WebSracpyBase)
             csv_filename_format, 
             'utf-8', 
             '.table_c tr', 
-            CMN.DEF_DATA_SOURCE_INDEX_MAPPING[data_source_index],
+            data_source_index,
             datetime_range_start, 
             datetime_range_end
         )
