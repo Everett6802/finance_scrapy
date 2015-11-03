@@ -6,7 +6,7 @@ import re
 import sys
 import time
 import shutil
-from datetime import datetime
+from datetime import datetime, timedelta
 from libs import common as CMN
 from libs import web_scrapy_mgr as MGR
 g_mgr = MGR.WebSracpyMgr()
@@ -131,6 +131,7 @@ def parse_param():
         config_list = []
         if source_index_list is None:
             source_index_list = range(CMN.DEF_FINANCE_DATA_INDEX_MAPPING_LEN)
+        import pdb; pdb.set_trace()
         for source_index in source_index_list:
             config_list.append(
                 {
@@ -139,6 +140,30 @@ def parse_param():
                     "end": datetime_range_end,
                 }
             )
+
+# Adjust the end date since some data of the last day are NOT released at the moment while scraping data
+    datetime_now = datetime.today()
+    datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
+    datetime_yesterday = datetime_today + timedelta(days = -1)
+    datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, CMN.DEF_TODAY_DATA_EXIST_HOUR, CMN.DEF_TODAY_DATA_EXIST_MINUTE)
+    # import pdb; pdb.set_trace()
+    for config in config_list:
+        if config['start'] is None:
+            config['start'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
+        if config['end'] is None:
+            config['end'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
+# Check if the end date should be larger than the start date
+        if config['end'] < config['start']:
+            show_error_and_exit("End Date[%s] should be larger than the Start Date[%s]" % (config['end'], config['start']))
+        if config['end'] == config['start']:
+            msg = "%s: %04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day)
+        else:
+            msg = "%s: %04d-%02d-%02d:%04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day, config['end'].year, config['end'].month, config['end'].day)
+        g_logger.info(msg)
+        sys.stdout.write(msg)
+        sys.stdout.write("\n")
+
+
     return (config_list, multi_thread, check_result)
 
 
@@ -153,7 +178,6 @@ if __name__ == "__main__":
 # Try to scrap the web data
     sys.stdout.write("Scrap the data from the website......\n")
     time_start_second = int(time.time())
-    # import pdb; pdb.set_trace()
     g_mgr.do_scrapy(config_list, multi_thread)
     time_end_second = int(time.time())
     sys.stdout.write("Scrap the data from the website...... DONE.\n######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second))

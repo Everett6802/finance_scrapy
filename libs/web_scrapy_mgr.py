@@ -181,7 +181,6 @@ class WebSracpyMgr(object):
             except Exception as e:
                 g_logger.error("Error occur while scraping %s data, due to: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], str(e)))
 
-        # import pdb; pdb.set_trace()
 # Retry to scrap the web data if error occurs
         if need_retry and len(self.retry_config_list) != 0:
             g_logger.warn("Retry to scrap the web data due to some errors.......")

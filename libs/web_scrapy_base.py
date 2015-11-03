@@ -138,7 +138,7 @@ class WebSracpyBase(object):
         while True: 
             self.datetime_range_list.append(datetime_offset)
             datetime_offset = datetime_offset + timedelta(days = day_offset)
-            if datetime_offset >= datetime_end:
+            if datetime_offset > datetime_end:
             	break
 
 
