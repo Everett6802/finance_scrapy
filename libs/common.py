@@ -25,7 +25,8 @@ DEF_CONF_FOLDER = "config"
 DEF_CSV_FILE_PATH = "/var/tmp/finance"
 DEF_DATA_SOURCE_INDEX_MAPPING = [
     u'三大法人現貨買賣超',
-    u'三大法人期貨留倉淨額',
+    u'三大法人期貨選擇權留倉淨額',
+    u'三大法人選擇權買賣權留倉淨額',
     u'十大交易人及特定法人期貨資訊',
 ]
 DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
@@ -33,14 +34,16 @@ DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
 DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "stock_top3_legal_persons_net_buy_or_sell",
-    "future_top3_legal_persons_open_interest",
+    "future_and_option_top3_legal_persons_open_interest",
+    "option_top3_legal_persons_call_and_put_option_open_interest",
     "future_top10_dealers_and_legal_persons",
 ]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
 DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebSracpyStockTop3LegalPersonsNetBuyOrSell",
-    "WebSracpyFutureTop3LegalPersonsOpenInterest",
+    "WebSracpyFutureAndOptionTop3LegalPersonsOpenInterest",
+    "WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
     "WebSracpyFutureTop10DealersAndLegalPersons",
 ]
 

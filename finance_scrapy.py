@@ -163,7 +163,6 @@ def parse_param():
         sys.stdout.write(msg)
         sys.stdout.write("\n")
 
-
     return (config_list, multi_thread, check_result)
 
 

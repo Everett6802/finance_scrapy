@@ -11,8 +11,8 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-# 未平倉口數與契約金額
-class WebSracpyFutureTop3LegalPersonsOpenInterest(web_scrapy_base.WebSracpyBase):
+# 期貨選擇權未平倉口數與契約金額
+class WebSracpyFutureAndOptionTop3LegalPersonsOpenInterest(web_scrapy_base.WebSracpyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         data_source_index = 1
