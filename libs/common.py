@@ -135,6 +135,10 @@ def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_e
     return datetime_range_list
 
 
+def get_cur_module_name(module):
+    return os.path.basename(os.path.realpath(module)).split('.')[0]
+
+
 def check_success(ret):
     return True if ret == RET_SUCCESS else False
 

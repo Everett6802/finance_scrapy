@@ -15,20 +15,15 @@ g_logger = WSL.get_web_scrapy_logger()
 class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        data_source_index = 0
-        url_format = "http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date={0}%2F{1}%2F{2}&mSubmit=%ACd%B8%DF&yr=1979&w_date=19790904&m_date=19790904"
-        csv_filename_format = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%s.csv"
-        
         super(WebSracpyStockTop3LegalPersonsNetBuyOrSell, self).__init__(
-            url_format, 
-            csv_filename_format, 
+            "http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date={0}%2F{1}%2F{2}&mSubmit=%ACd%B8%DF&yr=1979&w_date=19790904&m_date=19790904", 
+            __file__, 
             'big5', 
             '.board_trad tr', 
-            data_source_index,
             datetime_range_start, 
             datetime_range_end
         )
-        
+
 
     def assemble_web_url(self, datetime_cfg):
         url = self.url_format.format(
