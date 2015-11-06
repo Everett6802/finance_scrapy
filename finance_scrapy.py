@@ -16,21 +16,27 @@ g_logger = WSL.get_web_scrapy_logger()
 
 def show_usage():
     print "====================== Usage ======================"
-    print "-h --help\nDescription: The usage"
+    print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "-s --source\nDescription: The date source from the website\nDefault: All data sources\nCaution: Only work when Method is USER_DEFINED"
     for index, source in enumerate(CMN.DEF_DATA_SOURCE_INDEX_MAPPING):
         print "  %d: %s" % (index, CMN.DEF_DATA_SOURCE_INDEX_MAPPING[index])
-    print "-t --time\nTime: The time range of the data source\nDefault: Today\nCaution: Only work when Method is USER_DEFINED"
+    print "-t --time\nDescription: The time range of the data source\nDefault: Today\nCaution: Only work when Method is USER_DEFINED"
     print "  Format 1 (start_time): 2015-01-01"
     print "  Format 2 (start_time,end_time): 2015-01-01,2015-09-04"
-    print "-m --method\nMethod: The method of setting the parameters\nDefault: TODAY"
+    print "-m --method\nDescription: The method of setting the parameters\nDefault: TODAY"
     print "  TODAY: Read the today.conf file and only scrap today's data"
     print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
     print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
     print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF_CSV_FILE_PATH
     print "--multi_thread\nDescription: Scrap Web data by using multiple threads"
     print "--check_result\nDescription: Check the CSV file after Scraping Web data"
+    print "--do_debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "==================================================="
+
+
+def do_debug(data_source_index):
+    g_mgr.do_debug(data_source_index)
+    sys.exit(0)
 
 
 def show_error_and_exit(errmsg):
@@ -106,6 +112,10 @@ def parse_param():
         elif re.match("--check_result", sys.argv[index]):
             check_result = True
             index_offset = 1
+        elif re.match("--do_debug", sys.argv[index]):
+            data_source_index = int(sys.argv[index + 1])
+            do_debug(data_source_index)
+            sys.exit(0)
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset

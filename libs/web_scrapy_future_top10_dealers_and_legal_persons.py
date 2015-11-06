@@ -60,7 +60,7 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
 # "臺股期貨_所有契約_全市場未沖銷部位數",
 
 
-    def debug_only(self):
+    def do_debug(self):
         res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=2015&mmtemp=9&ddtemp=10&chooseitemtemp=ALL&goday=&choose_yy=2015&choose_mm=9&choose_dd=10&datestart=2015%2F9%2F10&choose_item=TX+++++")
         res.encoding = 'utf-8'
         #print res.text

@@ -16,7 +16,7 @@ class WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_bas
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(
-            "www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
+            "http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
             __file__, 
             'utf-8', 
             '.table_f tr', 
@@ -39,7 +39,7 @@ class WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_bas
         start_index_list = [10, 7, 7, 8, 7, 7]
         row_num = 6
         row_index = 0
-        for tr in g_data[3:9]:
+        for tr in web_data[3:9]:
             start_index = start_index_list[row_index]
             td = tr.select('td')
             for i in range(start_index, start_index + row_num):
@@ -85,7 +85,7 @@ class WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_bas
 # "賣權_外資_買賣差額_契約金額",
 
 
-    def debug_only(self):
+    def do_debug(self):
         res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=2015&DATA_DATE_M=11&DATA_DATE_D=3&syear=2015&smonth=11&sday=3&datestart=2015%2F11%2F3&COMMODITY_ID=TXO")
         res.encoding = 'utf-8'
         # print res.text

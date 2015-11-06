@@ -20,9 +20,8 @@ class WebSracpyBase(object):
         self.SCRAPY_RETRY_TIMES = 3
 
         self.url_format = url_format
-        # import pdb; pdb.set_trace()
         cur_module_name = re.sub(CMN.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.get_cur_module_name(cur_file_path))
-        g_logger.debug("Current module name (w/o prefix): %s" % cur_module_name)
+        # g_logger.debug("Current module name (w/o prefix): %s" % cur_module_name)
         self.data_source_index = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
         self.csv_filename_format = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s.csv"
         self.encoding = encoding

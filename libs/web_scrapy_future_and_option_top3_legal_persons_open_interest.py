@@ -60,7 +60,7 @@ class WebSracpyFutureAndOptionTop3LegalPersonsOpenInterest(web_scrapy_base.WebSr
 # "外資_多空淨額_契約金額",
 
 
-    def debug_only(self):
+    def do_debug(self):
         res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=10&sday=1&datestart=1979%2F09%2F04")
         res.encoding = 'utf-8'
         #print res.text

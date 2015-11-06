@@ -60,7 +60,7 @@ class WebSracpyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebSracpyBase):
 # 外資及陸資_買賣差額
 
 
-    def debug_only(self):
+    def do_debug(self):
         res = requests.get("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
         res.encoding = 'big5'
         soup = BeautifulSoup(res.text)

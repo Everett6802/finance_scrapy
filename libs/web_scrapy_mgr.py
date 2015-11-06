@@ -192,3 +192,11 @@ class WebSracpyMgr(object):
                     self.__do_scrapy(module_name, class_name, retry_config['start'], retry_config['end'])
                 except Exception as e:
                     g_logger.error("Error occur while ReTrying to scrap %s data, due to: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[retry_config['index']], str(e)))
+
+
+    def do_debug(self, data_source_index):
+        module_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index]
+        class_name = CMN.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[data_source_index]
+        g_logger.debug("Try to initiate %s.%s for debugging......" % (module_name, class_name))
+        web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name)
+        web_scrapy_class_obj.do_debug()
