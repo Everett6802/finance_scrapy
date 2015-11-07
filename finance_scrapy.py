@@ -6,6 +6,7 @@ import re
 import sys
 import time
 import shutil
+import subprocess
 from datetime import datetime, timedelta
 from libs import common as CMN
 from libs import web_scrapy_mgr as MGR
@@ -44,6 +45,18 @@ def show_error_and_exit(errmsg):
     sys.stderr.write("\n")
     g_logger.error(errmsg)
     sys.exit(1)  
+
+
+def snapshot_result(run_result_str):
+    if not os.path.exists(CMN.DEF_SNAPSHOT_FOLDER):
+        os.makedirs(CMN.DEF_SNAPSHOT_FOLDER)
+    with open(CMN.RUN_RESULT_FILENAME, 'w') as fp:
+        fp.write(run_result_str.encode('utf8'))
+    datetime_now = datetime.today()
+    snapshot_filename = CMN.SNAPSHOT_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
+    subprocess.call(["tar", "cvzf", snapshot_filename, CMN.RUN_RESULT_FILENAME, CMN.DEF_CSV_FILE_PATH, WSL.LOG_FILE_PATH])
+    subprocess.call(["mv", snapshot_filename, CMN.DEF_SNAPSHOT_FOLDER])
+    subprocess.call(["rm", CMN.RUN_RESULT_FILENAME])
 
 
 def parse_param():
@@ -184,17 +197,28 @@ if __name__ == "__main__":
 # Create the folder for CSV files if not exist
     if not os.path.exists(CMN.DEF_CSV_FILE_PATH):
         os.makedirs(CMN.DEF_CSV_FILE_PATH)
+
 # Try to scrap the web data
     sys.stdout.write("Scrap the data from the website......\n")
     time_start_second = int(time.time())
     g_mgr.do_scrapy(config_list, multi_thread)
     time_end_second = int(time.time())
-    sys.stdout.write("Scrap the data from the website...... DONE.\n######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second))
+    time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
+    sys.stdout.write("Scrap the data from the website...... DONE.\n" + time_lapse_msg)
 
     if check_result:
+        error_msg_list = []
         sys.stdout.write("Let's check error......\n")
         (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy(config_list)
         for file_not_found in file_not_found_list:
-            sys.stderr.write("FileNotFound: %s, %s\n" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename']))
+            error_msg = u"FileNotFound: %s, %s\n" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
+            sys.stderr.write(error_msg)
+            error_msg_list.append(error_msg)
         for file_is_empty in file_is_empty_list:
-            sys.stderr.write("FileIsEmpty: %s, %s\n" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename']))
+            error_msg = u"FileIsEmpty: %s, %s\n" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
+            sys.stderr.write(error_msg)
+            error_msg_list.append(error_msg)
+        if len(error_msg_list) != 0:
+            run_result_str = time_lapse_msg
+            run_result_str += "".join(error_msg_list)
+            snapshot_result(run_result_str)
