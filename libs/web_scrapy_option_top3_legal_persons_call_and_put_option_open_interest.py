@@ -35,14 +35,14 @@ class WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_bas
             return None
         data_list = []
         # start_index_list = [4, 1, 1, 2, 1, 1]
-        # row_num = 12
+        # column_num = 12
         start_index_list = [10, 7, 7, 8, 7, 7]
-        row_num = 6
+        column_num = 6
         row_index = 0
         for tr in web_data[3:9]:
             start_index = start_index_list[row_index]
             td = tr.select('td')
-            for i in range(start_index, start_index + row_num):
+            for i in range(start_index, start_index + column_num):
                 element = str(td[i].text).replace(',', '')
                 data_list.append(element)
             row_index += 1
@@ -92,13 +92,13 @@ class WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_bas
         soup = BeautifulSoup(res.text)
         g_data = soup.select('.table_f tr')
         start_index_list = [4, 1, 1, 2, 1, 1]
-        row_num = 12
+        column_num = 12
         row_index = 0
         for tr in g_data[3:9]:
             start_index = start_index_list[row_index]
             data_str = ""
             td = tr.select('td')
-            for i in range(start_index, start_index + row_num):
+            for i in range(start_index, start_index + column_num):
                 data_str += "%s " % td[i].text
             row_index += 1
             print data_str

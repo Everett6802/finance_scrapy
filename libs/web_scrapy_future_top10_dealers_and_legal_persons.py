@@ -15,6 +15,12 @@ g_logger = WSL.get_web_scrapy_logger()
 class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
+        self.OLD_FORMAT_ROW_START = 3
+        self.OLD_FORMAT_ROW_END = 5
+        self.NEW_FORMAT_ROW_START = 4
+        self.NEW_FORMAT_ROW_END = 6
+        self.DATETIME_OLD_FORMAT = datetime(2013, 7, 26)
+
         super(WebSracpyFutureTop10DealersAndLegalPersons, self).__init__(
             "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
             __file__, 
@@ -23,10 +29,26 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
             datetime_range_start, 
             datetime_range_end
         )
-        
+
+        self.need_check_everytime = False
+        self.data_row_start_index = self.NEW_FORMAT_ROW_START
+        self.data_row_start_index = self.NEW_FORMAT_ROW_END
+        self.datetime_curday = None
+        datetime_real_start = super(WebSracpyFutureTop10DealersAndLegalPersons, self).get_real_datetime_start()
+        datetime_real_end = super(WebSracpyFutureTop10DealersAndLegalPersons, self).get_real_datetime_end()
+        if datetime_real_start <= self.DATETIME_OLD_FORMAT and datetime_real_end > self.DATETIME_OLD_FORMAT:
+            self.need_check_everytime = True
+            self.data_row_start_index = None
+            self.data_row_start_index = None
+        elif datetime_real_end <= self.DATETIME_OLD_FORMAT:
+            self.data_row_start_index = self.OLD_FORMAT_ROW_START
+            self.data_row_start_index = self.OLD_FORMAT_ROW_END   
+
 
     def assemble_web_url(self, datetime_cfg):
         url = self.url_format.format(*(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+        if self.need_check_everytime:
+            self.datetime_curday = datetime_cfg
         return url
 
 
@@ -34,12 +56,25 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
         if len(web_data) == 0:
             return None
         data_list = []
-        # import pdb; pdb.set_trace()
-        for tr in web_data[4:6]:
+        start_index_list = [1, 1]
+        if self.need_check_everytime:
+            if self.datetime_curday <= self.DATETIME_OLD_FORMAT:
+                self.data_row_start_index = self.OLD_FORMAT_ROW_START
+                self.data_row_end_index = self.OLD_FORMAT_ROW_END   
+                start_index_list = [2, 1]
+            else:
+                self.data_row_start_index = self.NEW_FORMAT_ROW_START
+                self.data_row_end_index = self.NEW_FORMAT_ROW_END
+
+        column_num = 9
+        row_index = 0
+        for tr in web_data[self.data_row_start_index:self.data_row_end_index]:
+            start_index = start_index_list[row_index]
             td = tr.select('td')
-            for i in range(1, 10):
+            for i in range(start_index, start_index + column_num):
                 element = str(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)).strip(' ').replace(',', '')
                 data_list.append(element)
+            row_index += 1
         return data_list
 # "臺股期貨_到期月份_買方_前五大交易人合計_部位數",
 # "臺股期貨_到期月份_買方_前五大交易人合計_百分比",
@@ -61,7 +96,7 @@ class WebSracpyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
 
 
     def do_debug(self):
-        res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=2015&mmtemp=9&ddtemp=10&chooseitemtemp=ALL&goday=&choose_yy=2015&choose_mm=9&choose_dd=10&datestart=2015%2F9%2F10&choose_item=TX+++++")
+        res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=2015&mmtemp=9&ddtemp=10&chooseitemtemp=ALL&goday=&choose_yy=2015&choose_mm=7&choose_dd=15&datestart=1979%2F9%2F4&choose_item=TX+++++")
         res.encoding = 'utf-8'
         #print res.text
         soup = BeautifulSoup(res.text)

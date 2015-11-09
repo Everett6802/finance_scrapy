@@ -61,6 +61,14 @@ class WebSracpyBase(object):
             )
 
 
+    def get_real_datetime_start(self):
+        return self.datetime_startday
+
+
+    def get_real_datetime_end(self):
+        return self.datetime_endday
+
+
     def get_description(self):
         return self.description
 
@@ -84,7 +92,6 @@ class WebSracpyBase(object):
 
 
     def __get_web_data(self, url):
-        # import pdb; pdb.set_trace()
         # res = requests.get(url)
         try:
             # g_logger.debug("Try to Scrap data [%s]" % url)
