@@ -13,7 +13,7 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-class WebSracpyBase(object):
+class WebScrapyBase(object):
 
     def __init__(self, url_format, cur_file_path, encoding, select_flag, datetime_range_start=None, datetime_range_end=None):
         self.SCRAPY_WAIT_TIMEOUT = 8

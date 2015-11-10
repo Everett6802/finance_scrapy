@@ -12,10 +12,10 @@ g_logger = WSL.get_web_scrapy_logger()
 
 
 # 期貨選擇權未平倉口數與契約金額
-class WebSracpyFutureAndOptionTop3LegalPersonsOpenInterest(web_scrapy_base.WebSracpyBase):
+class WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebSracpyFutureAndOptionTop3LegalPersonsOpenInterest, self).__init__(
+        super(WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest, self).__init__(
             "http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
             __file__, 
             'utf-8', 

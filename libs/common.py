@@ -44,10 +44,10 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
 DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
-    "WebSracpyStockTop3LegalPersonsNetBuyOrSell",
-    "WebSracpyFutureAndOptionTop3LegalPersonsOpenInterest",
-    "WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
-    "WebSracpyFutureTop10DealersAndLegalPersons",
+    "WebScrapyStockTop3LegalPersonsNetBuyOrSell",
+    "WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest",
+    "WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
+    "WebScrapyFutureTop10DealersAndLegalPersons",
 ]
 
 DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [

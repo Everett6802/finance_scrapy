@@ -12,7 +12,7 @@ g_logger = WSL.get_web_scrapy_logger()
 
 
 # 臺指選擇權買賣權未平倉口數與契約金額
-class WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_base.WebSracpyBase):
+class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_base.WebSracpyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebSracpyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(
