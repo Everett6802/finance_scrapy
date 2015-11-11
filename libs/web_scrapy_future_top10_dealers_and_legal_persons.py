@@ -12,7 +12,7 @@ g_logger = WSL.get_web_scrapy_logger()
 
 
 # 期貨大額交易人未沖銷部位結構表 : 臺股期貨
-class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
+class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         self.OLD_FORMAT_ROW_START = 3
@@ -21,7 +21,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
         self.NEW_FORMAT_ROW_END = 6
         self.DATETIME_OLD_FORMAT = datetime(2013, 7, 26)
 
-        super(WebSracpyFutureTop10DealersAndLegalPersons, self).__init__(
+        super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(
             "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
             __file__, 
             'utf-8', 
@@ -32,10 +32,10 @@ class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebSracpyBase):
 
         self.need_check_everytime = False
         self.data_row_start_index = self.NEW_FORMAT_ROW_START
-        self.data_row_start_index = self.NEW_FORMAT_ROW_END
+        self.data_row_end_index = self.NEW_FORMAT_ROW_END
         self.datetime_curday = None
-        datetime_real_start = super(WebSracpyFutureTop10DealersAndLegalPersons, self).get_real_datetime_start()
-        datetime_real_end = super(WebSracpyFutureTop10DealersAndLegalPersons, self).get_real_datetime_end()
+        datetime_real_start = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_start()
+        datetime_real_end = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_end()
         if datetime_real_start <= self.DATETIME_OLD_FORMAT and datetime_real_end > self.DATETIME_OLD_FORMAT:
             self.need_check_everytime = True
             self.data_row_start_index = None

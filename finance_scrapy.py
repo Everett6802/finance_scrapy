@@ -197,6 +197,11 @@ if __name__ == "__main__":
 # Create the folder for CSV files if not exist
     if not os.path.exists(CMN.DEF_CSV_FILE_PATH):
         os.makedirs(CMN.DEF_CSV_FILE_PATH)
+# Reset the file positon of the log file to 0
+    if check_result:
+        if os.path.exists(WSL.LOG_FILE_PATH):
+            with open(WSL.LOG_FILE_PATH, "w") as fp:
+                fp.seek(0, 0)
 
 # Try to scrap the web data
     sys.stdout.write("Scrap the data from the website......\n")

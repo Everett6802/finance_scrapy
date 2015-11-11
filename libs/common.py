@@ -38,7 +38,7 @@ DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "stock_top3_legal_persons_net_buy_or_sell",
     "future_and_option_top3_legal_persons_open_interest",
-    "option_top3_legal_persons_call_and_put_option_open_interest",
+    "option_top3_legal_persons_buy_and_sell_option_open_interest",
     "future_top10_dealers_and_legal_persons",
 ]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
