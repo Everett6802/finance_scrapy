@@ -30,7 +30,8 @@ def show_usage():
     print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
     print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF_CSV_FILE_PATH
     print "--multi_thread\nDescription: Scrap Web data by using multiple threads"
-    print "--check_result\nDescription: Check the CSV file after Scraping Web data"
+    print "--check_result\nDescription: Check the CSV files after Scraping Web data"
+    print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
     print "--do_debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "==================================================="
 
@@ -71,6 +72,7 @@ def parse_param():
     remove_old = False
     multi_thread = False
     check_result = False
+    clone_result = False
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
@@ -124,6 +126,9 @@ def parse_param():
             index_offset = 1
         elif re.match("--check_result", sys.argv[index]):
             check_result = True
+            index_offset = 1
+        elif re.match("--clone_result", sys.argv[index]):
+            clone_result = True
             index_offset = 1
         elif re.match("--do_debug", sys.argv[index]):
             data_source_index = int(sys.argv[index + 1])
@@ -186,14 +191,14 @@ def parse_param():
         sys.stdout.write(msg)
         sys.stdout.write("\n")
 
-    return (config_list, multi_thread, check_result)
+    return (config_list, multi_thread, check_result, clone_result)
 
 
 if __name__ == "__main__":
 # Parse the parameters
     sys.stdout.write("Try to parse the parameters\n")
     # import pdb; pdb.set_trace()
-    (config_list, multi_thread, check_result) = parse_param()
+    (config_list, multi_thread, check_result, clone_result) = parse_param()
 # Create the folder for CSV files if not exist
     if not os.path.exists(CMN.DEF_CSV_FILE_PATH):
         os.makedirs(CMN.DEF_CSV_FILE_PATH)
@@ -227,3 +232,10 @@ if __name__ == "__main__":
             run_result_str = time_lapse_msg
             run_result_str += "".join(error_msg_list)
             snapshot_result(run_result_str)
+        else:
+            if clone_result:
+                datetime_now = datetime.today()
+                clone_foldername = CMN.DEF_CSV_FILE_PATH + "_ok" + CMN.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
+                g_logger.debug("Clone the CSV folder to %s", clone_foldername)
+                import pdb; pdb.set_trace()
+                subprocess.call(["cp", "-r", CMN.DEF_CSV_FILE_PATH, clone_foldername])
