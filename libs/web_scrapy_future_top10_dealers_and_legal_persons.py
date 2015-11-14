@@ -34,15 +34,18 @@ class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyBase):
         self.data_row_start_index = self.NEW_FORMAT_ROW_START
         self.data_row_end_index = self.NEW_FORMAT_ROW_END
         self.datetime_curday = None
+        self.start_index_list = [1, 1]
         datetime_real_start = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_start()
         datetime_real_end = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_end()
         if datetime_real_start <= self.DATETIME_OLD_FORMAT and datetime_real_end > self.DATETIME_OLD_FORMAT:
             self.need_check_everytime = True
             self.data_row_start_index = None
-            self.data_row_start_index = None
+            self.data_row_end_index = None
+            self.start_index_list = None
         elif datetime_real_end <= self.DATETIME_OLD_FORMAT:
             self.data_row_start_index = self.OLD_FORMAT_ROW_START
-            self.data_row_start_index = self.OLD_FORMAT_ROW_END   
+            self.data_row_end_index = self.OLD_FORMAT_ROW_END  
+            self.start_index_list = [2, 1] 
 
 
     def assemble_web_url(self, datetime_cfg):
@@ -56,20 +59,21 @@ class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyBase):
         if len(web_data) == 0:
             return None
         data_list = []
-        start_index_list = [1, 1]
         if self.need_check_everytime:
             if self.datetime_curday <= self.DATETIME_OLD_FORMAT:
                 self.data_row_start_index = self.OLD_FORMAT_ROW_START
                 self.data_row_end_index = self.OLD_FORMAT_ROW_END   
-                start_index_list = [2, 1]
+                self.start_index_list = [2, 1]
             else:
                 self.data_row_start_index = self.NEW_FORMAT_ROW_START
                 self.data_row_end_index = self.NEW_FORMAT_ROW_END
+                self.start_index_list = [1, 1]
 
         column_num = 9
         row_index = 0
+        # import pdb; pdb.set_trace()
         for tr in web_data[self.data_row_start_index:self.data_row_end_index]:
-            start_index = start_index_list[row_index]
+            start_index = self.start_index_list[row_index]
             td = tr.select('td')
             for i in range(start_index, start_index + column_num):
                 element = str(re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)).strip(' ').replace(',', '')
@@ -96,11 +100,12 @@ class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyBase):
 
 
     def do_debug(self):
-        res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=2015&mmtemp=9&ddtemp=10&chooseitemtemp=ALL&goday=&choose_yy=2015&choose_mm=7&choose_dd=15&datestart=1979%2F9%2F4&choose_item=TX+++++")
+        res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=ALL&goday=&choose_yy=2013&choose_mm=6&choose_dd=17&datestart=1979%2F9%2F4&choose_item=TX+++++")
         res.encoding = 'utf-8'
         #print res.text
         soup = BeautifulSoup(res.text)
         g_data = soup.select('.table_f tr')
+        # import pdb; pdb.set_trace()
         for tr in g_data[4:6]:
             td = tr.select('td')
             for i in range(10):
