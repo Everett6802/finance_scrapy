@@ -237,5 +237,4 @@ if __name__ == "__main__":
                 datetime_now = datetime.today()
                 clone_foldername = CMN.DEF_CSV_FILE_PATH + "_ok" + CMN.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
                 g_logger.debug("Clone the CSV folder to %s", clone_foldername)
-                import pdb; pdb.set_trace()
                 subprocess.call(["cp", "-r", CMN.DEF_CSV_FILE_PATH, clone_foldername])
