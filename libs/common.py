@@ -32,6 +32,7 @@ DEF_DATA_SOURCE_INDEX_MAPPING = [
     u'三大法人期貨和選擇權留倉淨額',
     u'三大法人期貨或選擇權留倉淨額',
     u'三大法人選擇權買賣權留倉淨額',
+    u'三大法人選擇權賣權買權比',
     u'十大交易人及特定法人期貨資訊',
 ]
 DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
@@ -42,6 +43,7 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "future_and_option_top3_legal_persons_open_interest",
     "future_or_option_top3_legal_persons_open_interest",
     "option_top3_legal_persons_buy_and_sell_option_open_interest",
+    "option_put_call_ratio",
     "future_top10_dealers_and_legal_persons",
 ]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
@@ -51,6 +53,7 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest",
     "WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest",
     "WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
+    "WebScrapyOptionPutCallRatio",
     "WebScrapyFutureTop10DealersAndLegalPersons",
 ]
 

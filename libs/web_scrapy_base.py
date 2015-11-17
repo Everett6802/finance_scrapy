@@ -197,6 +197,7 @@ class WebScrapyBase(object):
                     raise e
                 except Exception as e:
                     g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
+
             if len(csv_data_list) > 0:
                 g_logger.debug("Write %d data to %s" % (len(csv_data_list), self.csv_filepath))
                 fp_writer.writerows(csv_data_list)
