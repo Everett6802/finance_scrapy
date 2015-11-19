@@ -12,77 +12,51 @@ g_logger = WSL.get_web_scrapy_logger()
 
 
 # 臺指選擇權賣權買權比
-class WebScrapyOptionPullCallRatio(web_scrapy_base.WebScrapyBase):
+class WebScrapyOptionPutCallRatio(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(
-            "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={0}%2F{1}%2F{3}", 
+        super(WebScrapyOptionPutCallRatio, self).__init__(
+            "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={3}%2F{4}%2F{5}", 
             __file__, 
             'utf-8', 
             '.table_a tr', 
             datetime_range_start, 
-            datetime_range_end
+            datetime_range_end,
+            enable_time_range_mode = True,
         )
-        
+
 
     def assemble_web_url(self, datetime_cfg):
-        url = self.url_format.format(*(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+        if datetime_cfg is None:
+            datetime_start_cfg = self.get_datetime_startday()
+            datetime_end_cfg= self.get_datetime_endday()
+            url = self.url_format.format(*(datetime_start_cfg.year, datetime_start_cfg.month, datetime_start_cfg.day, datetime_end_cfg.year, datetime_end_cfg.month, datetime_end_cfg.day))
+        else:
+            url = self.url_format.format(*(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
         return url
 
 
     def parse_web_data(self, web_data):
-        if len(web_data) == 0:
+        # import pdb; pdb.set_trace()
+        web_data_len = len(web_data)
+        if web_data_len == 0:
             return None
         data_list = []
-        # start_index_list = [4, 1, 1, 2, 1, 1]
-        # column_num = 12
-        start_index_list = [10, 7, 7, 8, 7, 7]
-        column_num = 6
-        row_index = 0
-        for tr in web_data[3:9]:
-            start_index = start_index_list[row_index]
+        
+        # print "len: %d" % data_len
+        for tr in web_data[web_data_len - 1 : 0 : -1]:
             td = tr.select('td')
-            for i in range(start_index, start_index + column_num):
-                element = str(td[i].text).replace(',', '')
-                data_list.append(element)
-            row_index += 1
+            entry = [str(td[0].text.replace("/", "-")),]
+            for index in range(1, 7):
+                entry.append(str(td[index].text).replace(',', ''))
+            data_list.append(entry)
         return data_list
-# "買權_自營商_買方_口數",
-# "買權_自營商_買方_契約金額",
-# "買權_自營商_賣方_口數",
-# "買權_自營商_賣方_契約金額",
-# "買權_自營商_買賣差額_口數",
-# "買權_自營商_買賣差額_契約金額",
-# "買權_投信_買方_口數",
-# "買權_投信_買方_契約金額",
-# "買權_投信_賣方_口數",
-# "買權_投信_賣方_契約金額",
-# "買權_投信_買賣差額_口數",
-# "買權_投信_買賣差額_契約金額",
-# "買權_外資_買方_口數",
-# "買權_外資_買方_契約金額",
-# "買權_外資_賣方_口數",
-# "買權_外資_賣方_契約金額",
-# "買權_外資_買賣差額_口數",
-# "買權_外資_買賣差額_契約金額",
-# "賣權_自營商_買方_口數",
-# "賣權_自營商_買方_契約金額",
-# "賣權_自營商_賣方_口數",
-# "賣權_自營商_賣方_契約金額",
-# "賣權_自營商_買賣差額_口數",
-# "賣權_自營商_買賣差額_契約金額",
-# "賣權_投信_買方_口數",
-# "賣權_投信_買方_契約金額",
-# "賣權_投信_賣方_口數",
-# "賣權_投信_賣方_契約金額",
-# "賣權_投信_買賣差額_口數",
-# "賣權_投信_買賣差額_契約金額",
-# "賣權_外資_買方_口數",
-# "賣權_外資_買方_契約金額",
-# "賣權_外資_賣方_口數",
-# "賣權_外資_賣方_契約金額",
-# "賣權_外資_買賣差額_口數",
-# "賣權_外資_買賣差額_契約金額",
+# "賣權成交量",
+# "買權成交量",
+# "買賣權成交量比率%",
+# "賣權未平倉量",
+# "買權未平倉量",
+# "買賣權未平倉量比率%",
 
 
     def do_debug(self):
@@ -93,7 +67,6 @@ class WebScrapyOptionPullCallRatio(web_scrapy_base.WebScrapyBase):
         g_data = soup.select('.table_a tr')
         data_len = len(g_data)
         # print "len: %d" % data_len
-# 交易口數與契約金額
         for tr in g_data[data_len - 1 : 0 : -1]:
             td = tr.select('td')
             print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text, td[6].text

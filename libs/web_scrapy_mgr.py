@@ -3,6 +3,7 @@
 import os
 import sys
 import time
+import requests
 from datetime import datetime
 import common as CMN
 import web_scrapy_thread
@@ -117,8 +118,8 @@ class WebSracpyMgr(object):
                         self.retry_config_list.append(
                             {
                                 'index': web_scrapy_obj.get_data_source_index(),
-                                'start': web_scrapy_obj.datetime_startday(),
-                                'end': web_scrapy_obj.datetime_endday(),
+                                'start': web_scrapy_obj.get_datetime_startday(),
+                                'end': web_scrapy_obj.get_datetime_endday(),
                             }
                         )
 # Keep track of the error message

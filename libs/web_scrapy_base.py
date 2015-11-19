@@ -15,7 +15,7 @@ g_logger = WSL.get_web_scrapy_logger()
 
 class WebScrapyBase(object):
 
-    def __init__(self, url_format, cur_file_path, encoding, select_flag, datetime_range_start=None, datetime_range_end=None):
+    def __init__(self, url_format, cur_file_path, encoding, select_flag, datetime_range_start=None, datetime_range_end=None, enable_time_range_mode=False):
         self.SCRAPY_WAIT_TIMEOUT = 8
         self.SCRAPY_RETRY_TIMES = 3
 
@@ -36,20 +36,28 @@ class WebScrapyBase(object):
         self.csv_filepath = "%s/%s" % (CMN.DEF_CSV_FILE_PATH, self.csv_filename)
         g_logger.debug("Write data to: %s" % self.csv_filepath)
 
-    	self.__generate_time_range_list(datetime_range_start, datetime_range_end)
-        g_logger.debug("There are totally %d day(s) to be downloaded" % len(self.datetime_range_list))
+        self.enable_time_range_mode = enable_time_range_mode
 
-        if len(self.datetime_range_list) == 1:
-            self.datetime_startday = self.datetime_endday = datetime_oneday = self.datetime_range_list[0]
+        if not self.enable_time_range_mode:
+            self.__generate_day_time_list(datetime_range_start, datetime_range_end)
+            g_logger.debug("There are totally %d day(s) to be downloaded" % len(self.datetime_range_list))
+
+            if len(self.datetime_range_list) == 1:
+                self.datetime_startday = self.datetime_endday = self.datetime_range_list[0]
+            else:
+                self.datetime_startday = self.datetime_range_list[0]
+                self.datetime_endday = self.datetime_range_list[-1]
+        else:
+            (self.datetime_startday, self.datetime_endday) = self.__check_datetime_input(datetime_range_start, datetime_range_end)
+
+        if self.datetime_startday == self.datetime_endday:
             self.description = "%s[%04d%02d%02d]" % (
                 CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], 
-                datetime_oneday.year, 
-                datetime_oneday.month, 
-                datetime_oneday.day
+                self.datetime_startday.year, 
+                self.datetime_startday.month, 
+                self.datetime_startday.day
             )
         else:
-            self.datetime_startday = self.datetime_range_list[0]
-            self.datetime_endday = self.datetime_range_list[-1]
             self.description = "%s[%04d%02d%02d-%04d%02d%02d]" % (
                 CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], 
                 self.datetime_startday.year, 
@@ -58,7 +66,7 @@ class WebScrapyBase(object):
                 self.datetime_endday.year, 
                 self.datetime_endday.month, 
                 self.datetime_endday.day
-            )
+            )   
 
 
     def get_real_datetime_start(self):
@@ -122,26 +130,31 @@ class WebScrapyBase(object):
         return web_data
 
 
-    def __generate_time_range_list(self, datetime_range_start=None, datetime_range_end=None):
-        # import pdb; pdb.set_trace()
+    def __check_datetime_input(self, datetime_range_start, datetime_range_end):
         datetime_tmp = datetime.today()
         datetime_today = datetime(datetime_tmp.year, datetime_tmp.month, datetime_tmp.day)
-    	datetime_start = None
-    	datetime_end = None
+        datetime_start = None
+        datetime_end = None
         if datetime_range_start is None:
-        	if datetime_range_end is not None:
-        		raise ValueError("datetime_range_start is None but datetime_range_end is NOT None")
-        	else:
-        		datetime_start = datetime_end = datetime_today
-        		g_logger.debug("Only grab the data today[%s-%s-%s]" % (datetime_today.year, datetime_today.month, datetime_today.day))
+            if datetime_range_end is not None:
+                raise ValueError("datetime_range_start is None but datetime_range_end is NOT None")
+            else:
+                datetime_start = datetime_end = datetime_today
+                g_logger.debug("Only grab the data today[%s-%s-%s]" % (datetime_today.year, datetime_today.month, datetime_today.day))
         else:
-        	datetime_start = datetime_range_start
-        	if datetime_range_end is not None:
-        		datetime_end = datetime_range_end
-        	else:
-        		datetime_end = datetime_today
-        	g_logger.debug("Grab the data from date[%s-%s-%s] to date[%s-%s-%s]" % (datetime_start.year, datetime_start.month, datetime_start.day, datetime_end.year, datetime_end.month, datetime_end.day))
+            datetime_start = datetime_range_start
+            if datetime_range_end is not None:
+                datetime_end = datetime_range_end
+            else:
+                datetime_end = datetime_today
+            g_logger.debug("Grab the data from date[%s-%s-%s] to date[%s-%s-%s]" % (datetime_start.year, datetime_start.month, datetime_start.day, datetime_end.year, datetime_end.month, datetime_end.day))
 
+        return (datetime_start, datetime_end)
+
+
+    def __generate_day_time_list(self, datetime_range_start=None, datetime_range_end=None):
+        # import pdb; pdb.set_trace()
+        (datetime_start, datetime_end) = self.__check_datetime_input(datetime_range_start, datetime_range_end)
         day_offset = 1
         datetime_offset = datetime_start
         while True: 
@@ -159,6 +172,55 @@ class WebScrapyBase(object):
         raise NotImplementedError
 
 
+    def __scrap_web_by_time_range(self, csv_data_list):
+        url = self.assemble_web_url(None)
+        g_logger.debug("Get the data from by time range from URL: %s" % url)
+        try:
+# Grab the data from website and assemble the data to the entry of CSV
+            web_data_list = self.parse_web_data(self.__get_web_data(url))
+            if web_data_list is None:
+                raise RuntimeError(url)
+            for web_data in web_data_list:
+            # g_logger.debug("Write the data[%s] to %s" % (web_data, self.csv_filename))
+                csv_data_list.append(web_data)
+        except requests.exceptions.Timeout as e:
+            g_logger.error("Fail to scrap URL[%s], due to: Time-out" % url)
+            raise e
+        except Exception as e:
+            g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
+
+
+    def __scrap_web_by_day(self, csv_data_list):
+        datetime_first_day_cfg = self.datetime_range_list[0]
+        day_of_week = datetime_first_day_cfg.weekday()
+        is_weekend = False
+        for datetime_cfg in self.datetime_range_list:
+            if day_of_week in [5, 6]: # 5: Saturday, 6: Sunday
+                is_weekend = True
+            else:
+                is_weekend = False
+            day_of_week = (day_of_week + 1) % 7
+            if is_weekend:
+                g_logger.debug("%04d-%02d-%02d is weekend, Skip..." % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+                continue
+
+            url = self.assemble_web_url(datetime_cfg)
+            g_logger.debug("Get the data by date from URL: %s" % url)
+            try:
+# Grab the data from website and assemble the data to the entry of CSV
+                web_data = self.parse_web_data(self.__get_web_data(url))
+                if web_data is None:
+                    raise RuntimeError(url)
+                csv_data = ["%04d-%02d-%02d" % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)] + web_data
+                # g_logger.debug("Write the data[%s] to %s" % (csv_data, self.csv_filename))
+                csv_data_list.append(csv_data)
+            except requests.exceptions.Timeout as e:
+                g_logger.error("Fail to scrap URL[%s], due to: Time-out" % url)
+                raise e
+            except Exception as e:
+                g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
+
+
     def scrap_web_to_csv(self):
         csv_data_list = []
         web_data = None
@@ -168,36 +230,12 @@ class WebScrapyBase(object):
             fp_writer = csv.writer(fp, delimiter=',')
             filtered_web_data_date = None
             filtered_web_data = None
-
-            datetime_first_day_cfg = self.datetime_range_list[0]
-            day_of_week = datetime_first_day_cfg.weekday()
-            is_weekend = False
-            for datetime_cfg in self.datetime_range_list:
-                if day_of_week in [5, 6]: # 5: Saturday, 6: Sunday
-                    is_weekend = True
-                else:
-                    is_weekend = False
-                day_of_week = (day_of_week + 1) % 7
-                if is_weekend:
-                    g_logger.debug("%04d-%02d-%02d is weekend, Skip..." % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
-                    continue
-
-                url = self.assemble_web_url(datetime_cfg)
-                g_logger.debug("Get the data from URL: %s" % url)
-                try:
-# Grab the data from website and assemble the data to the entry of CSV
-                    web_data = self.parse_web_data(self.__get_web_data(url))
-                    if web_data is None:
-                        raise RuntimeError(url)
-                    csv_data = ["%04d-%02d-%02d" % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)] + web_data
-                    # g_logger.debug("Write the data[%s] to %s" % (csv_data, self.csv_filename))
-                    csv_data_list.append(csv_data)
-                except requests.exceptions.Timeout as e:
-                    g_logger.error("Fail to scrap URL[%s], due to: Time-out" % url)
-                    raise e
-                except Exception as e:
-                    g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
-
+# Scrap web data due to different time range
+            if self.enable_time_range_mode:
+                self.__scrap_web_by_time_range(csv_data_list)
+            else:
+                self.__scrap_web_by_day(csv_data_list)
+# Write the web data into CSV
             if len(csv_data_list) > 0:
                 g_logger.debug("Write %d data to %s" % (len(csv_data_list), self.csv_filepath))
                 fp_writer.writerows(csv_data_list)
