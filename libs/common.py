@@ -29,6 +29,7 @@ DEF_CSV_FILE_PATH = "/var/tmp/finance"
 DEF_SNAPSHOT_FOLDER = "snapshot"
 DEF_DATA_SOURCE_INDEX_MAPPING = [
     u'三大法人現貨買賣超',
+    u'現貨融資融券餘額',
     u'三大法人期貨和選擇權留倉淨額',
     u'三大法人期貨或選擇權留倉淨額',
     u'三大法人選擇權買賣權留倉淨額',
@@ -40,6 +41,7 @@ DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
 DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "stock_top3_legal_persons_net_buy_or_sell",
+    "stock_margin_trading_and_short_selling",
     "future_and_option_top3_legal_persons_open_interest",
     "future_or_option_top3_legal_persons_open_interest",
     "option_top3_legal_persons_buy_and_sell_option_open_interest",
@@ -50,6 +52,7 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
 DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebScrapyStockTop3LegalPersonsNetBuyOrSell",
+    "WebScrapyStockMarginTradingAndShortSelling",
     "WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest",
     "WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest",
     "WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
