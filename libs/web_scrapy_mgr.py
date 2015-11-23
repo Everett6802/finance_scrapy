@@ -54,6 +54,7 @@ class WebSracpyMgr(object):
 
     def __do_scrapy(self, module_name, class_name, datetime_range_start, datetime_range_end):
         datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
+        # import pdb; pdb.set_trace()
         for datetime_range in datetime_range_list:
             web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
             if web_scrapy_class_obj is None:

@@ -28,6 +28,7 @@ DEF_CONF_FOLDER = "config"
 DEF_CSV_FILE_PATH = "/var/tmp/finance"
 DEF_SNAPSHOT_FOLDER = "snapshot"
 DEF_DATA_SOURCE_INDEX_MAPPING = [
+    u'臺股指數及成交量',
     u'三大法人現貨買賣超',
     u'現貨融資融券餘額',
     u'三大法人期貨和選擇權留倉淨額',
@@ -40,6 +41,7 @@ DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
 
 DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
+    "stock_exchange_and_volume",
     "stock_top3_legal_persons_net_buy_or_sell",
     "stock_margin_trading_and_short_selling",
     "future_and_option_top3_legal_persons_open_interest",
@@ -51,6 +53,7 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
 DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
+    "WebScrapyStockExchangeAndVolume",
     "WebScrapyStockTop3LegalPersonsNetBuyOrSell",
     "WebScrapyStockMarginTradingAndShortSelling",
     "WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest",
@@ -74,11 +77,11 @@ DEF_TODAY_CONFIG_FILENAME = "today.conf"
 DEF_HISTORY_CONFIG_FILENAME = "history.conf"
 
 
-def transform_string2datetime(date_string):
+def transform_string2datetime(date_string, need_year_transform=False):
     element_arr = date_string.split('-')
     if len(element_arr) != 3:
         raise ValueError("Incorrect config date format: %s" % date_string)
-    return datetime(int(element_arr[0]), int(element_arr[1]), int(element_arr[2]))
+    return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
 
 
 def parse_config_file(conf_filename):
@@ -118,6 +121,10 @@ def parse_config_file(conf_filename):
     return total_param_list
 
 
+def get_month_last_day(datetime_cfg):
+    return calendar.monthrange(datetime_cfg.year, datetime_cfg.month)[1]
+
+
 def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_end=None):
 # Parse the current time
     if datetime_range_end is None:
@@ -126,7 +133,7 @@ def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_e
     datetime_cur = datetime_range_start
     # import pdb; pdb.set_trace()
     while True:
-        last_day = calendar.monthrange(datetime_cur.year, datetime_cur.month)[1]
+        last_day = get_month_last_day(datetime_cur)
         datetime_range_list.append(
             {
                 'start': datetime(datetime_cur.year, datetime_cur.month, 1),
