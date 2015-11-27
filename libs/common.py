@@ -84,6 +84,15 @@ def transform_string2datetime(date_string, need_year_transform=False):
     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
 
 
+def transform_datetime2string(datetime_cfg):
+    return "%04d-%02d-%02d" % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)
+
+
+def transform_datetime2string(year, month, day, need_year_transform=False):
+    year_transform = (int(year) + 1911) if need_year_transform else int(year)
+    return "%04d-%02d-%02d" % (year_transform, int(month), int(day))
+
+
 def parse_config_file(conf_filename):
     conf_filepath = "%s/%s/%s" % (os.getcwd(), DEF_CONF_FOLDER, conf_filename)
     g_logger.debug("Parse the config file: %s" % conf_filepath)

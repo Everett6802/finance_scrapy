@@ -51,9 +51,13 @@ class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyBase):
         # print "len: %d" % data_len
         for tr in web_data[2:]:
             td = tr.select('td')
-            entry = [str(td[0].text.replace("/", "-")),]
+            date_list = td[0].text.split('/')
+            if len(date_list) != 3:
+                raise RuntimeError("The date format is NOT as expected: %s", date_list)
+            entry = [CMN.transform_datetime2string(date_list[0], date_list[1], date_list[2], True),]
+
             if not self.whole_month_data:
-                datetime_cur = CMN.transform_string2datetime(entry[0], True)
+                datetime_cur = CMN.transform_string2datetime(entry[0])
                 if datetime_cur < self.get_datetime_startday() or datetime_cur > self.get_datetime_endday():
                     continue
             for index in range(1, 6):
@@ -78,7 +82,11 @@ class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyBase):
         # print g_data
         for tr in g_data[2:]:
             td = tr.select('td')
-            print td[0].text, td[1].text, td[2].text, td[3].text , td[4].text, td[5].text
+            date_list = td[0].text.split('/')
+            if len(date_list) != 3:
+                raise RuntimeError("The date format is NOT as expected: %s", date_list)
+            date_str = CMN.transform_datetime2string(date_list[0], date_list[1], date_list[2], True)
+            print date_str, td[1].text, td[2].text, td[3].text , td[4].text, td[5].text
 
 # 2015/10/1 469,154 363,160 129.19 528,800 444,977 118.84
 # 2015/10/2 227,935 188,407 120.98 566,471 460,938 122.90
