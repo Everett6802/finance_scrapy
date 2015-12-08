@@ -22,6 +22,8 @@ RUN_RESULT_FILENAME = "run_result"
 TIME_FILENAME_FORMAT = "%04d%02d%02d%02d%02d"
 SNAPSHOT_FILENAME_FORMAT = "snapshot_result%s.tar.gz" % TIME_FILENAME_FORMAT
 
+DEF_WEB_SCRAPY_BEGIN_DATE_STR = "2000-01-01"
+DEF_NO_WORKDAY_CANLENDAR_CONF_FILENAME = "no_workday_canlendar.conf"
 DEF_TODAY_DATA_EXIST_HOUR = 18
 DEF_TODAY_DATA_EXIST_MINUTE = 0
 DEF_CONF_FOLDER = "config"
@@ -131,7 +133,11 @@ def parse_config_file(conf_filename):
 
 
 def get_month_last_day(datetime_cfg):
-    return calendar.monthrange(datetime_cfg.year, datetime_cfg.month)[1]
+    return get_month_last_day(datetime_cfg.year, datetime_cfg.month)
+
+
+def get_month_last_day(year, month):
+    return calendar.monthrange(year, month)[1]
 
 
 def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_end=None):
