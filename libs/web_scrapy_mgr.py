@@ -7,6 +7,7 @@ import requests
 from datetime import datetime
 import common as CMN
 import web_scrapy_thread
+from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
@@ -19,6 +20,9 @@ class WebSracpyMgr(object):
 
         self.thread_pool_list = []
         self.retry_config_list = []
+
+        self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar()
+        self.workday_canlendar.update_workday_canlendar()
 
 
     def __import_module(self, name):

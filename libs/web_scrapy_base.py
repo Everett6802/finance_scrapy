@@ -16,9 +16,6 @@ g_logger = WSL.get_web_scrapy_logger()
 class WebScrapyBase(object):
 
     def __init__(self, url_format, cur_file_path, encoding, select_flag, datetime_range_start=None, datetime_range_end=None, enable_time_range_mode=False):
-        self.SCRAPY_WAIT_TIMEOUT = 8
-        self.SCRAPY_RETRY_TIMES = 3
-
         self.url_format = url_format
         cur_module_name = re.sub(CMN.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.get_cur_module_name(cur_file_path))
         # g_logger.debug("Current module name (w/o prefix): %s" % cur_module_name)
@@ -103,15 +100,15 @@ class WebScrapyBase(object):
         # res = requests.get(url)
         try:
             # g_logger.debug("Try to Scrap data [%s]" % url)
-            res = requests.get(url, timeout=self.SCRAPY_WAIT_TIMEOUT)
+            res = requests.get(url, timeout=CMN.DEF_SCRAPY_WAIT_TIMEOUT)
         except requests.exceptions.Timeout as e:
             # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
             fail_to_scrap = False
-            for index in range(self.SCRAPY_RETRY_TIMES):
+            for index in range(CMN.DEF_SCRAPY_RETRY_TIMES):
                 time.sleep(randint(3,9))
                 try:
                     # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
-                    res = requests.get(url, timeout=self.SCRAPY_WAIT_TIMEOUT)
+                    res = requests.get(url, timeout=CMN.DEF_SCRAPY_WAIT_TIMEOUT)
                 except requests.exceptions.Timeout as ex:
                     # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
                     fail_to_scrap = True
