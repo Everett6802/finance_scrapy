@@ -30,7 +30,7 @@ class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyBase):
         assert (datetime_start_cfg.year == datetime_end_cfg.year), "Start Year[%d] is NOT equal to End Year[%d]" % (datetime_start_cfg.year, datetime_end_cfg.year)
         assert (datetime_start_cfg.month == datetime_end_cfg.month), "Start Month[%d] is NOT equal to End Month[%d]" % (datetime_start_cfg.month, datetime_end_cfg.month)
         self.whole_month_data = True
-        if  datetime_start_cfg.day > 1 or datetime_end_cfg.day < CMN.get_month_last_day(datetime_end_cfg):
+        if  datetime_start_cfg.day > 1 or datetime_end_cfg.day < CMN.get_cfg_month_last_day(datetime_end_cfg):
             self.whole_month_data = False
 
 

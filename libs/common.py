@@ -23,7 +23,7 @@ TIME_FILENAME_FORMAT = "%04d%02d%02d%02d%02d"
 SNAPSHOT_FILENAME_FORMAT = "snapshot_result%s.tar.gz" % TIME_FILENAME_FORMAT
 
 DEF_WEB_SCRAPY_BEGIN_DATE_STR = "2000-01-01"
-DEF_NO_WORKDAY_CANLENDAR_CONF_FILENAME = "non_workday_canlendar.conf"
+DEF_NO_WORKDAY_CANLENDAR_CONF_FILENAME = ".non_workday_canlendar.conf"
 DEF_TODAY_DATA_EXIST_HOUR = 18
 DEF_TODAY_DATA_EXIST_MINUTE = 0
 DEF_CONF_FOLDER = "config"
@@ -134,7 +134,7 @@ def parse_config_file(conf_filename):
     return total_param_list
 
 
-def get_month_last_day(datetime_cfg):
+def get_cfg_month_last_day(datetime_cfg):
     return get_month_last_day(datetime_cfg.year, datetime_cfg.month)
 
 
@@ -150,7 +150,7 @@ def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_e
     datetime_cur = datetime_range_start
     # import pdb; pdb.set_trace()
     while True:
-        last_day = get_month_last_day(datetime_cur)
+        last_day = get_cfg_month_last_day(datetime_cur)
         datetime_range_list.append(
             {
                 'start': datetime(datetime_cur.year, datetime_cur.month, 1),

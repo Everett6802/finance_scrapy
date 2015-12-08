@@ -21,8 +21,7 @@ class WebSracpyMgr(object):
         self.thread_pool_list = []
         self.retry_config_list = []
 
-        self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar()
-        self.workday_canlendar.update_workday_canlendar()
+        self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
 
 
     def __import_module(self, name):

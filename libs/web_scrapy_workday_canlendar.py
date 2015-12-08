@@ -8,10 +8,12 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
+import common_class as CMN_CLS
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
+@CMN_CLS.Singleton
 class WebScrapyWorkdayCanlendar(object):
 
     def __init__(self, datetime_start=None, datetime_end=None):
@@ -38,15 +40,17 @@ class WebScrapyWorkdayCanlendar(object):
         self.datetime_start_year = self.datetime_start.year
         self.non_workday_canlendar = None
 
-# # Check if the input start and end date are in the same month
-#         assert (self.datetime_start.year == self.datetime_end.year), "Start Year[%d] is NOT equal to End Year[%d]" % (self.datetime_start.year, self.datetime_end.year)
-#         assert (self.datetime_start.month == self.datetime_end.month), "Start Month[%d] is NOT equal to End Month[%d]" % (self.datetime_start.month, self.datetime_end.month)
-#         self.whole_month_data = True
-#         if  self.datetime_start.day > 1 or self.datetime_end.day < CMN.get_month_last_day(self.datetime_end):
-#             self.whole_month_data = False
+
+    def initialize(self):
+        # import pdb; pdb.set_trace()
+        self.update_workday_canlendar()
 
 
-    def is_workday(self, year, month, day):
+    def is_workday(self, datetime_cfg):
+        return self.__is_workday(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)
+
+
+    def __is_workday(self, year, month, day):
         if self.non_workday_canlendar is None:
             raise RuntimeError("Non Workday Canlendar is NOT initialized")
         datetime_check = datetime(year, month, day)

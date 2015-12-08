@@ -9,6 +9,7 @@ from random import randint
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
+from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
@@ -34,6 +35,8 @@ class WebScrapyBase(object):
         g_logger.debug("Write data to: %s" % self.csv_filepath)
 
         self.enable_time_range_mode = enable_time_range_mode
+
+        self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
 
         if not self.enable_time_range_mode:
             self.__generate_day_time_list(datetime_range_start, datetime_range_end)
@@ -189,16 +192,19 @@ class WebScrapyBase(object):
 
     def __scrap_web_by_day(self, csv_data_list):
         datetime_first_day_cfg = self.datetime_range_list[0]
-        day_of_week = datetime_first_day_cfg.weekday()
+        # day_of_week = datetime_first_day_cfg.weekday()
         is_weekend = False
         for datetime_cfg in self.datetime_range_list:
-            if day_of_week in [5, 6]: # 5: Saturday, 6: Sunday
-                is_weekend = True
-            else:
-                is_weekend = False
-            day_of_week = (day_of_week + 1) % 7
-            if is_weekend:
-                g_logger.debug("%04d-%02d-%02d is weekend, Skip..." % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+            # if day_of_week in [5, 6]: # 5: Saturday, 6: Sunday
+            #     is_weekend = True
+            # else:
+            #     is_weekend = False
+            # day_of_week = (day_of_week + 1) % 7
+            # if is_weekend:
+            #     g_logger.debug("%04d-%02d-%02d is weekend, Skip..." % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+            #     continue
+            if not self.workday_canlendar.is_workday(datetime_cfg):
+                g_logger.debug("%04d-%02d-%02d is NOT a workday, Skip..." % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
                 continue
 
             url = self.assemble_web_url(datetime_cfg)
