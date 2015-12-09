@@ -77,10 +77,11 @@ class WebScrapyWorkdayCanlendar(object):
     def __copy_no_workday_canlendar_config_file(self):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
-        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name,  CMN.DEF_CONF_FOLDER, CMN.DEF_NO_WORKDAY_CANLENDAR_CONF_FILENAME)
         dst_folderpath =  "%s/%s/%s" % (working_folder, CMN.DEF_NO_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME, CMN.DEF_CONF_FOLDER)
-        g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_NO_WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
-        shutil.copy2(src_filepath, dst_folderpath)
+        if os.path.exists(dst_folderpath):
+            src_filepath = "%s/%s/%s/%s" % (working_folder, project_name,  CMN.DEF_CONF_FOLDER, CMN.DEF_NO_WORKDAY_CANLENDAR_CONF_FILENAME)
+            g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_NO_WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
+            shutil.copy2(src_filepath, dst_folderpath)
 
 
     def __update_no_workday_from_file(self):
