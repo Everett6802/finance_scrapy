@@ -183,6 +183,15 @@ def parse_param():
 # Check if the end date should be larger than the start date
         if config['end'] < config['start']:
             show_error_and_exit("End Date[%s] should be larger than the Start Date[%s]" % (config['end'], config['start']))
+# Check if the start date is out of range
+        if config['start'] < CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]:
+            g_logger.warn("Out of range in %s! Chnage start date from %s to %s", CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], CMN.transform_datetime_cfg2string(config['start']), CMN.transform_datetime_cfg2string(CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]))
+            config['start'] = CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]
+# Check if the end date is out of range
+        if config['end'] > datetime_threshold:
+            g_logger.warn("Out of range in %s! Chnage end date from %s to %s", CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], CMN.transform_datetime_cfg2string(config['end']), datetime_threshold)
+            config['end'] = datetime_threshold
+
         if config['end'] == config['start']:
             msg = "%s: %04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day)
         else:

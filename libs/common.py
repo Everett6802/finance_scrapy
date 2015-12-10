@@ -89,8 +89,8 @@ def transform_string2datetime(date_string, need_year_transform=False):
     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
 
 
-def transform_datetime2string(datetime_cfg):
-    return "%04d-%02d-%02d" % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)
+def transform_datetime_cfg2string(datetime_cfg, need_year_transform=False):
+    return transform_datetime2string(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day, need_year_transform)
 
 
 def transform_datetime2string(year, month, day, need_year_transform=False):
@@ -143,6 +143,10 @@ def get_month_last_day(year, month):
     return calendar.monthrange(year, month)[1]
 
 
+def get_year_offset_datetime_cfg(datetime_cfg, year_offset):
+    return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
+
+
 def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_end=None):
 # Parse the current time
     if datetime_range_end is None:
@@ -183,3 +187,15 @@ def check_success(ret):
 
 def check_failure(ret):
     return True if ret > RET_FAILURE_BASE else False
+
+
+DEF_DATA_SOURCE_START_DATE_CFG = [
+    transform_string2datetime("2001-01-01"),
+    transform_string2datetime("2004-04-07"),
+    transform_string2datetime("2001-01-01"),
+    get_year_offset_datetime_cfg(datetime.today(), -3),
+    get_year_offset_datetime_cfg(datetime.today(), -3),
+    get_year_offset_datetime_cfg(datetime.today(), -3),
+    transform_string2datetime("2002-01-01"),
+    transform_string2datetime("2004-07-01"),
+]

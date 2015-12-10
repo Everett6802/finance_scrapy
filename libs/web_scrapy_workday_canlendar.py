@@ -40,6 +40,7 @@ class WebScrapyWorkdayCanlendar(object):
 
         self.datetime_start_year = self.datetime_start.year
         self.non_workday_canlendar = None
+        self.latest_workday_cfg = None
 
 
     def initialize(self):
@@ -263,3 +264,19 @@ class WebScrapyWorkdayCanlendar(object):
         except Exception as e:
             g_logger.error("Error occur while writing Non Workday Canlendar into config file, due to %s" % str(e))
             raise e
+
+    def get_latest_workday(self):
+        if self.latest_workday_cfg is None:
+            if self.non_workday_canlendar is None:
+                raise RuntimeError("Incorrect Operation: self.non_workday_canlendar is None")
+            workday_year_list = self.non_workday_canlendar.keys().sort()
+            year = workday_year_list[-1]
+            for month in range(12):
+                if len(self.non_workday_canlendar[year][month]) == 0:
+                    self.latest_workday_cfg = datetime(year, month, self.non_workday_canlendar[year][month - 1][-1]) 
+                    break
+            if self.latest_workday_cfg is None:
+                month = 12
+                self.latest_workday_cfg = datetime(year, month, self.non_workday_canlendar[year][month - 1][-1]) 
+        return self.latest_workday_cfg
+    
