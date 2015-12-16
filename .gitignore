@@ -2,4 +2,4 @@
 *.csv
 log/
 snapshot/
-.non_workday_canlendar.conf
+.workday_canlendar.conf
