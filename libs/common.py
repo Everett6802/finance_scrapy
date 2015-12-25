@@ -99,7 +99,9 @@ def transform_datetime2string(year, month, day, need_year_transform=False):
 
 
 def parse_config_file(conf_filename):
-    conf_filepath = "%s/%s/%s" % (os.getcwd(), DEF_CONF_FOLDER, conf_filename)
+    current_path = os.path.dirname(os.path.realpath(__file__))
+    [project_folder, lib_folder] = current_path.rsplit('/', 1)
+    conf_filepath = "%s/%s/%s" % (project_folder, DEF_CONF_FOLDER, conf_filename)
     g_logger.debug("Parse the config file: %s" % conf_filepath)
     # import pdb; pdb.set_trace()
     total_param_list = []

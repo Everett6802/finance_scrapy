@@ -54,7 +54,7 @@ class WebScrapyWorkdayCanlendar(object):
 
     def __is_workday(self, year, month, day):
         if self.workday_canlendar is None:
-            raise RuntimeError("Non Workday Canlendar is NOT initialized")
+            raise RuntimeError("Workday Canlendar is NOT initialized")
         datetime_check = datetime(year, month, day)
         if datetime_check < self.datetime_start or datetime_check > self.datetime_end:
             raise RuntimeError("The check date[%s] is OUT OF RANGE[%s-%s]" % datetime_check, self.datetime_start, self.datetime_end)
@@ -72,10 +72,10 @@ class WebScrapyWorkdayCanlendar(object):
 # Write the result into the config file
             self.__write_workday_canlendar_to_file()
 # Copy the config file to the finance_analyzer project
-            self.__copy_no_workday_canlendar_config_file()
+            self.__copy_workday_canlendar_config_file()
 
 
-    def __copy_no_workday_canlendar_config_file(self):
+    def __copy_workday_canlendar_config_file(self):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
         dst_folderpath =  "%s/%s/%s" % (working_folder, CMN.DEF_NO_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME, CMN.DEF_CONF_FOLDER)
@@ -87,10 +87,12 @@ class WebScrapyWorkdayCanlendar(object):
 
     def __update_no_workday_from_file(self):
         need_update_from_web = True
-        conf_filepath = "%s/%s/%s" % (os.getcwd(), CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
-        g_logger.debug("Try to Acquire the Non Workday Canlendar data from the file: %s......" % conf_filepath)
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        [project_folder, lib_folder] = current_path.rsplit('/', 1)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        g_logger.debug("Try to Acquire the Workday Canlendar data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
-            g_logger.warn("The Non Workday Canlendar config file does NOT exist")
+            g_logger.warn("The Workday Canlendar config file does NOT exist")
             return need_update_from_web
         try:
             date_range_str = None
@@ -100,10 +102,10 @@ class WebScrapyWorkdayCanlendar(object):
                         date_range_str = line
                         mobj = re.search("([\d]{4}-[\d]{2}-[\d]{2}) ([\d]{4}-[\d]{2}-[\d]{2})", date_range_str)
                         if mobj is None:
-                            raise RuntimeError("Unknown format[%s] of date range in No Workday Canlendar config file", line)
+                            raise RuntimeError("Unknown format[%s] of date range in Workday Canlendar config file", line)
                         datetime_start_from_file = CMN.transform_string2datetime(mobj.group(1))
                         datetime_end_from_file = CMN.transform_string2datetime(mobj.group(2))
-                        g_logger.debug("Origianl Date Range in Non Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
+                        g_logger.debug("Origianl Date Range in Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
                         if datetime_start_from_file > self.datetime_start:
                             raise RuntimeError("Incorrect start date; File: %s, Expected: %s", datetime_start_from_file, self.datetime_start)
 # Check the time range in the file and adjust the range of scrapying data from the web
@@ -117,24 +119,28 @@ class WebScrapyWorkdayCanlendar(object):
 # Obtain the "year" value
                         mobj = re.search("\[([\d]{4})\]", line)
                         if mobj is None:
-                            raise RuntimeError("Incorrect year format in Non Workday Canlendar config file: %s", line)
+                            raise RuntimeError("Incorrect year format in Workday Canlendar config file: %s", line)
                         year = int(mobj.group(1))
                         # self.workday_canlendar[year] = self.__init_canlendar_each_year_list()
                         tmp_data_list = line.split(']')
                         if len(tmp_data_list) != 2:
-                            raise RuntimeError("Incorrect data format in Non Workday Canlendar config file: %s", line)
-# Parse the non workday in each month
+                            raise RuntimeError("Incorrect data format in Workday Canlendar config file: %s", line)
+# Parse the workday in each month
                         year_workday_list = tmp_data_list[1].rstrip("\n").split(";")
                         for year_workday_list_per_month in year_workday_list:
                             tmp_data1_list = year_workday_list_per_month.split(':')
                             if len(tmp_data1_list) != 2:
-                                raise RuntimeError("Incorrect per month data format in Non Workday Canlendar config file: %s", line)
+                                raise RuntimeError("Incorrect per month data format in Workday Canlendar config file: %s", line)
                             month = int(tmp_data1_list[0])
                             workday_list_str = tmp_data1_list[1]
                             workday_list = [int(workday_str) for workday_str in workday_list_str.split(",")]
+# Check if there are nay duplicate elements in the list
+                            if len(workday_list) != len(set(workday_list)):
+                                # import pdb; pdb.set_trace()
+                                raise RuntimeError("Duplicate element in [%d, %d]: %s", year, month, workday_list)
                             self.__set_canlendar_each_month(year, month, workday_list)
         except Exception as e:
-            g_logger.error("Error occur while No Workday Canlendar, due to %s" % str(e))
+            g_logger.error("Error occur while Workday Canlendar, due to %s" % str(e))
             raise e
 
         return need_update_from_web
@@ -142,7 +148,7 @@ class WebScrapyWorkdayCanlendar(object):
 
     def __update_no_workday_from_web(self):
         # import pdb; pdb.set_trace()
-        g_logger.debug("Try to Acquire the No Workday Canlendar data from the web......")
+        g_logger.debug("Try to Acquire the Workday Canlendar data from the web......")
         if self.datetime_start_from_web.year == self.datetime_end_from_web.year and self.datetime_start_from_web.month == self.datetime_end_from_web.month:
             self.__update_no_workday_from_web_by_month(self.datetime_start_from_web.year, self.datetime_start_from_web.month, self.datetime_start_from_web.day, self.datetime_end_from_web.day)
         else:
@@ -213,7 +219,7 @@ class WebScrapyWorkdayCanlendar(object):
                     continue
                 workday_list.append(cur_day)
         self.__set_canlendar_each_month(year, month, workday_list)
-# # Find the non workday list
+# # Find the workday list
 #         allday_list = []
 #         if whole_month_data:
 #             allday_list = range(1, CMN.get_month_last_day(year, month) + 1)
@@ -246,8 +252,10 @@ class WebScrapyWorkdayCanlendar(object):
 
     def __write_workday_canlendar_to_file(self):
         # import pdb; pdb.set_trace()
-        conf_filepath = "%s/%s/%s" % (os.getcwd(), CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
-        g_logger.debug("Write the No Workday Canlendar data to the file: %s......" % conf_filepath)
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        [project_folder, lib_folder] = current_path.rsplit('/', 1)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        g_logger.debug("Write the Workday Canlendar data to the file: %s......" % conf_filepath)
         try:
             date_range_str = None
             with open(conf_filepath, 'w') as fp:
@@ -263,7 +271,7 @@ class WebScrapyWorkdayCanlendar(object):
                     fp.write(workday_each_year_str)
 
         except Exception as e:
-            g_logger.error("Error occur while writing Non Workday Canlendar into config file, due to %s" % str(e))
+            g_logger.error("Error occur while writing Workday Canlendar into config file, due to %s" % str(e))
             raise e
 
     def get_latest_workday(self):
