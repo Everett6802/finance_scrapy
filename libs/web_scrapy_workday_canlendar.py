@@ -64,11 +64,11 @@ class WebScrapyWorkdayCanlendar(object):
     def update_workday_canlendar(self):
         # import pdb; pdb.set_trace()
 # Update data from the file
-        need_update_from_web = self.__update_no_workday_from_file()
+        need_update_from_web = self.__update_workday_from_file()
 # It's required to update the new data
         if need_update_from_web:
 # Update data from the web
-            self.__update_no_workday_from_web()
+            self.__update_workday_from_web()
 # Write the result into the config file
             self.__write_workday_canlendar_to_file()
 # Copy the config file to the finance_analyzer project
@@ -78,14 +78,18 @@ class WebScrapyWorkdayCanlendar(object):
     def __copy_workday_canlendar_config_file(self):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
-        dst_folderpath =  "%s/%s/%s" % (working_folder, CMN.DEF_NO_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME, CMN.DEF_CONF_FOLDER)
-        if os.path.exists(dst_folderpath):
-            src_filepath = "%s/%s/%s/%s" % (working_folder, project_name,  CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
-            g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
-            shutil.copy2(src_filepath, dst_folderpath)
+        dst_folderpath_list = [
+            "%s/%s/%s" % (working_folder, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF_CONF_FOLDER),
+        ]
+        for dst_folderpath in dst_folderpath_list:
+            if os.path.exists(dst_folderpath):
+                src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
+                shutil.copy2(src_filepath, dst_folderpath)
 
 
-    def __update_no_workday_from_file(self):
+    def __update_workday_from_file(self):
         need_update_from_web = True
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
@@ -146,13 +150,13 @@ class WebScrapyWorkdayCanlendar(object):
         return need_update_from_web
 
 
-    def __update_no_workday_from_web(self):
+    def __update_workday_from_web(self):
         # import pdb; pdb.set_trace()
         g_logger.debug("Try to Acquire the Workday Canlendar data from the web......")
         if self.datetime_start_from_web.year == self.datetime_end_from_web.year and self.datetime_start_from_web.month == self.datetime_end_from_web.month:
-            self.__update_no_workday_from_web_by_month(self.datetime_start_from_web.year, self.datetime_start_from_web.month, self.datetime_start_from_web.day, self.datetime_end_from_web.day)
+            self.__update_workday_from_web_by_month(self.datetime_start_from_web.year, self.datetime_start_from_web.month, self.datetime_start_from_web.day, self.datetime_end_from_web.day)
         else:
-            self.__update_no_workday_from_web_by_month(self.datetime_start_from_web.year, self.datetime_start_from_web.month, start_day=self.datetime_start_from_web.day)
+            self.__update_workday_from_web_by_month(self.datetime_start_from_web.year, self.datetime_start_from_web.month, start_day=self.datetime_start_from_web.day)
             year = self.datetime_start_from_web.year
             month = self.datetime_start_from_web.month
             year_end = self.datetime_end_from_web.year
@@ -165,11 +169,11 @@ class WebScrapyWorkdayCanlendar(object):
                 (year, month) = get_next_month(year, month)
                 if year == year_end and month == month_end:
                     break
-                self.__update_no_workday_from_web_by_month(year, month)
-            self.__update_no_workday_from_web_by_month(self.datetime_end_from_web.year, self.datetime_end_from_web.month, end_day=self.datetime_end_from_web.day)
+                self.__update_workday_from_web_by_month(year, month)
+            self.__update_workday_from_web_by_month(self.datetime_end_from_web.year, self.datetime_end_from_web.month, end_day=self.datetime_end_from_web.day)
 
 
-    def __update_no_workday_from_web_by_month(self, year, month, start_day=None, end_day=None):
+    def __update_workday_from_web_by_month(self, year, month, start_day=None, end_day=None):
 # Check if scrapying the whole month data 
         whole_month_data = False
         if start_day is None and end_day is None:

@@ -33,6 +33,7 @@ def show_usage():
     print "--check_result\nDescription: Check the CSV files after Scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
     print "--do_debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
+    print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
     print "==================================================="
 
 
@@ -42,8 +43,9 @@ def do_debug(data_source_index):
 
 
 def show_error_and_exit(errmsg):
-    sys.stderr.write(errmsg)
-    sys.stderr.write("\n")
+    if not run_by_cron:
+        sys.stderr.write(errmsg)
+        sys.stderr.write("\n")
     g_logger.error(errmsg)
     sys.exit(1)  
 
@@ -73,6 +75,7 @@ def parse_param():
     multi_thread = False
     check_result = False
     clone_result = False
+    run_by_cron = False
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
@@ -134,6 +137,12 @@ def parse_param():
             data_source_index = int(sys.argv[index + 1])
             do_debug(data_source_index)
             sys.exit(0)
+        elif re.match("--run_daily", sys.argv[index]):
+            method_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
+            run_by_cron = True
+            remove_old = True
+            check_result = True
+            break
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -150,7 +159,11 @@ def parse_param():
     config_list = None
     if method_index != CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
         if source_index_list is not None or datetime_range_start is not None:
-            sys.stdout.write("Ignore other parameters when the method is %s" % CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX])
+            msg = "Ignore other parameters when the method is %s" % CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX]     
+            if run_by_cron:
+                g_logger.info(msg)
+            else:
+                sys.stdout.write(msg)
         conf_filename = CMN.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF_HISTORY_CONFIG_FILENAME
         config_list = CMN.parse_config_file(conf_filename)
         if config_list is None:
@@ -197,17 +210,16 @@ def parse_param():
         else:
             msg = "%s: %04d-%02d-%02d:%04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day, config['end'].year, config['end'].month, config['end'].day)
         g_logger.info(msg)
-        sys.stdout.write(msg)
-        sys.stdout.write("\n")
+        if not run_by_cron:
+            sys.stdout.write("%s\n" % msg)
 
-    return (config_list, multi_thread, check_result, clone_result)
+    return (config_list, multi_thread, check_result, clone_result, run_by_cron)
 
 
 if __name__ == "__main__":
 # Parse the parameters
-    sys.stdout.write("Try to parse the parameters\n")
     # import pdb; pdb.set_trace()
-    (config_list, multi_thread, check_result, clone_result) = parse_param()
+    (config_list, multi_thread, check_result, clone_result, run_by_cron) = parse_param()
 # Create the folder for CSV files if not exist
     if not os.path.exists(CMN.DEF_CSV_FILE_PATH):
         os.makedirs(CMN.DEF_CSV_FILE_PATH)
@@ -218,24 +230,40 @@ if __name__ == "__main__":
                 fp.seek(0, 0)
 
 # Try to scrap the web data
-    sys.stdout.write("Scrap the data from the website......\n")
+    if run_by_cron:
+        g_logger.info("Scrap the data from the website......")
+    else:
+        sys.stdout.write("Scrap the data from the website......\n")
     time_start_second = int(time.time())
     g_mgr.do_scrapy(config_list, multi_thread)
     time_end_second = int(time.time())
     time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
-    sys.stdout.write("Scrap the data from the website...... DONE.\n" + time_lapse_msg)
+    if run_by_cron:
+        g_logger.info("Scrap the data from the website...... DONE.")
+        g_logger.info(time_lapse_msg)
+    else:
+        sys.stdout.write("Scrap the data from the website...... DONE.\n" + time_lapse_msg)
 
     if check_result:
         error_msg_list = []
-        sys.stdout.write("Let's check error......\n")
+        if run_by_cron:
+            g_logger.info("Let's check error......")
+        else:
+            sys.stdout.write("Let's check error......\n")
         (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy(config_list)
         for file_not_found in file_not_found_list:
             error_msg = u"FileNotFound: %s, %s\n" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
-            sys.stderr.write(error_msg)
+            if run_by_cron:
+                g_logger.error(error_msg)
+            else:
+                sys.stderr.write(error_msg)
             error_msg_list.append(error_msg)
         for file_is_empty in file_is_empty_list:
             error_msg = u"FileIsEmpty: %s, %s\n" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
-            sys.stderr.write(error_msg)
+            if run_by_cron:
+                g_logger.error(error_msg)
+            else:
+                sys.stderr.write(error_msg)
             error_msg_list.append(error_msg)
         if len(error_msg_list) != 0:
             run_result_str = time_lapse_msg
