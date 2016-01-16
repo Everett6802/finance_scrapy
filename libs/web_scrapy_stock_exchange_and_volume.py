@@ -11,7 +11,7 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-# 融資融券餘額統計表
+# 臺股指數及成交量
 class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):

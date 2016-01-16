@@ -70,6 +70,7 @@ class WebScrapyWorkdayCanlendar(object):
 # Update data from the web
             self.__update_workday_from_web()
 # Write the result into the config file
+            # import pdb; pdb.set_trace()
             self.__write_workday_canlendar_to_file()
 # Copy the config file to the finance_analyzer project
             self.__copy_workday_canlendar_config_file()
@@ -265,9 +266,11 @@ class WebScrapyWorkdayCanlendar(object):
             with open(conf_filepath, 'w') as fp:
                 g_logger.debug("Start to write workday into %s", CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
                 fp.write("%04d-%02d-%02d %04d-%02d-%02d\n" % (self.datetime_start.year, self.datetime_start.month, self.datetime_start.day, self.datetime_end.year, self.datetime_end.month, self.datetime_end.day))
-                for year, workday_month_list in self.workday_canlendar.items():
+                year_list = sorted(self.workday_canlendar)
+                for year in year_list:
+                    workday_month_list = self.workday_canlendar[year]
                     # sys.stderr.write("%s" % ("[%04d]" % year + ";".join(["%d:%s" % (month + 1, ",".join([str(workday) for workday in workday_month_list[month]])) for month in range(12)]) + "\n"))
-                    workday_each_year_str = "[%04d]" % year + ";".join(["%d:%s" % (month + 1, ",".join([str(workday) for workday in workday_month_list[month]])) for month in range(12)]) + "\n"
+                    workday_each_year_str = "[%04d]" % year + ";".join(["%d:%s" % (month + 1, ",".join([str(workday) for workday in workday_month_list[month]])) for month in range(12) if len(workday_month_list[month]) != 0]) + "\n"
                     # for month in range(12):
                     #     workday_each_year_str += "%d:%s;" % (month + 1, ",".join([str(workday) for workday in workday_month_list[month]]))
                     # workday_each_year_str += "\n"
