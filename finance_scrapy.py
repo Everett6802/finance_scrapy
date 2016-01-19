@@ -43,7 +43,7 @@ def do_debug(data_source_index):
 
 
 def show_error_and_exit(errmsg):
-    if not run_by_cron:
+    if show_console:
         sys.stderr.write(errmsg)
         sys.stderr.write("\n")
     g_logger.error(errmsg)
@@ -75,7 +75,7 @@ def parse_param():
     multi_thread = False
     check_result = False
     clone_result = False
-    run_by_cron = False
+    show_console = True
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
@@ -139,7 +139,7 @@ def parse_param():
             sys.exit(0)
         elif re.match("--run_daily", sys.argv[index]):
             method_index = CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
-            run_by_cron = True
+            show_console = False
             remove_old = True
             check_result = True
             break
@@ -160,7 +160,7 @@ def parse_param():
     if method_index != CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
         if source_index_list is not None or datetime_range_start is not None:
             msg = "Ignore other parameters when the method is %s" % CMN.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX]     
-            if run_by_cron:
+            if not show_console:
                 g_logger.info(msg)
             else:
                 sys.stdout.write(msg)
@@ -210,16 +210,16 @@ def parse_param():
         else:
             msg = "%s: %04d-%02d-%02d:%04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day, config['end'].year, config['end'].month, config['end'].day)
         g_logger.info(msg)
-        if not run_by_cron:
+        if show_console:
             sys.stdout.write("%s\n" % msg)
 
-    return (config_list, multi_thread, check_result, clone_result, run_by_cron)
+    return (config_list, multi_thread, check_result, clone_result, show_console)
 
 
 if __name__ == "__main__":
 # Parse the parameters
     # import pdb; pdb.set_trace()
-    (config_list, multi_thread, check_result, clone_result, run_by_cron) = parse_param()
+    (config_list, multi_thread, check_result, clone_result, show_console) = parse_param()
 # Create the folder for CSV files if not exist
     if not os.path.exists(CMN.DEF_CSV_FILE_PATH):
         os.makedirs(CMN.DEF_CSV_FILE_PATH)
@@ -230,7 +230,7 @@ if __name__ == "__main__":
                 fp.seek(0, 0)
 
 # Try to scrap the web data
-    if run_by_cron:
+    if not show_console:
         g_logger.info("Scrap the data from the website......")
     else:
         sys.stdout.write("Scrap the data from the website......\n")
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     g_mgr.do_scrapy(config_list, multi_thread)
     time_end_second = int(time.time())
     time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
-    if run_by_cron:
+    if not show_console:
         g_logger.info("Scrap the data from the website...... DONE.")
         g_logger.info(time_lapse_msg)
     else:
@@ -246,21 +246,21 @@ if __name__ == "__main__":
 
     if check_result:
         error_msg_list = []
-        if run_by_cron:
+        if not show_console:
             g_logger.info("Let's check error......")
         else:
             sys.stdout.write("Let's check error......\n")
         (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy(config_list)
         for file_not_found in file_not_found_list:
             error_msg = u"FileNotFound: %s, %s\n" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
-            if run_by_cron:
+            if not show_console:
                 g_logger.error(error_msg)
             else:
                 sys.stderr.write(error_msg)
             error_msg_list.append(error_msg)
         for file_is_empty in file_is_empty_list:
             error_msg = u"FileIsEmpty: %s, %s\n" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
-            if run_by_cron:
+            if not show_console:
                 g_logger.error(error_msg)
             else:
                 sys.stderr.write(error_msg)
