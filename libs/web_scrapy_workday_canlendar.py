@@ -70,7 +70,6 @@ class WebScrapyWorkdayCanlendar(object):
 # Update data from the web
             self.__update_workday_from_web()
 # Write the result into the config file
-            # import pdb; pdb.set_trace()
             self.__write_workday_canlendar_to_file()
 # Copy the config file to the finance_analyzer project
             self.__copy_workday_canlendar_config_file()
@@ -83,9 +82,9 @@ class WebScrapyWorkdayCanlendar(object):
             "%s/%s/%s" % (working_folder, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF_CONF_FOLDER),
             "%s/%s/%s" % (working_folder, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF_CONF_FOLDER),
         ]
+        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             if os.path.exists(dst_folderpath):
-                src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
                 g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
                 shutil.copy2(src_filepath, dst_folderpath)
 
@@ -115,7 +114,7 @@ class WebScrapyWorkdayCanlendar(object):
                             raise RuntimeError("Incorrect start date; File: %s, Expected: %s", datetime_start_from_file, self.datetime_start)
 # Check the time range in the file and adjust the range of scrapying data from the web
                         if datetime_end_from_file >= self.datetime_end:
-                            g_logger.debug("The latest data has already existed in the file. It's no need to scrapy data from the web")
+                            g_logger.debug("The latest data has already existed in the file. It's no need to scrap data from the web")
                             need_update_from_web = False
                         else:
                             self.datetime_start_from_web = datetime_end_from_file + timedelta(days = 1)
