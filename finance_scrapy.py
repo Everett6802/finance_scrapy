@@ -90,7 +90,7 @@ def parse_param():
             source_index_list = []
             for source_index_str in source_index_str_list:
                 source_index = int(source_index_str)
-                if source_index < 0 or source_index >= CMN.DEF_FINANCE_DATA_INDEX_MAPPING_LEN:
+                if source_index < 0 or source_index >= CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN:
                     errmsg = "Unsupported source: %s" % source
                     show_error_and_exit(errmsg)
                 source_index_list.append(source_index)
@@ -171,8 +171,8 @@ def parse_param():
     else:
         config_list = []
         if source_index_list is None:
-            source_index_list = range(CMN.DEF_FINANCE_DATA_INDEX_MAPPING_LEN)
-        import pdb; pdb.set_trace()
+            source_index_list = range(CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN)
+        # import pdb; pdb.set_trace()
         for source_index in source_index_list:
             config_list.append(
                 {
