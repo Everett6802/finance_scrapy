@@ -20,5 +20,5 @@ fi
 
 #echo "d = ${d}"
 
-cd /home/super/Projects/finance_scrapy_python
+cd ~/Projects/finance_scrapy_python
 python ./finance_scrapy.py -m USER_DEFINED -t ${d} --remove_old --check_result
