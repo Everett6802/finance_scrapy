@@ -191,6 +191,7 @@ class WebScrapyBase(object):
 
 
     def __scrap_web_by_day(self, csv_data_list):
+        # import pdb; pdb.set_trace()
         datetime_first_day_cfg = self.datetime_range_list[0]
         # day_of_week = datetime_first_day_cfg.weekday()
         is_weekend = False
@@ -228,7 +229,7 @@ class WebScrapyBase(object):
         csv_data_list = []
         web_data = None
         # ret = CMN.RET_SUCCESS
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         with open(self.csv_filepath, 'w') as fp:
             fp_writer = csv.writer(fp, delimiter=',')
             filtered_web_data_date = None

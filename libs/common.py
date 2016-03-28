@@ -42,6 +42,9 @@ DEF_DATA_SOURCE_INDEX_MAPPING = [
     u'三大法人選擇權買賣權留倉淨額',
     u'三大法人選擇權賣權買權比',
     u'十大交易人及特定法人期貨資訊',
+    u'外資及陸資買賣超彙總',
+    u'投信買賣超彙總',
+    u'自營商買賣超彙總',
 ]
 DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
 
@@ -55,6 +58,9 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "option_top3_legal_persons_buy_and_sell_option_open_interest",
     "option_put_call_ratio",
     "future_top10_dealers_and_legal_persons",
+    "company_foreign_investors_net_buy_and_sell_summary",
+    "company_investment_trust_net_buy_and_sell_summary",
+    "company_dealers_net_buy_and_sell_summary",
 ]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
@@ -67,6 +73,9 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
     "WebScrapyOptionPutCallRatio",
     "WebScrapyFutureTop10DealersAndLegalPersons",
+    "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
+    "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
+    "WebScrapyCompanyDealersNetBuyOrSellSummary",
 ]
 
 DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [
@@ -201,4 +210,7 @@ DEF_DATA_SOURCE_START_DATE_CFG = [
     get_year_offset_datetime_cfg(datetime.today(), -3),
     transform_string2datetime("2002-01-01"),
     transform_string2datetime("2004-07-01"),
+    transform_string2datetime("2004-12-17"),
+    transform_string2datetime("2004-12-17"),
+    transform_string2datetime("2004-12-17"),
 ]

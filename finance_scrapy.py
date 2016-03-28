@@ -156,6 +156,7 @@ def parse_param():
         shutil.rmtree(CMN.DEF_CSV_FILE_PATH, ignore_errors=True)
 
 # Create the time range list
+    # import pdb; pdb.set_trace()
     config_list = None
     if method_index != CMN.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
         if source_index_list is not None or datetime_range_start is not None:
