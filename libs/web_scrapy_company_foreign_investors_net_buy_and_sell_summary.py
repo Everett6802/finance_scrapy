@@ -40,13 +40,16 @@ class WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary(web_scrapy_base.WebScr
         if len(web_data) == 0:
             return None
         data_list = []
+        element_list = []
         for tr in web_data[2:]:
             td = tr.select('td')
             # for i in range(1, 3):
             element = str(td[1].text).strip(' ')
+            element_list.append(element)
             for i in range(3, 6):
                 element = str(td[i].text).replace(',', '')
-                data_list.append(element)
+                element_list.append(element)
+            data_list.append(element_list)
         return data_list
 # 證券代號
 # 證券名稱

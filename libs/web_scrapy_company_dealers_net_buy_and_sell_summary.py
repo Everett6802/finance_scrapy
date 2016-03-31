@@ -43,7 +43,7 @@ class WebScrapyCompanyDealersNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
         for tr in web_data[2:]:
             td = tr.select('td')
             # for i in range(1, 3):
-            element = str(td[0].text).strip(' ')
+            data_list.append(str(td[0].text).strip(' '))
             for i in range(8, 11):
                 element = str(td[i].text).replace(',', '')
                 data_list.append(element)

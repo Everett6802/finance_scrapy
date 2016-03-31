@@ -43,7 +43,7 @@ class WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary(web_scrapy_base.WebScra
         for tr in web_data[2:]:
             td = tr.select('td')
             # for i in range(1, 3):
-            element = str(td[1].text).strip(' ')
+            data_list.append(str(td[1].text).strip(' '))
             for i in range(3, 6):
                 element = str(td[i].text).replace(',', '')
                 data_list.append(element)
