@@ -22,6 +22,9 @@ RUN_RESULT_FILENAME = "run_result"
 TIME_FILENAME_FORMAT = "%04d%02d%02d%02d%02d"
 SNAPSHOT_FILENAME_FORMAT = "snapshot_result%s.tar.gz" % TIME_FILENAME_FORMAT
 
+WRITE2CSV_ONE_MONTH_PER_FILE = 0
+WRITE2CSV_ONE_DAY_PER_FILE = 1
+
 DEF_WEB_SCRAPY_BEGIN_DATE_STR = "2000-01-01"
 DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
 DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME1 = "finance_recorder_java"
@@ -79,6 +82,18 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     # "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
     # "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
     # "WebScrapyCompanyDealersNetBuyOrSellSummary",
+]
+
+DEF_DATA_SOURCE_WRITE2CSV_METHOD = [
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_DAY_PER_FILE,
 ]
 
 DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [
@@ -203,6 +218,16 @@ def check_success(ret):
 def check_failure(ret):
     return True if ret > RET_FAILURE_BASE else False
 
+
+def create_folder_if_not_exist(filepath):
+    try:
+        os.stat(filepath)
+    except OSError as exception:
+        if exception.errno == errno.EEXIST:
+            os.mkdir(filepath)
+        else
+            raise
+        
 
 DEF_DATA_SOURCE_START_DATE_CFG = [
     transform_string2datetime("2001-01-01"),
