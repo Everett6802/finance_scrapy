@@ -37,6 +37,7 @@ class WebScrapyCompanyTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScr
         value = int(int(element) / 1000)
         return value
 
+
     def assemble_web_url(self, datetime_cfg):
         url = self.url_format.format(
             *(
@@ -58,24 +59,28 @@ class WebScrapyCompanyTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScr
         data_list = []
         if not self.new_format_table:
             for tr in web_data:
+                element_list = []
                 td = tr.select('td')
                 # for i in range(1, 3):
-                data_list.append(str(td[0].text).strip(' '))
+                element_list.append(str(td[0].text).strip(' '))
                 for i in range(2, 9):
                     value = self.__transform_share_number_string_to_board_lot(td[i].text)
-                    data_list.append(value)
+                    element_list.append(str(value))
+                data_list.append(",".join(element_list))
         else:
             for tr in web_data:
+                element_list = []
                 td = tr.select('td')
                 # for i in range(1, 3):
-                data_list.append(str(td[0].text).strip(' '))
+                element_list.append(str(td[0].text).strip(' '))
                 for i in range(2, 7):
                     value = self.__transform_share_number_string_to_board_lot(td[i].text)
-                    data_list.append(value)
+                    element_list.append(str(value))
                 for i in range(7, 9):
                     value1 = self.__transform_share_number_string_to_board_lot(td[i].text)
                     value2 = self.__transform_share_number_string_to_board_lot(td[i + 2].text)
-                    data_list.append((value1 + value2))
+                    element_list.append(str(value1 + value2))
+                data_list.append(",".join(element_list))
         return data_list
 # 證券代號
 # 外資買進股數

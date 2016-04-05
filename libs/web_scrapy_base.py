@@ -27,6 +27,7 @@ class WebScrapyBase(object):
         self.encoding = encoding
         self.select_flag = select_flag
         self.datetime_range_list = []
+        # self.workday_datatime_range_list = []
   
         self.datetime_startday = None
         self.datetime_endday = None
@@ -263,30 +264,31 @@ class WebScrapyBase(object):
 
 
     def __scrap_web_to_csv_one_day_per_file(self):
-        CMN.create_folder_if_not_exist(self.csv_folderpath)
-        csv_data_list = []
-        web_data = None
-        # ret = CMN.RET_SUCCESS
         # import pdb; pdb.set_trace()
-        with open(self.csv_filepath, 'w') as fp:
-            fp_writer = csv.writer(fp, delimiter=',')
-            filtered_web_data_date = None
-            filtered_web_data = None
-# Scrap web data due to different time range
-            if self.enable_time_range_mode:
-                self.__scrap_web_by_time_range(csv_data_list)
-            else:
-                self.__scrap_web_by_day(csv_data_list)
+        CMN.create_folder_if_not_exist(self.csv_folderpath)
+
+        for datetime_cfg in self.datetime_range_list:
+            if not self.workday_canlendar.is_workday(datetime_cfg):
+                # g_logger.debug("%04d-%02d-%02d is NOT a workday, Skip..." % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+                continue
+            csv_filepath = "%s/%s.csv" % (self.csv_folderpath, CMN.transform_datetime_cfg2string(datetime_cfg))
+
+            url = self.assemble_web_url(datetime_cfg)
+            g_logger.debug("Get the data by date from URL: %s" % url)
+            try:
+# Grab the data from website and assemble the data to the entry of CSV
+                csv_data_list = self.parse_web_data(self.__get_web_data(url))
+                if csv_data_list is None:
+                    raise RuntimeError(url)
+
+                g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
+                with open(csv_filepath, 'w') as fp:
+                    fp_writer = csv.writer(fp, delimiter=',')
+                    for csv_data in csv_data_list:
 # Write the web data into CSV
-            if len(csv_data_list) > 0:
-                g_logger.debug("Write %d data to %s" % (len(csv_data_list), self.csv_filepath))
-                fp_writer.writerows(csv_data_list)
-            else:
-                g_logger.warn("Emtpy data, remove the CSV file: %s" % self.csv_filepath)
-                try:
-                    os.remove(self.csv_filepath)
-                except OSError as e:  ## if failed, report it back to the user ##
-                    g_logger.error("Fail to remove the CSV file: %s, due to: %s" % (self.csv_filepath, str(e)))
+                        fp_writer.writerows(csv_data)
+            except Exception as e:
+                g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
 
         return CMN.RET_SUCCESS
 

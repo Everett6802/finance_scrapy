@@ -2,6 +2,7 @@
 
 import os
 import re
+import errno
 import logging
 import calendar
 from datetime import datetime, timedelta
@@ -223,9 +224,10 @@ def create_folder_if_not_exist(filepath):
     try:
         os.stat(filepath)
     except OSError as exception:
-        if exception.errno == errno.EEXIST:
+        if exception.errno == errno.ENOENT:
             os.mkdir(filepath)
-        else
+        else:
+            print "%s: %s" % (errno.errorcode[exception.errno], os.strerror(exception.errno))
             raise
         
 
