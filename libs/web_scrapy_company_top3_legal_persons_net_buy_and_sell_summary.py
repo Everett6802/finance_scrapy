@@ -66,7 +66,7 @@ class WebScrapyCompanyTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScr
                 for i in range(2, 9):
                     value = self.__transform_share_number_string_to_board_lot(td[i].text)
                     element_list.append(str(value))
-                data_list.append(",".join(element_list))
+                data_list.append(element_list)
         else:
             for tr in web_data:
                 element_list = []
@@ -80,7 +80,7 @@ class WebScrapyCompanyTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScr
                     value1 = self.__transform_share_number_string_to_board_lot(td[i].text)
                     value2 = self.__transform_share_number_string_to_board_lot(td[i + 2].text)
                     element_list.append(str(value1 + value2))
-                data_list.append(",".join(element_list))
+                data_list.append(element_list)
         return data_list
 # 證券代號
 # 外資買進股數

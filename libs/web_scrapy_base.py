@@ -239,7 +239,7 @@ class WebScrapyBase(object):
         csv_data_list = []
         web_data = None
         # ret = CMN.RET_SUCCESS
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         with open(self.csv_filepath, 'w') as fp:
             fp_writer = csv.writer(fp, delimiter=',')
             filtered_web_data_date = None
@@ -284,9 +284,8 @@ class WebScrapyBase(object):
                 g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
                 with open(csv_filepath, 'w') as fp:
                     fp_writer = csv.writer(fp, delimiter=',')
-                    for csv_data in csv_data_list:
 # Write the web data into CSV
-                        fp_writer.writerows(csv_data)
+                    fp_writer.writerows(csv_data_list)
             except Exception as e:
                 g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
 
