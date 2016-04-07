@@ -16,11 +16,11 @@ NEW_FORAMT_START_DATE_CFG = CMN.transform_string2datetime(NEW_FORAMT_START_DATE_
 # NEW_FORMAT_ENTRY_END_INDEX = 9
 # NEW_FORMAT_ENTRY_END_INDEX = 11
 
-# 三大法人買賣超日報
-class WebScrapyCompanyTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
+# 三大法人個股買賣超日報
+class WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyCompanyTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
+        super(WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
             "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
             __file__, 
             'big5', 
@@ -62,7 +62,12 @@ class WebScrapyCompanyTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScr
                 element_list = []
                 td = tr.select('td')
                 # for i in range(1, 3):
-                element_list.append(str(td[0].text).strip(' '))
+                company_number = str(td[0].text).strip(' ')
+# Filter the data which I am NOT Interested in
+                # if len(company_number) != 4:
+                if not re.match("^[\d][\d]{2}[\d]$", company_number):
+                    continue
+                element_list.append(company_number)
                 for i in range(2, 9):
                     value = self.__transform_share_number_string_to_board_lot(td[i].text)
                     element_list.append(str(value))
@@ -72,7 +77,12 @@ class WebScrapyCompanyTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScr
                 element_list = []
                 td = tr.select('td')
                 # for i in range(1, 3):
-                element_list.append(str(td[0].text).strip(' '))
+                company_number = str(td[0].text).strip(' ')
+# Filter the data which I am NOT Interested in
+                # if len(company_number) != 4:
+                if not re.match("^[\d][\d]{2}[\d]$", company_number):
+                    continue
+                element_list.append(company_number)
                 for i in range(2, 7):
                     value = self.__transform_share_number_string_to_board_lot(td[i].text)
                     element_list.append(str(value))
