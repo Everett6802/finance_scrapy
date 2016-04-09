@@ -26,6 +26,9 @@ SNAPSHOT_FILENAME_FORMAT = "snapshot_result%s.tar.gz" % TIME_FILENAME_FORMAT
 WRITE2CSV_ONE_MONTH_PER_FILE = 0
 WRITE2CSV_ONE_DAY_PER_FILE = 1
 
+PARSE_URL_DATA_BY_BS4 = 0
+PARSE_URL_DATA_BY_JSON = 1
+
 DEF_WEB_SCRAPY_BEGIN_DATE_STR = "2000-01-01"
 DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
 DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME1 = "finance_recorder_java"
@@ -46,7 +49,8 @@ DEF_DATA_SOURCE_INDEX_MAPPING = [
     u'三大法人選擇權買賣權留倉淨額',
     u'三大法人選擇權賣權買權比',
     u'十大交易人及特定法人期貨資訊',
-    u'三大法人個股買賣超彙總',
+    u'三大法人上市個股買賣超彙總',
+    u'三大法人上櫃個股買賣超彙總',
     # u'外資及陸資買賣超彙總',
     # u'投信買賣超彙總',
     # u'自營商買賣超彙總',
@@ -64,6 +68,7 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "option_put_call_ratio",
     "future_top10_dealers_and_legal_persons",
     "company_stock_top3_legal_persons_net_buy_and_sell_summary",
+    "company_otc_stock_top3_legal_persons_net_buy_and_sell_summary",
     # "company_foreign_investors_net_buy_and_sell_summary",
     # "company_investment_trust_net_buy_and_sell_summary",
     # "company_dealers_net_buy_and_sell_summary",
@@ -80,6 +85,7 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebScrapyOptionPutCallRatio",
     "WebScrapyFutureTop10DealersAndLegalPersons",
     "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+    "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
     # "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
     # "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
     # "WebScrapyCompanyDealersNetBuyOrSellSummary",
@@ -94,6 +100,7 @@ DEF_DATA_SOURCE_WRITE2CSV_METHOD = [
     WRITE2CSV_ONE_MONTH_PER_FILE,
     WRITE2CSV_ONE_MONTH_PER_FILE,
     WRITE2CSV_ONE_MONTH_PER_FILE,
+    WRITE2CSV_ONE_DAY_PER_FILE,
     WRITE2CSV_ONE_DAY_PER_FILE,
 ]
 
@@ -229,7 +236,13 @@ def create_folder_if_not_exist(filepath):
         else:
             print "%s: %s" % (errno.errorcode[exception.errno], os.strerror(exception.errno))
             raise
-        
+
+
+def transform_share_number_string_to_board_lot(share_number_string):
+    element = str(share_number_string).replace(',', '')
+    value = int(int(element) / 1000)
+    return value
+
 
 DEF_DATA_SOURCE_START_DATE_CFG = [
     transform_string2datetime("2001-01-01"),
@@ -241,6 +254,7 @@ DEF_DATA_SOURCE_START_DATE_CFG = [
     transform_string2datetime("2002-01-01"),
     transform_string2datetime("2004-07-01"),
     transform_string2datetime("2012-05-02"),
+    transform_string2datetime("2014-12-01"),
     # transform_string2datetime("2004-12-17"),
     # transform_string2datetime("2004-12-17"),
     # transform_string2datetime("2004-12-17"),

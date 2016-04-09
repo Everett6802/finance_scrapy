@@ -3,7 +3,8 @@
 import re
 import requests
 import csv
-from bs4 import BeautifulSoup
+import json
+# from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
 import common_class as CMN_CLS
@@ -12,26 +13,18 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-NEW_FORAMT_START_DATE_STR = "2014-12-01"
-NEW_FORAMT_START_DATE_CFG = CMN.transform_string2datetime(NEW_FORAMT_START_DATE_STR)
-# NEW_FORMAT_ENTRY_END_INDEX = 9
-# NEW_FORMAT_ENTRY_END_INDEX = 11
-
-# 三大法人上市個股買賣超日報
-class WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
+# 三大法人上櫃個股買賣超日報
+class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
-            "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
+        super(WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
+            "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1}/{2}&_=1460104675945", 
             __file__, 
-            # 'big5', 
-            # 'table tbody tr', 
-            CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+            CMN_CLS.ParseURLDataByJSON('aaData'),
             datetime_range_start, 
             datetime_range_end
         )
         self.new_format_table = False
-        # self.entry_index_index = OLD_FORMAT_ENTRY_END_INDEX
 
 
     def assemble_web_url(self, datetime_cfg):
@@ -99,32 +92,34 @@ class WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.W
 
 
     def do_debug(self):
-        res = requests.get("http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date=105%2F03%2F23&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+")
-        #print res.text
-        res.encoding = 'big5'
-        soup = BeautifulSoup(res.text)
-        g_data = soup.select('table tbody tr')
-        # data_len = len(g_data)
-        # print "len: %d" % data_len
-        for tr in g_data:
-        #     print tr.text
-            td = tr.select('td')
-            print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text, td[6].text, td[7].text, td[8].text, td[9].text, td[10].text
-# 證券代號
-# 證券名稱
-# 外資買進股數
-# 外資賣出股數
-# 投信買進股數
-# 投信賣出股數
-# 自營商買進股數(自行買賣)
-# 自營商賣出股數(自行買賣)
-# 自營商買進股數(避險)
-# 自營商賣出股數(避險)
+        res = requests.get("http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d=105/04/01&_=1460104675945")
+        json_res = json.loads(res.text)
+        g_data = json_res['aaData']
+        for data in g_data:
+            entry = "%s" % str(data[0]).strip(' ')
+            for i in range(2, 16):
+                entry += ",%s" % str(data[i]).strip(' ')
+            print entry
+# 代號
+# 名稱
+# 外資及陸資買股數
+# 外資及陸資賣股數
+# 外資及陸資淨買股數
+# 投信買股數
+# 投信賣股數
+# 投信淨買股數
+# 自營商淨買股數
+# 自營商(自行買賣)買股數
+# 自營商(自行買賣)賣股數
+# 自營商(自行買賣)淨買股數
+# 自營商(避險)買股數
+# 自營商(避險)賣股數
+# 自營商(避險)淨買股數
 # 三大法人買賣超股數
 
 # ==== result: ====
-# 0050 台灣50           9,093,000 480,000 0 0 3,000 572,000 950,000 545,000 8,449,000
-# 0051 中100            0 0 0 0 0 0 4,000 6,000 -2,000
-# 0053 寶電子           0 0 0 0 0 0 9,000 0 9,000
-# 0054 台商50           0 0 0 0 0 0 0 1,000 -1,000
+# 006201,0,0,0,0,0,0,32,000,0,0,0,32,000,0,32,000,32,000
+# 1258,5,000,0,5,000,0,0,0,0,0,0,0,0,0,0,5,000
+# 1264,2,000,0,2,000,5,000,0,5,000,-10,000,0,10,000,-10,000,0,0,0,-3,000
+# 1333,0,1,000,-1,000,0,0,0,0,0,0,0,0,0,0,-1,000
 # ......

@@ -1,3 +1,6 @@
+import common as CMN
+
+
 class Singleton:
     """
     A non-thread-safe helper class to ease implementing singletons.
@@ -36,3 +39,37 @@ class Singleton:
 
     def __instancecheck__(self, inst):
         return isinstance(inst, self._decorated)
+
+
+class ParseURLDataType:
+
+    def __init__(self):
+        # self.parse_url_data_type = None
+        pass
+
+
+    def get_type(self):
+        raise NotImplementedError
+
+
+class ParseURLDataByBS4(ParseURLDataType):
+
+    def __init__(self, encoding, select_flag):
+        # self.parse_url_data_type = CMN.PARSE_URL_DATA_BY_BS4
+        self.encoding = encoding
+        self.select_flag = select_flag
+
+
+    def get_type(self):
+        return CMN.PARSE_URL_DATA_BY_BS4
+
+
+class ParseURLDataByJSON(ParseURLDataType):
+
+    def __init__(self, .data_field_name):
+        # self.parse_url_data_type = CMN.PARSE_URL_DATA_BY_BS4
+        self.data_field_name = data_field_name
+
+
+    def get_type(self):
+        return CMN.PARSE_URL_DATA_BY_JSON

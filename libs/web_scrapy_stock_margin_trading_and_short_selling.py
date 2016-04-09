@@ -6,6 +6,7 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
+import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -18,8 +19,9 @@ class WebScrapyStockMarginTradingAndShortSelling(web_scrapy_base.WebScrapyBase):
         super(WebScrapyStockMarginTradingAndShortSelling, self).__init__(
             "http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS", 
             __file__, 
-            'utf-8', 
-            'tr', 
+            # 'utf-8', 
+            # 'tr', 
+            CMN_CLS.ParseURLDataByBS4('utf-8', 'tr'),
             datetime_range_start, 
             datetime_range_end
         )

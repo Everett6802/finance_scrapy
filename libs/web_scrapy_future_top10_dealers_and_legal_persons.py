@@ -6,6 +6,7 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
+import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -24,8 +25,9 @@ class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyBase):
         super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(
             "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
             __file__, 
-            'utf-8', 
-            '.table_f tr', 
+            # 'utf-8', 
+            # '.table_f tr', 
+            CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
             datetime_range_start, 
             datetime_range_end
         )

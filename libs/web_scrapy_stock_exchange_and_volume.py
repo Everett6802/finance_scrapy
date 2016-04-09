@@ -6,6 +6,7 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
+import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -18,8 +19,9 @@ class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyBase):
         super(WebScrapyStockExchangeAndVolume, self).__init__(
             "http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report{0}{1:02d}/{0}{1:02d}_F3_1_2.php?STK_NO=&myear={0}&mmon={1:02d}",
             __file__, 
-            'big5', 
-            '.board_trad tr', 
+            # 'big5', 
+            # '.board_trad tr', 
+            CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
             datetime_range_start, 
             datetime_range_end,
             enable_time_range_mode = True,

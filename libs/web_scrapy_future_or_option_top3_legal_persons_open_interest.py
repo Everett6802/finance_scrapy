@@ -6,6 +6,7 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
+import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -18,8 +19,9 @@ class WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest(web_scrapy_base.WebScr
         super(WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest, self).__init__(
             "http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
             __file__, 
-            'utf-8', 
-            '.table_f tr', 
+            # 'utf-8', 
+            # '.table_f tr', 
+            CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
             datetime_range_start, 
             datetime_range_end
         )

@@ -32,7 +32,7 @@ class WebSracpyMgr(object):
         try:
             module = __import__(name)
             if module:
-                print 'Import file: %s.py (%s)' % (name, module)
+                # print 'Import file: %s.py (%s)' % (name, module)
                 return reload(module)
         except Exception:
             msg = 'Import template file failure: %s.py' % name

@@ -9,6 +9,7 @@ from random import randint
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
+import common_class as CMN_CLS
 from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -16,7 +17,7 @@ g_logger = WSL.get_web_scrapy_logger()
 
 class WebScrapyBase(object):
 
-    def __init__(self, url_format, cur_file_path, encoding, select_flag, datetime_range_start=None, datetime_range_end=None, enable_time_range_mode=False):
+    def __init__(self, url_format, cur_file_path, parse_url_data_type_obj, datetime_range_start=None, datetime_range_end=None, enable_time_range_mode=False):
         self.scrap_web_to_csv_func_ptr = [self.__scrap_web_to_csv_one_month_per_file, self.__scrap_web_to_csv_one_day_per_file]
 
         self.url_format = url_format
@@ -24,11 +25,11 @@ class WebScrapyBase(object):
         # g_logger.debug("Current module name (w/o prefix): %s" % cur_module_name)
         self.data_source_index = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
 
-        self.encoding = encoding
-        self.select_flag = select_flag
-        self.datetime_range_list = []
-        # self.workday_datatime_range_list = []
-  
+        self.PARSE_URL_DATA_FUNC_PTR = [self.__select_web_data_by_bs4, self.__select_web_data_by_json]
+        self.parse_url_data_type_obj = parse_url_data_type_obj
+        # self.select_web_data = self.__select_web_data_by_bs4
+
+        self.datetime_range_list = []  
         self.datetime_startday = None
         self.datetime_endday = None
         self.description = None
@@ -131,11 +132,29 @@ class WebScrapyBase(object):
                 # import pdb; pdb.set_trace()
                 g_logger.error("Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, self.SCRAPY_RETRY_TIMES))
                 raise e
+        # res.encoding = self.encoding
+        # # print res.text
+        # soup = BeautifulSoup(res.text)
+        # web_data = soup.select(self.select_flag)
+        parse_url_data_type = self.parse_url_data_type_obj.get_type()
 
-        res.encoding = self.encoding
+        return (self.PARSE_URL_DATA_FUNC_PTR[parse_url_data_type])(res)
+
+
+    def __select_web_data_by_bs4(self, url_data):
+        parse_url_data_by_bs4_obj = (CMN_CLS.ParseURLDataByBS4)self.parse_url_data_type_obj
+        url_data.encoding = parse_url_data_by_bs4_obj.encoding
         # print res.text
-        soup = BeautifulSoup(res.text)
-        web_data = soup.select(self.select_flag)
+        soup = BeautifulSoup(url_data.text)
+        web_data = soup.select(parse_url_data_by_bs4_obj.select_flag)
+
+        return web_data
+
+
+    def __select_web_data_by_json(self, url_data):
+        parse_url_data_by_json_obj = (CMN_CLS.ParseURLDataByJSON)self.parse_url_data_type_obj
+        json_url_data = json.loads(url_data.text)
+        web_data = json_url_data[parse_url_data_by_json_obj.data_field]
 
         return web_data
 
