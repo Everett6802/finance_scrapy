@@ -21,6 +21,7 @@ RET_FAILURE_TIMEOUT = RET_FAILURE_BASE + 2
 
 RUN_RESULT_FILENAME = "run_result"
 TIME_FILENAME_FORMAT = "%04d%02d%02d%02d%02d"
+DATE_STRING_FORMAT = "%04d-%02d-%02d"
 SNAPSHOT_FILENAME_FORMAT = "snapshot_result%s.tar.gz" % TIME_FILENAME_FORMAT
 
 WRITE2CSV_ONE_MONTH_PER_FILE = 0
@@ -68,7 +69,7 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "option_put_call_ratio",
     "future_top10_dealers_and_legal_persons",
     "company_stock_top3_legal_persons_net_buy_and_sell_summary",
-    "company_otc_stock_top3_legal_persons_net_buy_and_sell_summary",
+    "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
     # "company_foreign_investors_net_buy_and_sell_summary",
     # "company_investment_trust_net_buy_and_sell_summary",
     # "company_dealers_net_buy_and_sell_summary",
@@ -131,7 +132,7 @@ def transform_datetime_cfg2string(datetime_cfg, need_year_transform=False):
 
 def transform_datetime2string(year, month, day, need_year_transform=False):
     year_transform = (int(year) + 1911) if need_year_transform else int(year)
-    return "%04d-%02d-%02d" % (year_transform, int(month), int(day))
+    return DATE_STRING_FORMAT % (year_transform, int(month), int(day))
 
 
 def parse_config_file(conf_filename):

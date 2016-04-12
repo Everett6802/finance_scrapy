@@ -66,7 +66,7 @@ class ParseURLDataByBS4(ParseURLDataType):
 
 class ParseURLDataByJSON(ParseURLDataType):
 
-    def __init__(self, .data_field_name):
+    def __init__(self, data_field_name):
         # self.parse_url_data_type = CMN.PARSE_URL_DATA_BY_BS4
         self.data_field_name = data_field_name
 

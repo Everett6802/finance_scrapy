@@ -24,7 +24,6 @@ class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_bas
             datetime_range_start, 
             datetime_range_end
         )
-        self.new_format_table = False
 
 
     def assemble_web_url(self, datetime_cfg):
@@ -35,51 +34,36 @@ class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_bas
                 "%02d" % datetime_cfg.day
             )
         )
-        if not self.new_format_table:
-            if datetime_cfg >= NEW_FORAMT_START_DATE_CFG:
-                self.new_format = True
 
         return url
 
 
     def parse_web_data(self, web_data):
+        # import pdb; pdb.set_trace()
         if len(web_data) == 0:
             return None
+
         data_list = []
-        if not self.new_format_table:
-            for tr in web_data:
-                element_list = []
-                td = tr.select('td')
-                # for i in range(1, 3):
-                company_number = str(td[0].text).strip(' ')
-# Filter the data which I am NOT Interested in
-                # if len(company_number) != 4:
-                if not re.match("^[\d][\d]{2}[\d]$", company_number):
-                    continue
-                element_list.append(company_number)
-                for i in range(2, 9):
-                    value = CMN.transform_share_number_string_to_board_lot(td[i].text)
-                    element_list.append(str(value))
-                data_list.append(element_list)
-        else:
-            for tr in web_data:
-                element_list = []
-                td = tr.select('td')
-                # for i in range(1, 3):
-                company_number = str(td[0].text).strip(' ')
-# Filter the data which I am NOT Interested in
-                # if len(company_number) != 4:
-                if not re.match("^[\d][\d]{2}[\d]$", company_number):
-                    continue
-                element_list.append(company_number)
-                for i in range(2, 7):
-                    value = CMN.transform_share_number_string_to_board_lot(td[i].text)
-                    element_list.append(str(value))
-                for i in range(7, 9):
-                    value1 = CMN.transform_share_number_string_to_board_lot(td[i].text)
-                    value2 = CMN.transform_share_number_string_to_board_lot(td[i + 2].text)
-                    element_list.append(str(value1 + value2))
-                data_list.append(element_list)
+        for data in web_data:
+            element_list = []
+            company_number = "%s" % str(data[0]).strip(' ')
+            if not re.match("^[\d][\d]{2}[\d]$", company_number):
+                continue
+            element_list.append(company_number)
+# 外資
+            element_list.append(str(CMN.transform_share_number_string_to_board_lot(data[2])))
+            element_list.append(str(CMN.transform_share_number_string_to_board_lot(data[3])))
+# 投信
+            element_list.append(str(CMN.transform_share_number_string_to_board_lot(data[5])))
+            element_list.append(str(CMN.transform_share_number_string_to_board_lot(data[6])))
+# 自營商
+            element_list.append(str(CMN.transform_share_number_string_to_board_lot(data[9]) + CMN.transform_share_number_string_to_board_lot(data[12])))
+            element_list.append(str(CMN.transform_share_number_string_to_board_lot(data[10]) + CMN.transform_share_number_string_to_board_lot(data[13])))
+# 三大法人
+            element_list.append(str(CMN.transform_share_number_string_to_board_lot(data[15])))
+
+            data_list.append(element_list)
+
         return data_list
 # 證券代號
 # 外資買進股數

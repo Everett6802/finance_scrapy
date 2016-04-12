@@ -57,7 +57,7 @@ class WebSracpyMgr(object):
 
     def __do_scrapy(self, module_name, class_name, datetime_range_start, datetime_range_end):
         datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
-        # import pdb; pdb.set_trace()
+        #import pdb; pdb.set_trace()
         for datetime_range in datetime_range_list:
             web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
             if web_scrapy_class_obj is None:
@@ -140,16 +140,30 @@ class WebSracpyMgr(object):
                     g_logger.debug("All threads are DONE")
                     break
 
+    def __assemble_csv_filepath(self, datetime_cfg, data_source_index):
+        if CMN.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
+            file_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_cfg.year, datetime_cfg.month)
+            file_path = CMN.DEF_CSV_FILE_PATH + "/" + file_name
+        elif CMN.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_DAY_PER_FILE:
+            folder_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d" % (datetime_cfg.year, datetime_cfg.month)
+            file_name = (CMN.DATE_STRING_FORMAT + ".csv") % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)
+            file_path = CMN.DEF_CSV_FILE_PATH + "/" + folder_name + "/" + file_name
+        else:
+            raise RuntimeError("Unknown data source index: %d" % data_source_index)
+        return (file_path, file_name)
+
 
     def check_scrapy(self, config_list):
+        # import pdb; pdb.set_trace()
         file_not_found_list = []
         file_is_empty_list = []
         for config in config_list:
             data_source_index = config['index']
             datetime_range_list = CMN.get_datetime_range_by_month_list(config['start'], config['end'])
             for datetime_range in datetime_range_list:
-                file_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_range['start'].year, datetime_range['start'].month)
-                file_path = CMN.DEF_CSV_FILE_PATH + "/" + file_name
+                (file_path, file_name) = self.__assemble_csv_filepath(datetime_range['start'], data_source_index)
+                # file_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_range['start'].year, datetime_range['start'].month)
+                # file_path = CMN.DEF_CSV_FILE_PATH + "/" + file_name
 # Check if the file exists
                 if not os.path.exists(file_path):
                     file_not_found_list.append(

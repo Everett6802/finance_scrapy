@@ -2,6 +2,7 @@
 
 import os
 import re
+import json
 import requests
 import csv
 import time
@@ -142,19 +143,22 @@ class WebScrapyBase(object):
 
 
     def __select_web_data_by_bs4(self, url_data):
-        parse_url_data_by_bs4_obj = (CMN_CLS.ParseURLDataByBS4)self.parse_url_data_type_obj
-        url_data.encoding = parse_url_data_by_bs4_obj.encoding
-        # print res.text
+        # import pdb; pdb.set_trace()
+        if not isinstance(self.parse_url_data_type_obj, CMN_CLS.ParseURLDataByBS4):
+            raise RuntimeError("Incorrect object type, should be CMN_CLS.ParseURLDataByBS4")
+        url_data.encoding = getattr(self.parse_url_data_type_obj, "encoding")
         soup = BeautifulSoup(url_data.text)
-        web_data = soup.select(parse_url_data_by_bs4_obj.select_flag)
+        web_data = soup.select(getattr(self.parse_url_data_type_obj, "select_flag"))
 
         return web_data
 
 
     def __select_web_data_by_json(self, url_data):
-        parse_url_data_by_json_obj = (CMN_CLS.ParseURLDataByJSON)self.parse_url_data_type_obj
+        # import pdb; pdb.set_trace()
+        if not isinstance(self.parse_url_data_type_obj, CMN_CLS.ParseURLDataByJSON):
+            raise RuntimeError("Incorrect object type, should be CMN_CLS.ParseURLDataByJSON")
         json_url_data = json.loads(url_data.text)
-        web_data = json_url_data[parse_url_data_by_json_obj.data_field]
+        web_data = json_url_data[getattr(self.parse_url_data_type_obj, "data_field_name")]
 
         return web_data
 
