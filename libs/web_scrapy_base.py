@@ -30,6 +30,8 @@ class WebScrapyBase(object):
         self.parse_url_data_type_obj = parse_url_data_type_obj
         # self.select_web_data = self.__select_web_data_by_bs4
 
+        self.generate_day_time_list_rule = None
+
         self.datetime_range_list = []  
         self.datetime_startday = None
         self.datetime_endday = None
@@ -191,6 +193,8 @@ class WebScrapyBase(object):
         day_offset = 1
         datetime_offset = datetime_start
         while True: 
+            if self.generate_day_time_list_rule is not None and not self.generate_day_time_list_rule(datetime_offset):
+                continue
             self.datetime_range_list.append(datetime_offset)
             datetime_offset = datetime_offset + timedelta(days = day_offset)
             if datetime_offset > datetime_end:

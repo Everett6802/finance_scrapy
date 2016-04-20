@@ -52,7 +52,8 @@ DEF_DATA_SOURCE_INDEX_MAPPING = [
     u'十大交易人及特定法人期貨資訊',
     u'三大法人上市個股買賣超彙總',
     u'三大法人上櫃個股買賣超彙總',
-    u'外資及陸資上市個股投資持股統計',
+    u'個股集保戶股權分散表',
+    # u'外資及陸資上市個股投資持股統計',
     # u'外資及陸資買賣超彙總',
     # u'投信買賣超彙總',
     # u'自營商買賣超彙總',
@@ -71,7 +72,8 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     "future_top10_dealers_and_legal_persons",
     "company_stock_top3_legal_persons_net_buy_and_sell_summary",
     "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
-    "company_foreign_investors_shareholder",
+    "company_depository_shareholder_distribution_table",
+    # "company_foreign_investors_shareholder",
     # "company_foreign_investors_net_buy_and_sell_summary",
     # "company_investment_trust_net_buy_and_sell_summary",
     # "company_dealers_net_buy_and_sell_summary",
@@ -89,7 +91,8 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebScrapyFutureTop10DealersAndLegalPersons",
     "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
     "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
-    "WebScrapyCompanyForeignInvestorsShareholder",
+    "WebScrapyDepositoryShareholderDistributionTable",
+    # "WebScrapyCompanyForeignInvestorsShareholder",
     # "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
     # "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
     # "WebScrapyCompanyDealersNetBuyOrSellSummary",
@@ -106,7 +109,11 @@ DEF_DATA_SOURCE_WRITE2CSV_METHOD = [
     WRITE2CSV_ONE_MONTH_PER_FILE,
     WRITE2CSV_ONE_DAY_PER_FILE,
     WRITE2CSV_ONE_DAY_PER_FILE,
-    WRITE2CSV_ONE_DAY_PER_FILE,
+    WRITE2CSV_ONE_MONTH_PER_FILE,
+    # WRITE2CSV_ONE_DAY_PER_FILE,
+    # WRITE2CSV_ONE_DAY_PER_FILE,
+    # WRITE2CSV_ONE_DAY_PER_FILE,
+    # WRITE2CSV_ONE_DAY_PER_FILE,
 ]
 
 DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [
@@ -242,9 +249,12 @@ def create_folder_if_not_exist(filepath):
             print "%s: %s" % (errno.errorcode[exception.errno], os.strerror(exception.errno))
             raise
 
+def remove_comma_in_string(original_string):
+    return str(original_string).replace(',', '')
+
 
 def transform_share_number_string_to_board_lot(share_number_string):
-    element = str(share_number_string).replace(',', '')
+    element = remove_comma_in_string(share_number_string)
     value = int(int(element) / 1000)
     return value
 
@@ -259,7 +269,9 @@ DEF_DATA_SOURCE_START_DATE_CFG = [
     transform_string2datetime("2002-01-01"),
     transform_string2datetime("2004-07-01"),
     transform_string2datetime("2012-05-02"),
-    transform_string2datetime("2014-12-01"),
+    transform_string2datetime("2012-05-02"),
+    transform_string2datetime("2015-04-30"),
+    # transform_string2datetime("2010-01-04"),
     # transform_string2datetime("2004-12-17"),
     # transform_string2datetime("2004-12-17"),
     # transform_string2datetime("2004-12-17"),

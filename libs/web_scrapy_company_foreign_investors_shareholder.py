@@ -43,17 +43,17 @@ class WebScrapyCompanyForeignInvestorsShareholder(web_scrapy_base.WebScrapyBase)
             return None
 
         data_list = []
-        for data in web_data:
+        for tr in web_data:
+            td = tr.select('td')
             element_list = []
-            company_number = "%s" % str(data[0]).strip(' ')
+            company_number = "%s" % str(td[0].text).strip(' ')
             if not re.match("^[\d][\d]{2}[\d]$", company_number):
                 continue
             element_list.append(company_number)
             for i in range(3, 6): 
-                element_list.append(str(CMN.transform_share_number_string_to_board_lot(data[i])))
+                element_list.append(str(CMN.transform_share_number_string_to_board_lot(td[i].text)))
             for i in range(6, 10): 
-                element_list.append(data[i])
-
+                element_list.append(td[i].text)
             data_list.append(element_list)
 
         return data_list
@@ -71,9 +71,9 @@ class WebScrapyCompanyForeignInvestorsShareholder(web_scrapy_base.WebScrapyBase)
 
     def do_debug(self):
         # import pdb; pdb.set_trace()
-        # res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F12&select2=all&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
-        res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F11&select2=01&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
-        #print res.text
+        res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F12&select2=02&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
+        # res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F11&select2=01&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
+        # # #print res.text
         res.encoding = 'big5'
         soup = BeautifulSoup(res.text)
         g_data = soup.select('table tbody tr')
