@@ -71,7 +71,7 @@ class WebScrapyWorkdayCanlendar(object):
             self.__update_workday_from_web()
 # Write the result into the config file
             self.__write_workday_canlendar_to_file()
-# Copy the config file to the finance_analyzer project
+# Copy the config file to the finance_analyzer/finance_recorder_java project
             self.__copy_workday_canlendar_config_file()
 
 
@@ -79,8 +79,8 @@ class WebScrapyWorkdayCanlendar(object):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF_CONF_FOLDER),
-            "%s/%s/%s" % (working_folder, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF_CONF_FOLDER),
         ]
         src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
@@ -109,7 +109,7 @@ class WebScrapyWorkdayCanlendar(object):
                             raise RuntimeError("Unknown format[%s] of date range in Workday Canlendar config file", line)
                         datetime_start_from_file = CMN.transform_string2datetime(mobj.group(1))
                         datetime_end_from_file = CMN.transform_string2datetime(mobj.group(2))
-                        g_logger.debug("Origianl Date Range in Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
+                        g_logger.debug("Origina\l Date Range in Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
                         if datetime_start_from_file > self.datetime_start:
                             raise RuntimeError("Incorrect start date; File: %s, Expected: %s", datetime_start_from_file, self.datetime_start)
 # Check the time range in the file and adjust the range of scrapying data from the web
@@ -144,7 +144,7 @@ class WebScrapyWorkdayCanlendar(object):
                                 raise RuntimeError("Duplicate element in [%d, %d]: %s", year, month, workday_list)
                             self.__set_canlendar_each_month(year, month, workday_list)
         except Exception as e:
-            g_logger.error("Error occur while Workday Canlendar, due to %s" % str(e))
+            g_logger.error("Error occur while parsing Workday Canlendar config, due to %s" % str(e))
             raise e
 
         return need_update_from_web

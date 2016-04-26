@@ -35,8 +35,9 @@ MARKET_TYPE_OVER_THE_COUNTER = 1
  
 DEF_WEB_SCRAPY_BEGIN_DATE_STR = "2000-01-01"
 DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
-DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME1 = "finance_recorder_java"
-DEF_WORKDAY_CANLENDAR_CONF_FILE_DST_PROJECT_NAME2 = "finance_analyzer"
+DEF_COMPANY_CODE_NUMBER_CONF_FILENAME = ".company_code_number.conf"
+DEF_COPY_CONF_FILE_DST_PROJECT_NAME1 = "finance_recorder_java"
+DEF_COPY_CONF_FILE_DST_PROJECT_NAME2 = "finance_analyzer"
 DEF_TODAY_DATA_EXIST_HOUR = 20
 DEF_TODAY_DATA_EXIST_MINUTE = 0
 DEF_CONF_FOLDER = "conf"
@@ -259,6 +260,22 @@ def remove_comma_in_string(original_string):
 def transform_share_number_string_to_board_lot(share_number_string):
     element = remove_comma_in_string(share_number_string)
     value = int(int(element) / 1000)
+    return value
+
+
+def to_str(unicode_or_str, encoding):
+    if isinstance(unicode_or_str, unicode):
+        value = unicode_or_str.encode(encoding)
+    else:
+        value = unicode_or_str
+    return value
+
+
+def to_unicode(unicode_or_str, encoding):
+    if isinstance(unicode_or_str, str):
+        value = unicode_or_str.decode(encoding)
+    else:
+        value = unicode_or_str
     return value
 
 

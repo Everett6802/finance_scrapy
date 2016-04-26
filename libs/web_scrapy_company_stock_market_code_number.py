@@ -12,8 +12,8 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-# 集保戶股權分散表
-class WebScrapyCompanyStockMarketNumber(web_scrapy_base.WebScrapyBase):
+# 上市櫃公司代號
+class WebScrapyCompanyStockMarketCodeNumber(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, market_type):
         self.market_type = market_type
@@ -27,7 +27,7 @@ class WebScrapyCompanyStockMarketNumber(web_scrapy_base.WebScrapyBase):
             raise ValueError("Unknown Market Type: %d", self.market_type)
         url = url_format % self.str_mode
 
-        super(WebScrapyCompanyStockMarketNumber, self).__init__(
+        super(WebScrapyCompanyStockMarketCodeNumber, self).__init__(
             url, 
             __file__, 
             CMN_CLS.ParseURLDataByBS4('big5', 'table tr')
@@ -35,14 +35,7 @@ class WebScrapyCompanyStockMarketNumber(web_scrapy_base.WebScrapyBase):
 
 
     def assemble_web_url(self, datetime_cfg):
-        url = self.url_format.format(
-            *(
-                datetime_cfg.year, 
-                "%02d" % datetime_cfg.month,
-                "%02d" % datetime_cfg.day
-            )
-        )
-        return url
+        raise RuntimeError("No need to run this function")
 
 
     def parse_web_data(self, web_data):
