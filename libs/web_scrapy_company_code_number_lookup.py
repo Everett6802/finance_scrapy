@@ -25,6 +25,11 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
         self.company_code_number_list = None
 
+# A lookup table used when failing to parse company number and name
+        self.failed_company_name_lookup = {
+            "8349": u"恒耀",
+        }
+
 
     def initialize(self):
         # import pdb; pdb.set_trace()
@@ -137,18 +142,26 @@ class WebScrapyCompanyCodeNumberLookup(object):
             if len(td) != self.COMPANY_CODE_NUMBER_ELEMENT_LEN:
                 continue
             mobj = re.match(r"(\w+)\s+(\w+)", td[0].text, re.U)
+            failed_case = False
             if mobj is None:
-                import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
                 g_logger.warn(u"Error! Fail to parse: %s, try another way......" % td[0].text)
-                res_list = re.split(r"\s+", td[0].text, re.U)
-                if len(res_list) != 2:
+                mobj = re.match(r"([\d]{4,})", td[0].text, re.U)
+                if mobj is None:
                     raise ValueError(u"Unknown data format: %s" % td[0].text)
-                [company_number, company_name] = res_list
+                failed_case = True
+                # res_list = re.split(r"\s+", td[0].text, re.U)
+
 # Filter the data which are NOT interested in
             company_number = str(mobj.group(1))
             if not re.match("^[\d][\d]{2}[\d]$", company_number):
                 continue
-            company_name = mobj.group(2)
+            if failed_case:
+                company_name = self.failed_company_name_lookup.get(company_number, None)
+                if company_name is None:
+                    raise RuntimeError("Fail to find the company name of company number: %s", company_number)
+            else:
+                company_name = mobj.group(2)
             # print "number: %s, name: %s" % (company_number, company_name)
             element_list = []
             element_list.append(company_number)
