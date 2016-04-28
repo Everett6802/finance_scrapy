@@ -19,6 +19,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
     def __init__(self):
         self.COMPANY_CODE_NUMBER_ELEMENT_LEN = 7
+        self.ENCODING_TO_FILE = "utf8"
         self.url_format = "http://isin.twse.com.tw/isin/C_public.jsp?strMode=%d"
         self.encoding = "big5"
         self.select_flag = "table tr"
@@ -37,7 +38,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
 
     def update_company_code_number(self, need_update_from_web=True):
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
 # Update data from the file
         if not need_update_from_web:
             need_update_from_web = self.__update_company_code_number_from_file()
@@ -92,9 +93,10 @@ class WebScrapyCompanyCodeNumberLookup(object):
     def __update_company_code_number_from_web(self):
         # import pdb; pdb.set_trace()
         g_logger.debug("Try to Acquire the Company Code Number from the web......")
+        self.company_code_number_list = []
         g_logger.debug("###### Get the Code Number of the Stock Exchange Company ######")
         self.__scrap_company_code_number_from_web(CMN.MARKET_TYPE_STOCK_EXCHANGE)
-        g_logger.debug("###### Get the Code Number of the Over the Counter Company ######")
+        g_logger.debug("###### Get the Code Number of the Over-the-Counter Company ######")
         self.__scrap_company_code_number_from_web(CMN.MARKET_TYPE_OVER_THE_COUNTER)
 
 
@@ -136,7 +138,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
         if len(web_data) == 0:
             raise RuntimeError("Fail to find the compay code number")
 
-        self.company_code_number_list = []
+# Caution: handle the data based on Unicode
         for tr in web_data[2:]:
             td = tr.select('td')
             if len(td) != self.COMPANY_CODE_NUMBER_ELEMENT_LEN:
@@ -153,8 +155,10 @@ class WebScrapyCompanyCodeNumberLookup(object):
                 # res_list = re.split(r"\s+", td[0].text, re.U)
 
 # Filter the data which are NOT interested in
-            company_number = str(mobj.group(1))
-            if not re.match("^[\d][\d]{2}[\d]$", company_number):
+            # company_number = str(mobj.group(1))
+            # if not re.match("^[\d][\d]{2}[\d]$", company_number):
+            company_number = mobj.group(1)
+            if not re.match(r"^[\d][\d]{2}[\d]$", company_number, re.U):
                 continue
             if failed_case:
                 company_name = self.failed_company_name_lookup.get(company_number, None)
@@ -167,25 +171,36 @@ class WebScrapyCompanyCodeNumberLookup(object):
             element_list.append(company_number)
             element_list.append(company_name)
             for i in range(1, 6): 
-                element_list.append(td[i].text)
+                try:
+                    # new_element = CMN.to_str(td[i].text, self.encoding)
+                    # element_list.append(new_element)
+                    element_list.append(td[i].text)
+                except Exception as e:
+                    g_logger.error("Fail to transform unicode[%s] to str: %s, due to: %s" % (self.encoding, td[i].text, str(e)))
+                    raise e
             self.company_code_number_list.append(element_list)
+# 有價證券代號及名稱
+# 國際證券辨識號碼(ISIN Code) 
+# 上市日 
+# 市場別 
+# 產業別 
+# CFICode 
 
 
     def __write_company_code_number_to_file(self):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
         conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_CODE_NUMBER_CONF_FILENAME)
         g_logger.debug("Write the Company Code Number data to the file: %s......" % conf_filepath)
-        try:
-            date_range_str = None
-            with open(conf_filepath, 'w') as fp:
+        with open(conf_filepath, 'wb') as fp:
+            try:
                 for company_code_number in self.company_code_number_list:
-                    company_code_number_str = ",".join(company_code_number)
-                    g_logger.debug("Company Code Number Data: %s", company_code_number_str)
-                    fp.write(company_code_number_str)
+                    company_code_number_unicode = u",".join(company_code_number)
+                    # g_logger.debug(u"Company Code Number Data: %s", company_code_number_unicode)
+# Can be readable for the CSV reader by encoding utf-8 unicode
+                    fp.write(company_code_number_unicode.encode('utf-8') + "\n") 
  
-        except Exception as e:
-            g_logger.error("Error occur while writing Company Code Number into config file, due to %s" % str(e))
-            raise e
-    
+            except Exception as e:
+                g_logger.error(u"Error occur while writing Company Code Number[%s] into config file, due to %s" % (company_code_number_unicode, str(e)))
+                raise e
