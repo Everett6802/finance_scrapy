@@ -4,13 +4,13 @@
 import os
 import re
 import sys
-# import time
+import time
 # import shutil
 # import subprocess
 # from datetime import datetime, timedelta
 from libs import common as CMN
 from libs import web_scrapy_company_code_number_lookup as CompanyCodeNumberLookup
-g_lookup = CompanyCodeNumberLookup.WebScrapyCompanyCodeNumberLookup.Instance()
+# g_lookup = CompanyCodeNumberLookup.WebScrapyCompanyCodeNumberLookup.Instance()
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
@@ -67,4 +67,8 @@ if __name__ == "__main__":
 # Parse the parameters
     # import pdb; pdb.set_trace()
     parse_param()
-
+    time_start_second = int(time.time())
+    g_lookup = CompanyCodeNumberLookup.WebScrapyCompanyCodeNumberLookup.Instance()
+    print "%s\n" % g_lookup.lookup_company_info("2347")
+    time_end_second = int(time.time())
+    print u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
