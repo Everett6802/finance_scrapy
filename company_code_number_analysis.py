@@ -19,8 +19,8 @@ def show_usage():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "-g --group\nDescription: Define the group of the company\nCaution: Ignore other parameters when set"
-    for index, source in enumerate(CompanyCodeNumberLookup.COMPANY_CODE_NUMBER_GROUP_METHOD_DESCRIPTION_LIST):
-        print "  %d: %s" % (index, CompanyCodeNumberLookup.COMPANY_CODE_NUMBER_GROUP_METHOD_DESCRIPTION_LIST[index])
+    for index, source in enumerate(CompanyCodeNumberLookup.COMPANY_GROUP_METHOD_DESCRIPTION_LIST):
+        print "  %d: %s" % (index, CompanyCodeNumberLookup.COMPANY_GROUP_METHOD_DESCRIPTION_LIST[index])
     print "==================================================="
 
 
