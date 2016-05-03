@@ -48,6 +48,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
         self.company_code_number_info_list = []
         self.company_code_number_info_dict = {}
+        self.update_from_web = False
 
 # A lookup table used when failing to parse company number and name
         self.failed_company_name_lookup = {
@@ -65,6 +66,13 @@ class WebScrapyCompanyCodeNumberLookup(object):
         self.update_company_code_number_info(False)
 
 
+    def renew_table(self):
+        if not self.update_from_web:
+            self.update_company_code_number_info(True)
+        else:
+            g_logger.info("The lookup table has already been the laest version !!!")
+
+
     def update_company_code_number_info(self, need_update_from_web=True):
 # Update data from the file
         if not need_update_from_web:
@@ -77,6 +85,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
             self.__write_company_code_number_info_to_file()
 # Copy the config file to the finance_analyzer/finance_recorder_java project
             self.__copy_company_code_number_info_config_file()
+            self.update_from_web = True
 
 
     def __copy_company_code_number_info_config_file(self):
@@ -113,7 +122,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
                         if len(element_list) != self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN:
                             raise ValueError("The Company Code Number length[%d] should be %d", len(element_list), self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN)
                         self.company_code_number_info_list.append(element_list)
-                        self.company_code_number_info_dict[element_list[0]] = element_list
+                        self.company_code_number_info_dict[element_list[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
             except Exception as e:
                 g_logger.error("Error occur while parsing Company Code Number info, due to %s" % str(e))
                 raise e
@@ -125,9 +134,9 @@ class WebScrapyCompanyCodeNumberLookup(object):
         # import pdb; pdb.set_trace()
         g_logger.debug("Try to Acquire the Company Code Number info from the web......")
         g_logger.debug("###### Get the Code Number of the Stock Exchange Company ######")
-        self.__scrap_company_code_number_from_web(CMN.MARKET_TYPE_STOCK_EXCHANGE)
+        self.__scrap_company_code_number_info_from_web(CMN.MARKET_TYPE_STOCK_EXCHANGE)
         g_logger.debug("###### Get the Code Number of the Over-the-Counter Company ######")
-        self.__scrap_company_code_number_from_web(CMN.MARKET_TYPE_OVER_THE_COUNTER)
+        self.__scrap_company_code_number_info_from_web(CMN.MARKET_TYPE_OVER_THE_COUNTER)
 
 
     def __scrap_company_code_number_info_from_web(self, market_type):
@@ -174,16 +183,16 @@ class WebScrapyCompanyCodeNumberLookup(object):
             if len(td) != self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN:
                 continue
 # The Regular Expression Template ([\w-]+) is used for the F-XX company name
-            mobj = re.match(r"(\w+)\s+([\w-]+)", td[0].text, re.U)
+            mobj = re.match(r"(\w+)\s+([\w-]+)", td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
             failed_case = False
             if mobj is None:
                 # import pdb; pdb.set_trace()
-                g_logger.warn(u"Error! Fail to parse: %s, try another way......" % td[0].text)
-                mobj = re.match(r"([\d]{4,})", td[0].text, re.U)
+                g_logger.warn(u"Error! Fail to parse: %s, try another way......" % td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text)
+                mobj = re.match(r"([\d]{4,})", td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
                 if mobj is None:
-                    raise ValueError(u"Unknown data format: %s" % td[0].text)
+                    raise ValueError(u"Unknown data format: %s" % td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text)
                 failed_case = True
-                # res_list = re.split(r"\s+", td[0].text, re.U)
+                # res_list = re.split(r"\s+", td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
 
 # Filter the data which are NOT interested in
             # company_number = str(mobj.group(1))
@@ -227,16 +236,15 @@ class WebScrapyCompanyCodeNumberLookup(object):
         with open(conf_filepath, 'wb') as fp:
             try:
                 for company_code_number_info in self.company_code_number_info_list:
-                    self.company_code_number_info_dict[company_code_number_info[0]] = company_code_number
-                    # if company_code_number[0] == u"0050":
-                    #     import pdb; pdb.set_trace()
+                    self.company_code_number_info_dict[company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_code_number_info
                     company_code_number_info_unicode = u",".join(company_code_number_info)
-                    # g_logger.debug(u"Company Code Number Data: %s", company_code_number_unicode)
+                    # g_logger.debug(u"Company Code Number Data: %s", company_code_number_info_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
                     fp.write(company_code_number_info_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
  
             except Exception as e:
-                g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_code_number_unicode, str(e)))
+                g_logger.error(u"Error occur while writing Company Code Number info into config file, due to %s" %str(e))
+                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_code_number_info_unicode, str(e)))
                 raise e
 
 
@@ -260,7 +268,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
     def __group_company_by_company_code_number_first_2_digit(self):
         group_dict = {}
         for company_code_number_info in self.company_code_number_info_list:
-            company_code_number = str(company_code_number_info[0])
+            company_code_number = str(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             company_code_number_first_2_digit = company_code_number[0:2]
             if group_dict.get(company_code_number_first_2_digit, None) is None:
                 group_dict[company_code_number_first_2_digit] = []
