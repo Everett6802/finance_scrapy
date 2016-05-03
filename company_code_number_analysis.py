@@ -40,9 +40,6 @@ def parse_param():
     index = 1
     index_offset = None
     param_dict = {}
-    # group_method_number = None
-    # renew_table = False
-    # lookup_company_list = None
 
     # import pdb; pdb.set_trace()
     while index < argc:
@@ -94,8 +91,3 @@ if __name__ == "__main__":
             company_info = g_lookup.lookup_company_info(lookup_company)
             company_info_str = u",".join(company_info)
             print company_info_str
-        # print "\n"
-
-    # time_start_second = int(time.time())
-    # time_end_second = int(time.time())
-    # print u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
