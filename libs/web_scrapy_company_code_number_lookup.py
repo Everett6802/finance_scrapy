@@ -48,6 +48,8 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
         self.company_code_number_info_list = []
         self.company_code_number_info_dict = {}
+        self.company_group_list = []
+        self.company_group_dict = {}
         self.update_from_web = False
 
 # A lookup table used when failing to parse company number and name
@@ -141,6 +143,16 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
     def __scrap_company_code_number_info_from_web(self, market_type):
         # import pdb; pdb.set_trace()
+        def get_company_group_name(company_code_number_info):
+            company_group_name = None
+            if company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
+                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            else:
+                company_group_name = company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY]
+                if company_group_name in LARGE_INDUSTRY_COMPANY_GROUP_LIST:
+                    company_group_name = u"%s-%s" % (company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY], company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_MARKET])
+            return company_group_name
+
         str_mode = None
         if market_type == CMN.MARKET_TYPE_STOCK_EXCHANGE:
             str_mode = 2
@@ -177,6 +189,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
         if len(web_data) == 0:
             raise RuntimeError("Fail to find the compay code number info")
 
+        company_group_index = 0
 # Caution: handle the data based on Unicode
         for tr in web_data[2:]:
             td = tr.select('td')
@@ -218,6 +231,13 @@ class WebScrapyCompanyCodeNumberLookup(object):
                 except Exception as e:
                     g_logger.error("Fail to transform unicode[%s] to str: %s, due to: %s" % (self.encoding, td[i].text, str(e)))
                     raise e
+            company_group_name = get_company_group_name(element_list)
+            if self.company_group_dict.get(company_group_name, None) is None:
+                self.company_group_dict[company_group_name] = len(self.company_group_list)
+                self.company_group_list.append(company_group_name)
+            element_list.append(company_group_name)
+            element_list.append(u"%d" % self.company_group_dict[company_group_name])
+
             self.company_code_number_info_list.append(element_list)
 # 有價證券代號及名稱
 # 國際證券辨識號碼(ISIN Code) 
@@ -225,9 +245,47 @@ class WebScrapyCompanyCodeNumberLookup(object):
 # 市場別 
 # 產業別 
 # CFICode 
+# Company Group (Added)
+# Company Group Number (Added)
 
 
     def __write_company_code_number_info_to_file(self):
+        # import pdb; pdb.set_trace()
+        current_path = os.path.dirname(os.path.realpath(__file__))
+        [project_folder, lib_folder] = current_path.rsplit('/', 1)
+# File for keeping track of the company code number info
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_CODE_NUMBER_CONF_FILENAME)
+        g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
+        with open(conf_filepath, 'wb') as fp:
+            try:
+                for company_code_number_info in self.company_code_number_info_list:
+                    self.company_code_number_info_dict[company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_code_number_info
+                    company_code_number_info_unicode = u",".join(company_code_number_info)
+                    # g_logger.debug(u"Company Code Number Data: %s", company_code_number_info_unicode)
+# Can be readable for the CSV reader by encoding utf-8 unicode
+                    fp.write(company_code_number_info_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
+ 
+            except Exception as e:
+                g_logger.error(u"Error occur while writing Company Code Number info into config file, due to %s" %str(e))
+                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_code_number_info_unicode, str(e)))
+                raise e
+# File for keeping track of the company group info
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_GROUP_CONF_FILENAME)
+        g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
+        with open(conf_filepath, 'wb') as fp:
+            try:
+                for index, company_group in enumerate(self.company_group_list):
+                    company_group_unicode = u"%d %s" % (index, company_group)
+# Can be readable for the CSV reader by encoding utf-8 unicode
+                    fp.write(company_group_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
+ 
+            except Exception as e:
+                g_logger.error(u"Error occur while writing Company Group into config file, due to %s" %str(e))
+                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_code_number_info_unicode, str(e)))
+                raise e
+
+
+    def __write_company_group_to_file(self):
         # import pdb; pdb.set_trace()
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
@@ -281,7 +339,6 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
 
     def __group_company_by_industry(self):
-        group_dict = {}
 
         def get_company_group_name(company_code_number_info):
             company_group_name = None
@@ -291,6 +348,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
                 company_group_name = company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY]
             return company_group_name
 
+        group_dict = {}
         for company_code_number_info in self.company_code_number_info_list:
             company_group_name = get_company_group_name(company_code_number_info)
             if group_dict.get(company_group_name, None) is None:
@@ -304,7 +362,6 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
 
     def __group_company_by_industry_and_market(self):
-        group_dict = {}
 
         def get_company_group_name(company_code_number_info):
             company_group_name = None
@@ -316,8 +373,8 @@ class WebScrapyCompanyCodeNumberLookup(object):
                     company_group_name = u"%s-%s" % (company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY], company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_MARKET])
             return company_group_name
 
+        group_dict = {}
         for company_code_number_info in self.company_code_number_info_list:
-            need_check_market = False
             company_group_name = get_company_group_name(company_code_number_info)
             if group_dict.get(company_group_name, None) is None:
                 group_dict[company_group_name] = []       
