@@ -6,6 +6,7 @@ import re
 import requests
 import csv
 import shutil
+import time
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
@@ -41,15 +42,16 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
     def __init__(self):
         self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN = 7
+        self.COMPANY_CODE_NUMBER_INFO_ELEMENT_EX_LEN = self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN + 2
         self.UNICODE_ENCODING_IN_FILE = "utf-8"
         self.url_format = "http://isin.twse.com.tw/isin/C_public.jsp?strMode=%d"
         self.encoding = "big5"
         self.select_flag = "table tr"
 
-        self.company_code_number_info_list = []
-        self.company_code_number_info_dict = {}
-        self.company_group_list = []
-        self.company_group_dict = {}
+        self.company_code_number_info_list = None
+        self.company_code_number_info_dict = None
+        self.company_group_list = None
+        self.company_group_dict = None
         self.update_from_web = False
 
 # A lookup table used when failing to parse company number and name
@@ -65,24 +67,47 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
     def initialize(self):
         # import pdb; pdb.set_trace()
-        self.update_company_code_number_info(False)
+        self.__update_company_code_number_info(False, False)
 
 
-    def renew_table(self):
+    def __cleanup_company_info_data_structure(self):
+        self.company_code_number_info_list = []
+        self.company_code_number_info_dict = {}
+        self.company_group_list = []
+        self.company_group_dict = {}
+
+
+    def renew_table(self, need_check_company_diff=True):
+        # import pdb; pdb.set_trace()
         if not self.update_from_web:
-            self.update_company_code_number_info(True)
+            self.__update_company_code_number_info(True, need_check_company_diff)
         else:
-            g_logger.info("The lookup table has already been the laest version !!!")
+            g_logger.info("The lookup table has already been the latest version !!!")
 
 
-    def update_company_code_number_info(self, need_update_from_web=True):
+    def __update_company_code_number_info(self, need_update_from_web=True, need_check_company_diff=True):
+        # import pdb; pdb.set_trace()
 # Update data from the file
         if not need_update_from_web:
             need_update_from_web = self.__update_company_code_number_info_from_file()
+            if need_check_company_diff and need_update_from_web:
+                g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF_COMPANY_CODE_NUMBER_CONF_FILENAME)
+                need_check_company_diff = False
+
 # It's required to update the new data
         if need_update_from_web:
+            old_company_code_number_info_list = None
+# Keep track the older company code number info if necessary
+            if need_check_company_diff:
+                # import pdb; pdb.set_trace()
+                old_company_code_number_info_list = self.company_code_number_info_list
+
 # Update data from the web
             self.__update_company_code_number_info_from_web()
+# Compare the difference of company code number info
+            if need_check_company_diff:
+                new_company_code_number_info_list = self.company_code_number_info_list
+                self.__diff_company_code_number_info(old_company_code_number_info_list, new_company_code_number_info_list)
 # Write the result into the config file
             self.__write_company_code_number_info_to_file()
 # Copy the config file to the finance_analyzer/finance_recorder_java project
@@ -106,6 +131,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
     def __update_company_code_number_info_from_file(self):
         # import pdb; pdb.set_trace()
+        self.__cleanup_company_info_data_structure()
         need_update_from_web = False
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
@@ -121,8 +147,8 @@ class WebScrapyCompanyCodeNumberLookup(object):
                     for line in fp:
                         line_unicode = line.rstrip("\n").decode(self.UNICODE_ENCODING_IN_FILE)
                         element_list = re.split(r",", line_unicode, re.U)
-                        if len(element_list) != self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN:
-                            raise ValueError("The Company Code Number length[%d] should be %d", len(element_list), self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN)
+                        if len(element_list) != self.COMPANY_CODE_NUMBER_INFO_ELEMENT_EX_LEN:
+                            raise ValueError("The Company Code Number length[%d] should be %d" % (len(element_list), self.COMPANY_CODE_NUMBER_INFO_ELEMENT_EX_LEN))
                         self.company_code_number_info_list.append(element_list)
                         self.company_code_number_info_dict[element_list[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
             except Exception as e:
@@ -134,11 +160,60 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
     def __update_company_code_number_info_from_web(self):
         # import pdb; pdb.set_trace()
+        self.__cleanup_company_info_data_structure()
         g_logger.debug("Try to Acquire the Company Code Number info from the web......")
+        time_start_second = int(time.time())
         g_logger.debug("###### Get the Code Number of the Stock Exchange Company ######")
         self.__scrap_company_code_number_info_from_web(CMN.MARKET_TYPE_STOCK_EXCHANGE)
         g_logger.debug("###### Get the Code Number of the Over-the-Counter Company ######")
         self.__scrap_company_code_number_info_from_web(CMN.MARKET_TYPE_OVER_THE_COUNTER)
+        time_end_second = int(time.time())
+        g_logger.info("######### Time Lapse: %d second(s) #########" % (time_end_second - time_start_second))
+
+
+    def __diff_company_code_number_info(self, old_company_code_number_info_list, new_company_code_number_info_list):
+        old_company_code_number_list = [int(old_company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for old_company_code_number_info in old_company_code_number_info_list]
+        new_company_code_number_list = [int(new_company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for new_company_code_number_info in new_company_code_number_info_list]
+        # import pdb; pdb.set_trace()
+        old_company_code_number_list.sort()
+        new_company_code_number_list.sort()
+        old_company_code_number_list_len = len(old_company_code_number_list)
+        new_company_code_number_list_len = len(new_company_code_number_list)
+        old_index = 0
+        new_index = 0
+        old_lost_list = []
+        new_added_list = []
+        while old_index != old_company_code_number_list_len and new_index != new_company_code_number_list_len:
+            if old_company_code_number_list[old_index] == new_company_code_number_list[new_index]:
+                old_index += 1
+                new_index += 1
+            elif old_company_code_number_list[old_index] > new_company_code_number_list[new_index]:
+                new_added_list.append(new_company_code_number_list[new_index])
+                new_index += 1
+            else:
+                old_lost_list.append(old_company_code_number_list[old_index])
+                old_index += 1
+        if old_index < old_company_code_number_list_len:
+            while old_index != old_company_code_number_list_len:
+                old_lost_list.append(old_company_code_number_list[old_index])
+                old_index += 1
+        elif new_index < new_company_code_number_list_len:
+            while new_index != new_company_code_number_list_len:
+                new_added_list.append(new_company_code_number_list[old_index])
+                new_index += 1
+        assert (old_index == old_company_code_number_list_len), "old_index[%d] is NOT equal to old_company_code_number_list_len[%d]" % (old_index, old_company_code_number_list_len)
+        assert (new_index == new_company_code_number_list_len), "new_index[%d] is NOT equal to new_company_code_number_list_len[%d]" % (new_index, new_company_code_number_list_len)
+
+        if len(old_lost_list) != 0:
+            res_str = "Some old company lost:"
+            for old_lost in old_lost_list:
+                res_str += (" %d" % old_lost)
+            print res_str
+        if len(new_added_list) != 0:
+            res_str = "Some new company added:"
+            for new_added in new_added_list:
+                res_str += (" %d" % new_added)
+            print res_str
 
 
     def __scrap_company_code_number_info_from_web(self, market_type):
@@ -310,7 +385,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
         company_number_unicode = CMN.to_unicode(company_number, self.UNICODE_ENCODING_IN_FILE)
         company_info = self.company_code_number_info_dict.get(company_number_unicode, None)
         if company_info is None:
-            raise ValueError("Fail to find the company info of company number: %s", company_number)
+            raise ValueError("Fail to find the company info of company number: %s" % company_number)
         return company_info
 
 

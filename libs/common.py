@@ -244,15 +244,22 @@ def check_failure(ret):
     return True if ret > RET_FAILURE_BASE else False
 
 
-def create_folder_if_not_exist(filepath):
+def check_file_exist(filepath):
+    check_exist = True
     try:
         os.stat(filepath)
     except OSError as exception:
-        if exception.errno == errno.ENOENT:
-            os.mkdir(filepath)
-        else:
+        if exception.errno != errno.ENOENT:
             print "%s: %s" % (errno.errorcode[exception.errno], os.strerror(exception.errno))
             raise
+        check_exist = True
+    return check_exist
+
+
+def create_folder_if_not_exist(filepath):
+    if not check_file_exist(filepath):
+        os.mkdir(filepath)
+
 
 def remove_comma_in_string(original_string):
     return str(original_string).replace(',', '')

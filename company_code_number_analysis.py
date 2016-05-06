@@ -21,7 +21,7 @@ def show_usage():
     print "-g --group\nDescription: Define the group of the company\nCaution: Ignore other parameters when set"
     for index, source in enumerate(CompanyCodeNumberLookup.COMPANY_GROUP_METHOD_DESCRIPTION_LIST):
         print "  %d: %s" % (index, CompanyCodeNumberLookup.COMPANY_GROUP_METHOD_DESCRIPTION_LIST[index])
-    print "--renew_table\nDescription: Acquire the latest data from the web"
+    print "--renew_table\nDescription: Acquire the latest data from the web\nCaution: Ignore other parameters when set"
     print "--lookup_company\nDescription: Lookup company info by company code number"
     print "  Format 1 (company_code_number): 2347"
     print "  Format 2 (company_code_number): 2317, 2362"
@@ -72,18 +72,16 @@ if __name__ == "__main__":
     # import pdb; pdb.set_trace()
 # Parse the parameters
     param_dict = parse_param()
-
+# Initialize the instance
     g_lookup = CompanyCodeNumberLookup.WebScrapyCompanyCodeNumberLookup.Instance()
-
+# Run by argument
     if param_dict.get("group", None) is not None:
         g_lookup.group_company(param_dict["group"])
         sys.exit(0)
 
     if param_dict.get("renew_table", None) is not None:
-        time_start_second = int(time.time())
         g_lookup.renew_table()
-        time_end_second = int(time.time())
-        print u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
+        sys.exit(0)
 
     if param_dict.get("lookup_company", None) is not None:
         lookup_company_list = param_dict["lookup_company"]
