@@ -19,6 +19,8 @@ COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER = 0
 COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_NAME = 1
 COMPANY_INFO_ENTRY_FIELD_INDEX_MARKET = 4
 COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY = 5
+COMPANY_INFO_ENTRY_FIELD_INDEX_GROUP_NAME = 7
+COMPANY_INFO_ENTRY_FIELD_INDEX_GROUP_NUMBER = 8
 
 COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT = u"00"
 COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT = u"91"
@@ -381,14 +383,6 @@ class WebScrapyCompanyCodeNumberLookup(object):
                 raise e
 
 
-    def lookup_company_info(self, company_number):
-        company_number_unicode = CMN.to_unicode(company_number, self.UNICODE_ENCODING_IN_FILE)
-        company_info = self.company_code_number_info_dict.get(company_number_unicode, None)
-        if company_info is None:
-            raise ValueError("Fail to find the company info of company number: %s" % company_number)
-        return company_info
-
-
     def __get_exceptional_company_industry_by_company_code_number_first_2_digit(self, company_code_number):
         # import pdb; pdb.set_trace()
         for key, value in COMPANY_GROUP_EXCEPTION_DICT.items():
@@ -398,7 +392,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
         raise ValueError(u"Unknown exceptional company group: %s" % company_code_number)
 
 
-    def __group_company_by_company_code_number_first_2_digit(self):
+    def __group_company_by_company_code_number_first_2_digit(self, show_detail):
         group_dict = {}
         for company_code_number_info in self.company_code_number_info_list:
             company_code_number = str(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
@@ -409,11 +403,14 @@ class WebScrapyCompanyCodeNumberLookup(object):
         # for group_key, group_value in group_dict.items():
         #     print "Group: %s, Len: %d; %s" % (group_key, len(group_value), ",".join(group_value))
         for group_key in sorted(group_dict):
-            print "Group: %s, Len: %d; %s" % (group_key, len(group_dict[group_key]), ",".join(group_dict[group_key]))
+            if show_detail:
+                print "Group: %s, Len: %d; %s" % (group_key, len(group_dict[group_key]), ",".join(group_dict[group_key]))
+            else:
+                print "Group: %s, Len: %d" % (group_key, len(group_dict[group_key]))
         print "There are totally %d groups" % len(group_dict.keys())
 
 
-    def __group_company_by_industry(self):
+    def __group_company_by_industry(self, show_detail):
 
         def get_company_group_name(company_code_number_info):
             company_group_name = None
@@ -432,11 +429,14 @@ class WebScrapyCompanyCodeNumberLookup(object):
         # for group_key, group_value in group_dict.items():
         #     print "Group: %s, Len: %d; %s" % (group_key, len(group_value), ",".join(group_value))
         for group_key in sorted(group_dict):
-            print "Group: %s, Len: %d; %s" % (group_key, len(group_dict[group_key]), ",".join(group_dict[group_key]))
+            if show_detail:
+                print "Group: %s, Len: %d; %s" % (group_key, len(group_dict[group_key]), ",".join(group_dict[group_key]))
+            else:
+                print "Group: %s, Len: %d" % (group_key, len(group_dict[group_key]))
         print "There are totally %d groups" % len(group_dict.keys())
 
 
-    def __group_company_by_industry_and_market(self):
+    def __group_company_by_industry_and_market(self, show_detail):
 
         def get_company_group_name(company_code_number_info):
             company_group_name = None
@@ -457,9 +457,30 @@ class WebScrapyCompanyCodeNumberLookup(object):
         # for group_key, group_value in group_dict.items():
         #     print "Group: %s, Len: %d; %s" % (group_key, len(group_value), ",".join(group_value))
         for group_key in sorted(group_dict):
-            print "Group: %s, Len: %d; %s" % (group_key, len(group_dict[group_key]), ",".join(group_dict[group_key]))
+            if show_detail:
+                print "Group: %s, Len: %d; %s" % (group_key, len(group_dict[group_key]), ",".join(group_dict[group_key]))
+            else:
+                print "Group: %s, Len: %d" % (group_key, len(group_dict[group_key]))
         print "There are totally %d groups" % len(group_dict.keys())
 
 
-    def group_company(self, method_number):
-        (self.group_company_func_ptr[method_number])()
+    def group_company(self, method_number, show_detail):
+        (self.group_company_func_ptr[method_number])(show_detail)
+
+
+    def lookup_company_info(self, company_number):
+        company_number_unicode = CMN.to_unicode(company_number, self.UNICODE_ENCODING_IN_FILE)
+        company_info = self.company_code_number_info_dict.get(company_number_unicode, None)
+        if company_info is None:
+            raise ValueError("Fail to find the company info of company number: %s" % company_number)
+        return company_info
+
+
+    def lookup_company_group_name(self, company_number):
+        company_info = self.lookup_company_info(company_number)
+        return company_info[COMPANY_INFO_ENTRY_FIELD_INDEX_GROUP_NAME]
+
+
+    def lookup_company_group_number(self, company_number):
+        company_info = self.lookup_company_info(company_number)
+        return company_info[COMPANY_INFO_ENTRY_FIELD_INDEX_GROUP_NUMBER]
