@@ -287,6 +287,9 @@ def to_unicode(unicode_or_str, encoding):
     return value
 
 
+def to_date_only_str(datetime_cfg):
+    return (("%s" % datetime_cfg)).split(' ')[0]
+
 DEF_DATA_SOURCE_START_DATE_CFG = [
     transform_string2datetime("2001-01-01"),
     transform_string2datetime("2004-04-07"),

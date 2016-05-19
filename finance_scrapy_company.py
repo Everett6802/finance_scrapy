@@ -29,7 +29,7 @@ def show_usage():
     print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
     print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
     print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF_CSV_FILE_PATH
-    print "--multi_thread\nDescription: Scrap Web data by using multiple threads\nCaution: Deprecated"
+    print "--multi_thread\nDescription: Scrap Web data by using multiple threads"
     print "--check_result\nDescription: Check the CSV files after Scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
     print "--do_debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
