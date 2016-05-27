@@ -14,6 +14,9 @@ g_mgr = MGR.WebSracpyMgr()
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
+from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
+from libs import web_scrapy_timeslice_generator as TimesliceGenerator
+
 
 def show_usage():
     print "====================== Usage ======================"
@@ -218,6 +221,22 @@ def parse_param():
 
 
 if __name__ == "__main__":
+    # import pdb; pdb.set_trace()
+    # workday_canlendar_obj = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
+    # # datetime_last_cfg = workday_canlendar_obj.get_latest_workday()
+    # datetime_start = workday_canlendar_obj.get_nearest_next_workday(datetime(2012, 12, 29))
+    # datetime_end = workday_canlendar_obj.get_nearest_prev_workday(datetime(2013, 2, 2))
+    # datetime_iterator = WorkdayCanlendar.WebScrapyWorkdayCanlendarIterator(datetime_start, datetime_end)
+    # datetime_iterator = WorkdayCanlendar.WebScrapyWorkdayCanlendarNearestIterator(datetime(2012, 12, 29), datetime(2013, 2, 2))
+    # for datetime_cur in datetime_iterator:
+    #     print CMN.to_date_only_str(datetime_cur)
+    timeslice_generator_obj = TimesliceGenerator.WebScrapyTimeSliceGenerator.Instance()
+    # import pdb; pdb.set_trace()
+    time_slice_iterable = timeslice_generator_obj.generate_time_slice(1, datetime(2015, 4, 21), datetime(2016, 6, 22), {"company_code_number": 2347,})
+    for time_slice in time_slice_iterable:
+        print time_slice
+    sys.exit(0)
+
 # Parse the parameters
     # import pdb; pdb.set_trace()
     (config_list, multi_thread, check_result, clone_result, show_console) = parse_param()

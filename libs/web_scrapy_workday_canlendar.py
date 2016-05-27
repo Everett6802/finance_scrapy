@@ -58,8 +58,8 @@ class WebScrapyWorkdayCanlendar(object):
         if self.workday_canlendar is None:
             raise RuntimeError("Workday Canlendar is NOT initialized")
         datetime_check = datetime(year, month, day)
-        if self.is_in_range(datetime_check):
-            raise RuntimeError("The check date[%s] is OUT OF RANGE[%s-%s]" % datetime_check, self.datetime_start, self.datetime_end)
+        if not self.is_in_range(datetime_check):
+            raise RuntimeError("The check date[%s] is OUT OF RANGE[%s %s]" % (datetime_check, self.datetime_start, self.datetime_end))
         return day in self.workday_canlendar[year][month - 1]
 
 
@@ -149,7 +149,7 @@ class WebScrapyWorkdayCanlendar(object):
             g_logger.error("Error occur while parsing Workday Canlendar config, due to %s" % str(e))
             raise e
 
-        self.workday_year_list = self.workday_canlendar.keys().sort()
+        self.workday_year_list = sorted(self.workday_canlendar.keys())
         return need_update_from_web
 
 
@@ -174,7 +174,7 @@ class WebScrapyWorkdayCanlendar(object):
                     break
                 self.__update_workday_from_web_by_month(year, month)
             self.__update_workday_from_web_by_month(self.datetime_end_from_web.year, self.datetime_end_from_web.month, end_day=self.datetime_end_from_web.day)
-        self.workday_year_list = self.workday_canlendar.keys().sort()
+        self.workday_year_list = sorted(self.workday_canlendar.keys())
 
 
     def __update_workday_from_web_by_month(self, year, month, start_day=None, end_day=None):
@@ -292,7 +292,7 @@ class WebScrapyWorkdayCanlendar(object):
             year = self.workday_year_list[0]
             for month in range(12):
                 if len(self.workday_canlendar[year][month]) != 0:
-                    self.first_workday_cfg = datetime(year, month, self.workday_canlendar[year][month ][0]) 
+                    self.first_workday_cfg = datetime(year, month + 1, self.workday_canlendar[year][month][0]) 
                     break
             if self.first_workday_cfg is None:
                 raise RuntimeError("Fail to find the frst workday in the canlendar") 
@@ -303,7 +303,8 @@ class WebScrapyWorkdayCanlendar(object):
         if self.latest_workday_cfg is None:
             if self.workday_canlendar is None:
                 raise RuntimeError("Incorrect Operation: self.workday_canlendar is None")
-            workday_year_list = self.workday_canlendar.keys().sort()
+            # import pdb; pdb.set_trace()
+            workday_year_list = sorted(self.workday_canlendar.keys())
             year = workday_year_list[-1]
             for month in range(12):
                 if len(self.workday_canlendar[year][month]) == 0:
@@ -325,6 +326,7 @@ class WebScrapyWorkdayCanlendar(object):
 
 
     def find_index(self, datetime_cur):
+        # import pdb; pdb.set_trace()
         if self.workday_canlendar is None:
             raise RuntimeError("Incorrect Operation: self.workday_canlendar is None")
         year_index = None
@@ -343,31 +345,129 @@ class WebScrapyWorkdayCanlendar(object):
         except ValueError as e:
             return None
 
-        g_logger.debug("The date[%s] index: %d %d %d" % (CMN.to_date_only_str(datetime_cur), year_index, month_index, day_index))
+        # g_logger.debug("The date[%s] index: %d %d %d" % (CMN.to_date_only_str(datetime_cur), year_index, month_index, day_index))
         return (year_index, month_index, day_index)
+
+
+    def find_nearest_next_index(self, datetime_cur):
+        if self.workday_canlendar is None:
+            raise RuntimeError("Incorrect Operation: self.workday_canlendar is None")
+        year_index = None
+        month_index = None
+        day_index = None
+        if self.is_workday(datetime_cur):
+            (year_index, month_index, day_index) = self.find_index(datetime_cur)
+        else:
+            if not self.is_in_range(datetime_cur):
+                return None
+            try:
+                year_index = self.workday_year_list.index(datetime_cur.year)
+            except ValueError as e:
+                return None
+            # year = self.workday_year_list[year_index]
+            month_index = datetime_cur.month - 1
+            day_list = self.workday_canlendar[datetime_cur.year][month_index]
+            for index, day in enumerate(day_list):
+                if day > datetime_cur.day:
+                    day_index = index
+                    break
+            if day_index is None:
+                if month_index == 11:
+# A new year
+                    year_index += 1
+                    month_index = 0
+                    day_index = 0
+                else:
+# A new month
+                    month_index += 1
+                    day_index = 0
+        # g_logger.debug("The date[%s] index: %d %d %d" % (CMN.to_date_only_str(datetime_cur), year_index, month_index, day_index))
+        return (year_index, month_index, day_index)
+
+
+    def get_nearest_next_workday(self, datetime_cur):
+        index_tuple = self.find_nearest_next_index(datetime_cur)
+        if index_tuple is None:
+            raise RuntimeError("Fail to find the nearest next workday from the date: %s" % CMN.to_date_only_str(datetime_cur))
+        (year_index, month_index, day_index) = index_tuple
+        year = self.workday_year_list[year_index]
+        datetime_nearest_next = datetime(year, month_index + 1, self.workday_canlendar[year][month_index][day_index])
+        if not self.is_workday(datetime_cur):
+            g_logger.debug("Find the nearest next workday[%s]: %s" % (CMN.to_date_only_str(datetime_cur), CMN.to_date_only_str(datetime_nearest_next)))
+        return datetime_nearest_next
+
+
+    def find_nearest_prev_index(self, datetime_cur):
+        if self.workday_canlendar is None:
+            raise RuntimeError("Incorrect Operation: self.workday_canlendar is None")
+        year_index = None
+        month_index = None
+        day_index = None
+        if self.is_workday(datetime_cur):
+            (year_index, month_index, day_index) = self.find_index(datetime_cur)
+        else:
+            if not self.is_in_range(datetime_cur):
+                return None
+            try:
+                year_index = self.workday_year_list.index(datetime_cur.year)
+            except ValueError as e:
+                return None
+            # year = self.workday_year_list[year_index]
+            month_index = datetime_cur.month - 1
+            # import pdb; pdb.set_trace()
+            day_list = self.workday_canlendar[datetime_cur.year][month_index]
+            for index, day in reversed(list(enumerate(day_list))):
+                if day < datetime_cur.day:
+                    day_index = index
+                    break
+            if day_index is None:
+                if month_index == 1:
+# An old year
+                    year_index -= 1
+                    month_index = 11
+                    day_index = len(self.workday_canlendar[datetime_cur.year - 1][month_index]) - 1
+                else:
+# An old month
+                    month_index -= 1
+                    day_index = len(self.workday_canlendar[datetime_cur.year - 1][month_index]) - 1
+        # g_logger.debug("The date[%s] index: %d %d %d" % (CMN.to_date_only_str(datetime_cur), year_index, month_index, day_index))
+        return (year_index, month_index, day_index)
+
+
+    def get_nearest_prev_workday(self, datetime_cur):
+        index_tuple = self.find_nearest_prev_index(datetime_cur)
+        if index_tuple is None:
+            raise RuntimeError("Fail to find the nearest previous workday from the date: %s" % CMN.to_date_only_str(datetime_cur))
+        (year_index, month_index, day_index) = index_tuple
+        year = self.workday_year_list[year_index]
+        datetime_nearest_prev = datetime(year, month_index + 1, self.workday_canlendar[year][month_index][day_index])
+        if not self.is_workday(datetime_cur):
+            g_logger.debug("Find the nearest previous workday[%s]: %s" % (CMN.to_date_only_str(datetime_cur), CMN.to_date_only_str(datetime_nearest_prev)))
+        return datetime_nearest_prev
 
 ####################################################################################################
 
 class WebScrapyWorkdayCanlendarIterator(object):
 
     def __init__(self, datetime_start=None, datetime_end=None):
-        self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
-        self.workday_year_list = self.workday_canlendar.workday_year_list
+        self.workday_canlendar_obj = WebScrapyWorkdayCanlendar.Instance()
+        self.workday_canlendar = self.workday_canlendar_obj.workday_canlendar
+        self.workday_year_list = self.workday_canlendar_obj.workday_year_list
 
         if datetime_start is None:
-            datetime_start = self.workday_canlendar.get_first_workday()
+            datetime_start = self.workday_canlendar_obj.get_first_workday()
         if datetime_end is None:
-            datetime_end = self.workday_canlendar.get_latest_workday()
-        start_tuple = self.workday_canlendar.find_index(datetime_start)
+            datetime_end = self.workday_canlendar_obj.get_latest_workday()
+        start_tuple = self.workday_canlendar_obj.find_index(datetime_start)
         if start_tuple is None:
             raise ValueError("The start date[%s] is NOT a workday" % CMN.to_date_only_str(datetime_start))
         (start_year_index, start_month_index, start_day_index) = start_tuple
         g_logger.debug("The start date[%s] index: %d %d %d" % (CMN.to_date_only_str(datetime_start), start_year_index, start_month_index, start_day_index))
-        end_tuple = self.workday_canlendar.find_index(datetime_end)
+        end_tuple = self.workday_canlendar_obj.find_index(datetime_end)
         if end_tuple is None:
             raise ValueError("The end date[%s] is NOT a workday" % CMN.to_date_only_str(datetime_end))
-        (end_year_index, end_month_index, end_day_index) = end_tuple
-        g_logger.debug("The end date[%s] index: %d %d %d" % (CMN.to_date_only_str(datetime_end), end_year_index, end_month_index, end_day_index))
+        (self.end_year_index, self.end_month_index, self.end_day_index) = end_tuple
+        g_logger.debug("The end date[%s] index: %d %d %d" % (CMN.to_date_only_str(datetime_end), self.end_year_index, self.end_month_index, self.end_day_index))
         self.cur_year_index = start_year_index
         self.cur_month_index = start_month_index
         self.cur_day_index = start_day_index
@@ -379,9 +479,10 @@ class WebScrapyWorkdayCanlendarIterator(object):
 
 
     def next(self):
+        # import pdb; pdb.set_trace()
         if self.time_to_stop:
             raise StopIteration
-        if self.cur_year_index == end_year_index and self.cur_month_index == end_month_index and self.cur_day_index == end_day_index:
+        if self.cur_year_index == self.end_year_index and self.cur_month_index == self.end_month_index and self.cur_day_index == self.end_day_index:
             self.time_to_stop = True
         year = self.workday_year_list[self.cur_year_index]
         datetime_cur = datetime(year, self.cur_month_index + 1, self.workday_canlendar[year][self.cur_month_index][self.cur_day_index])
@@ -391,14 +492,25 @@ class WebScrapyWorkdayCanlendarIterator(object):
 # A new year
                 self.cur_year_index += 1
                 self.cur_month_index = 0
-                self.cur_date_index = 0
+                self.cur_day_index = 0
             else:
-                self.cur_date_index += 1
+                self.cur_day_index += 1
         else:
             if self.cur_day_index == len(self.workday_canlendar[year][self.cur_month_index]) - 1:
 # A new month
                 self.cur_month_index += 1
-                self.cur_date_index = 0
+                self.cur_day_index = 0
             else:
-                self.cur_date_index += 1            
+                self.cur_day_index += 1            
         return datetime_cur
+
+
+####################################################################################################
+
+class WebScrapyWorkdayCanlendarNearestIterator(WebScrapyWorkdayCanlendarIterator):
+
+    def __init__(self, datetime_start=None, datetime_end=None):
+        workday_canlendar_obj = WebScrapyWorkdayCanlendar.Instance()
+        datetime_nearest_start = workday_canlendar_obj.get_nearest_next_workday(datetime_start) if datetime_start is not None else None
+        datetime_nearest_end = workday_canlendar_obj.get_nearest_prev_workday(datetime_end) if datetime_end is not None else None
+        super(WebScrapyWorkdayCanlendarNearestIterator, self).__init__(datetime_nearest_start, datetime_nearest_end)
