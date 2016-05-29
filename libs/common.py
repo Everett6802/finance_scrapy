@@ -290,6 +290,10 @@ def to_unicode(unicode_or_str, encoding):
 def to_date_only_str(datetime_cfg):
     return (("%s" % datetime_cfg)).split(' ')[0]
 
+
+def is_the_same_month(datetime_cfg1, datetime_cfg2):
+    return (datetime_cfg1.year == datetime_cfg2.year and datetime_cfg1.month == datetime_cfg2.month)
+
 DEF_DATA_SOURCE_START_DATE_CFG = [
     transform_string2datetime("2001-01-01"),
     transform_string2datetime("2004-04-07"),

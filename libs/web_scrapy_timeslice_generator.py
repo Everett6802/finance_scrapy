@@ -19,6 +19,7 @@ class WebScrapyTimeSliceGenerator(object):
     def __init__(self):
         self.FINANCIAL_STATEMENT_DATE_LIST = [[3, 31], [5, 15], [8, 14], [11, 14],]
         self.FINANCIAL_STATEMENT_SEASON_OFFSET_LIST = [[-1, 3], [-1, 4], [0, 1], [0, 2], [0, 3]]
+        self.REVENUE_DAY = 10
         self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_PAIR_HEAD_FORMAT = "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SqlMethod=StockNo&StockNo=%s"
         self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_PAIR_TAIL = "&StockName=&sub=%ACd%B8%DF"
 
@@ -27,6 +28,7 @@ class WebScrapyTimeSliceGenerator(object):
             self.__generate_time_slice_by_workday,
             self.__generate_time_slice_by_company_foreign_investors_shareholder,
             self.__generate_time_slice_by_month,
+            self.__generate_time_slice_by_revenue,
             self.__generate_time_slice_by_financial_statement_season,
         ]
         # self.company_foreign_investors_shareholder_timeslice_list = None
@@ -40,7 +42,7 @@ class WebScrapyTimeSliceGenerator(object):
 
 
     def __get_financial_statement_season(self, datetime_cur=None):
-        datetime_now = datetime.today() if datetime_cur is None else datetime_cur
+        datetime_now = self.datetime_today if datetime_cur is None else datetime_cur
         cur_year = datetime_now.year
         financial_statement_date_list = []
         
@@ -152,6 +154,25 @@ class WebScrapyTimeSliceGenerator(object):
         return TimeSliceIterator(datetime_start, datetime_end, company_foreign_investors_shareholder_timeslice_list)
 
 
+    def __generate_time_slice_by_revenue(self, datetime_start, datetime_end, time_slice_cfg=None):
+# Check time range
+        if datetime_start > self.datetime_today:
+            raise ValueError("The start day [%s] is later than today[%s]" % (CMN.to_date_only_str(datetime_start), CMN.to_date_only_str(self.datetime_today)))
+
+        def get_prev_month(datetime_cur):
+            if datetime_cur.month == 1:
+                return datetime(datetime_cur.year - 1, 12)
+            else:
+                return datetime(datetime_cur.year , datetime_cur.month - 1)
+
+        if CMN.is_the_same_month(datetime_end, self.datetime_today):
+            if datetime_end.day < self.REVENUE_DAY:
+                g_logger.warn("The revenue of this month is NOT released on the date [%s] " % CMN.to_date_only_str(datetime_end))
+                datetime_end = get_prev_month(datetime_end)
+
+        return self.__generate_time_slice_by_month(datetime_start, datetime_end, time_slice_cfg)
+
+
     def __generate_time_slice_by_month(self, datetime_start, datetime_end, time_slice_cfg=None):
 # The data type in the list is datetime
 # Define the iterator
@@ -188,6 +209,7 @@ class WebScrapyTimeSliceGenerator(object):
         if self.financial_statement_last_season_cfg is None:
             self.financial_statement_last_season_cfg  = self.__get_financial_statement_season()
 # Check time range
+        # import pdb; pdb.set_trace()
         financial_statement_start_season_cfg = self.__get_financial_statement_season(datetime_start)
         financial_statement_end_season_cfg = self.__get_financial_statement_season(datetime_end)
         if calculate_season_number(financial_statement_end_season_cfg) > calculate_season_number(self.financial_statement_last_season_cfg):
@@ -198,9 +220,9 @@ class WebScrapyTimeSliceGenerator(object):
             def __init__(self, financial_statement_start_season_cfg, financial_statement_end_season_cfg):
                 self.time_to_stop = False
                 self.cur_year = financial_statement_start_season_cfg['year']
-                self.cur_season_index = financial_statement_start_season_cfg['season']
+                self.cur_season_index = financial_statement_start_season_cfg['season'] - 1
                 self.end_year = financial_statement_end_season_cfg['year']
-                self.end_season_index = financial_statement_end_season_cfg['season']
+                self.end_season_index = financial_statement_end_season_cfg['season'] - 1
 
             def __iter__(self):
                 return self

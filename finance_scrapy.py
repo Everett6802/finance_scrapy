@@ -232,7 +232,7 @@ if __name__ == "__main__":
     #     print CMN.to_date_only_str(datetime_cur)
     timeslice_generator_obj = TimesliceGenerator.WebScrapyTimeSliceGenerator.Instance()
     # import pdb; pdb.set_trace()
-    time_slice_iterable = timeslice_generator_obj.generate_time_slice(1, datetime(2015, 4, 21), datetime(2016, 6, 22), {"company_code_number": 2347,})
+    time_slice_iterable = timeslice_generator_obj.generate_time_slice(4, datetime(2015, 4, 21), datetime(2016, 6, 22), {"company_code_number": 2347,})
     for time_slice in time_slice_iterable:
         print time_slice
     sys.exit(0)
