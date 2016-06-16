@@ -9,6 +9,8 @@ import shutil
 import subprocess
 from datetime import datetime, timedelta
 from libs import common as CMN
+CMN.IS_FINANCE_MARKET_MODE = CMN.is_market_mode()
+CMN.IS_FINANCE_STOCK_MODE = not CMN.IS_FINANCE_MARKET_MODE
 from libs import web_scrapy_mgr as MGR
 g_mgr = MGR.WebSracpyMgr()
 from libs import web_scrapy_logging as WSL

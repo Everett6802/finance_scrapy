@@ -34,7 +34,7 @@ class WebScrapyCompanyStockMarketCodeNumber(web_scrapy_base.WebScrapyBase):
         )
 
 
-    def assemble_web_url(self, datetime_cfg):
+    def assemble_web_url(self, timeslice):
         raise RuntimeError("No need to run this function")
 
 

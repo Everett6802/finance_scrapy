@@ -17,22 +17,20 @@ class WebScrapyStockMarginTradingAndShortSelling(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyStockMarginTradingAndShortSelling, self).__init__(
-            "http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS", 
-            __file__, 
-            # 'utf-8', 
-            # 'tr', 
-            CMN_CLS.ParseURLDataByBS4('utf-8', 'tr'),
-            datetime_range_start, 
-            datetime_range_end
+            # "http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS", 
+            __file__
+            # CMN_CLS.ParseURLDataByBS4('utf-8', 'tr'),
+            # datetime_range_start, 
+            # datetime_range_end
         )
 
 
-    def assemble_web_url(self, datetime_cfg):
+    def assemble_web_url(self, timeslice):
         url = self.url_format.format(
             *(
-                datetime_cfg.year - 1911, 
-                "%02d" % datetime_cfg.month,
-                "%02d" % datetime_cfg.day
+                timeslice.year - 1911, 
+                "%02d" % timeslice.month,
+                "%02d" % timeslice.day
             )
         )
         return url

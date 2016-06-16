@@ -17,18 +17,16 @@ class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_bas
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(
-            "http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
-            __file__, 
-            # 'utf-8', 
-            # '.table_f tr', 
-            CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
-            datetime_range_start, 
-            datetime_range_end
+            # "http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
+            __file__
+            # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
+            # datetime_range_start, 
+            # datetime_range_end
         )
         
 
-    def assemble_web_url(self, datetime_cfg):
-        url = self.url_format.format(*(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+    def assemble_web_url(self, timeslice):
+        url = self.url_format.format(*(timeslice.year, timeslice.month, timeslice.day))
         return url
 
 

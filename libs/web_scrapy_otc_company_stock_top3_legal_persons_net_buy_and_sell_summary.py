@@ -18,20 +18,20 @@ class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_bas
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
-            "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1}/{2}&_=1460104675945", 
-            __file__, 
-            CMN_CLS.ParseURLDataByJSON('aaData'),
-            datetime_range_start, 
-            datetime_range_end
+            # "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1}/{2}&_=1460104675945", 
+            __file__
+            # CMN_CLS.ParseURLDataByJSON('aaData'),
+            # datetime_range_start, 
+            # datetime_range_end
         )
 
 
-    def assemble_web_url(self, datetime_cfg):
+    def assemble_web_url(self, timeslice):
         url = self.url_format.format(
             *(
-                datetime_cfg.year - 1911, 
-                "%02d" % datetime_cfg.month,
-                "%02d" % datetime_cfg.day
+                timeslice.year - 1911, 
+                "%02d" % timeslice.month,
+                "%02d" % timeslice.day
             )
         )
 

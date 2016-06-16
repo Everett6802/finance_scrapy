@@ -3,5 +3,5 @@
 log/
 snapshot/
 .workday_canlendar.conf
-.company_code_number.conf
+.company_profile.conf
 .company_group.conf

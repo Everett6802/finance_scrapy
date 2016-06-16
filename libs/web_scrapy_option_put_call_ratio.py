@@ -17,24 +17,22 @@ class WebScrapyOptionPutCallRatio(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyOptionPutCallRatio, self).__init__(
-            "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={3}%2F{4}%2F{5}", 
-            __file__, 
-            # 'utf-8', 
-            # '.table_a tr', 
-            CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),
-            datetime_range_start, 
-            datetime_range_end,
-            enable_time_range_mode = True,
+            # "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={3}%2F{4}%2F{5}", 
+            __file__
+            # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),
+            # datetime_range_start, 
+            # datetime_range_end,
+            # enable_time_range_mode = True,
         )
 
 
-    def assemble_web_url(self, datetime_cfg):
-        if datetime_cfg is None:
+    def assemble_web_url(self, timeslice):
+        if timeslice is None:
             datetime_start_cfg = self.get_datetime_startday()
             datetime_end_cfg= self.get_datetime_endday()
             url = self.url_format.format(*(datetime_start_cfg.year, datetime_start_cfg.month, datetime_start_cfg.day, datetime_end_cfg.year, datetime_end_cfg.month, datetime_end_cfg.day))
         else:
-            url = self.url_format.format(*(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+            url = self.url_format.format(*(timeslice.year, timeslice.month, timeslice.day))
         return url
 
 

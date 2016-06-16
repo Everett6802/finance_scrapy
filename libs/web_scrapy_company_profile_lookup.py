@@ -15,12 +15,13 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER = 0
-COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_NAME = 1
-COMPANY_INFO_ENTRY_FIELD_INDEX_MARKET = 4
-COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY = 5
-COMPANY_INFO_ENTRY_FIELD_INDEX_GROUP_NAME = 7
-COMPANY_INFO_ENTRY_FIELD_INDEX_GROUP_NUMBER = 8
+COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER = 0
+COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_NAME = 1
+COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE = 3
+COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET = 4
+COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY = 5
+COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME = 7
+COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER = 8
 
 COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT = u"00"
 COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT = u"91"
@@ -40,21 +41,24 @@ COMPANY_GROUP_METHOD_DESCRIPTION_LIST = [
 LARGE_INDUSTRY_COMPANY_GROUP_LIST = [u"光電業", u"半導體業", u"電子零組件業", u"電腦及週邊設備業",]
 
 @CMN_CLS.Singleton
-class WebScrapyCompanyCodeNumberLookup(object):
+class WebScrapyCompanyProfileLookup(object):
 
     def __init__(self):
-        self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN = 7
-        self.COMPANY_CODE_NUMBER_INFO_ELEMENT_EX_LEN = self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN + 2
+        self.COMPANY_PROFILE_ELEMENT_LEN = 7
+        self.COMPANY_PROFILE_ELEMENT_EX_LEN = self.COMPANY_PROFILE_ELEMENT_LEN + 2
         self.UNICODE_ENCODING_IN_FILE = "utf-8"
         self.url_format = "http://isin.twse.com.tw/isin/C_public.jsp?strMode=%d"
         self.encoding = "big5"
         self.select_flag = "table tr"
 
-        self.company_code_number_info_list = None
-        self.company_code_number_info_dict = None
+        self.company_profile_list = None
+        self.company_profile_dict = None
         self.company_group_list = None
         self.company_group_dict = None
         self.update_from_web = False
+
+        self.ETF_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
+        self.TDR_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
 
 # A lookup table used when failing to parse company number and name
         self.failed_company_name_lookup = {
@@ -72,9 +76,9 @@ class WebScrapyCompanyCodeNumberLookup(object):
         self.__update_company_code_number_info(False, False)
 
 
-    def __cleanup_company_info_data_structure(self):
+    def __cleanup_company_profile_data_structure(self):
         self.company_code_number_info_list = []
-        self.company_code_number_info_dict = {}
+        self.company_profile_dict = {}
         self.company_group_list = []
         self.company_group_dict = {}
 
@@ -93,7 +97,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
         if not need_update_from_web:
             need_update_from_web = self.__update_company_code_number_info_from_file()
             if need_check_company_diff and need_update_from_web:
-                g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF_COMPANY_CODE_NUMBER_CONF_FILENAME)
+                g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF_COMPANY_PROFILE_CONF_FILENAME)
                 need_check_company_diff = False
 
 # It's required to update the new data
@@ -127,17 +131,17 @@ class WebScrapyCompanyCodeNumberLookup(object):
         src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             if os.path.exists(dst_folderpath):
-                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_COMPANY_CODE_NUMBER_CONF_FILENAME, dst_folderpath))
+                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
                 shutil.copy2(src_filepath, dst_folderpath)
 
 
     def __update_company_code_number_info_from_file(self):
         # import pdb; pdb.set_trace()
-        self.__cleanup_company_info_data_structure()
+        self.__cleanup_company_profile_data_structure()
         need_update_from_web = False
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_CODE_NUMBER_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Try to Acquire the Company Code Number data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Company Code Number config file does NOT exist")
@@ -149,10 +153,10 @@ class WebScrapyCompanyCodeNumberLookup(object):
                     for line in fp:
                         line_unicode = line.rstrip("\n").decode(self.UNICODE_ENCODING_IN_FILE)
                         element_list = re.split(r",", line_unicode, re.U)
-                        if len(element_list) != self.COMPANY_CODE_NUMBER_INFO_ELEMENT_EX_LEN:
-                            raise ValueError("The Company Code Number length[%d] should be %d" % (len(element_list), self.COMPANY_CODE_NUMBER_INFO_ELEMENT_EX_LEN))
+                        if len(element_list) != self.COMPANY_PROFILE_ELEMENT_EX_LEN:
+                            raise ValueError("The Company Code Number length[%d] should be %d" % (len(element_list), self.COMPANY_PROFILE_ELEMENT_EX_LEN))
                         self.company_code_number_info_list.append(element_list)
-                        self.company_code_number_info_dict[element_list[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
+                        self.company_profile_dict[element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
             except Exception as e:
                 g_logger.error("Error occur while parsing Company Code Number info, due to %s" % str(e))
                 raise e
@@ -162,7 +166,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
     def __update_company_code_number_info_from_web(self):
         # import pdb; pdb.set_trace()
-        self.__cleanup_company_info_data_structure()
+        self.__cleanup_company_profile_data_structure()
         g_logger.debug("Try to Acquire the Company Code Number info from the web......")
         time_start_second = int(time.time())
         g_logger.debug("###### Get the Code Number of the Stock Exchange Company ######")
@@ -174,8 +178,8 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
 
     def __diff_company_code_number_info(self, old_company_code_number_info_list, new_company_code_number_info_list):
-        old_company_code_number_list = [int(old_company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for old_company_code_number_info in old_company_code_number_info_list]
-        new_company_code_number_list = [int(new_company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for new_company_code_number_info in new_company_code_number_info_list]
+        old_company_code_number_list = [int(old_company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for old_company_code_number_info in old_company_code_number_info_list]
+        new_company_code_number_list = [int(new_company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for new_company_code_number_info in new_company_code_number_info_list]
         # import pdb; pdb.set_trace()
         old_company_code_number_list.sort()
         new_company_code_number_list.sort()
@@ -222,12 +226,12 @@ class WebScrapyCompanyCodeNumberLookup(object):
         # import pdb; pdb.set_trace()
         def get_company_group_name(company_code_number_info):
             company_group_name = None
-            if company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
-                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            if company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
+                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             else:
-                company_group_name = company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY]
+                company_group_name = company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
                 if company_group_name in LARGE_INDUSTRY_COMPANY_GROUP_LIST:
-                    company_group_name = u"%s-%s" % (company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY], company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_MARKET])
+                    company_group_name = u"%s-%s" % (company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET])
             return company_group_name
 
         str_mode = None
@@ -270,19 +274,19 @@ class WebScrapyCompanyCodeNumberLookup(object):
 # Caution: handle the data based on Unicode
         for tr in web_data[2:]:
             td = tr.select('td')
-            if len(td) != self.COMPANY_CODE_NUMBER_INFO_ELEMENT_LEN:
+            if len(td) != self.COMPANY_PROFILE_ELEMENT_LEN:
                 continue
 # The Regular Expression Template ([\w-]+) is used for the F-XX company name
-            mobj = re.match(r"(\w+)\s+([\w-]+)", td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
+            mobj = re.match(r"(\w+)\s+([\w-]+)", td[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
             failed_case = False
             if mobj is None:
                 # import pdb; pdb.set_trace()
-                g_logger.warn(u"Error! Fail to parse: %s, try another way......" % td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text)
-                mobj = re.match(r"([\d]{4,})", td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
+                g_logger.warn(u"Error! Fail to parse: %s, try another way......" % td[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text)
+                mobj = re.match(r"([\d]{4,})", td[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
                 if mobj is None:
-                    raise ValueError(u"Unknown data format: %s" % td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text)
+                    raise ValueError(u"Unknown data format: %s" % td[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text)
                 failed_case = True
-                # res_list = re.split(r"\s+", td[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
+                # res_list = re.split(r"\s+", td[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER].text, re.U)
 
 # Filter the data which are NOT interested in
             # company_number = str(mobj.group(1))
@@ -304,16 +308,45 @@ class WebScrapyCompanyCodeNumberLookup(object):
                 try:
                     # new_element = CMN.to_str(td[i].text, self.encoding)
                     # element_list.append(new_element)
+#                     if i == COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE:
+#                         assert (re.match(r"[\d]{4}/[\d]{2}/[\d]{2}", td[i].text, re.U)), u"Incorrect date format: %s" % td[i].text
+# # Transform into the standard date format
+#                         element_list.append(td[i].text.replace("/", "-"))
+#                     elif i == COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY:
+#                         if re.match(self.ETF_COMPANY_CODE_NUMBER_PATTERN, element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], re.U):
+#                             import pdb; pdb.set_trace()
+#                             assert (td[i].text == u""), u"The company[%s] Industry is NOT Empty: %s" % (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], td[i].text)
+#                             element_list.append(COMPANY_GROUP_EXCEPTION_DICT[COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT])
+#                         else:
+#                             element_list.append(td[i].text)
+#                     else:
                     element_list.append(td[i].text)
                 except Exception as e:
-                    g_logger.error("Fail to transform unicode[%s] to str: %s, due to: %s" % (self.encoding, td[i].text, str(e)))
+                    g_logger.error(u"Fail to transform unicode[%s] to str: %s, due to: %s" % (self.encoding, td[i].text, str(e)))
                     raise e
+# Add the group info into the entry
             company_group_name = get_company_group_name(element_list)
             if self.company_group_dict.get(company_group_name, None) is None:
                 self.company_group_dict[company_group_name] = len(self.company_group_list)
                 self.company_group_list.append(company_group_name)
             element_list.append(company_group_name)
             element_list.append(u"%d" % self.company_group_dict[company_group_name])
+
+# Modify the some element content slightly
+# Modify the date to the standard format
+            assert (re.match(r"[\d]{4}/[\d]{2}/[\d]{2}", element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE], re.U)), u"Incorrect date format: %s" % element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE]
+            element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE] = element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE].replace("/", "-")
+# Setup the TDR and ETF industry name
+            mobj = re.match(r"([\d]{2})[\d]{2}", element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], re.U)
+            assert (mobj is not None), u"Unknow company code number format: %s" % element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]
+            if COMPANY_GROUP_EXCEPTION_DICT.get(mobj.group(1), None) is not None:
+                assert (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u""), u"The company[%s] Industry is NOT Empty: %s" % (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY])
+                element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] = COMPANY_GROUP_EXCEPTION_DICT[mobj.group(1)]
+
+            # if re.match(self.ETF_COMPANY_CODE_NUMBER_PATTERN, element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], re.U):
+            #     # import pdb; pdb.set_trace()
+            #     assert (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u""), u"The company[%s] Industry is NOT Empty: %s" % (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY])
+            #     element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] = COMPANY_GROUP_EXCEPTION_DICT[COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT]
 
             self.company_code_number_info_list.append(element_list)
 # 有價證券代號及名稱
@@ -331,12 +364,12 @@ class WebScrapyCompanyCodeNumberLookup(object):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
 # File for keeping track of the company code number info
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_CODE_NUMBER_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
                 for company_code_number_info in self.company_code_number_info_list:
-                    self.company_code_number_info_dict[company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_code_number_info
+                    self.company_profile_dict[company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_code_number_info
                     company_code_number_info_unicode = u",".join(company_code_number_info)
                     # g_logger.debug(u"Company Code Number Data: %s", company_code_number_info_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
@@ -366,12 +399,12 @@ class WebScrapyCompanyCodeNumberLookup(object):
         # import pdb; pdb.set_trace()
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_CODE_NUMBER_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
                 for company_code_number_info in self.company_code_number_info_list:
-                    self.company_code_number_info_dict[company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_code_number_info
+                    self.company_profile_dict[company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_code_number_info
                     company_code_number_info_unicode = u",".join(company_code_number_info)
                     # g_logger.debug(u"Company Code Number Data: %s", company_code_number_info_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
@@ -395,7 +428,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
     def __group_company_by_company_code_number_first_2_digit(self, show_detail):
         group_dict = {}
         for company_code_number_info in self.company_code_number_info_list:
-            company_code_number = str(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            company_code_number = str(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             company_code_number_first_2_digit = company_code_number[0:2]
             if group_dict.get(company_code_number_first_2_digit, None) is None:
                 group_dict[company_code_number_first_2_digit] = []
@@ -414,10 +447,10 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
         def get_company_group_name(company_code_number_info):
             company_group_name = None
-            if company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
-                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            if company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
+                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             else:
-                company_group_name = company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY]
+                company_group_name = company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
             return company_group_name
 
         group_dict = {}
@@ -425,7 +458,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
             company_group_name = get_company_group_name(company_code_number_info)
             if group_dict.get(company_group_name, None) is None:
                 group_dict[company_group_name] = []       
-            group_dict[company_group_name].append(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            group_dict[company_group_name].append(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
         # for group_key, group_value in group_dict.items():
         #     print "Group: %s, Len: %d; %s" % (group_key, len(group_value), ",".join(group_value))
         for group_key in sorted(group_dict):
@@ -440,12 +473,12 @@ class WebScrapyCompanyCodeNumberLookup(object):
 
         def get_company_group_name(company_code_number_info):
             company_group_name = None
-            if company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
-                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            if company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
+                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             else:
-                company_group_name = company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY]
+                company_group_name = company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
                 if company_group_name in LARGE_INDUSTRY_COMPANY_GROUP_LIST:
-                    company_group_name = u"%s-%s" % (company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_INDUSTRY], company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_MARKET])
+                    company_group_name = u"%s-%s" % (company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET])
             return company_group_name
 
         group_dict = {}
@@ -453,7 +486,7 @@ class WebScrapyCompanyCodeNumberLookup(object):
             company_group_name = get_company_group_name(company_code_number_info)
             if group_dict.get(company_group_name, None) is None:
                 group_dict[company_group_name] = []       
-            group_dict[company_group_name].append(company_code_number_info[COMPANY_INFO_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            group_dict[company_group_name].append(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
         # for group_key, group_value in group_dict.items():
         #     print "Group: %s, Len: %d; %s" % (group_key, len(group_value), ",".join(group_value))
         for group_key in sorted(group_dict):
@@ -468,19 +501,24 @@ class WebScrapyCompanyCodeNumberLookup(object):
         (self.group_company_func_ptr[method_number])(show_detail)
 
 
-    def lookup_company_info(self, company_number):
+    def lookup_company_profile(self, company_number):
         company_number_unicode = CMN.to_unicode(company_number, self.UNICODE_ENCODING_IN_FILE)
-        company_info = self.company_code_number_info_dict.get(company_number_unicode, None)
-        if company_info is None:
-            raise ValueError("Fail to find the company info of company number: %s" % company_number)
-        return company_info
+        company_profile = self.company_profile_dict.get(company_number_unicode, None)
+        if company_profile is None:
+            raise ValueError("Fail to find the company profile of company number: %s" % company_number)
+        return company_profile
+
+
+    def lookup_company_listing_date(self, company_number):
+        COMPANY_PROFILE = self.lookup_company_profile(company_number)
+        return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE]
 
 
     def lookup_company_group_name(self, company_number):
-        company_info = self.lookup_company_info(company_number)
-        return company_info[COMPANY_INFO_ENTRY_FIELD_INDEX_GROUP_NAME]
+        COMPANY_PROFILE = self.lookup_company_profile(company_number)
+        return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME]
 
 
     def lookup_company_group_number(self, company_number):
-        company_info = self.lookup_company_info(company_number)
-        return company_info[COMPANY_INFO_ENTRY_FIELD_INDEX_GROUP_NUMBER]
+        COMPANY_PROFILE = self.lookup_company_profile(company_number)
+        return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER]

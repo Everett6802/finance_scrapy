@@ -23,13 +23,11 @@ class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyBase):
         self.DATETIME_OLD_FORMAT = datetime(2013, 7, 26)
 
         super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(
-            "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
-            __file__, 
-            # 'utf-8', 
-            # '.table_f tr', 
-            CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
-            datetime_range_start, 
-            datetime_range_end
+            # "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
+            __file__
+            # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
+            # datetime_range_start, 
+            # datetime_range_end
         )
 
         self.need_check_everytime = False
@@ -50,8 +48,8 @@ class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyBase):
             self.start_index_list = [2, 1] 
 
 
-    def assemble_web_url(self, datetime_cfg):
-        url = self.url_format.format(*(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+    def assemble_web_url(self, timeslice):
+        url = self.url_format.format(*(timeslice.year, timeslice.month, timeslice.day))
         if self.need_check_everytime:
             self.datetime_curday = datetime_cfg
         return url

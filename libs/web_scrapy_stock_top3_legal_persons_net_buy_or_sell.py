@@ -17,22 +17,20 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyStockTop3LegalPersonsNetBuyOrSell, self).__init__(
-            "http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date={0}%2F{1}%2F{2}&mSubmit=%ACd%B8%DF&yr=1979&w_date=19790904&m_date=19790904", 
-            __file__, 
-            # 'big5', 
-            # '.board_trad tr', 
-            CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
-            datetime_range_start, 
-            datetime_range_end
+            # "http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date={0}%2F{1}%2F{2}&mSubmit=%ACd%B8%DF&yr=1979&w_date=19790904&m_date=19790904", 
+            __file__
+            # CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
+            # datetime_range_start, 
+            # datetime_range_end
         )
 
 
-    def assemble_web_url(self, datetime_cfg):
+    def assemble_web_url(self, timeslice):
         url = self.url_format.format(
             *(
-                datetime_cfg.year - 1911, 
-                "%02d" % datetime_cfg.month,
-                "%02d" % datetime_cfg.day
+                timeslice.year - 1911, 
+                "%02d" % timeslice.month,
+                "%02d" % timeslice.day
             )
         )
         return url

@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 import common as CMN
 import common_class as CMN_CLS
 from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
+from libs import web_scrapy_url_time_range as URLTimeRange
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
@@ -34,6 +35,7 @@ class WebScrapyTimeSliceGenerator(object):
         # self.company_foreign_investors_shareholder_timeslice_list = None
         self.financial_statement_last_season_cfg = None
         self.datetime_today = None
+        self.url_time_range = None
 
 
     def initialize(self):
@@ -84,7 +86,7 @@ class WebScrapyTimeSliceGenerator(object):
         return company_foreign_investors_shareholder_timeslice_list
 
 
-    def __generate_time_slice_by_workday(self, datetime_start, datetime_end, time_slice_cfg=None):
+    def __generate_time_slice_by_workday(self, datetime_start, datetime_end, **kwargs):
 # The data type in the list is datetime
         if self.workday_canlendar is None:
             self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
@@ -97,16 +99,13 @@ class WebScrapyTimeSliceGenerator(object):
             datetime_end = self.workday_canlendar.get_latest_workday()
 # Return the iterable
         return WorkdayCanlendar.WebScrapyWorkdayCanlendarNearestIterator(datetime_start, datetime_end)
-        # for timeslice in datetime_iterator:
-        #     timeslice_list.append(timeslice)
-        # return timeslice_list
 
 
-    def __generate_time_slice_by_company_foreign_investors_shareholder(self, datetime_start, datetime_end, time_slice_cfg):
+    def __generate_time_slice_by_company_foreign_investors_shareholder(self, datetime_start, datetime_end, **kwargs):
 # The data type in the list is datetime
-        if time_slice_cfg is None:
-            raise ValueError("The config should NOT be NULL") 
-        company_code_number = time_slice_cfg.get("company_code_number", None)
+        # if time_slice_cfg is None:
+        #     raise ValueError("The config should NOT be NULL") 
+        company_code_number = kwargs.pop("company_code_number", None)
         if company_code_number is None:
             raise ValueError("Fail to find the 'company_code_number' in the config") 
         company_foreign_investors_shareholder_timeslice_list = self.__get_company_foreign_investors_shareholder_time_list(company_code_number)
@@ -154,7 +153,7 @@ class WebScrapyTimeSliceGenerator(object):
         return TimeSliceIterator(datetime_start, datetime_end, company_foreign_investors_shareholder_timeslice_list)
 
 
-    def __generate_time_slice_by_revenue(self, datetime_start, datetime_end, time_slice_cfg=None):
+    def __generate_time_slice_by_revenue(self, datetime_start, datetime_end, **kwargs):
 # Check time range
         if datetime_start > self.datetime_today:
             raise ValueError("The start day [%s] is later than today[%s]" % (CMN.to_date_only_str(datetime_start), CMN.to_date_only_str(self.datetime_today)))
@@ -173,7 +172,7 @@ class WebScrapyTimeSliceGenerator(object):
         return self.__generate_time_slice_by_month(datetime_start, datetime_end, time_slice_cfg)
 
 
-    def __generate_time_slice_by_month(self, datetime_start, datetime_end, time_slice_cfg=None):
+    def __generate_time_slice_by_month(self, datetime_start, datetime_end, **kwargs):
 # The data type in the list is datetime
 # Define the iterator
         class TimeSliceIterator(object):
@@ -201,7 +200,7 @@ class WebScrapyTimeSliceGenerator(object):
         return TimeSliceIterator(datetime_start, datetime_end)
 
 
-    def __generate_time_slice_by_financial_statement_season(self, datetime_start, datetime_end, time_slice_cfg=None):
+    def __generate_time_slice_by_financial_statement_season(self, datetime_start, datetime_end, **kwargs):
 # The data type in the list is a dictionay with the fields: year, season
         def calculate_season_number(financial_statement_season):
             return financial_statement_season['year'] * 10 + financial_statement_season['season']
@@ -245,14 +244,43 @@ class WebScrapyTimeSliceGenerator(object):
         return TimeSliceIterator(financial_statement_start_season_cfg, financial_statement_end_season_cfg)
 
 
-    def generate_time_slice(self, time_slice_type, datetime_start, datetime_end, time_slice_cfg=None):
+    def __restrict_time_range(self, datetime_start, datetime_end, date_source_id):
+# Caution: For Market mode, the data_source_id is date source type.
+# Caution: For Stock Mode, the data_source_id is company code number.
         if datetime_start > datetime_end:
             raise RuntimeError("The Start Time[%s] should NOT be greater than the End Time[%s]" % (datetime_start, datetime_end))
+        if self.url_time_range is None:
+            self.url_time_range = URLTimeRange.WebScrapyMarketURLTimeRange.Instance() if CMN.IS_FINANCE_MARKET_MODE else URLTimeRange.WebScrapyStockURLTimeRange.Instance()
+        if datetime_start is None or datetime_start < self.url_time_range.get_time_range_start(date_source_id)
+            datetime_start = self.url_time_range.get_time_range_start(date_source_id)
+        if datetime_end is None or datetime_end > self.url_time_range.get_time_range_end(date_source_id)
+            datetime_end = self.url_time_range.get_time_range_end(date_source_id)
+        g_logger.debug("The URL[ID: %d] restricted time range: %s %s" % (date_source_id, CMN.to_date_only_str(datetime_start), CMN.to_date_only_str(datetime_start)))
+        return (datetime_start, datetime_end)
 
+
+    def generate_time_slice(self, time_slice_type, **kwargs):
         if self.datetime_today is None:
            self.datetime_today  = datetime.today()
-        if datetime_end > self.datetime_today:
-            g_logger.warn("The end day [%s] is later than the today[%s]" % (CMN.to_date_only_str(datetime_end), CMN.to_date_only_str(self.datetime_today)))
-            datetime_end = self.datetime_today
-
-        return (self.generate_time_slice_func_ptr[time_slice_type])(datetime_start, datetime_end, time_slice_cfg)
+# Check input argument
+        data_source_index = kwargs.get("data_source_index", None)
+        if data_source_index is None:
+            raise TypeError("The data_source_index field is NOT found in kwargs")
+        datetime_start = kwargs.get("datetime_range_start", None)
+        datetime_end = kwargs.get("datetime_range_end", None)
+        date_source_id = kwargs.get("date_source_id", None)
+        company_code_number = kwargs.get("company_code_number", None)
+        if CMN.IS_FINANCE_STOCK_MODE and company_code_number is None:
+            raise TypeError("The company_code_number field is NOT found in kwargs")
+        # if kwargs:
+        #     raise TypeError("Unexpected **kwargs: %s" % kwargs)
+# Restrict the max time range
+        (restricted_datetime_start, restricted_datetime_end) = self.__restrict_time_range(
+            datetime_start, 
+            datetime_end, 
+            data_source_index if CMN.IS_FINANCE_MARKET_MODE else company_code_number
+        )
+        time_slice_kwargs = {}
+        if CMN.IS_FINANCE_STOCK_MODE:
+            time_slice_kwargs["company_code_number"] = company_code_number
+        return (self.generate_time_slice_func_ptr[time_slice_type])(restricted_datetime_start, restricted_datetime_end, **time_slice_kwargs)

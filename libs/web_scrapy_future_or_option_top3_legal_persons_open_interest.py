@@ -17,18 +17,16 @@ class WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest(web_scrapy_base.WebScr
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest, self).__init__(
-            "http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
-            __file__, 
-            # 'utf-8', 
-            # '.table_f tr', 
-            CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
-            datetime_range_start, 
-            datetime_range_end
+            # "http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
+            __file__
+            # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
+            # datetime_range_start, 
+            # datetime_range_end
         )
         
 
-    def assemble_web_url(self, datetime_cfg):
-        url = self.url_format.format(*(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day))
+    def assemble_web_url(self, timeslice):
+        url = self.url_format.format(*(timeslice.year, timeslice.month, timeslice.day))
         return url
 
 

@@ -17,27 +17,25 @@ class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyBase):
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyStockExchangeAndVolume, self).__init__(
-            "http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report{0}{1:02d}/{0}{1:02d}_F3_1_2.php?STK_NO=&myear={0}&mmon={1:02d}",
-            __file__, 
-            # 'big5', 
-            # '.board_trad tr', 
-            CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
-            datetime_range_start, 
-            datetime_range_end,
-            enable_time_range_mode = True,
+            # "http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report{0}{1:02d}/{0}{1:02d}_F3_1_2.php?STK_NO=&myear={0}&mmon={1:02d}",
+            __file__
+            # CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
+            # datetime_range_start, 
+            # datetime_range_end,
+            # enable_time_range_mode = True,
         )
         # import pdb; pdb.set_trace()
         datetime_start_cfg = self.get_datetime_startday()
         datetime_end_cfg = self.get_datetime_endday()
-        assert (datetime_start_cfg.year == datetime_end_cfg.year), "Start Year[%d] is NOT equal to End Year[%d]" % (datetime_start_cfg.year, datetime_end_cfg.year)
-        assert (datetime_start_cfg.month == datetime_end_cfg.month), "Start Month[%d] is NOT equal to End Month[%d]" % (datetime_start_cfg.month, datetime_end_cfg.month)
+        # assert (datetime_start_cfg.year == datetime_end_cfg.year), "Start Year[%d] is NOT equal to End Year[%d]" % (datetime_start_cfg.year, datetime_end_cfg.year)
+        # assert (datetime_start_cfg.month == datetime_end_cfg.month), "Start Month[%d] is NOT equal to End Month[%d]" % (datetime_start_cfg.month, datetime_end_cfg.month)
         self.whole_month_data = True
         if  datetime_start_cfg.day > 1 or datetime_end_cfg.day < CMN.get_cfg_month_last_day(datetime_end_cfg):
             self.whole_month_data = False
 
 
-    def assemble_web_url(self, datetime_cfg):
-        assert (datetime_cfg is None), "datatime_cfg is NOT None"
+    def assemble_web_url(self, timeslice):
+        assert (timeslice is None), "timeslice is NOT None"
         datetime_month_cfg = self.get_datetime_startday()
         url = self.url_format.format(*(datetime_month_cfg.year, datetime_month_cfg.month))
 

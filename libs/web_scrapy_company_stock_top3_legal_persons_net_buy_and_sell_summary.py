@@ -22,24 +22,22 @@ class WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.W
 
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
-            "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
-            __file__, 
-            # 'big5', 
-            # 'table tbody tr', 
-            CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
-            datetime_range_start, 
-            datetime_range_end
+            # "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
+            __file__
+            # CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+            # datetime_range_start, 
+            # datetime_range_end
         )
         self.new_format_table = False
         # self.entry_index_index = OLD_FORMAT_ENTRY_END_INDEX
 
 
-    def assemble_web_url(self, datetime_cfg):
+    def assemble_web_url(self, timeslice):
         url = self.url_format.format(
             *(
-                datetime_cfg.year - 1911, 
-                "%02d" % datetime_cfg.month,
-                "%02d" % datetime_cfg.day
+                timeslice.year - 1911, 
+                "%02d" % timeslice.month,
+                "%02d" % timeslice.day
             )
         )
         if not self.new_format_table:

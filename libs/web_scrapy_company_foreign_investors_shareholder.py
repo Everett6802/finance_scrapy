@@ -27,12 +27,12 @@ class WebScrapyCompanyForeignInvestorsShareholder(web_scrapy_base.WebScrapyBase)
         )
 
 
-    def assemble_web_url(self, datetime_cfg):
+    def assemble_web_url(self, timeslice):
         url = self.url_format.format(
             *(
-                datetime_cfg.year - 1911, 
-                "%02d" % datetime_cfg.month,
-                "%02d" % datetime_cfg.day
+                timeslice.year - 1911, 
+                "%02d" % timeslice.month,
+                "%02d" % timeslice.day
             )
         )
         return url

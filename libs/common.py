@@ -10,6 +10,14 @@ from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
+FINANCE_ANALYSIS_MARKET = 0
+FINANCE_ANALYSIS_STOCK = 1
+
+IS_FINANCE_MARKET_MODE = False
+IS_FINANCE_STOCK_MODE = True
+
+#################################################################################
+# Return Value
 RET_SUCCESS = 0
 
 RET_WARN_BASE = 100
@@ -18,6 +26,7 @@ RET_WARN_URL_NOT_EXIST = RET_WARN_BASE + 1
 RET_FAILURE_BASE = 100
 RET_FAILURE_UNKNOWN = RET_FAILURE_BASE + 1
 RET_FAILURE_TIMEOUT = RET_FAILURE_BASE + 2
+#################################################################################
 
 RUN_RESULT_FILENAME = "run_result"
 TIME_FILENAME_FORMAT = "%04d%02d%02d%02d%02d"
@@ -30,17 +39,139 @@ WRITE2CSV_ONE_DAY_PER_FILE = 1
 PARSE_URL_DATA_BY_BS4 = 0
 PARSE_URL_DATA_BY_JSON = 1
 
+URL_ENCODING_BIG5 = 'big5'
+URL_ENCODING_UTF8 = 'utf-8'
+
 MARKET_TYPE_STOCK_EXCHANGE = 0
 MARKET_TYPE_OVER_THE_COUNTER = 1
- 
+
+DATA_TIME_UNIT_DAY = 0
+DATA_TIME_UNIT_WEEK = 1
+DATA_TIME_UNIT_MONTH = 2
+DATA_TIME_UNIT_QAURTER = 3
+DATA_TIME_UNIT_YEAR = 4
+
+TIMESLICE_GENERATE_BY_WORKDAY = 0
+TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER = 1
+TIMESLICE_GENERATE_BY_MONTH = 2
+TIMESLICE_GENERATE_BY_REVENUE = 3
+TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON = 4
+
+TIMESLICE_TO_TIME_UNIT_MAPPING = {
+    TIMESLICE_GENERATE_BY_WORKDAY: DATA_TIME_UNIT_DAY,
+    TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER: DATA_TIME_UNIT_WEEK,
+    TIMESLICE_GENERATE_BY_MONTH: DATA_TIME_UNIT_MONTH,
+    TIMESLICE_GENERATE_BY_REVENUE: DATA_TIME_UNIT_MONTH,
+    TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON: DATA_TIME_UNIT_QAURTER,
+}
+
+DEF_SOURCE_URL_PARSING = [
+    {# 臺股指數及成交量
+        "url_format": "http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report{0}{1:02d}/{0}{1:02d}_F3_1_2.php?STK_NO=&myear={0}&mmon={1:02d}", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_MONTH,
+        "url_encoding": URL_ENCODING_BIG5,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
+    },
+    {# 三大法人買賣金額統計表
+        "url_format": "http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date={0}%2F{1}%2F{2}&mSubmit=%ACd%B8%DF&yr=1979&w_date=19790904&m_date=19790904", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_encoding": URL_ENCODING_BIG5,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
+    },
+    {# 融資融券餘額統計表
+        "url_format": "http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', 'tr'),
+    },
+    {# 期貨和選擇權未平倉口數與契約金額
+        "url_format": "http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_c tr'), 
+    },
+    {# 期貨或選擇權未平倉口數與契約金額
+        "url_format": "http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
+    },
+    {# 臺指選擇權買賣權未平倉口數與契約金額
+        "url_format": "http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),  
+    },
+    {# 臺指選擇權賣權買權比
+        "url_format": "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={3}%2F{4}%2F{5}", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_MONTH,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),    
+    },
+    {# 期貨大額交易人未沖銷部位結構表 : 臺股期貨
+        "url_format": "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),    
+    },
+    {# 三大法人上市個股買賣超日報
+        "url_format": "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_encoding": URL_ENCODING_BIG5,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": '.board_trad tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),    
+    },
+    {# 三大法人上櫃個股買賣超日報
+        "url_format": "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1}/{2}&_=1460104675945", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
+        "url_css_selector": 'aaData',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByJSON('aaData'),    
+    },
+]
+
+DEF_CSV_TIME_UNIT = [
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
+    {"csv_time_unit": DATA_TIME_UNIT_YEAR},  
+]
+
 DEF_WEB_SCRAPY_BEGIN_DATE_STR = "2000-01-01"
 DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
-DEF_COMPANY_CODE_NUMBER_CONF_FILENAME = ".company_code_number.conf"
+DEF_COMPANY_PROFILE_CONF_FILENAME = ".company_profile.conf"
 DEF_COMPANY_GROUP_CONF_FILENAME = ".company_group.conf"
+DEF_FINANCE_ANALYSIS_CONF_FILENAME = ".finance_analysis.conf"
+DEF_MARKET_STOCK_SWITCH_CONF_FILENAME = "market_stock_switch.conf"
 DEF_COPY_CONF_FILE_DST_PROJECT_NAME1 = "finance_recorder_java"
 DEF_COPY_CONF_FILE_DST_PROJECT_NAME2 = "finance_analyzer"
-DEF_TODAY_DATA_EXIST_HOUR = 20
-DEF_TODAY_DATA_EXIST_MINUTE = 0
+DEF_TODAY_MARKET_DATA_EXIST_HOUR = 20
+DEF_TODAY_MARKET_DATA_EXIST_MINUTE = 0
+DEF_TODAY_STOCK_DATA_EXIST_HOUR = 20
+DEF_TODAY_STOCK_DATA_EXIST_MINUTE = 0
 DEF_CONF_FOLDER = "conf"
 DEF_CSV_FILE_PATH = "/var/tmp/finance"
 DEF_SNAPSHOT_FOLDER = "snapshot"
@@ -103,23 +234,28 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     # "WebScrapyCompanyDealersNetBuyOrSellSummary",
 ]
 
-DEF_DATA_SOURCE_WRITE2CSV_METHOD = [
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    WRITE2CSV_ONE_DAY_PER_FILE,
-    WRITE2CSV_ONE_DAY_PER_FILE,
-    WRITE2CSV_ONE_MONTH_PER_FILE,
-    # WRITE2CSV_ONE_DAY_PER_FILE,
-    # WRITE2CSV_ONE_DAY_PER_FILE,
-    # WRITE2CSV_ONE_DAY_PER_FILE,
-    # WRITE2CSV_ONE_DAY_PER_FILE,
-]
+DEF_COMPANY_DATA_SOURCE_START_INDEX = 0
+DEF_STOCK_DATA_SOURCE_START_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyDepositoryShareholderDistributionTable")
+DEF_COMPANY_DATA_SOURCE_END_INDEX = DEF_STOCK_DATA_SOURCE_START_INDEX - 1
+DEF_STOCK_DATA_SOURCE_END_INDEX = len(DEF_WEB_SCRAPY_CLASS_NAME_MAPPING)
+
+# DEF_SOURCE_WRITE2CSV_METHOD = [
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     WRITE2CSV_ONE_DAY_PER_FILE,
+#     WRITE2CSV_ONE_DAY_PER_FILE,
+#     WRITE2CSV_ONE_MONTH_PER_FILE,
+#     # WRITE2CSV_ONE_DAY_PER_FILE,
+#     # WRITE2CSV_ONE_DAY_PER_FILE,
+#     # WRITE2CSV_ONE_DAY_PER_FILE,
+#     # WRITE2CSV_ONE_DAY_PER_FILE,
+# ]
 
 DEF_WEB_SCRAPY_DATA_SOURCE_TYPE = [
     "TODAY",
@@ -151,14 +287,35 @@ def transform_datetime2string(year, month, day, need_year_transform=False):
     return DATE_STRING_FORMAT % (year_transform, int(month), int(day))
 
 
-def parse_config_file(conf_filename):
+def get_config_filepath(conf_filename):
     current_path = os.path.dirname(os.path.realpath(__file__))
     [project_folder, lib_folder] = current_path.rsplit('/', 1)
     conf_filepath = "%s/%s/%s" % (project_folder, DEF_CONF_FOLDER, conf_filename)
     g_logger.debug("Parse the config file: %s" % conf_filepath)
-    # import pdb; pdb.set_trace()
-    total_param_list = []
+    return conf_filepath
 
+
+def get_finance_analysis_mode():
+    conf_filepath = get_config_filepath(DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+    try:
+        with open(conf_filepath, 'r') as fp:
+            for line in fp:
+                mode = int(line)
+                if mode not in [FINANCE_ANALYSIS_MARKET, FINANCE_ANALYSIS_STOCK]:
+                    raise ValueError("Unknown finance analysis mode: %d" % mode)
+    except Exception as e:
+        g_logger.error("Error occur while parsing config file[%s], due to %s" % (DEF_MARKET_STOCK_SWITCH_CONF_FILENAME, str(e)))
+        raise e
+    return mode
+
+
+def is_market_mode():
+    return get_finance_analysis_mode() == FINANCE_ANALYSIS_MARKET
+
+def parse_config_file(conf_filename):
+    # import pdb; pdb.set_trace()
+    conf_filepath = get_config_filepath(conf_filename)
+    total_param_list = []
     try:
         with open(conf_filepath, 'r') as fp:
             for line in fp:
@@ -288,26 +445,54 @@ def to_unicode(unicode_or_str, encoding):
 
 
 def to_date_only_str(datetime_cfg):
+    if not isinstance(datetime_cfg, datetime):
+        raise ValueError("The type of datetime_cfg is NOT datetime")
     return (("%s" % datetime_cfg)).split(' ')[0]
 
 
-def is_the_same_month(datetime_cfg1, datetime_cfg2):
-    return (datetime_cfg1.year == datetime_cfg2.year and datetime_cfg1.month == datetime_cfg2.month)
+def is_the_same_year(datetime_cfg1, datetime_cfg2):
+    return (datetime_cfg1.year == datetime_cfg2.year)
 
-DEF_DATA_SOURCE_START_DATE_CFG = [
-    transform_string2datetime("2001-01-01"),
-    transform_string2datetime("2004-04-07"),
-    transform_string2datetime("2001-01-01"),
-    get_year_offset_datetime_cfg(datetime.today(), -3),
-    get_year_offset_datetime_cfg(datetime.today(), -3),
-    get_year_offset_datetime_cfg(datetime.today(), -3),
-    transform_string2datetime("2002-01-01"),
-    transform_string2datetime("2004-07-01"),
-    transform_string2datetime("2012-05-02"),
-    transform_string2datetime("2012-05-02"),
-    transform_string2datetime("2015-04-30"),
-    # transform_string2datetime("2010-01-04"),
-    # transform_string2datetime("2004-12-17"),
-    # transform_string2datetime("2004-12-17"),
-    # transform_string2datetime("2004-12-17"),
-]
+
+def is_the_same_month(datetime_cfg1, datetime_cfg2):
+    return (is_the_same_year(datetime_cfg1, datetime_cfg2) and datetime_cfg1.month == datetime_cfg2.month)
+
+
+def assemble_csv_year_time_str(timeslice_list):
+    if not isinstance(timeslice_list, list):
+        raise ValueError("timeslice_list is NOT a list")
+    timeslice_list_len = len(timeslice_list)
+    datetime_cfg_start = timeslice_list[0]
+    for index in range(1, timeslice_list_len):
+        if not is_the_same_year(datetime_cfg_start, timeslice_list[index]):
+            raise ValueError("The time[%s] is NOT in the year: %04d" % (to_date_only_str(timeslice_list[index]), datetime_cfg_start.year))
+    return "%04d" % datetime_cfg_start.year
+
+
+def assemble_csv_month_time_str(timeslice_list):
+    if not isinstance(timeslice_list, list):
+        raise ValueError("timeslice_list is NOT a list")
+    timeslice_list_len = len(timeslice_list)
+    datetime_cfg_start = timeslice_list[0]
+    for index in range(1, timeslice_list_len):
+        if not is_the_same_month(datetime_cfg_start, timeslice_list[index]):
+            raise ValueError("The time[%s] is NOT in the month: %04d-%02d" % (to_date_only_str(timeslice_list[index]), datetime_cfg_start.year, datetime_cfg_start.month))
+    return "%04d%02d" % (datetime_cfg_start.year, datetime_cfg_start.month)
+
+# DEF_DATA_SOURCE_START_DATE_CFG = [
+#     transform_string2datetime("2001-01-01"),
+#     transform_string2datetime("2004-04-07"),
+#     transform_string2datetime("2001-01-01"),
+#     get_year_offset_datetime_cfg(datetime.today(), -3),
+#     get_year_offset_datetime_cfg(datetime.today(), -3),
+#     get_year_offset_datetime_cfg(datetime.today(), -3),
+#     transform_string2datetime("2002-01-01"),
+#     transform_string2datetime("2004-07-01"),
+#     transform_string2datetime("2012-05-02"),
+#     transform_string2datetime("2012-05-02"),
+#     transform_string2datetime("2015-04-30"),
+#     # transform_string2datetime("2010-01-04"),
+#     # transform_string2datetime("2004-12-17"),
+#     # transform_string2datetime("2004-12-17"),
+#     # transform_string2datetime("2004-12-17"),
+# ]

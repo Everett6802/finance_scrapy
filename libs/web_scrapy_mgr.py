@@ -19,7 +19,7 @@ class WebSracpyMgr(object):
         self.SLEEP_INTERVAL_FOR_EACH_LOOP = 6
 
         self.thread_pool_list = []
-        self.retry_config_list = []
+        # self.retry_config_list = []
 
         self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
 
@@ -56,89 +56,95 @@ class WebSracpyMgr(object):
 
 
     def __do_scrapy(self, module_name, class_name, datetime_range_start, datetime_range_end):
-        datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
-        #import pdb; pdb.set_trace()
-        for datetime_range in datetime_range_list:
-            web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
-            if web_scrapy_class_obj is None:
-                raise RuntimeError("Fail to allocate WebScrapyBase derived class")
-            g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
-            try:
-                web_scrapy_class_obj.scrap_web_to_csv()
-            except requests.exceptions.Timeout as e:
-# Fail to scrap the web data, put it to the re-try list
-                g_logger.warn("Put %s in the re-try list" % web_scrapy_class_obj.get_description())
-                self.retry_config_list.append(
-                    {
-                        'index': CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING,
-                        'start': datetime_range_start,
-                        'end': datetime_range_end,
-                    }
-                )
+        web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range_start, datetime_range_end)
+        if web_scrapy_class_obj is None:
+            raise RuntimeError("Fail to allocate WebScrapyBase derived class")
+        g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
+        web_scrapy_class_obj.scrap_web_to_csv()
+
+#         datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
+#         #import pdb; pdb.set_trace()
+#         for datetime_range in datetime_range_list:
+#             web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
+#             if web_scrapy_class_obj is None:
+#                 raise RuntimeError("Fail to allocate WebScrapyBase derived class")
+#             g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
+#             try:
+#                 web_scrapy_class_obj.scrap_web_to_csv()
+#             except requests.exceptions.Timeout as e:
+# # Fail to scrap the web data, put it to the re-try list
+#                 g_logger.warn("Put %s in the re-try list" % web_scrapy_class_obj.get_description())
+#                 self.retry_config_list.append(
+#                     {
+#                         'index': CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING,
+#                         'start': datetime_range_start,
+#                         'end': datetime_range_end,
+#                     }
+#                 )
 
 
-    def __do_scrapy_by_multithread(self, module_name, class_name, datetime_range_start, datetime_range_end):  
-        datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
-        datetime_range_list_len = len(datetime_range_list)
-        start_index = 0
-        end_index = 0
-        # import pdb; pdb.set_trace()
-        thread_list = []
-        all_trigger = False
-        check_dead_times = 0
-        while True:
-            if not all_trigger:
-                thread_list_len = len(thread_list)
-# There are max max_concurrent_thread_amount cocurrent threads simultaneously
-                if thread_list_len < self.MAX_CONCURRENT_THREAD_AMOUNT:
-                    new_concurrent_thread_amount = self.MAX_CONCURRENT_THREAD_AMOUNT - len(thread_list)
-                    end_index = start_index + new_concurrent_thread_amount
-# Initiate a list of thread classes to wrap the object
-                    for datetime_range in datetime_range_list[start_index : end_index]:
-                        web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
-# Start the thread for scraping web data
-                        web_scrapy_thread_obj = web_scrapy_thread.WebScrapyThread(web_scrapy_class_obj)
-                        g_logger.debug("Start the thread for scraping %s......", web_scrapy_thread_obj)
-                        web_scrapy_thread_obj.start()                
-                        thread_list.append(web_scrapy_thread_obj)
+#     def __do_scrapy_by_multithread(self, module_name, class_name, datetime_range_start, datetime_range_end):  
+#         datetime_range_list = CMN.get_datetime_range_by_month_list(datetime_range_start, datetime_range_end)
+#         datetime_range_list_len = len(datetime_range_list)
+#         start_index = 0
+#         end_index = 0
+#         # import pdb; pdb.set_trace()
+#         thread_list = []
+#         all_trigger = False
+#         check_dead_times = 0
+#         while True:
+#             if not all_trigger:
+#                 thread_list_len = len(thread_list)
+# # There are max max_concurrent_thread_amount cocurrent threads simultaneously
+#                 if thread_list_len < self.MAX_CONCURRENT_THREAD_AMOUNT:
+#                     new_concurrent_thread_amount = self.MAX_CONCURRENT_THREAD_AMOUNT - len(thread_list)
+#                     end_index = start_index + new_concurrent_thread_amount
+# # Initiate a list of thread classes to wrap the object
+#                     for datetime_range in datetime_range_list[start_index : end_index]:
+#                         web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name, datetime_range['start'], datetime_range['end'])
+# # Start the thread for scraping web data
+#                         web_scrapy_thread_obj = web_scrapy_thread.WebScrapyThread(web_scrapy_class_obj)
+#                         g_logger.debug("Start the thread for scraping %s......", web_scrapy_thread_obj)
+#                         web_scrapy_thread_obj.start()                
+#                         thread_list.append(web_scrapy_thread_obj)
 
-# Sleep for a while before checking
-            time.sleep(self.SLEEP_INTERVAL_FOR_EACH_LOOP)
-# Check each worker thread is done
-            check_dead_times += 1
-            g_logger.debug("Check the thread status in the thread pool......%d", check_dead_times)
-            index_to_be_delete_list = [index for index, thread in enumerate(thread_list) if not thread.isAlive()]
-            index_to_be_delete_list_len = len(index_to_be_delete_list)
-            if index_to_be_delete_list_len != 0:
-                g_logger.debug("Delete %d useless thread(s)", index_to_be_delete_list_len)
-                index_to_be_delete_list.reverse()
-# Remove the dead worker thread
-                for index_to_be_delete in index_to_be_delete_list:
-                    thread = thread_list[index_to_be_delete]
-                    if CMN.check_failure(thread.get_result()):
-                        web_scrapy_obj = thread.get_obj()
-# Fail to scrap the web data, put it to the re-try list
-                        g_logger.warn("Put %s in the re-try list" % web_scrapy_obj.get_description())
-                        self.retry_config_list.append(
-                            {
-                                'index': web_scrapy_obj.get_data_source_index(),
-                                'start': web_scrapy_obj.get_datetime_startday(),
-                                'end': web_scrapy_obj.get_datetime_endday(),
-                            }
-                        )
-# Keep track of the error message
-                        # self.thread_errmsg_list[thread.index_in_threadpool] = thread.return_errmsg()
-                    g_logger.debug("The Thread for scraping %s...... DONE", thread)
-                    del thread_list[index_to_be_delete]
-            start_index = end_index          
-            if end_index > datetime_range_list_len and not all_trigger:
-                all_trigger = True
-                g_logger.debug("All threads are TRIGGERED")
-# Check if all worker threads are done
-            if all_trigger:
-                if len(thread_list) == 0:
-                    g_logger.debug("All threads are DONE")
-                    break
+# # Sleep for a while before checking
+#             time.sleep(self.SLEEP_INTERVAL_FOR_EACH_LOOP)
+# # Check each worker thread is done
+#             check_dead_times += 1
+#             g_logger.debug("Check the thread status in the thread pool......%d", check_dead_times)
+#             index_to_be_delete_list = [index for index, thread in enumerate(thread_list) if not thread.isAlive()]
+#             index_to_be_delete_list_len = len(index_to_be_delete_list)
+#             if index_to_be_delete_list_len != 0:
+#                 g_logger.debug("Delete %d useless thread(s)", index_to_be_delete_list_len)
+#                 index_to_be_delete_list.reverse()
+# # Remove the dead worker thread
+#                 for index_to_be_delete in index_to_be_delete_list:
+#                     thread = thread_list[index_to_be_delete]
+#                     if CMN.check_failure(thread.get_result()):
+#                         web_scrapy_obj = thread.get_obj()
+# # Fail to scrap the web data, put it to the re-try list
+#                         g_logger.warn("Put %s in the re-try list" % web_scrapy_obj.get_description())
+#                         self.retry_config_list.append(
+#                             {
+#                                 'index': web_scrapy_obj.get_data_source_index(),
+#                                 'start': web_scrapy_obj.get_datetime_startday(),
+#                                 'end': web_scrapy_obj.get_datetime_endday(),
+#                             }
+#                         )
+# # Keep track of the error message
+#                         # self.thread_errmsg_list[thread.index_in_threadpool] = thread.return_errmsg()
+#                     g_logger.debug("The Thread for scraping %s...... DONE", thread)
+#                     del thread_list[index_to_be_delete]
+#             start_index = end_index          
+#             if end_index > datetime_range_list_len and not all_trigger:
+#                 all_trigger = True
+#                 g_logger.debug("All threads are TRIGGERED")
+# # Check if all worker threads are done
+#             if all_trigger:
+#                 if len(thread_list) == 0:
+#                     g_logger.debug("All threads are DONE")
+#                     break
 
     def __assemble_csv_filepath(self, datetime_cfg, data_source_index):
         if CMN.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
@@ -196,21 +202,22 @@ class WebSracpyMgr(object):
                 if not multi_thread:
                     self.__do_scrapy(module_name, class_name, config['start'], config['end'])
                 else:
-                    self.__do_scrapy_by_multithread(module_name, class_name, config['start'], config['end'])
+                    raise ValueError("Multi-thread mode is NOT supported")
+                    # self.__do_scrapy_by_multithread(module_name, class_name, config['start'], config['end'])
             except Exception as e:
                 g_logger.error("Error occur while scraping %s data, due to: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], str(e)))
 
-# Retry to scrap the web data if error occurs
-        if need_retry and len(self.retry_config_list) != 0:
-            g_logger.warn("Retry to scrap the web data due to some errors.......")
-            for retry_config in self.retry_config_list:
-                try:
-                    module_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[retry_config['index']]
-                    class_name = CMN.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[retry_config['index']]
-                    g_logger.debug("Re-Try to initiate %s.%s" % (module_name, class_name))
-                    self.__do_scrapy(module_name, class_name, retry_config['start'], retry_config['end'])
-                except Exception as e:
-                    g_logger.error("Error occur while ReTrying to scrap %s data, due to: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[retry_config['index']], str(e)))
+# # Retry to scrap the web data if error occurs
+#         if need_retry and len(self.retry_config_list) != 0:
+#             g_logger.warn("Retry to scrap the web data due to some errors.......")
+#             for retry_config in self.retry_config_list:
+#                 try:
+#                     module_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[retry_config['index']]
+#                     class_name = CMN.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[retry_config['index']]
+#                     g_logger.debug("Re-Try to initiate %s.%s" % (module_name, class_name))
+#                     self.__do_scrapy(module_name, class_name, retry_config['start'], retry_config['end'])
+#                 except Exception as e:
+#                     g_logger.error("Error occur while ReTrying to scrap %s data, due to: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[retry_config['index']], str(e)))
 
 
     def do_debug(self, data_source_index):
