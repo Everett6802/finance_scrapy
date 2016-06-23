@@ -160,37 +160,38 @@ class WebSracpyMgr(object):
 
 
     def check_scrapy(self, config_list):
+        raise RuntimeError("TBD")
         # import pdb; pdb.set_trace()
-        file_not_found_list = []
-        file_is_empty_list = []
-        for config in config_list:
-            data_source_index = config['index']
-            datetime_range_list = CMN.get_datetime_range_by_month_list(config['start'], config['end'])
-            for datetime_range in datetime_range_list:
-                (file_path, file_name) = self.__assemble_csv_filepath(datetime_range['start'], data_source_index)
-                # file_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_range['start'].year, datetime_range['start'].month)
-                # file_path = CMN.DEF_CSV_FILE_PATH + "/" + file_name
-# Check if the file exists
-                if not os.path.exists(file_path):
-                    file_not_found_list.append(
-                        {
-                            'index': data_source_index,
-                            'start': datetime_range['start'],
-                            'end': datetime_range['end'],
-                            'filename': file_name,
-                        }
-                    )
-                elif os.path.getsize(file_path) == 0:
-                    file_is_empty_list.append(
-                        {
-                            'index': data_source_index,
-                            'start': datetime_range['start'],
-                            'end': datetime_range['end'],
-                            'filename': file_name,
-                        }
-                    )
+#         file_not_found_list = []
+#         file_is_empty_list = []
+#         for config in config_list:
+#             data_source_index = config['index']
+#             datetime_range_list = CMN.get_datetime_range_by_month_list(config['start'], config['end'])
+#             for datetime_range in datetime_range_list:
+#                 (file_path, file_name) = self.__assemble_csv_filepath(datetime_range['start'], data_source_index)
+#                 # file_name = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_range['start'].year, datetime_range['start'].month)
+#                 # file_path = CMN.DEF_CSV_FILE_PATH + "/" + file_name
+# # Check if the file exists
+#                 if not os.path.exists(file_path):
+#                     file_not_found_list.append(
+#                         {
+#                             'index': data_source_index,
+#                             'start': datetime_range['start'],
+#                             'end': datetime_range['end'],
+#                             'filename': file_name,
+#                         }
+#                     )
+#                 elif os.path.getsize(file_path) == 0:
+#                     file_is_empty_list.append(
+#                         {
+#                             'index': data_source_index,
+#                             'start': datetime_range['start'],
+#                             'end': datetime_range['end'],
+#                             'filename': file_name,
+#                         }
+#                     )
 
-        return (file_not_found_list, file_is_empty_list)
+#         return (file_not_found_list, file_is_empty_list)
 
 
     def do_scrapy(self, config_list, multi_thread=False, need_retry=True):

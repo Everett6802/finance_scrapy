@@ -148,19 +148,31 @@ DEF_SOURCE_URL_PARSING = [
 ]
 
 DEF_CSV_TIME_UNIT = [
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},
-    {"csv_time_unit": DATA_TIME_UNIT_YEAR},  
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,
+    DATA_TIME_UNIT_YEAR,  
 ]
 
-DEF_WEB_SCRAPY_BEGIN_DATE_STR = "2000-01-01"
+DEF_START_YEAR = 2000
+DEF_END_YEAR = 2100
+DEF_REPUBLIC_ERA_START_YEAR = DEF_START_YEAR - 1911
+DEF_REPUBLIC_ERA_END_YEAR = DEF_END_YEAR - 1911
+DEF_START_QAURTER = 1
+DEF_END_QAURTER = 4
+DEF_START_MONTH = 1
+DEF_END_MONTH = 12
+DEF_START_DAY = 1
+
+DEF_WEB_SCRAPY_BEGIN_DATE_STR = "%d-01-01" % DEF_START_YEAR
+DEF_TODAY_CONFIG_FILENAME = "today.conf"
+DEF_HISTORY_CONFIG_FILENAME = "history.conf"
 DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
 DEF_COMPANY_PROFILE_CONF_FILENAME = ".company_profile.conf"
 DEF_COMPANY_GROUP_CONF_FILENAME = ".company_group.conf"
@@ -238,6 +250,7 @@ DEF_COMPANY_DATA_SOURCE_START_INDEX = 0
 DEF_STOCK_DATA_SOURCE_START_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyDepositoryShareholderDistributionTable")
 DEF_COMPANY_DATA_SOURCE_END_INDEX = DEF_STOCK_DATA_SOURCE_START_INDEX - 1
 DEF_STOCK_DATA_SOURCE_END_INDEX = len(DEF_WEB_SCRAPY_CLASS_NAME_MAPPING)
+DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
 
 # DEF_SOURCE_WRITE2CSV_METHOD = [
 #     WRITE2CSV_ONE_MONTH_PER_FILE,
@@ -267,24 +280,128 @@ DEF_WEB_SCRAPY_DATA_SOURCE_HISTORY_INDEX = DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index
 DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX = DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index("USER_DEFINED")
 DEF_WEB_SCRAPY_DATA_SOURCE_TYPE_LEN = len(DEF_WEB_SCRAPY_DATA_SOURCE_TYPE)
 
-DEF_TODAY_CONFIG_FILENAME = "today.conf"
-DEF_HISTORY_CONFIG_FILENAME = "history.conf"
+DEF_MIN_DATE_STRING_LENGTH = 8
+DEF_MAX_DATE_STRING_LENGTH = 10
+DEF_MIN_MONTH_STRING_LENGTH = 5
+DEF_MAX_MONTH_STRING_LENGTH = 7
+DEF_MIN_QAUTER_STRING_LENGTH = 4
+DEF_MAX_QAUTER_STRING_LENGTH = 6
+
+########################################################################################
+
+def is_republic_era_year(year_value):
+    if isinstance(year_value, int):
+        return True if (year_value / 1000 = 0) else False
+    elif isinstance(year_value, str):
+        return True if len(year_value) != 4 else False
+    raise ValueError("Unknown year value: %s !!!" % str(year_value))
 
 
-def transform_string2datetime(date_string, need_year_transform=False):
-    element_arr = date_string.split('-')
-    if len(element_arr) != 3:
-        raise ValueError("Incorrect config date format: %s" % date_string)
-    return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
+def check_year_range(year_value):
+    if is_republic_era_year(year_value):
+        if not (DEF_REPUBLIC_ERA_START_YEAR <= int(year_value) <= DEF_REPUBLIC_ERA_END_YEAR):
+            raise ValueError("The republic era year[%d] is NOT in the range [%d, %d]" % (int(year_value), DEF_REPUBLIC_ERA_START_YEAR, DEF_REPUBLIC_ERA_END_YEAR))
+    else:
+        if not (DEF_START_YEAR <= int(year_value) <= DEF_END_YEAR):
+            raise ValueError("The year[%d] is NOT in the range [%d, %d]" % (int(year_value), DEF_START_YEAR, DEF_END_YEAR))
 
 
-def transform_datetime_cfg2string(datetime_cfg, need_year_transform=False):
-    return transform_datetime2string(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day, need_year_transform)
+def check_qaurter_range(qaurter_value):
+    if not (DEF_START_QAURTER <= int(month_value) <= DEF_END_QAURTER):
+        raise ValueError("The qaurter[%d] is NOT in the range [%d, %d]" % (int(qaurter_value), DEF_START_QAURTER, DEF_END_QAURTER))
 
 
-def transform_datetime2string(year, month, day, need_year_transform=False):
-    year_transform = (int(year) + 1911) if need_year_transform else int(year)
-    return DATE_STRING_FORMAT % (year_transform, int(month), int(day))
+def check_month_range(month_value):
+    if not (DEF_START_MONTH <= int(month_value) <= DEF_END_MONTH):
+        raise ValueError("The month[%d] is NOT in the range [%d, %d]" % (int(month_value), DEF_START_MONTH, DEF_END_MONTH))
+
+
+def check_day_range(day_value, year_value, month_value):
+    end_day_in_month = get_month_last_day(int(year_value), int(month_value))
+    if not (DEF_START_DAY <= int(day_value) <= end_day_in_month):
+        raise ValueError("The day[%d] is NOT in the range [%d, %d]" % (int(day_value), DEF_START_DAY, end_day_in_month))
+
+
+def check_date_str_format(date_string):
+    mobj = re.match("[\d]{2,4}-[\d]{2}-[\d]{2}", date_string)
+    if mobj is None:
+        raise ValueError("The string[%s] is NOT date format" % date_string)
+    date_string_len = len(date_string)
+    # if date_string_len < DEF_MIN_DATE_STRING_LENGTH or date_string_len > DEF_MAX_DATE_STRING_LENGTH:
+    if not (DEF_MIN_DATE_STRING_LENGTH <= date_string_len <= DEF_MAX_DATE_STRING_LENGTH):
+        raise ValueError("The date stirng[%s] length is NOT in the range [%d, %d]" % (date_string_len, DEF_MIN_DATE_STRING_LENGTH, DEF_MAX_DATE_STRING_LENGTH))
+# Check Year Range
+    check_year_range(mobj.group(1))
+# Check Month Range
+    check_month_range(mobj.group(2))
+# Check Day Range
+    check_day_range(mobj.group(3), mobj.group(1), mobj.group(2))
+    return mobj
+
+
+def check_month_str_format(month_string):
+    mobj = re.match("[\d]{2,4}-[\d]{2}", month_string)
+    if mobj is None:
+        raise ValueError("The string[%s] is NOT month format" % month_string)
+    month_string_len = len(month_string)
+    # if month_string_len < DEF_MIN_MONTH_STRING_LENGTH or month_string_len > DEF_MAX_MONTH_STRING_LENGTH:
+    if not (DEF_MIN_MONTH_STRING_LENGTH <= month_string_len <= DEF_MAX_MONTH_STRING_LENGTH):
+        raise ValueError("The month stirng[%s] length is NOT in the range [%d, %d]" % (month_string_len, DEF_MIN_MONTH_STRING_LENGTH, DEF_MAX_MONTH_STRING_LENGTH))
+# Check Year Range
+    check_year_range(mobj.group(1))
+# Check Month Range
+    check_month_range(mobj.group(2))
+    return mobj
+
+
+def check_quarter_str_format(quarter_string):
+    mobj = re.match("[\d]{2,4}[Qq][\d]{1}", quarter_string)
+    if mobj is None:
+        raise ValueError("The string[%s] is NOT quarter format" % quarter_string)
+    quarter_string_len = len(quarter_string)
+    # if quarter_string_len < DEF_MIN_QUARTER_STRING_LENGTH or quarter_string_len > DEF_MAX_QUARTER_STRING_LENGTH:
+    if not (DEF_MIN_QUARTER_STRING_LENGTH <= quarter_string_len <= DEF_MAX_QUARTER_STRING_LENGTH):
+        raise ValueError("The quarter stirng[%s] length is NOT in the range [%d, %d]" % (quarter_string_len, DEF_MIN_QUARTER_STRING_LENGTH, DEF_MAX_QUARTER_STRING_LENGTH))
+# Check Year Range
+    check_year_range(mobj.group(1))
+# Check Qaurter Range
+    check_qaurter_range(mobj.group(2))
+    return mobj
+
+
+def transform_date_str(year_value, month_value, day_value):
+    return "%d-%02d-%02d" % (year_value, month_value, day_value)
+
+
+def transform_month_str(year_value, month_value):
+    return "%d-%02d" % (year_value, month_value)
+
+
+def transform_qaurter_str(year_value, qaurter_value):
+    return "%dq%d" % (year_value, qaurter_value)
+
+# def transform_string2datetime(date_string, need_year_transform=False):
+#     element_arr = date_string.split('-')
+#     if len(element_arr) != 3:
+#         raise ValueError("Incorrect config date format: %s" % date_string)
+#     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
+
+
+# def transform_datetime_cfg2string(datetime_cfg, need_year_transform=False):
+#     return transform_datetime2string(datetime_cfg.year, datetime_cfg.month, datetime_cfg.day, need_year_transform)
+
+
+# def transform_datetime2string(year, month, day, need_year_transform=False):
+#     year_transform = (int(year) + 1911) if need_year_transform else int(year)
+#     return DATE_STRING_FORMAT % (year_transform, int(month), int(day))
+
+
+def get_latest_data_date(today_data_exist_hour, today_data_exst_minute):
+    datetime_now = datetime.today()
+    datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
+    datetime_yesterday = datetime_today + timedelta(days = -1)
+    datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, today_data_exist_hour, today_data_exst_minute)
+    return datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
 
 
 def get_config_filepath(conf_filename):
@@ -303,10 +420,10 @@ def get_finance_analysis_mode():
                 mode = int(line)
                 if mode not in [FINANCE_ANALYSIS_MARKET, FINANCE_ANALYSIS_STOCK]:
                     raise ValueError("Unknown finance analysis mode: %d" % mode)
+                return mode
     except Exception as e:
         g_logger.error("Error occur while parsing config file[%s], due to %s" % (DEF_MARKET_STOCK_SWITCH_CONF_FILENAME, str(e)))
         raise e
-    return mode
 
 
 def is_market_mode():
@@ -355,38 +472,38 @@ def get_month_last_day(year, month):
     return calendar.monthrange(year, month)[1]
 
 
-def get_year_offset_datetime_cfg(datetime_cfg, year_offset):
-    return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
+# def get_year_offset_datetime_cfg(datetime_cfg, year_offset):
+#     return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
 
 
-def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_end=None):
-# Parse the current time
-    if datetime_range_end is None:
-        datetime_range_end = datetime.today()
-    datetime_range_list = []
-    datetime_cur = datetime_range_start
-    # import pdb; pdb.set_trace()
-    while True:
-        last_day = get_cfg_month_last_day(datetime_cur)
-        datetime_range_list.append(
-            {
-                'start': datetime(datetime_cur.year, datetime_cur.month, 1),
-                'end': datetime(datetime_cur.year, datetime_cur.month, last_day),
-            }
-        )
-        if datetime_range_end.year == datetime_cur.year and datetime_range_end.month == datetime_cur.month:
-            break
-        offset_day = 15 if datetime_cur.day > 20 else last_day
-        datetime_cur +=  timedelta(days = offset_day)
-    # import pdb; pdb.set_trace()
-    if len(datetime_range_list) == 0:
-        raise RuntimeError("The length of the datetime_range_list list should NOT be 0")
-    if datetime_range_start is not None:
-        datetime_range_list[0]['start'] = datetime_range_start
-    if datetime_range_end is not None:
-        datetime_range_list[-1]['end'] = datetime_range_end
+# def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_end=None):
+# # Parse the current time
+#     if datetime_range_end is None:
+#         datetime_range_end = datetime.today()
+#     datetime_range_list = []
+#     datetime_cur = datetime_range_start
+#     # import pdb; pdb.set_trace()
+#     while True:
+#         last_day = get_cfg_month_last_day(datetime_cur)
+#         datetime_range_list.append(
+#             {
+#                 'start': datetime(datetime_cur.year, datetime_cur.month, 1),
+#                 'end': datetime(datetime_cur.year, datetime_cur.month, last_day),
+#             }
+#         )
+#         if datetime_range_end.year == datetime_cur.year and datetime_range_end.month == datetime_cur.month:
+#             break
+#         offset_day = 15 if datetime_cur.day > 20 else last_day
+#         datetime_cur +=  timedelta(days = offset_day)
+#     # import pdb; pdb.set_trace()
+#     if len(datetime_range_list) == 0:
+#         raise RuntimeError("The length of the datetime_range_list list should NOT be 0")
+#     if datetime_range_start is not None:
+#         datetime_range_list[0]['start'] = datetime_range_start
+#     if datetime_range_end is not None:
+#         datetime_range_list[-1]['end'] = datetime_range_end
 
-    return datetime_range_list
+#     return datetime_range_list
 
 
 def get_cur_module_name(module):
@@ -444,10 +561,10 @@ def to_unicode(unicode_or_str, encoding):
     return value
 
 
-def to_date_only_str(datetime_cfg):
-    if not isinstance(datetime_cfg, datetime):
-        raise ValueError("The type of datetime_cfg is NOT datetime")
-    return (("%s" % datetime_cfg)).split(' ')[0]
+# def to_date_only_str(datetime_cfg):
+#     if not isinstance(datetime_cfg, datetime):
+#         raise ValueError("The type of datetime_cfg is NOT datetime")
+#     return (("%s" % datetime_cfg)).split(' ')[0]
 
 
 def is_the_same_year(datetime_cfg1, datetime_cfg2):
@@ -478,6 +595,7 @@ def assemble_csv_month_time_str(timeslice_list):
         if not is_the_same_month(datetime_cfg_start, timeslice_list[index]):
             raise ValueError("The time[%s] is NOT in the month: %04d-%02d" % (to_date_only_str(timeslice_list[index]), datetime_cfg_start.year, datetime_cfg_start.month))
     return "%04d%02d" % (datetime_cfg_start.year, datetime_cfg_start.month)
+
 
 # DEF_DATA_SOURCE_START_DATE_CFG = [
 #     transform_string2datetime("2001-01-01"),

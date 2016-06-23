@@ -18,22 +18,14 @@ g_logger = WSL.get_web_scrapy_logger()
 class WebScrapyWorkdayCanlendar(object):
 
     def __init__(self, datetime_start=None, datetime_end=None):
-        self.url_format = "http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report{0}{1:02d}/{0}{1:02d}_F3_1_2.php?STK_NO=&myear={0}&mmon={1:02d}"
-        self.encoding = "big5"
-        self.select_flag = ".board_trad tr"
+        self.source_url_parsing_cfg = CMN.DEF_SOURCE_URL_PARSING[CMN.DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX]
+        self.url_format = self.source_url_parsing_cfg["url_format"]
+        self.encoding = self.source_url_parsing_cfg["url_encoding"]
+        self.select_flag = self.source_url_parsing_cfg["url_css_selector"]
 
-        self.datetime_start = datetime_start if datetime_start is not None else CMN.transform_string2datetime(CMN.DEF_WEB_SCRAPY_BEGIN_DATE_STR)
-        self.datetime_end = None
-        if datetime_end is None:
-            datetime_now = datetime.today()
-            datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
-            datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, CMN.DEF_TODAY_DATA_EXIST_HOUR, CMN.DEF_TODAY_DATA_EXIST_MINUTE)
-            if datetime_now >= datetime_threshold:
-                self.datetime_end = datetime_today
-            else:
-                self.datetime_end = datetime_today + timedelta(days = -1)
-        else:
-            self.datetime_end = datetime_end
+        self.datetime_start = CMN.transform_string2datetime(CMN.DEF_WEB_SCRAPY_BEGIN_DATE_STR) if datetime_start is None else datetime_start 
+        self.datetime_end = CMN.get_latest_data_date(CMN.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF_TODAY_MARKET_DATA_EXIST_MINUTE) if datetime_end is None else datetime_end
+
 # The start/end time of scrapying data from the web
         self.datetime_start_from_web = self.datetime_start
         self.datetime_end_from_web = self.datetime_end

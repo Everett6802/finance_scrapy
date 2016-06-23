@@ -244,18 +244,18 @@ class WebScrapyTimeSliceGenerator(object):
         return TimeSliceIterator(financial_statement_start_season_cfg, financial_statement_end_season_cfg)
 
 
-    def __restrict_time_range(self, datetime_start, datetime_end, date_source_id):
+    def __restrict_time_range(self, datetime_start, datetime_end, data_source_id):
 # Caution: For Market mode, the data_source_id is date source type.
 # Caution: For Stock Mode, the data_source_id is company code number.
         if datetime_start > datetime_end:
             raise RuntimeError("The Start Time[%s] should NOT be greater than the End Time[%s]" % (datetime_start, datetime_end))
         if self.url_time_range is None:
             self.url_time_range = URLTimeRange.WebScrapyMarketURLTimeRange.Instance() if CMN.IS_FINANCE_MARKET_MODE else URLTimeRange.WebScrapyStockURLTimeRange.Instance()
-        if datetime_start is None or datetime_start < self.url_time_range.get_time_range_start(date_source_id)
-            datetime_start = self.url_time_range.get_time_range_start(date_source_id)
-        if datetime_end is None or datetime_end > self.url_time_range.get_time_range_end(date_source_id)
-            datetime_end = self.url_time_range.get_time_range_end(date_source_id)
-        g_logger.debug("The URL[ID: %d] restricted time range: %s %s" % (date_source_id, CMN.to_date_only_str(datetime_start), CMN.to_date_only_str(datetime_start)))
+        if datetime_start is None or datetime_start < self.url_time_range.get_time_range_start(data_source_id):
+            datetime_start = self.url_time_range.get_time_range_start(data_source_id)
+        if datetime_end is None or datetime_end > self.url_time_range.get_time_range_end(data_source_id):
+            datetime_end = self.url_time_range.get_time_range_end(data_source_id)
+        g_logger.debug("The URL[ID: %d] restricted time range: %s %s" % (data_source_id, CMN.to_date_only_str(datetime_start), CMN.to_date_only_str(datetime_start)))
         return (datetime_start, datetime_end)
 
 
@@ -268,7 +268,7 @@ class WebScrapyTimeSliceGenerator(object):
             raise TypeError("The data_source_index field is NOT found in kwargs")
         datetime_start = kwargs.get("datetime_range_start", None)
         datetime_end = kwargs.get("datetime_range_end", None)
-        date_source_id = kwargs.get("date_source_id", None)
+        data_source_id = kwargs.get("data_source_id", None)
         company_code_number = kwargs.get("company_code_number", None)
         if CMN.IS_FINANCE_STOCK_MODE and company_code_number is None:
             raise TypeError("The company_code_number field is NOT found in kwargs")

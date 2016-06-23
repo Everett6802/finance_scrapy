@@ -35,21 +35,26 @@ class WebScrapyBase(object):
         
         self.PARSE_URL_DATA_FUNC_PTR = [self.__select_web_data_by_bs4, self.__select_web_data_by_json]
 
-        source_url_parsing_cfg = CMN.DEF_SOURCE_URL_PARSING[self.data_source_index]
-        self.url_format = source_url_parsing_cfg["url_format"]
-        self.parse_url_data_type_obj = source_url_parsing_cfg["parse_url_data_obj"]
-        timeslice_generate_method = CMN.DEF_SOURCE_URL_PARSING["url_timeslice"]
+        self.source_url_parsing_cfg = CMN.DEF_SOURCE_URL_PARSING[self.data_source_index]
+        # self.url_format = source_url_parsing_cfg.get("url_format", None)
+        # self.url_timeslice = source_url_parsing_cfg.get("url_timeslice", None)
+        # self.url_encoding = source_url_parsing_cfg.get("url_encoding", None)
+        # self.url_parsing_method = source_url_parsing_cfg.get("url_parsing_method", None)
+        # self.url_css_selector = source_url_parsing_cfg.get("url_css_selector", None)
+
+        # self.parse_url_data_type_obj = source_url_parsing_cfg["parse_url_data_obj"]
+        self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]
         # self.select_web_data = self.__select_web_data_by_bs4
-        source_data_time_unit_cfg = CMN.DEF_CSV_TIME_UNIT[self.data_source_index]
-        csv_time_unit = source_data_time_unit_cfg["csv_time_unit"]
-        url_time_unit = CMN.TIMESLICE_TO_TIME_UNIT_MAPPING[timeslice_generate_method]
-        self.scrap_web_to_csv_func_ptr = None
-        if url_time_unit == csv_time_unit:
-            self.scrap_web_to_csv_func_ptr = self.__scrap_single_web_data_to_single_csv_file
-        else:
-            self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file
+        # source_data_time_unit_cfg = CMN.DEF_CSV_TIME_UNIT[self.data_source_index]
+        csv_time_unit = CMN.DEF_CSV_TIME_UNIT[self.data_source_index]
+        url_time_unit = CMN.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
+        self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file if url_time_unit == csv_time_unit self.__scrap_single_web_data_to_single_csv_file
+        # if url_time_unit == csv_time_unit:
+        #     self.scrap_web_to_csv_func_ptr = self.__scrap_single_web_data_to_single_csv_file
+        # else:
+        #     self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file
         # self.timeslice_generator_obj = TimeSliceGenerator.WebScrapyTimeSliceGenerator.Instance()
-        self.timeslice_iterable = timeslice_generator_obj.generate_time_slice(timeslice_generate_method, **kwargs)
+        self.timeslice_iterable = timeslice_generator_obj.generate_time_slice(self.timeslice_generate_method, **kwargs)
         # self.generate_day_time_list_rule = None
         # self.datetime_range_list = []
         # self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
@@ -121,6 +126,11 @@ class WebScrapyBase(object):
             self.timeslice_end = timeslice_list[-1]
             self.timeslice_cnt = len(timeslice_list)
             self.timeslice_list_generated = True
+            if self.timeslice_start == self.timeslice_end:
+                msg = "%s: %04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], config['start'].year, config['start'].month, config['start'].day)
+            else:
+                msg = "%s: %04d-%02d-%02d:%04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], config['start'].year, config['start'].month, config['start'].day, config['end'].year, config['end'].month, config['end'].day)
+            g_logger.info(msg)
 
 
     def get_description(self, show_detail=False):

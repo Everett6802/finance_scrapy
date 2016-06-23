@@ -189,27 +189,28 @@ def parse_param():
             )
 
 # Adjust the end date since some data of the last day are NOT released at the moment while scraping data
-    datetime_now = datetime.today()
-    datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
-    datetime_yesterday = datetime_today + timedelta(days = -1)
-    datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, CMN.DEF_TODAY_DATA_EXIST_HOUR, CMN.DEF_TODAY_DATA_EXIST_MINUTE)
+    # datetime_now = datetime.today()
+    # datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
+    # datetime_yesterday = datetime_today + timedelta(days = -1)
+    # datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, CMN.DEF_TODAY_DATA_EXIST_HOUR, CMN.DEF_TODAY_DATA_EXIST_MINUTE)
     # import pdb; pdb.set_trace()
-    for config in config_list:
-        if config['start'] is None:
-            config['start'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
-        if config['end'] is None:
-            config['end'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
-# Check if the end date should be larger than the start date
-        if config['end'] < config['start']:
-            show_error_and_exit("End Date[%s] should be larger than the Start Date[%s]" % (config['end'], config['start']))
-# Check if the start date is out of range
-        if config['start'] < CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]:
-            g_logger.warn("Out of range in %s! Chnage start date from %s to %s", CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], CMN.transform_datetime_cfg2string(config['start']), CMN.transform_datetime_cfg2string(CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]))
-            config['start'] = CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]
-# Check if the end date is out of range
-        if config['end'] > datetime_threshold:
-            g_logger.warn("Out of range in %s! Chnage end date from %s to %s", CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], CMN.transform_datetime_cfg2string(config['end']), datetime_threshold)
-            config['end'] = datetime_threshold
+#     datetime_threshold = CMN.get_latest_data_date(CMN.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF_TODAY_MARKET_DATA_EXIST_MINUTE)
+#     for config in config_list:
+#         if config['start'] is None:
+#             config['start'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
+#         if config['end'] is None:
+#             config['end'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
+# # Check if the end date should be larger than the start date
+#         if config['end'] < config['start']:
+#             show_error_and_exit("End Date[%s] should be larger than the Start Date[%s]" % (config['end'], config['start']))
+# # Check if the start date is out of range
+#         if config['start'] < CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]:
+#             g_logger.warn("Out of range in %s! Chnage start date from %s to %s", CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], CMN.transform_datetime_cfg2string(config['start']), CMN.transform_datetime_cfg2string(CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]))
+#             config['start'] = CMN.DEF_DATA_SOURCE_START_DATE_CFG[config['index']]
+# # Check if the end date is out of range
+#         if config['end'] > datetime_threshold:
+#             g_logger.warn("Out of range in %s! Chnage end date from %s to %s", CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], CMN.transform_datetime_cfg2string(config['end']), datetime_threshold)
+#             config['end'] = datetime_threshold
 
         if config['end'] == config['start']:
             msg = "%s: %04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day)
@@ -232,12 +233,12 @@ if __name__ == "__main__":
     # datetime_iterator = WorkdayCanlendar.WebScrapyWorkdayCanlendarNearestIterator(datetime(2012, 12, 29), datetime(2013, 2, 2))
     # for datetime_cur in datetime_iterator:
     #     print CMN.to_date_only_str(datetime_cur)
-    timeslice_generator_obj = TimesliceGenerator.WebScrapyTimeSliceGenerator.Instance()
-    # import pdb; pdb.set_trace()
-    time_slice_iterable = timeslice_generator_obj.generate_time_slice(4, datetime(2015, 4, 21), datetime(2016, 6, 22), {"company_code_number": 2347,})
-    for time_slice in time_slice_iterable:
-        print time_slice
-    sys.exit(0)
+    # timeslice_generator_obj = TimesliceGenerator.WebScrapyTimeSliceGenerator.Instance()
+    # # import pdb; pdb.set_trace()
+    # time_slice_iterable = timeslice_generator_obj.generate_time_slice(4, datetime(2015, 4, 21), datetime(2016, 6, 22), {"company_code_number": 2347,})
+    # for time_slice in time_slice_iterable:
+    #     print time_slice
+    # sys.exit(0)
 
 # Parse the parameters
     # import pdb; pdb.set_trace()

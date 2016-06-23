@@ -16,18 +16,19 @@ g_logger = WSL.get_web_scrapy_logger()
 
 
 # Find the oldest and latest data
-class WebScrapyURLTimeRangeBase(object):
+class WebScrapyURLDateRangeBase(object):
 
     def __init__(self):
         self.datetime_range_end = None
 
 
     def __get_time_range_end(self, today_data_exist_hour, today_data_exst_minute):
-        datetime_now = datetime.today()
-        datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
-        datetime_yesterday = datetime_today + timedelta(days = -1)
-        datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, today_data_exist_hour, today_data_exst_minute)
-        self.datetime_range_end = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
+        self.datetime_range_end = CMN.get_latest_data_date(today_data_exist_hour, today_data_exst_minute)
+        # datetime_now = datetime.today()
+        # datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
+        # datetime_yesterday = datetime_today + timedelta(days = -1)
+        # datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, today_data_exist_hour, today_data_exst_minute)
+        # self.datetime_range_end = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
 
 
     def get_time_range_start(self, date_source_id):
@@ -40,10 +41,10 @@ class WebScrapyURLTimeRangeBase(object):
 ####################################################################################################
 
 @CMN_CLS.Singleton
-class WebScrapyMarketURLTimeRange(WebScrapyURLTimeRangeBase):
+class WebScrapyMarketURLDateRange(WebScrapyURLDateRangeBase):
 
     def __init__(self):
-        super(WebScrapyMarketURLTimeRange, self).__init__()
+        super(WebScrapyMarketURLDateRange, self).__init__()
         self.DEF_DATA_SOURCE_START_DATE_CFG = None
         self.DEF_DATA_SOURCE_START_DATE_CFG_LEN = 0
 
@@ -53,9 +54,9 @@ class WebScrapyMarketURLTimeRange(WebScrapyURLTimeRangeBase):
             transform_string2datetime("2001-01-01"),
             transform_string2datetime("2004-04-07"),
             transform_string2datetime("2001-01-01"),
-            get_year_offset_datetime_cfg(datetime.today(), -3),
-            get_year_offset_datetime_cfg(datetime.today(), -3),
-            get_year_offset_datetime_cfg(datetime.today(), -3),
+            self.__get_year_offset_datetime_cfg(datetime.today(), -3),
+            self.__get_year_offset_datetime_cfg(datetime.today(), -3),
+            self.__get_year_offset_datetime_cfg(datetime.today(), -3),
             transform_string2datetime("2002-01-01"),
             transform_string2datetime("2004-07-01"),
             transform_string2datetime("2012-05-02"),
@@ -67,6 +68,10 @@ class WebScrapyMarketURLTimeRange(WebScrapyURLTimeRangeBase):
             # transform_string2datetime("2004-12-17"),
         ]
         self.DEF_DATA_SOURCE_START_DATE_CFG_LEN = len(self.DEF_DATA_SOURCE_START_DATE_CFG)
+
+
+    def __get_year_offset_datetime_cfg(datetime_cfg, year_offset):
+        return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
 
 
     def get_time_range_start(self, date_source_id):
@@ -84,10 +89,10 @@ class WebScrapyMarketURLTimeRange(WebScrapyURLTimeRangeBase):
 ####################################################################################################
 
 @CMN_CLS.Singleton
-class WebScrapyStockURLTimeRange(WebScrapyURLTimeRangeBase):
+class WebScrapyStockURLDateRange(WebScrapyURLDateRangeBase):
 
     def __init__(self):
-        super(WebScrapyStockURLTimeRange, self).__init__()
+        super(WebScrapyStockURLDateRange, self).__init__()
         self.company_profile_lookup = None
 
 
