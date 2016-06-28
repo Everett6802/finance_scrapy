@@ -200,7 +200,7 @@ class WebScrapyTimeSliceGenerator(object):
         return TimeSliceIterator(datetime_start, datetime_end)
 
 
-    def __generate_time_slice_by_financial_statement_season(self, datetime_start, datetime_end, **kwargs):
+    def __generate_time_slice_by_financial_statement_season(self, finance_month_start, finance_month_end, **kwargs):
 # The data type in the list is a dictionay with the fields: year, season
         def calculate_season_number(financial_statement_season):
             return financial_statement_season['year'] * 10 + financial_statement_season['season']

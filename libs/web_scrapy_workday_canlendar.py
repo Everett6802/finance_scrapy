@@ -22,18 +22,20 @@ class WebScrapyWorkdayCanlendar(object):
         self.url_format = self.source_url_parsing_cfg["url_format"]
         self.encoding = self.source_url_parsing_cfg["url_encoding"]
         self.select_flag = self.source_url_parsing_cfg["url_css_selector"]
-
+###############################################################################################
+# Caution: The types of the following member variabiles are datetime
         self.datetime_start = CMN.transform_string2datetime(CMN.DEF_WEB_SCRAPY_BEGIN_DATE_STR) if datetime_start is None else datetime_start 
-        self.datetime_end = CMN.get_latest_data_date(CMN.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF_TODAY_MARKET_DATA_EXIST_MINUTE) if datetime_end is None else datetime_end
-
+        self.datetime_end = CMN.get_last_url_data_datetime(CMN.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF_TODAY_MARKET_DATA_EXIST_MINUTE) if datetime_end is None else datetime_end
 # The start/end time of scrapying data from the web
         self.datetime_start_from_web = self.datetime_start
         self.datetime_end_from_web = self.datetime_end
-
+# The first/last workday
+        self.first_workday_cfg = None
+        self.last_workday_cfg = None
+###############################################################################################
         self.datetime_start_year = self.datetime_start.year
         self.workday_canlendar = None
-        self.first_workday_cfg = None
-        self.latest_workday_cfg = None
+
         self.workday_year_list = None
 
 
@@ -103,12 +105,12 @@ class WebScrapyWorkdayCanlendar(object):
                             raise RuntimeError("Unknown format[%s] of date range in Workday Canlendar config file", line)
                         datetime_start_from_file = CMN.transform_string2datetime(mobj.group(1))
                         datetime_end_from_file = CMN.transform_string2datetime(mobj.group(2))
-                        g_logger.debug("Origina\l Date Range in Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
+                        g_logger.debug("Original Date Range in Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
                         if datetime_start_from_file > self.datetime_start:
                             raise RuntimeError("Incorrect start date; File: %s, Expected: %s", datetime_start_from_file, self.datetime_start)
 # Check the time range in the file and adjust the range of scrapying data from the web
                         if datetime_end_from_file >= self.datetime_end:
-                            g_logger.debug("The latest data has already existed in the file. It's no need to scrap data from the web")
+                            g_logger.debug("The last data has already existed in the file. It's no need to scrap data from the web")
                             need_update_from_web = False
                         else:
                             self.datetime_start_from_web = datetime_end_from_file + timedelta(days = 1)
@@ -215,7 +217,7 @@ class WebScrapyWorkdayCanlendar(object):
                     raise RuntimeError("The date format is NOT as expected: %s", date_list)
                 cur_day = int(date_list[2])
                 if not whole_month_data and cur_day < start_day:
-# Caution: It's NO need to consider the end date since the latest data is always today
+# Caution: It's NO need to consider the end date since the last data is always today
                     continue
                 workday_list.append(cur_day)
         self.__set_canlendar_each_month(year, month, workday_list)
@@ -291,8 +293,8 @@ class WebScrapyWorkdayCanlendar(object):
         return self.first_workday_cfg
 
 
-    def get_latest_workday(self):
-        if self.latest_workday_cfg is None:
+    def get_last_workday(self):
+        if self.last_workday_cfg is None:
             if self.workday_canlendar is None:
                 raise RuntimeError("Incorrect Operation: self.workday_canlendar is None")
             # import pdb; pdb.set_trace()
@@ -300,17 +302,17 @@ class WebScrapyWorkdayCanlendar(object):
             year = workday_year_list[-1]
             for month in range(12):
                 if len(self.workday_canlendar[year][month]) == 0:
-                    self.latest_workday_cfg = datetime(year, month, self.workday_canlendar[year][month - 1][-1]) 
+                    self.last_workday_cfg = datetime(year, month, self.workday_canlendar[year][month - 1][-1]) 
                     break
-            if self.latest_workday_cfg is None:
+            if self.last_workday_cfg is None:
                 month = 12
-                self.latest_workday_cfg = datetime(year, month, self.workday_canlendar[year][month - 1][-1]) 
-        return self.latest_workday_cfg
+                self.last_workday_cfg = datetime(year, month, self.workday_canlendar[year][month - 1][-1]) 
+        return self.last_workday_cfg
 
 
     def is_in_range(self, datetime_cur):
         datetime_first = self.get_first_workday()
-        datetime_last = self.get_latest_workday()
+        datetime_last = self.get_last_workday()
         result = (datetime_cur >= datetime_first and datetime_cur <= datetime_last)
         if not result:
             g_logger.debug("Date[%s] is NOT in range[%s, %s]" % (CMN.to_date_only_str(datetime_cur), CMN.to_date_only_str(datetime_first), CMN.to_date_only_str(datetime_last)))
@@ -439,7 +441,7 @@ class WebScrapyWorkdayCanlendar(object):
 
 ####################################################################################################
 
-class WebScrapyWorkdayCanlendarIterator(object):
+class WorkdayIterator(object):
 
     def __init__(self, datetime_start=None, datetime_end=None):
         self.workday_canlendar_obj = WebScrapyWorkdayCanlendar.Instance()
@@ -448,8 +450,16 @@ class WebScrapyWorkdayCanlendarIterator(object):
 
         if datetime_start is None:
             datetime_start = self.workday_canlendar_obj.get_first_workday()
+        elif isinstance(datetime_start, FinanceDate):
+            datetime_start = datetime_start.to_datatime()
+        assert (isinstance(datetime_start, datetime)), "The type of start time[%s] is NOT datetime" % datetime_start
+
         if datetime_end is None:
-            datetime_end = self.workday_canlendar_obj.get_latest_workday()
+            datetime_end = self.workday_canlendar_obj.get_last_workday()
+        elif isinstance(datetime_end, FinanceDate):
+            datetime_end = datetime_end.to_datatime()
+        assert (isinstance(datetime_end, datetime)), "The type of end time[%s] is NOT datetime" % datetime_end
+
         start_tuple = self.workday_canlendar_obj.find_index(datetime_start)
         if start_tuple is None:
             raise ValueError("The start date[%s] is NOT a workday" % CMN.to_date_only_str(datetime_start))
@@ -496,13 +506,36 @@ class WebScrapyWorkdayCanlendarIterator(object):
                 self.cur_day_index += 1            
         return datetime_cur
 
+####################################################################################################
+
+class FinanceWorkdayIterator(WorkdayIterator):
+
+    def __init__(self, datetime_start=None, datetime_end=None):
+        super(FinanceWorkdayIterator, self).__init__(datetime_start, datetime_end)
+
+
+    def next(self):
+        datetime_cur = super(FinanceWorkdayIterator, self).next()
+        return CMN_CLS.FinanceDate(datetime_cur)
 
 ####################################################################################################
 
-class WebScrapyWorkdayCanlendarNearestIterator(WebScrapyWorkdayCanlendarIterator):
+class WorkdayNearestIterator(FinanceWorkdayIterator):
 
     def __init__(self, datetime_start=None, datetime_end=None):
         workday_canlendar_obj = WebScrapyWorkdayCanlendar.Instance()
         datetime_nearest_start = workday_canlendar_obj.get_nearest_next_workday(datetime_start) if datetime_start is not None else None
         datetime_nearest_end = workday_canlendar_obj.get_nearest_prev_workday(datetime_end) if datetime_end is not None else None
-        super(WebScrapyWorkdayCanlendarNearestIterator, self).__init__(datetime_nearest_start, datetime_nearest_end)
+        super(WorkdayNearestIterator, self).__init__(datetime_nearest_start, datetime_nearest_end)
+
+####################################################################################################
+
+class FinanceWorkdayNearestIterator(WorkdayNearestIterator):
+
+    def __init__(self, datetime_start=None, datetime_end=None):
+        super(FinanceWorkdayNearestIterator, self).__init__(datetime_start, datetime_end)
+
+
+    def next(self):
+        datetime_cur = super(FinanceWorkdayNearestIterator, self).next()
+        return CMN_CLS.FinanceDate(datetime_cur)

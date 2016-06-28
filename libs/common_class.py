@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import math
 import common as CMN
 
 
@@ -57,6 +58,10 @@ class FinanceTimeBase(object):
         raise NotImplementedError
 
 
+    def get_value(self):
+        raise NotImplementedError
+
+
     def get_year(self):
         assert (self.year is None), "year value should NOT be None"
         return self.year
@@ -67,13 +72,37 @@ class FinanceTimeBase(object):
         return self.republic_era_year
 
 
-    def __setup_year_value(self, year_value):
+    def setup_year_value(self, year_value):
         if CMN.is_republic_era_year(year_value):
             self.republic_era_year = int(year_value)
             self.year = self.republic_era_year + 1911
         else:
             self.year = int(year_value)
-            self.republic_era_year = self.republic_era_year - 1911
+            self.republic_era_year = self.year - 1911
+
+
+    def __lt__(self, other):
+        return self.get_value() < other.get_value()
+
+
+    def __le__(self, other):
+        return self.get_value() <= other.get_value()
+
+
+    def __eq__(self, other):
+        return self.get_value() == other.get_value()
+
+
+    def __ne__(self, other):
+        return self.get_value() != other.get_value()
+
+
+    def __gt__(self, other):
+        return self.get_value() > other.get_value()
+
+
+    def __ge__(self, other):
+        return self.get_value() >= other.get_value()
 
 
 class FinanceDate(FinanceTimeBase):
@@ -83,27 +112,29 @@ class FinanceDate(FinanceTimeBase):
         self.month = None # range: 1 - 12
         self.day = None # range: 1 - last date of month
         self.date_str = None
+        self.datetime_cfg = None
+        # import pdb; pdb.set_trace()
         try:
             if len(args) == 1:
                 time_cfg = None
-                if ininstance(args[0], str):
+                if isinstance(args[0], str):
                     mobj = CMN.check_date_str_format(args[0])
-                    self.__setup_year_value(mobj.group(1))
+                    self.setup_year_value(mobj.group(1))
                     # self.year = mobj.group(1)
-                    self.month = mobj.group(2)
-                    self.day = mobj.group(3)   
-                elif ininstance(args[0], datetime):
-                    self.__setup_year_value(args[0].year)
+                    self.month = int(mobj.group(2))
+                    self.day = int(mobj.group(3))
+                elif isinstance(args[0], datetime):
+                    self.setup_year_value(args[0].year)
                     # self.year = args[0].year
                     self.month = args[0].month
                     self.day = args[0].day   
-                else
+                else:
                     raise
             elif len(args) == 3:
                 for index in range(3):
                     if type(args[index]) is not int:
                         raise
-                self.__setup_year_value(args[0])
+                self.setup_year_value(args[0])
                 # self.year = args[0]
                 self.month = args[1]
                 self.day = args[2]
@@ -111,6 +142,12 @@ class FinanceDate(FinanceTimeBase):
                 raise
         except Exception:
             raise ValueError("Unknown argument in FormatDate format: %s" % args)
+# Check Year Range
+        CMN.check_year_range(self.year)
+# Check Month Range
+        CMN.check_month_range(self.month)
+# Check Day Range
+        CMN.check_day_range(self.day, self.year,self.month)
 
 
     def to_string(self):
@@ -119,37 +156,51 @@ class FinanceDate(FinanceTimeBase):
         return self.date_str
 
 
+    def get_value(self):
+        return (self.year << 8 | self.month << 4 | self.day)
+
+
+    def to_datetime(self):
+        if self.datetime_cfg is None:
+            self.datetime_cfg = datetime(self.year, self.month, self.day)
+        return self.datetime_cfg
+
+
 class FinanceMonth(FinanceTimeBase):
 
     def __init__(self, *args):
-        super(FinanceDate, self).__init__()
+        super(FinanceMonth, self).__init__()
         self.month = None # range: 1 - 12
         self.month_str = None
         try:
             if len(args) == 1:
                 time_cfg = None
-                if ininstance(args[0], str):
+                if isinstance(args[0], str):
                     mobj = CMN.check_month_str_format(args[0])
-                    self.__setup_year_value(mobj.group(1))
+                    self.setup_year_value(mobj.group(1))
                     # self.year = mobj.group(1)
-                    self.month = mobj.group(2)
-                elif ininstance(args[0], datetime):
-                    self.__setup_year_value(args[0].year)
+                    self.month = int(mobj.group(2))
+                elif isinstance(args[0], datetime):
+                    self.setup_year_value(args[0].year)
                     # self.year = args[0].year
                     self.month = args[0].month
-                else
+                else:
                     raise
             elif len(args) == 2:
                 for index in range(2):
                     if type(args[index]) is not int:
                         raise
-                self.__setup_year_value(args[0])
+                self.setup_year_value(args[0])
                 # self.year = args[0]
                 self.month = args[1]
             else:
                 raise
         except Exception:
             raise ValueError("Unknown argument in FormatMonth format: %s" % args)
+# Check Year Range
+        CMN.check_year_range(self.year)
+# Check Month Range
+        CMN.check_month_range(self.month)
 
 
     def to_string(self):
@@ -158,19 +209,28 @@ class FinanceMonth(FinanceTimeBase):
         return self.month_str
 
 
-class FinanceQaurter(FinanceTimeBase):
+    def get_value(self):
+        return (self.year << 4 | self.month)
+
+
+class FinanceQuarter(FinanceTimeBase):
 
     def __init__(self, *args):
-        super(FinanceDate, self).__init__()
-        self.qaurter = None
-        self.qaurter_str = None
+        super(FinanceQuarter, self).__init__()
+        self.quarter = None
+        self.quarter_str = None
+        # import pdb; pdb.set_trace()
         try:
             if len(args) == 1:
-                if ininstance(args[0], str):
-                    mobj = CMN.check_date_str_format(args[0])
-                    self.__setup_year_value(mobj.group(1))
+                if isinstance(args[0], str):
+                    mobj = CMN.check_quarter_str_format(args[0])
+                    self.setup_year_value(mobj.group(1))
                     # self.year = mobj.group(1)
-                    self.qaurter = mobj.group(2)
+                    self.quarter = int(mobj.group(2))
+                elif isinstance(args[0], datetime):
+                    self.setup_year_value(args[0].year)
+                    # self.year = args[0].year
+                    self.quarter = (int)(math.ceil(args[0].month / 3.0))
                 else:
                     raise
             elif len(args) == 2:
@@ -178,17 +238,25 @@ class FinanceQaurter(FinanceTimeBase):
                     if type(args[index]) is not int:
                         raise
                 self.year = args[0]
-                self.qaurter = args[1]
+                self.quarter = args[1]
             else:
                 raise
         except Exception:
-            raise ValueError("Unknown argument in FormatQaurter format: %s" % args)
+            raise ValueError("Unknown argument in FormatQuarter format: %s" % args)
+# Check Year Range
+        CMN.check_year_range(self.year)
+# Check Quarter Range
+        CMN.check_quarter_range(self.quarter)
 
 
     def to_string(self):
-        if self.qaurter_str is None:
-            self.qaurter_str = CMN.transform_qaurter_str(self.year, self.qaurter)
-        return self.qaurter_str
+        if self.quarter_str is None:
+            self.quarter_str = CMN.transform_quarter_str(self.year, self.quarter)
+        return self.quarter_str
+
+
+    def get_value(self):
+        return (self.year << 3 | self.quarter)
 
 # class ParseURLDataType:
 

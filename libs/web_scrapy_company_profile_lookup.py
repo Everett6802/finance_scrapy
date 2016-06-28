@@ -8,7 +8,7 @@ import csv
 import shutil
 import time
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
+# from datetime import datetime, timedelta
 import common as CMN
 import common_class as CMN_CLS
 from libs import web_scrapy_logging as WSL

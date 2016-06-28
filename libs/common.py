@@ -48,7 +48,7 @@ MARKET_TYPE_OVER_THE_COUNTER = 1
 DATA_TIME_UNIT_DAY = 0
 DATA_TIME_UNIT_WEEK = 1
 DATA_TIME_UNIT_MONTH = 2
-DATA_TIME_UNIT_QAURTER = 3
+DATA_TIME_UNIT_QUARTER = 3
 DATA_TIME_UNIT_YEAR = 4
 
 TIMESLICE_GENERATE_BY_WORKDAY = 0
@@ -62,7 +62,7 @@ TIMESLICE_TO_TIME_UNIT_MAPPING = {
     TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER: DATA_TIME_UNIT_WEEK,
     TIMESLICE_GENERATE_BY_MONTH: DATA_TIME_UNIT_MONTH,
     TIMESLICE_GENERATE_BY_REVENUE: DATA_TIME_UNIT_MONTH,
-    TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON: DATA_TIME_UNIT_QAURTER,
+    TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON: DATA_TIME_UNIT_QUARTER,
 }
 
 DEF_SOURCE_URL_PARSING = [
@@ -164,8 +164,8 @@ DEF_START_YEAR = 2000
 DEF_END_YEAR = 2100
 DEF_REPUBLIC_ERA_START_YEAR = DEF_START_YEAR - 1911
 DEF_REPUBLIC_ERA_END_YEAR = DEF_END_YEAR - 1911
-DEF_START_QAURTER = 1
-DEF_END_QAURTER = 4
+DEF_START_QUARTER = 1
+DEF_END_QUARTER = 4
 DEF_START_MONTH = 1
 DEF_END_MONTH = 12
 DEF_START_DAY = 1
@@ -284,14 +284,14 @@ DEF_MIN_DATE_STRING_LENGTH = 8
 DEF_MAX_DATE_STRING_LENGTH = 10
 DEF_MIN_MONTH_STRING_LENGTH = 5
 DEF_MAX_MONTH_STRING_LENGTH = 7
-DEF_MIN_QAUTER_STRING_LENGTH = 4
-DEF_MAX_QAUTER_STRING_LENGTH = 6
+DEF_MIN_QUARTER_STRING_LENGTH = 4
+DEF_MAX_QUARTER_STRING_LENGTH = 6
 
 ########################################################################################
 
 def is_republic_era_year(year_value):
     if isinstance(year_value, int):
-        return True if (year_value / 1000 = 0) else False
+        return True if (year_value / 1000 == 0) else False
     elif isinstance(year_value, str):
         return True if len(year_value) != 4 else False
     raise ValueError("Unknown year value: %s !!!" % str(year_value))
@@ -306,9 +306,9 @@ def check_year_range(year_value):
             raise ValueError("The year[%d] is NOT in the range [%d, %d]" % (int(year_value), DEF_START_YEAR, DEF_END_YEAR))
 
 
-def check_qaurter_range(qaurter_value):
-    if not (DEF_START_QAURTER <= int(month_value) <= DEF_END_QAURTER):
-        raise ValueError("The qaurter[%d] is NOT in the range [%d, %d]" % (int(qaurter_value), DEF_START_QAURTER, DEF_END_QAURTER))
+def check_quarter_range(quarter_value):
+    if not (DEF_START_QUARTER <= int(quarter_value) <= DEF_END_QUARTER):
+        raise ValueError("The quarter[%d] is NOT in the range [%d, %d]" % (int(quarter_value), DEF_START_QUARTER, DEF_END_QUARTER))
 
 
 def check_month_range(month_value):
@@ -323,49 +323,49 @@ def check_day_range(day_value, year_value, month_value):
 
 
 def check_date_str_format(date_string):
-    mobj = re.match("[\d]{2,4}-[\d]{2}-[\d]{2}", date_string)
+    mobj = re.match("([\d]{2,4})-([\d]{2})-([\d]{2})", date_string)
     if mobj is None:
         raise ValueError("The string[%s] is NOT date format" % date_string)
     date_string_len = len(date_string)
     # if date_string_len < DEF_MIN_DATE_STRING_LENGTH or date_string_len > DEF_MAX_DATE_STRING_LENGTH:
     if not (DEF_MIN_DATE_STRING_LENGTH <= date_string_len <= DEF_MAX_DATE_STRING_LENGTH):
         raise ValueError("The date stirng[%s] length is NOT in the range [%d, %d]" % (date_string_len, DEF_MIN_DATE_STRING_LENGTH, DEF_MAX_DATE_STRING_LENGTH))
-# Check Year Range
-    check_year_range(mobj.group(1))
-# Check Month Range
-    check_month_range(mobj.group(2))
-# Check Day Range
-    check_day_range(mobj.group(3), mobj.group(1), mobj.group(2))
+# # Check Year Range
+#     check_year_range(mobj.group(1))
+# # Check Month Range
+#     check_month_range(mobj.group(2))
+# # Check Day Range
+#     check_day_range(mobj.group(3), mobj.group(1), mobj.group(2))
     return mobj
 
 
 def check_month_str_format(month_string):
-    mobj = re.match("[\d]{2,4}-[\d]{2}", month_string)
+    mobj = re.match("([\d]{2,4})-([\d]{2})", month_string)
     if mobj is None:
         raise ValueError("The string[%s] is NOT month format" % month_string)
     month_string_len = len(month_string)
     # if month_string_len < DEF_MIN_MONTH_STRING_LENGTH or month_string_len > DEF_MAX_MONTH_STRING_LENGTH:
     if not (DEF_MIN_MONTH_STRING_LENGTH <= month_string_len <= DEF_MAX_MONTH_STRING_LENGTH):
         raise ValueError("The month stirng[%s] length is NOT in the range [%d, %d]" % (month_string_len, DEF_MIN_MONTH_STRING_LENGTH, DEF_MAX_MONTH_STRING_LENGTH))
-# Check Year Range
-    check_year_range(mobj.group(1))
-# Check Month Range
-    check_month_range(mobj.group(2))
+# # Check Year Range
+#     check_year_range(mobj.group(1))
+# # Check Month Range
+#     check_month_range(mobj.group(2))
     return mobj
 
 
 def check_quarter_str_format(quarter_string):
-    mobj = re.match("[\d]{2,4}[Qq][\d]{1}", quarter_string)
+    mobj = re.match("([\d]{2,4})[Qq]([\d]{1})", quarter_string)
     if mobj is None:
         raise ValueError("The string[%s] is NOT quarter format" % quarter_string)
     quarter_string_len = len(quarter_string)
     # if quarter_string_len < DEF_MIN_QUARTER_STRING_LENGTH or quarter_string_len > DEF_MAX_QUARTER_STRING_LENGTH:
     if not (DEF_MIN_QUARTER_STRING_LENGTH <= quarter_string_len <= DEF_MAX_QUARTER_STRING_LENGTH):
         raise ValueError("The quarter stirng[%s] length is NOT in the range [%d, %d]" % (quarter_string_len, DEF_MIN_QUARTER_STRING_LENGTH, DEF_MAX_QUARTER_STRING_LENGTH))
-# Check Year Range
-    check_year_range(mobj.group(1))
-# Check Qaurter Range
-    check_qaurter_range(mobj.group(2))
+# # Check Year Range
+#     check_year_range(mobj.group(1))
+# # Check Quarter Range
+#     check_quarter_range(mobj.group(2))
     return mobj
 
 
@@ -377,14 +377,14 @@ def transform_month_str(year_value, month_value):
     return "%d-%02d" % (year_value, month_value)
 
 
-def transform_qaurter_str(year_value, qaurter_value):
-    return "%dq%d" % (year_value, qaurter_value)
+def transform_quarter_str(year_value, quarter_value):
+    return "%dq%d" % (year_value, quarter_value)
 
-# def transform_string2datetime(date_string, need_year_transform=False):
-#     element_arr = date_string.split('-')
-#     if len(element_arr) != 3:
-#         raise ValueError("Incorrect config date format: %s" % date_string)
-#     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
+def transform_string2datetime(date_string, need_year_transform=False):
+    element_arr = date_string.split('-')
+    if len(element_arr) != 3:
+        raise ValueError("Incorrect config date format: %s" % date_string)
+    return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
 
 
 # def transform_datetime_cfg2string(datetime_cfg, need_year_transform=False):
@@ -396,7 +396,7 @@ def transform_qaurter_str(year_value, qaurter_value):
 #     return DATE_STRING_FORMAT % (year_transform, int(month), int(day))
 
 
-def get_latest_data_date(today_data_exist_hour, today_data_exst_minute):
+def get_last_url_data_datetime(today_data_exist_hour, today_data_exst_minute):
     datetime_now = datetime.today()
     datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
     datetime_yesterday = datetime_today + timedelta(days = -1)
