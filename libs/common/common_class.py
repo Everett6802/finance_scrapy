@@ -1,6 +1,10 @@
 from datetime import datetime, timedelta
 import math
-import common as CMN
+import collections
+MonthTuple = collections.namedtuple('MonthTuple', ('year', 'month'))
+QuarterTuple = collections.namedtuple('QuarterTuple', ('year', 'quarter'))
+import common_definition as CMN_DEF
+import common_function as CMN_FUNC
 
 
 class Singleton:
@@ -73,12 +77,16 @@ class FinanceTimeBase(object):
 
 
     def setup_year_value(self, year_value):
-        if CMN.is_republic_era_year(year_value):
+        if CMN_FUNC.is_republic_era_year(year_value):
             self.republic_era_year = int(year_value)
             self.year = self.republic_era_year + 1911
         else:
             self.year = int(year_value)
             self.republic_era_year = self.year - 1911
+
+
+    def __str__(self):
+        return self.to_string()
 
 
     def __lt__(self, other):
@@ -118,7 +126,7 @@ class FinanceDate(FinanceTimeBase):
             if len(args) == 1:
                 time_cfg = None
                 if isinstance(args[0], str):
-                    mobj = CMN.check_date_str_format(args[0])
+                    mobj = CMN_FUNC.check_date_str_format(args[0])
                     self.setup_year_value(mobj.group(1))
                     # self.year = mobj.group(1)
                     self.month = int(mobj.group(2))
@@ -143,16 +151,32 @@ class FinanceDate(FinanceTimeBase):
         except Exception:
             raise ValueError("Unknown argument in FormatDate format: %s" % args)
 # Check Year Range
-        CMN.check_year_range(self.year)
+        CMN_FUNC.check_year_range(self.year)
 # Check Month Range
-        CMN.check_month_range(self.month)
+        CMN_FUNC.check_month_range(self.month)
 # Check Day Range
-        CMN.check_day_range(self.day, self.year,self.month)
+        CMN_FUNC.check_day_range(self.day, self.year,self.month)
+
+
+    def __add__(self, day_delta):
+        # if not isinstance(delta, timedelta):
+        #     raise TypeError('The type[%s] of the other variable is NOT timedelta' % type(delta))
+        if not isinstance(day_delta, int):
+            raise TypeError('The type[%s] of the day_delta argument is NOT int' % type(day_delta))
+        return FinanceDate(self.to_datetime() + timedelta(days = day_delta))
+
+
+    def __sub__(self, day_delta):
+        # if not isinstance(delta, timedelta):
+        #     raise TypeError('The type[%s] of the other variable is NOT timedelta' % type(delta))
+        if not isinstance(day_delta, int):
+            raise TypeError('The type[%s] of the day_delta argument is NOT int' % type(day_delta))
+        return FinanceDate(self.to_datetime() - timedelta(days = day_delta))
 
 
     def to_string(self):
         if self.date_str is None:
-            self.date_str = CMN.transform_date_str(self.year, self.month, self.day)
+            self.date_str = CMN_FUNC.transform_date_str(self.year, self.month, self.day)
         return self.date_str
 
 
@@ -176,7 +200,7 @@ class FinanceMonth(FinanceTimeBase):
             if len(args) == 1:
                 time_cfg = None
                 if isinstance(args[0], str):
-                    mobj = CMN.check_month_str_format(args[0])
+                    mobj = CMN_FUNC.check_month_str_format(args[0])
                     self.setup_year_value(mobj.group(1))
                     # self.year = mobj.group(1)
                     self.month = int(mobj.group(2))
@@ -198,14 +222,42 @@ class FinanceMonth(FinanceTimeBase):
         except Exception:
             raise ValueError("Unknown argument in FormatMonth format: %s" % args)
 # Check Year Range
-        CMN.check_year_range(self.year)
+        CMN_FUNC.check_year_range(self.year)
 # Check Month Range
-        CMN.check_month_range(self.month)
+        CMN_FUNC.check_month_range(self.month)
+
+
+    def __to_month_index(self):
+        return self.year * 12 + self.month - 1
+
+
+    def __from_month_index_to_value(self, month_index):
+        # year = month_index / 12
+        # month = month_index % 12 + 1
+        return MonthTuple(month_index / 12, month_index % 12 + 1)
+
+
+    def __add__(self, month_delta):
+        if not isinstance(month_delta, int):
+            raise TypeError('The type[%s] of the delta argument is NOT int' % type(month_delta))
+
+        new_month_index = self.__to_month_index() + month_delta
+        new_month_tuple = self.__from_month_index_to_value(new_month_index)
+        return FinanceMonth(new_month_tuple.year, new_month_tuple.month)
+
+
+    def __sub__(self, month_delta):
+        if not isinstance(month_delta, int):
+            raise TypeError('The type[%s] of the delta argument is NOT int' % type(month_delta))
+
+        new_month_index = self.__to_month_index() - month_delta
+        new_month_tuple = self.__from_month_index_to_value(new_month_index)
+        return FinanceMonth(new_month_tuple.year, new_month_tuple.month)
 
 
     def to_string(self):
         if self.month_str is None:
-            self.month_str = CMN.transform_month_str(self.year, self.month, self.day)
+            self.month_str = CMN_FUNC.transform_month_str(self.year, self.month)
         return self.month_str
 
 
@@ -223,7 +275,7 @@ class FinanceQuarter(FinanceTimeBase):
         try:
             if len(args) == 1:
                 if isinstance(args[0], str):
-                    mobj = CMN.check_quarter_str_format(args[0])
+                    mobj = CMN_FUNC.check_quarter_str_format(args[0])
                     self.setup_year_value(mobj.group(1))
                     # self.year = mobj.group(1)
                     self.quarter = int(mobj.group(2))
@@ -244,14 +296,40 @@ class FinanceQuarter(FinanceTimeBase):
         except Exception:
             raise ValueError("Unknown argument in FormatQuarter format: %s" % args)
 # Check Year Range
-        CMN.check_year_range(self.year)
+        CMN_FUNC.check_year_range(self.year)
 # Check Quarter Range
-        CMN.check_quarter_range(self.quarter)
+        CMN_FUNC.check_quarter_range(self.quarter)
+
+
+    def __to_quarter_index(self):
+        return self.year * 4 + self.quarter - 1
+
+
+    def __from_quarter_index_to_value(self, quarter_index):
+        return QuarterTuple(quarter_index / 4, quarter_index % 4 + 1)
+
+
+    def __add__(self, quarter_delta):
+        if not isinstance(quarter_delta, int):
+            raise TypeError('The type[%s] of the delta argument is NOT int' % type(quarter_delta))
+
+        new_quarter_index = self.__to_quarter_index() + quarter_delta
+        new_quarter_tuple = self.__from_quarter_index_to_value(new_quarter_index)
+        return FinanceQuarter(new_quarter_tuple.year, new_quarter_tuple.quarter)
+
+
+    def __sub__(self, quarter_delta):
+        if not isinstance(quarter_delta, int):
+            raise TypeError('The type[%s] of the delta argument is NOT int' % type(quarter_delta))
+
+        new_quarter_index = self.__to_quarter_index() - quarter_delta
+        new_quarter_tuple = self.__from_quarter_index_to_value(new_quarter_index)
+        return FinanceQuarter(new_quarter_tuple.year, new_quarter_tuple.quarter)
 
 
     def to_string(self):
         if self.quarter_str is None:
-            self.quarter_str = CMN.transform_quarter_str(self.year, self.quarter)
+            self.quarter_str = CMN_FUNC.transform_quarter_str(self.year, self.quarter)
         return self.quarter_str
 
 

@@ -76,8 +76,26 @@ def parse_param():
         index += index_offset
     return param_dict
 
+from datetime import datetime, timedelta
+from libs import common_class as CMN_CLS
 
 if __name__ == "__main__":
+    finance_time1 = CMN_CLS.FinanceDate(datetime(2016, 9, 3)) - 1
+    finance_time2 = CMN_CLS.FinanceDate(datetime(2016, 9, 2))
+
+    # finance_time1 = CMN_CLS.FinanceQuarter(2016, 4)
+    # finance_time2 = CMN_CLS.FinanceQuarter(2016, 3)
+    print finance_time1.to_string()
+    print finance_time2.to_string()
+    if finance_time1 == finance_time2:
+        print "Eqaul"
+    elif finance_time1 > finance_time2:
+        print "Greater"
+    elif finance_time1 < finance_time2:
+        print "Less"
+
+
+    sys.exit(0);
     # import pdb; pdb.set_trace()
 # Parse the parameters
     param_dict = parse_param()

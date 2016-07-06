@@ -194,7 +194,7 @@ def parse_param():
     # datetime_yesterday = datetime_today + timedelta(days = -1)
     # datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, CMN.DEF_TODAY_DATA_EXIST_HOUR, CMN.DEF_TODAY_DATA_EXIST_MINUTE)
     # import pdb; pdb.set_trace()
-#     datetime_threshold = CMN.get_latest_data_date(CMN.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF_TODAY_MARKET_DATA_EXIST_MINUTE)
+#     datetime_threshold = CMN.get_latest_url_data_datetime(CMN.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF_TODAY_MARKET_DATA_EXIST_MINUTE)
 #     for config in config_list:
 #         if config['start'] is None:
 #             config['start'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
