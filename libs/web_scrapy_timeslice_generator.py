@@ -4,26 +4,26 @@ import os
 import sys
 import re
 import requests
+import time
 from bs4 import BeautifulSoup
-# from datetime import datetime, timedelta
-import common as CMN
-import common_class as CMN_CLS
+from datetime import datetime, timedelta
+from requests.exceptions import ConnectionError
+import libs.common as CMN
 from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
 from libs import web_scrapy_url_date_range as URLTimeRange
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-@CMN_CLS.Singleton
+@CMN.CLS.Singleton
 class WebScrapyTimeSliceGenerator(object):
 
     def __init__(self):
         # self.FINANCIAL_STATEMENT_DATE_LIST = [[3, 31], [5, 15], [8, 14], [11, 14],]
         # self.FINANCIAL_STATEMENT_SEASON_OFFSET_LIST = [[-1, 3], [-1, 4], [0, 1], [0, 2], [0, 3]]
         self.REVENUE_DAY = 10
-        self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_PAIR_HEAD_FORMAT = "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SqlMethod=StockNo&StockNo=%s"
-        self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_PAIR_TAIL = "&StockName=&sub=%ACd%B8%DF"
-
+        self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT = "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}&SqlMethod=StockNo&StockNo={1}&StockName=&sub=%ACd%B8%DF"
+        
         self.workday_canlendar = None
         self.generate_time_slice_func_ptr = [
             self.__generate_time_slice_by_workday,
@@ -36,6 +36,7 @@ class WebScrapyTimeSliceGenerator(object):
         # self.financial_statement_last_season = None
         self.date_today = None
         self.month_today = None
+        self.last_friday_date_str_for_financial_statement = None
         self.url_date_range = None
 
 
@@ -50,7 +51,7 @@ class WebScrapyTimeSliceGenerator(object):
     #     financial_statement_date_list = []
         
     #     financial_statement_season = None
-    #     financial_statement_date_list.append(CMN_CLS.FinanceDate(cur_year, self.FINANCIAL_STATEMENT_DATE_LIST[0][0], self.FINANCIAL_STATEMENT_DATE_LIST[0][1]))
+    #     financial_statement_date_list.append(CMN.CLS.FinanceDate(cur_year, self.FINANCIAL_STATEMENT_DATE_LIST[0][0], self.FINANCIAL_STATEMENT_DATE_LIST[0][1]))
     #     if date_now < financial_statement_date_list[0]:
     #         financial_statement_season = {"year": cur_year + self.FINANCIAL_STATEMENT_SEASON_OFFSET_LIST[0][0], "season": self.FINANCIAL_STATEMENT_SEASON_OFFSET_LIST[0][1]}
     #     else:
@@ -70,20 +71,54 @@ class WebScrapyTimeSliceGenerator(object):
     #     return financial_statement_season_cfg
 
 
-    def __get_company_foreign_investors_shareholder_date_list(self, company_code_number):
-        # import pdb; pdb.set_trace()
-        url = self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_PAIR_HEAD_FORMAT % company_code_number + self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_PAIR_TAIL
-        res = requests.get(url)
+    def __find_company_foreign_investors_shareholder_url_data(self, date_str_for_financial_statement, company_code_number):
+        url = self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT.format(*(date_str_for_financial_statement, company_code_number))
+        for retry in range(5):
+            try:
+                res = requests.get(url)
+            except ConnectionError as e:
+                g_logger.debug("Connection Reset by peer from URL: %s !!!" % url)
+                time.sleep(1)
+            except Exception as e:
+                raise e
+            else:
+                break
         res.encoding = 'big5'
         soup = BeautifulSoup(res.text)
-        g_data = soup.select('table tbody tr option')
+        company_foreign_investors_shareholder_url_data = soup.select('table tbody tr option')
+        return company_foreign_investors_shareholder_url_data
+
+
+    def __find_friday_date_str_for_financial_statement(self):
+        def find_friday_date():
+            DATE_OFFSET = 45
+            date_iterator = WorkdayCanlendar.WorkdayNearestIterator(self.date_today - DATE_OFFSET, self.date_today)
+            for date_cur in date_iterator:
+                if date_cur.to_datetime().isoweekday() == 5:
+                    return date_cur
+            raise ValueError("Fail to find a certain Friday for the past %d days from the date[%s]" % (DATE_OFFSET, self.date_today)) 
+
+        date_friday = find_friday_date()
+        a_friday_date_str_for_financial_statement = "%04d%02d%02d" % (date_friday.year, date_friday.month, date_friday.day)
+        g_logger.debug("A friday date string for financial statement season: %s" % a_friday_date_str_for_financial_statement)
+        COMPANY_CODE_NUMBER_FOR_FRIDAY_DATE = 2330
+        company_foreign_investors_shareholder_url_data = self.__find_company_foreign_investors_shareholder_url_data(a_friday_date_str_for_financial_statement, COMPANY_CODE_NUMBER_FOR_FRIDAY_DATE)
+        assert (len(company_foreign_investors_shareholder_url_data) != 0), "The company foreign investors shareholder date list should NOT be 0"
+        self.last_friday_date_str_for_financial_statement = company_foreign_investors_shareholder_url_data[0].text
+        g_logger.debug("The last friday date string for financial statement season: %s" % self.last_friday_date_str_for_financial_statement)
+
+
+    def __get_company_foreign_investors_shareholder_date_list(self, company_code_number):
+        if self.last_friday_date_str_for_financial_statement is None:
+            self.__find_friday_date_str_for_financial_statement()
+        g_data = self.__find_company_foreign_investors_shareholder_url_data(self.last_friday_date_str_for_financial_statement, company_code_number)
         company_foreign_investors_shareholder_date_list = []
         for index in range(len(g_data) - 1, -1, -1):
             time_str = g_data[index].text
             year = int(time_str[0:4])
             month = int(time_str[4:6])
             day = int(time_str[6:8])
-            company_foreign_investors_shareholder_date_list.append(CMN_CLS.FinanceDate(year, month, day))
+            company_foreign_investors_shareholder_date_list.append(CMN.CLS.FinanceDate(year, month, day))
         return company_foreign_investors_shareholder_date_list
 
 
@@ -216,11 +251,24 @@ class WebScrapyTimeSliceGenerator(object):
         return TimeSliceIterator(quarter_start, quarter_end)
 
 
+    def __init_today_time_cfg(self):
+        if self.date_today is None:
+           self.date_today = CMN.CLS.FinanceDate(datetime.today())
+        if self.month_today is None:
+           self.month_today = CMN.CLS.FinanceMonth(datetime.today())
+
+
+    def __check_time_range(self, time_start, time_end):
+        if time_start is not None and time_end is not None:
+            if time_start > time_end:
+                raise RuntimeError("The Start Time[%s] should NOT be later than the End Time[%s]" % (time_start, time_end))
+
+
     def __restrict_date_range(self, date_start, date_end, data_source_id):
 # Caution: For Market mode, the data_source_id is date source type.
 # Caution: For Stock Mode, the data_source_id is company code number.
         if date_start > date_end:
-            raise RuntimeError("The Start Time[%s] should NOT be greater than the End Time[%s]" % (date_start, date_end))
+            raise RuntimeError("The Start Time[%s] should NOT be later than the End Time[%s]" % (date_start, date_end))
         if self.url_date_range is None:
             self.url_date_range = URLTimeRange.WebScrapyMarketURLTimeRange.Instance() if CMN.IS_FINANCE_MARKET_MODE else URLTimeRange.WebScrapyStockURLTimeRange.Instance()
         if date_start is None or date_start < self.url_date_range.get_date_range_start(data_source_id):
@@ -231,11 +279,36 @@ class WebScrapyTimeSliceGenerator(object):
         return (date_start, date_end)
 
 
-    def generate_time_slice(self, time_slice_type, **kwargs):
+    def generate_time_slice(self, time_slice_type, time_start, time_end, **kwargs):
+        self.__check_time_range(time_start, time_end)
+        self.__init_today_time_cfg()
+# Check input argument
+        # data_source_index = kwargs.get("data_source_index", None)
+        # if data_source_index is None:
+        #     raise TypeError("The data_source_index field is NOT found in kwargs")
+        # data_source_id = kwargs.get("data_source_id", None)
+        # company_code_number = kwargs.get("company_code_number", None)
+        # if CMN.IS_FINANCE_STOCK_MODE and company_code_number is None:
+        #     raise TypeError("The company_code_number field is NOT found in kwargs")
+        # if kwargs:
+        #     raise TypeError("Unexpected **kwargs: %s" % kwargs)
+# Restrict the max time range
+        # (restricted_date_start, restricted_date_end) = self.__restrict_date_range(
+        #     date_start, 
+        #     date_end, 
+        #     data_source_index if CMN.IS_FINANCE_MARKET_MODE else company_code_number
+        # )
+        # time_slice_kwargs = {}
+        # if CMN.IS_FINANCE_STOCK_MODE:
+        #     time_slice_kwargs["company_code_number"] = company_code_number
+        return (self.generate_time_slice_func_ptr[time_slice_type])(time_start, time_end, **kwargs)
+
+
+    def generate_source_time_slice(self, data_source_type, time_start, time_end, **kwargs):
         if self.date_today is None:
-           self.date_today = CMN_CLS.FinanceDate(datetime.today())
+           self.date_today = CMN.CLS.FinanceDate(datetime.today())
         if self.month_today is None:
-           self.month_today = CMN_CLS.FinanceMonth(datetime.today())
+           self.month_today = CMN.CLS.FinanceMonth(datetime.today())
 # Check input argument
         data_source_index = kwargs.get("data_source_index", None)
         if data_source_index is None:

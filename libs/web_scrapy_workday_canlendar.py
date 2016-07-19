@@ -8,24 +8,24 @@ import csv
 import shutil
 from bs4 import BeautifulSoup
 # from datetime import datetime, timedelta
-import common as CMN
-import common_class as CMN_CLS
+import libs.common as CMN
+# import common_class as CMN.CLS
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
-@CMN_CLS.Singleton
+@CMN.CLS.Singleton
 class WebScrapyWorkdayCanlendar(object):
 
     def __init__(self, date_start=None, date_end=None):
-        self.source_url_parsing_cfg = CMN.DEF_SOURCE_URL_PARSING[CMN.DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX]
+        self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[CMN.DEF.DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX]
         self.url_format = self.source_url_parsing_cfg["url_format"]
         self.encoding = self.source_url_parsing_cfg["url_encoding"]
         self.select_flag = self.source_url_parsing_cfg["url_css_selector"]
 ###############################################################################################
 # Caution: The types of the following member variabiles are datetime
-        self.date_start = CMN_CLS.FinanceDate(CMN.DEF_WEB_SCRAPY_BEGIN_DATE_STR) if date_start is None else date_start 
-        self.date_end = CMN.get_last_url_data_CMN_CLS.FinanceDate(CMN.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF_TODAY_MARKET_DATA_EXIST_MINUTE) if date_end is None else date_end
+        self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_WEB_SCRAPY_BEGIN_DATE_STR) if date_start is None else date_start 
+        self.date_end = CMN.FUNC.get_last_url_data_date(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE) if date_end is None else date_end
 # The start/end time of scrapying data from the web
         self.date_start_from_web = self.date_start
         self.date_end_from_web = self.date_end
@@ -51,7 +51,7 @@ class WebScrapyWorkdayCanlendar(object):
     def __is_workday(self, year, month, day):
         if self.workday_canlendar is None:
             raise RuntimeError("Workday Canlendar is NOT initialized")
-        date_check = CMN_CLS.FinanceDate(year, month, day)
+        date_check = CMN.CLS.FinanceDate(year, month, day)
         if not self.is_in_range(date_check):
             raise RuntimeError("The check date[%s] is OUT OF RANGE[%s %s]" % (date_check, self.date_start, self.date_end))
         return day in self.workday_canlendar[year][month - 1]
@@ -75,13 +75,13 @@ class WebScrapyWorkdayCanlendar(object):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF_CONF_FOLDER),
-            "%s/%s/%s" % (working_folder, CMN.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.DEF_CONF_FOLDER),
         ]
-        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             if os.path.exists(dst_folderpath):
-                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
+                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
                 shutil.copy2(src_filepath, dst_folderpath)
 
 
@@ -89,7 +89,7 @@ class WebScrapyWorkdayCanlendar(object):
         need_update_from_web = True
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         g_logger.debug("Try to Acquire the Workday Canlendar data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Workday Canlendar config file does NOT exist")
@@ -103,8 +103,8 @@ class WebScrapyWorkdayCanlendar(object):
                         mobj = re.search("([\d]{4}-[\d]{2}-[\d]{2}) ([\d]{4}-[\d]{2}-[\d]{2})", date_range_str)
                         if mobj is None:
                             raise RuntimeError("Unknown format[%s] of date range in Workday Canlendar config file", line)
-                        date_start_from_file = CMN_CLS.FinanceDate(mobj.group(1))
-                        date_end_from_file = CMN_CLS.FinanceDate(mobj.group(2))
+                        date_start_from_file = CMN.CLS.FinanceDate(mobj.group(1))
+                        date_end_from_file = CMN.CLS.FinanceDate(mobj.group(2))
                         g_logger.debug("Original Date Range in Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
                         if date_start_from_file > self.date_start:
                             raise RuntimeError("Incorrect start date; File: %s, Expected: %s", date_start_from_file, self.date_start)
@@ -178,7 +178,7 @@ class WebScrapyWorkdayCanlendar(object):
             whole_month_data = True
         elif end_day is None and start_day == 1:
             whole_month_data = True
-        elif start_day is None and end_day == CMN.get_month_last_day(year, month):
+        elif start_day is None and end_day == CMN.FUNC.get_month_last_day(year, month):
             whole_month_data = True
 
 # Assemble the URL
@@ -186,14 +186,14 @@ class WebScrapyWorkdayCanlendar(object):
 # Scrap the web data
         try:
             # g_logger.debug("Try to Scrap data [%s]" % url)
-            res = requests.get(url, timeout=CMN.DEF_SCRAPY_WAIT_TIMEOUT)
+            res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
         except requests.exceptions.Timeout as e:
             # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
             fail_to_scrap = False
             for index in range(self.SCRAPY_RETRY_TIMES):
                 time.sleep(randint(1,3))
                 try:
-                    res = requests.get(url, timeout=CMN.DEF_SCRAPY_WAIT_TIMEOUT)
+                    res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
                 except requests.exceptions.Timeout as ex:
                     fail_to_scrap = True
                 if not fail_to_scrap:
@@ -256,12 +256,12 @@ class WebScrapyWorkdayCanlendar(object):
         # import pdb; pdb.set_trace()
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         g_logger.debug("Write the Workday Canlendar data to the file: %s......" % conf_filepath)
         try:
             date_range_str = None
             with open(conf_filepath, 'w') as fp:
-                g_logger.debug("Start to write workday into %s", CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+                g_logger.debug("Start to write workday into %s", CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
                 fp.write("%s %s\n" % (self.date_start, self.date_end))
                 year_list = sorted(self.workday_canlendar)
                 for year in year_list:
@@ -286,7 +286,7 @@ class WebScrapyWorkdayCanlendar(object):
             year = self.workday_year_list[0]
             for month in range(12):
                 if len(self.workday_canlendar[year][month]) != 0:
-                    self.date_first = CMN_CLS.FinanceDate(year, month + 1, self.workday_canlendar[year][month][0]) 
+                    self.date_first = CMN.CLS.FinanceDate(year, month + 1, self.workday_canlendar[year][month][0]) 
                     break
             if self.date_first is None:
                 raise RuntimeError("Fail to find the frst workday in the canlendar") 
@@ -302,11 +302,11 @@ class WebScrapyWorkdayCanlendar(object):
             year = workday_year_list[-1]
             for month in range(12):
                 if len(self.workday_canlendar[year][month]) == 0:
-                    self.date_last = CMN_CLS.FinanceDate(year, month, self.workday_canlendar[year][month - 1][-1]) 
+                    self.date_last = CMN.CLS.FinanceDate(year, month, self.workday_canlendar[year][month - 1][-1]) 
                     break
             if self.date_last is None:
                 month = 12
-                self.date_last = CMN_CLS.FinanceDate(year, month, self.workday_canlendar[year][month - 1][-1]) 
+                self.date_last = CMN.CLS.FinanceDate(year, month, self.workday_canlendar[year][month - 1][-1]) 
         return self.date_last
 
 
@@ -349,7 +349,17 @@ class WebScrapyWorkdayCanlendar(object):
         year_index = None
         month_index = None
         day_index = None
-        if self.is_workday(date_cur):
+        is_workday = False
+        if not self.is_in_range(date_cur):
+            if date_cur > self.get_last_workday():
+                return None
+            else:
+                date_cur = self.get_first_workday()
+                is_workday = True
+        else:
+            is_workday = self.is_workday(date_cur)
+
+        if is_workday:
             (year_index, month_index, day_index) = self.find_index(date_cur)
         else:
             if not self.is_in_range(date_cur):
@@ -385,7 +395,7 @@ class WebScrapyWorkdayCanlendar(object):
             raise RuntimeError("Fail to find the nearest next workday from the date: %s" % date_cur)
         (year_index, month_index, day_index) = index_tuple
         year = self.workday_year_list[year_index]
-        date_nearest_next = CMN_CLS.FinanceDate(year, month_index + 1, self.workday_canlendar[year][month_index][day_index])
+        date_nearest_next = CMN.CLS.FinanceDate(year, month_index + 1, self.workday_canlendar[year][month_index][day_index])
         if not self.is_workday(date_cur):
             g_logger.debug("Find the nearest next workday[%s]: %s" % (date_cur, date_nearest_next))
         return date_nearest_next
@@ -397,11 +407,19 @@ class WebScrapyWorkdayCanlendar(object):
         year_index = None
         month_index = None
         day_index = None
-        if self.is_workday(date_cur):
+        is_workday = False
+        if not self.is_in_range(date_cur):
+            if date_cur < self.get_first_workday():
+                return None
+            else:
+                date_cur = self.get_last_workday()
+                is_workday = True
+        else:
+            is_workday = self.is_workday(date_cur)
+
+        if is_workday:
             (year_index, month_index, day_index) = self.find_index(date_cur)
         else:
-            if not self.is_in_range(date_cur):
-                return None
             try:
                 year_index = self.workday_year_list.index(date_cur.year)
             except ValueError as e:
@@ -429,12 +447,13 @@ class WebScrapyWorkdayCanlendar(object):
 
 
     def get_nearest_prev_workday(self, date_cur):
+        # import pdb; pdb.set_trace()
         index_tuple = self.find_nearest_prev_index(date_cur)
         if index_tuple is None:
             raise RuntimeError("Fail to find the nearest previous workday from the date: %s" % date_cur)
         (year_index, month_index, day_index) = index_tuple
         year = self.workday_year_list[year_index]
-        date_nearest_prev = CMN_CLS.FinanceDate(year, month_index + 1, self.workday_canlendar[year][month_index][day_index])
+        date_nearest_prev = CMN.CLS.FinanceDate(year, month_index + 1, self.workday_canlendar[year][month_index][day_index])
         if not self.is_workday(date_cur):
             g_logger.debug("Find the nearest previous workday[%s]: %s" % (date_cur, date_nearest_prev))
         return date_nearest_prev
@@ -450,11 +469,13 @@ class WorkdayIterator(object):
 
         if date_start is None:
             date_start = self.workday_canlendar_obj.get_first_workday()
-        assert (isinstance(date_start, FinanceDate)), "The type of start time[%s] is NOT FinanceDate" % date_start
+        assert (isinstance(date_start, CMN.CLS.FinanceDate)), "The type of start time[%s] is NOT FinanceDate" % date_start
 
         if date_end is None:
             date_end = self.workday_canlendar_obj.get_last_workday()
-        assert (isinstance(date_end, FinanceDate)), "The type of end time[%s] is NOT FinanceDate" % date_end
+        assert (isinstance(date_end, CMN.CLS.FinanceDate)), "The type of end time[%s] is NOT FinanceDate" % date_end
+
+        self.__check_date_range(date_start, date_end)
 
         start_tuple = self.workday_canlendar_obj.find_index(date_start)
         if start_tuple is None:
@@ -472,6 +493,12 @@ class WorkdayIterator(object):
         self.time_to_stop = False
 
 
+    def __check_date_range(self, date_start, date_end):
+        # import pdb; pdb.set_trace()
+        if date_start > date_end:
+            raise ValueError("The start date[%s] should NOT be later than the end date[%s]" % (date_start, date_end))
+
+
     def __iter__(self):
         return self
 
@@ -483,7 +510,7 @@ class WorkdayIterator(object):
         if self.cur_year_index == self.end_year_index and self.cur_month_index == self.end_month_index and self.cur_day_index == self.end_day_index:
             self.time_to_stop = True
         year = self.workday_year_list[self.cur_year_index]
-        date_cur = CMN_CLS.FinanceDate(year, self.cur_month_index + 1, self.workday_canlendar[year][self.cur_month_index][self.cur_day_index])
+        date_cur = CMN.CLS.FinanceDate(year, self.cur_month_index + 1, self.workday_canlendar[year][self.cur_month_index][self.cur_day_index])
 # Find the next element
         if self.cur_month_index == 11:
             if self.cur_day_index == len(self.workday_canlendar[year][self.cur_month_index]) - 1:

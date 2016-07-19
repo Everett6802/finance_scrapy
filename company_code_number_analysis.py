@@ -8,7 +8,7 @@ import time
 # import shutil
 # import subprocess
 # from datetime import datetime, timedelta
-from libs import common as CMN
+import libs.common as CMN
 from libs import web_scrapy_company_profile_lookup as CompanyProfileLookup
 # g_lookup = CompanyProfileLookup.WebScrapyCompanyProfileLookup.Instance()
 from libs import web_scrapy_logging as WSL
@@ -77,25 +77,25 @@ def parse_param():
     return param_dict
 
 from datetime import datetime, timedelta
-from libs import common_class as CMN_CLS
+# from libs import common_class as CMN.CLS
 
 if __name__ == "__main__":
-    finance_time1 = CMN_CLS.FinanceDate(datetime(2016, 9, 3)) - 1
-    finance_time2 = CMN_CLS.FinanceDate(datetime(2016, 9, 2))
+    # finance_time1 = CMN.CLS.FinanceDate(datetime(2016, 9, 3)) - 1
+    # finance_time2 = CMN.CLS.FinanceDate(datetime(2016, 9, 2))
 
-    # finance_time1 = CMN_CLS.FinanceQuarter(2016, 4)
-    # finance_time2 = CMN_CLS.FinanceQuarter(2016, 3)
-    print finance_time1.to_string()
-    print finance_time2.to_string()
-    if finance_time1 == finance_time2:
-        print "Eqaul"
-    elif finance_time1 > finance_time2:
-        print "Greater"
-    elif finance_time1 < finance_time2:
-        print "Less"
+    # # finance_time1 = CMN.CLS.FinanceQuarter(2016, 4)
+    # # finance_time2 = CMN.CLS.FinanceQuarter(2016, 3)
+    # print finance_time1.to_string()
+    # print finance_time2.to_string()
+    # if finance_time1 == finance_time2:
+    #     print "Eqaul"
+    # elif finance_time1 > finance_time2:
+    #     print "Greater"
+    # elif finance_time1 < finance_time2:
+    #     print "Less"
 
 
-    sys.exit(0);
+    # sys.exit(0);
     # import pdb; pdb.set_trace()
 # Parse the parameters
     param_dict = parse_param()
@@ -112,11 +112,11 @@ if __name__ == "__main__":
 
     if param_dict.get("lookup_company", None) is not None:
         company_code_number_list = param_dict["lookup_company"]
-        print "Company Info:"
+        print "Company Profile:"
         for company_code_number in company_code_number_list:
-            company_info = g_lookup.lookup_company_info(company_code_number)
-            company_info_str = u",".join(company_info)
-            print company_info_str
+            company_profile = g_lookup.lookup_company_profile(company_code_number)
+            company_profile_str = u",".join(company_profile)
+            print company_profile_str
     if param_dict.get("lookup_company_group", None) is not None:
         company_code_number_list = param_dict["lookup_company_group"]
         print "Company Group Name:"

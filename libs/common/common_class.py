@@ -66,6 +66,15 @@ class FinanceTimeBase(object):
         raise NotImplementedError
 
 
+    def get_value_tuple(self):
+        raise NotImplementedError
+
+
+    @classmethod
+    def from_string(cls, time_string):
+        raise NotImplementedError
+
+
     def get_year(self):
         assert (self.year is None), "year value should NOT be None"
         return self.year
@@ -121,7 +130,6 @@ class FinanceDate(FinanceTimeBase):
         self.day = None # range: 1 - last date of month
         self.date_str = None
         self.datetime_cfg = None
-        # import pdb; pdb.set_trace()
         try:
             if len(args) == 1:
                 time_cfg = None
@@ -150,12 +158,23 @@ class FinanceDate(FinanceTimeBase):
                 raise
         except Exception:
             raise ValueError("Unknown argument in FormatDate format: %s" % args)
+# Check value range
+        FinanceDate.check_value_range(self.year, self.month, self.day)
+
+
+    @staticmethod
+    def check_value_range(year, month, day):
 # Check Year Range
-        CMN_FUNC.check_year_range(self.year)
+        CMN_FUNC.check_year_range(year)
 # Check Month Range
-        CMN_FUNC.check_month_range(self.month)
+        CMN_FUNC.check_month_range(month)
 # Check Day Range
-        CMN_FUNC.check_day_range(self.day, self.year,self.month)
+        CMN_FUNC.check_day_range(day, year, month)
+
+
+    @classmethod
+    def from_string(cls, time_string):
+        return cls(time_string)
 
 
     def __add__(self, day_delta):
@@ -182,6 +201,10 @@ class FinanceDate(FinanceTimeBase):
 
     def get_value(self):
         return (self.year << 8 | self.month << 4 | self.day)
+
+
+    def get_value_tuple(self):
+        return (self.year, self.month, self.day)
 
 
     def to_datetime(self):
@@ -221,10 +244,21 @@ class FinanceMonth(FinanceTimeBase):
                 raise
         except Exception:
             raise ValueError("Unknown argument in FormatMonth format: %s" % args)
+# Check value range
+        FinanceMonth.check_value_range(self.year, self.month)
+
+
+    @staticmethod
+    def check_value_range(year, month):
 # Check Year Range
-        CMN_FUNC.check_year_range(self.year)
+        CMN_FUNC.check_year_range(year)
 # Check Month Range
-        CMN_FUNC.check_month_range(self.month)
+        CMN_FUNC.check_month_range(month)
+
+
+    @classmethod
+    def from_string(cls, time_string):
+        return cls(time_string)
 
 
     def __to_month_index(self):
@@ -265,6 +299,10 @@ class FinanceMonth(FinanceTimeBase):
         return (self.year << 4 | self.month)
 
 
+    def get_value_tuple(self):
+        return (self.year, self.month)
+
+
 class FinanceQuarter(FinanceTimeBase):
 
     def __init__(self, *args):
@@ -295,10 +333,21 @@ class FinanceQuarter(FinanceTimeBase):
                 raise
         except Exception:
             raise ValueError("Unknown argument in FormatQuarter format: %s" % args)
+# Check value Range
+        FinanceQuarter.check_value_range(self.year, self.quarter)
+
+
+    @staticmethod
+    def check_value_range(year, quarter):
 # Check Year Range
-        CMN_FUNC.check_year_range(self.year)
+        CMN_FUNC.check_year_range(year)
 # Check Quarter Range
-        CMN_FUNC.check_quarter_range(self.quarter)
+        CMN_FUNC.check_quarter_range(quarter)
+
+
+    @classmethod
+    def from_string(cls, time_string):
+        return cls(time_string)
 
 
     def __to_quarter_index(self):
@@ -335,6 +384,10 @@ class FinanceQuarter(FinanceTimeBase):
 
     def get_value(self):
         return (self.year << 3 | self.quarter)
+
+
+    def get_value_tuple(self):
+        return (self.year, self.quarter)
 
 # class ParseURLDataType:
 

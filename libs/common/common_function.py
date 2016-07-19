@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 import common_definition as CMN_DEF
+import common_class as CMN_CLS
 
 
 ########################################################################################
@@ -125,7 +126,7 @@ def get_last_url_data_date(today_data_exist_hour, today_data_exst_minute):
     datetime_today = datetime(datetime_now.year, datetime_now.month, datetime_now.day)
     datetime_yesterday = datetime_today + timedelta(days = -1)
     datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, today_data_exist_hour, today_data_exst_minute)
-    return datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
+    return CMN_CLS.FinanceDate(datetime_today) if datetime_now >= datetime_threshold else CMN_CLS.FinanceDate(datetime_yesterday)
 
 
 def get_project_folderpath():

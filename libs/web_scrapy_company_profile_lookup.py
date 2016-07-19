@@ -9,8 +9,7 @@ import shutil
 import time
 from bs4 import BeautifulSoup
 # from datetime import datetime, timedelta
-import common as CMN
-import common_class as CMN_CLS
+import libs.common as CMN
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
@@ -40,7 +39,7 @@ COMPANY_GROUP_METHOD_DESCRIPTION_LIST = [
 ]
 LARGE_INDUSTRY_COMPANY_GROUP_LIST = [u"光電業", u"半導體業", u"電子零組件業", u"電腦及週邊設備業",]
 
-@CMN_CLS.Singleton
+@CMN.CLS.Singleton
 class WebScrapyCompanyProfileLookup(object):
 
     def __init__(self):
@@ -97,7 +96,7 @@ class WebScrapyCompanyProfileLookup(object):
         if not need_update_from_web:
             need_update_from_web = self.__update_company_code_number_info_from_file()
             if need_check_company_diff and need_update_from_web:
-                g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF_COMPANY_PROFILE_CONF_FILENAME)
+                g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
                 need_check_company_diff = False
 
 # It's required to update the new data
@@ -125,13 +124,13 @@ class WebScrapyCompanyProfileLookup(object):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF_CONF_FOLDER),
-            "%s/%s/%s" % (working_folder, CMN.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.DEF_CONF_FOLDER),
         ]
-        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF_CONF_FOLDER, CMN.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             if os.path.exists(dst_folderpath):
-                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF_COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
+                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
                 shutil.copy2(src_filepath, dst_folderpath)
 
 
@@ -139,9 +138,9 @@ class WebScrapyCompanyProfileLookup(object):
         # import pdb; pdb.set_trace()
         self.__cleanup_company_profile_data_structure()
         need_update_from_web = False
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        # current_path = os.path.dirname(os.path.realpath(__file__))
+        # [project_folder, lib_folder] = current_path.rsplit('/', 1)
+        conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Try to Acquire the Company Code Number data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Company Code Number config file does NOT exist")
@@ -247,14 +246,14 @@ class WebScrapyCompanyProfileLookup(object):
 # Scrap the web data
         try:
             # g_logger.debug("Try to Scrap data [%s]" % url)
-            res = requests.get(url, timeout=CMN.DEF_SCRAPY_WAIT_TIMEOUT)
+            res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
         except requests.exceptions.Timeout as e:
             # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
             fail_to_scrap = False
             for index in range(self.SCRAPY_RETRY_TIMES):
                 time.sleep(randint(1,3))
                 try:
-                    res = requests.get(url, timeout=CMN.DEF_SCRAPY_WAIT_TIMEOUT)
+                    res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
                 except requests.exceptions.Timeout as ex:
                     fail_to_scrap = True
                 if not fail_to_scrap:
@@ -364,7 +363,7 @@ class WebScrapyCompanyProfileLookup(object):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
 # File for keeping track of the company code number info
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
@@ -380,7 +379,7 @@ class WebScrapyCompanyProfileLookup(object):
                 # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_code_number_info_unicode, str(e)))
                 raise e
 # File for keeping track of the company group info
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_GROUP_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
         g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
@@ -399,7 +398,7 @@ class WebScrapyCompanyProfileLookup(object):
         # import pdb; pdb.set_trace()
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF_CONF_FOLDER, CMN.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
@@ -502,7 +501,7 @@ class WebScrapyCompanyProfileLookup(object):
 
 
     def lookup_company_profile(self, company_number):
-        company_number_unicode = CMN.to_unicode(company_number, self.UNICODE_ENCODING_IN_FILE)
+        company_number_unicode = CMN.FUNC.to_unicode(company_number, self.UNICODE_ENCODING_IN_FILE)
         company_profile = self.company_profile_dict.get(company_number_unicode, None)
         if company_profile is None:
             raise ValueError("Fail to find the company profile of company number: %s" % company_number)
