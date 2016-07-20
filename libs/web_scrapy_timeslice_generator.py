@@ -133,6 +133,11 @@ class WebScrapyTimeSliceGenerator(object):
         if date_end > self.workday_canlendar.get_last_workday():
             g_logger.warn("The end workday [%s] is later than the last day[%s]" % (date_end, self.workday_canlendar.get_last_workday()))
             date_end = self.workday_canlendar.get_last_workday()
+# Check time type
+        if not isinstance(date_start, CMN.CLS.FinanceDate):
+            raise TypeError("The type of date_start should be FinanceDate, NOT %s" % type(date_start))
+        if not isinstance(date_end, CMN.CLS.FinanceDate):
+            raise TypeError("The type of date_end should be FinanceDate, NOT %s" % type(date_end))
 # Return the iterable
         return WorkdayCanlendar.WorkdayNearestIterator(date_start, date_end)
 
@@ -186,17 +191,13 @@ class WebScrapyTimeSliceGenerator(object):
                 if not self.time_to_stop:
                     self.cur_index += 1
                 return self.date_list[cur_index]
+# Check time type
+        if not isinstance(date_start, CMN.CLS.FinanceDate):
+            raise TypeError("The type of date_start should be FinanceDate, NOT %s" % type(date_start))
+        if not isinstance(date_end, CMN.CLS.FinanceDate):
+            raise TypeError("The type of date_end should be FinanceDate, NOT %s" % type(date_end))
+
         return TimeSliceIterator(date_start, date_end, company_foreign_investors_shareholder_date_list)
-
-
-    def __generate_time_slice_by_revenue(self, month_start, month_end, **kwargs):
-# Check time range
-        if month_end == self.month_today:
-            if datetime_end.day < self.REVENUE_DAY:
-                g_logger.warn("The revenue of this month is NOT released on the date [%s] " % self.date_today)
-                month_end = month_end - 1
-
-        return self.__generate_time_slice_by_month(month_start, month_end, **kwargs)
 
 
     def __generate_time_slice_by_month(self, month_start, month_end, **kwargs):
@@ -222,8 +223,23 @@ class WebScrapyTimeSliceGenerator(object):
                 if not self.time_to_stop:
                     self.month_cur = month_cur + 1
                 return month_cur
+# Check time type
+        if not isinstance(month_start, CMN.CLS.FinanceMonth):
+            raise TypeError("The type of month_start should be FinanceMonth, NOT %s" % type(month_start))
+        if not isinstance(month_end, CMN.CLS.FinanceMonth):
+            raise TypeError("The type of month_end should be FinanceMonth, NOT %s" % type(month_end))
 # Check time range
         return TimeSliceIterator(month_start, month_end)
+
+
+    def __generate_time_slice_by_revenue(self, month_start, month_end, **kwargs):
+# Check time range
+        if month_end == self.month_today:
+            if datetime_end.day < self.REVENUE_DAY:
+                g_logger.warn("The revenue of this month is NOT released on the date [%s] " % self.date_today)
+                month_end = month_end - 1
+
+        return self.__generate_time_slice_by_month(month_start, month_end, **kwargs)
 
 
     def __generate_time_slice_by_financial_statement_season(self, quarter_start, quarter_end, **kwargs):
@@ -247,6 +263,11 @@ class WebScrapyTimeSliceGenerator(object):
                 if not self.time_to_stop:
                     self.quarter_cur = quarter_cur + 1
                 return quarter_cur
+# Check time type
+        if not isinstance(quarter_start, CMN.CLS.FinanceQuarter):
+            raise TypeError("The type of quarter_start should be FinanceQuarter, NOT %s" % type(quarter_start))
+        if not isinstance(quarter_end, CMN.CLS.FinanceQuarter):
+            raise TypeError("The type of quarter_end should be FinanceQuarter, NOT %s" % type(quarter_end))
 # Return the iterable
         return TimeSliceIterator(quarter_start, quarter_end)
 

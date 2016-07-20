@@ -237,9 +237,10 @@ if __name__ == "__main__":
     timeslice_generator_obj = TimesliceGenerator.WebScrapyTimeSliceGenerator.Instance()
     # import pdb; pdb.set_trace()
     # time_slice_iterable = timeslice_generator_obj.generate_time_slice(0, CMN.CLS.FinanceDate(2015, 4, 21), CMN.CLS.FinanceDate(2016, 6, 22))
-    time_slice_iterable = timeslice_generator_obj.generate_time_slice(1, CMN.CLS.FinanceDate(2015, 4, 21), CMN.CLS.FinanceDate(2016, 6, 22), company_code_number="2347")
-    # time_slice_iterable = timeslice_generator_obj.generate_time_slice(2, CMN.CLS.FinanceDate(2015, 4, 21), CMN.CLS.FinanceDate(2016, 6, 22), company_code_number="2347")
-    # time_slice_iterable = timeslice_generator_obj.generate_time_slice(3, CMN.CLS.FinanceDate(2015, 4, 21), CMN.CLS.FinanceDate(2016, 6, 22), company_code_number="2347")
+    # time_slice_iterable = timeslice_generator_obj.generate_time_slice(1, CMN.CLS.FinanceDate(2015, 4, 21), CMN.CLS.FinanceDate(2016, 6, 22), company_code_number="2347")
+    # time_slice_iterable = timeslice_generator_obj.generate_time_slice(2, CMN.CLS.FinanceMonth(2015, 4), CMN.CLS.FinanceMonth(2016, 6))
+    # time_slice_iterable = timeslice_generator_obj.generate_time_slice(3, CMN.CLS.FinanceMonth(2015, 4), CMN.CLS.FinanceMonth(2016, 6))
+    time_slice_iterable = timeslice_generator_obj.generate_time_slice(4, CMN.CLS.FinanceQuarter(2015, 4), CMN.CLS.FinanceQuarter(2016, 3))
     for time_slice in time_slice_iterable:
         print time_slice
     sys.exit(0)
