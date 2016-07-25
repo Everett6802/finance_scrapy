@@ -223,7 +223,11 @@ def parse_param():
     return (config_list, multi_thread, check_result, clone_result, show_console)
 
 
+from libs import web_scrapy_logging as WSL
+from libs import web_scrapy_company_group_set as CompanyGroupSet
+
 if __name__ == "__main__":
+    # get_whole_company_group_set()
     # import pdb; pdb.set_trace()
     # workday_canlendar_obj = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
     # datetime_last_cfg = workday_canlendar_obj.get_latest_workday()
@@ -240,9 +244,25 @@ if __name__ == "__main__":
     # time_slice_iterable = timeslice_generator_obj.generate_time_slice(1, CMN.CLS.FinanceDate(2015, 4, 21), CMN.CLS.FinanceDate(2016, 6, 22), company_code_number="2347")
     # time_slice_iterable = timeslice_generator_obj.generate_time_slice(2, CMN.CLS.FinanceMonth(2015, 4), CMN.CLS.FinanceMonth(2016, 6))
     # time_slice_iterable = timeslice_generator_obj.generate_time_slice(3, CMN.CLS.FinanceMonth(2015, 4), CMN.CLS.FinanceMonth(2016, 6))
-    time_slice_iterable = timeslice_generator_obj.generate_time_slice(4, CMN.CLS.FinanceQuarter(2015, 4), CMN.CLS.FinanceQuarter(2016, 3))
-    for time_slice in time_slice_iterable:
-        print time_slice
+    # time_slice_iterable = timeslice_generator_obj.generate_time_slice(4, CMN.CLS.FinanceQuarter(2015, 4), CMN.CLS.FinanceQuarter(2016, 3))
+    # for time_slice in time_slice_iterable:
+    #     print time_slice
+    # company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
+    # for company_group_number, company_code_number_list in company_group_set.items():
+    #     print "============ company_group_number: %d ============" % company_group_number
+    #     for company_code_number in company_code_number_list:
+    #         print "%s ;" % company_code_number
+
+    partial_company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
+    company_list = ["3086", "5263",]
+    partial_company_group_set.add_company_list(34, company_list)
+    partial_company_group_set.add_company_group(33)
+    partial_company_group_set.add_company(34, "8450")
+    partial_company_group_set.add_done()
+    for company_group_number, company_code_number_list in partial_company_group_set.items():
+        print "============ company_group_number: %d ============" % company_group_number
+        for company_code_number in company_code_number_list:
+            print "%s ;" % company_code_number
     sys.exit(0)
 
 # Parse the parameters

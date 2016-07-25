@@ -40,7 +40,7 @@ COMPANY_GROUP_METHOD_DESCRIPTION_LIST = [
 LARGE_INDUSTRY_COMPANY_GROUP_LIST = [u"光電業", u"半導體業", u"電子零組件業", u"電腦及週邊設備業",]
 
 @CMN.CLS.Singleton
-class WebScrapyCompanyProfileLookup(object):
+class WebScrapyCompanyProfile(object):
 
     def __init__(self):
         self.COMPANY_PROFILE_ELEMENT_LEN = 7
@@ -50,11 +50,13 @@ class WebScrapyCompanyProfileLookup(object):
         self.encoding = "big5"
         self.select_flag = "table tr"
 
-        self.company_profile_list = None
         self.company_profile_dict = None
-        self.company_group_list = None
-        self.company_group_dict = None
+        self.company_profile_list = None
+        self.company_group_profile_list = None;
+        self.company_group_num2name_list = None
+        self.company_group_name2num_dict = None
         self.update_from_web = False
+        self.company_group_size = 0
 
         self.ETF_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
         self.TDR_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
@@ -72,55 +74,56 @@ class WebScrapyCompanyProfileLookup(object):
 
     def initialize(self):
         # import pdb; pdb.set_trace()
-        self.__update_company_code_number_info(False, False)
+        self.__update_company_profile(False, False)
 
 
     def __cleanup_company_profile_data_structure(self):
-        self.company_code_number_info_list = []
+        self.company_group_num2name_list = []
+        self.company_group_name2num_dict = {}
+        self.company_group_profile_list = []
+        self.company_profile_list = []
         self.company_profile_dict = {}
-        self.company_group_list = []
-        self.company_group_dict = {}
 
 
     def renew_table(self, need_check_company_diff=True):
         # import pdb; pdb.set_trace()
         if not self.update_from_web:
-            self.__update_company_code_number_info(True, need_check_company_diff)
+            self.__update_company_profile(True, need_check_company_diff)
         else:
             g_logger.info("The lookup table has already been the latest version !!!")
 
 
-    def __update_company_code_number_info(self, need_update_from_web=True, need_check_company_diff=True):
+    def __update_company_profile(self, need_update_from_web=True, need_check_company_diff=True):
         # import pdb; pdb.set_trace()
 # Update data from the file
         if not need_update_from_web:
-            need_update_from_web = self.__update_company_code_number_info_from_file()
+            need_update_from_web = self.__update_company_profile_from_file()
             if need_check_company_diff and need_update_from_web:
                 g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
                 need_check_company_diff = False
 
 # It's required to update the new data
         if need_update_from_web:
-            old_company_code_number_info_list = None
+            old_company_profile_list = None
 # Keep track the older company code number info if necessary
             if need_check_company_diff:
                 # import pdb; pdb.set_trace()
-                old_company_code_number_info_list = self.company_code_number_info_list
+                old_company_profile_list = self.company_profile_list
 
 # Update data from the web
-            self.__update_company_code_number_info_from_web()
+            self.__update_company_profile_from_web()
 # Compare the difference of company code number info
             if need_check_company_diff:
-                new_company_code_number_info_list = self.company_code_number_info_list
-                self.__diff_company_code_number_info(old_company_code_number_info_list, new_company_code_number_info_list)
+                new_company_profile_list = self.company_profile_list
+                self.__diff_company_profile(old_company_profile_list, new_company_profile_list)
 # Write the result into the config file
-            self.__write_company_code_number_info_to_file()
+            self.__write_company_profile_to_file()
 # Copy the config file to the finance_analyzer/finance_recorder_java project
-            self.__copy_company_code_number_info_config_file()
+            self.__copy_company_profile_config_file()
             self.update_from_web = True
 
 
-    def __copy_company_code_number_info_config_file(self):
+    def __copy_company_profile_config_file(self):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
         dst_folderpath_list = [
@@ -134,7 +137,7 @@ class WebScrapyCompanyProfileLookup(object):
                 shutil.copy2(src_filepath, dst_folderpath)
 
 
-    def __update_company_code_number_info_from_file(self):
+    def __update_company_profile_from_file(self):
         # import pdb; pdb.set_trace()
         self.__cleanup_company_profile_data_structure()
         need_update_from_web = False
@@ -154,31 +157,39 @@ class WebScrapyCompanyProfileLookup(object):
                         element_list = re.split(r",", line_unicode, re.U)
                         if len(element_list) != self.COMPANY_PROFILE_ELEMENT_EX_LEN:
                             raise ValueError("The Company Code Number length[%d] should be %d" % (len(element_list), self.COMPANY_PROFILE_ELEMENT_EX_LEN))
-                        self.company_code_number_info_list.append(element_list)
                         self.company_profile_dict[element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
+                        self.company_profile_list.append(element_list)
+                        company_group_name = element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME]
+                        if self.company_group_name2num_dict.get(company_group_name, None) is None:
+                            self.company_group_name2num_dict[company_group_name] = len(self.company_group_num2name_list)
+                            self.company_group_num2name_list.append(company_group_name)
             except Exception as e:
                 g_logger.error("Error occur while parsing Company Code Number info, due to %s" % str(e))
                 raise e
+            else:
+                self.company_group_size = len(self.company_group_num2name_list)
+                self.__generate_company_group_profile_list()
 
         return need_update_from_web
 
 
-    def __update_company_code_number_info_from_web(self):
+    def __update_company_profile_from_web(self):
         # import pdb; pdb.set_trace()
         self.__cleanup_company_profile_data_structure()
         g_logger.debug("Try to Acquire the Company Code Number info from the web......")
         time_start_second = int(time.time())
         g_logger.debug("###### Get the Code Number of the Stock Exchange Company ######")
-        self.__scrap_company_code_number_info_from_web(CMN.MARKET_TYPE_STOCK_EXCHANGE)
+        self.__scrap_company_profile_from_web(CMN.MARKET_TYPE_STOCK_EXCHANGE)
         g_logger.debug("###### Get the Code Number of the Over-the-Counter Company ######")
-        self.__scrap_company_code_number_info_from_web(CMN.MARKET_TYPE_OVER_THE_COUNTER)
+        self.__scrap_company_profile_from_web(CMN.MARKET_TYPE_OVER_THE_COUNTER)
+        self.__generate_company_group_profile_list()
         time_end_second = int(time.time())
         g_logger.info("######### Time Lapse: %d second(s) #########" % (time_end_second - time_start_second))
 
 
-    def __diff_company_code_number_info(self, old_company_code_number_info_list, new_company_code_number_info_list):
-        old_company_code_number_list = [int(old_company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for old_company_code_number_info in old_company_code_number_info_list]
-        new_company_code_number_list = [int(new_company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for new_company_code_number_info in new_company_code_number_info_list]
+    def __diff_company_profile(self, old_company_profile_list, new_company_profile_list):
+        old_company_code_number_list = [int(old_company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for old_company_profile in old_company_profile_list]
+        new_company_code_number_list = [int(new_company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]) for new_company_profile in new_company_profile_list]
         # import pdb; pdb.set_trace()
         old_company_code_number_list.sort()
         new_company_code_number_list.sort()
@@ -221,16 +232,16 @@ class WebScrapyCompanyProfileLookup(object):
             print res_str
 
 
-    def __scrap_company_code_number_info_from_web(self, market_type):
+    def __scrap_company_profile_from_web(self, market_type):
         # import pdb; pdb.set_trace()
-        def get_company_group_name(company_code_number_info):
+        def get_company_group_name(company_profile):
             company_group_name = None
-            if company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
-                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            if company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
+                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             else:
-                company_group_name = company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
+                company_group_name = company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
                 if company_group_name in LARGE_INDUSTRY_COMPANY_GROUP_LIST:
-                    company_group_name = u"%s-%s" % (company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET])
+                    company_group_name = u"%s-%s" % (company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET])
             return company_group_name
 
         str_mode = None
@@ -325,11 +336,11 @@ class WebScrapyCompanyProfileLookup(object):
                     raise e
 # Add the group info into the entry
             company_group_name = get_company_group_name(element_list)
-            if self.company_group_dict.get(company_group_name, None) is None:
-                self.company_group_dict[company_group_name] = len(self.company_group_list)
-                self.company_group_list.append(company_group_name)
+            if self.company_group_name2num_dict.get(company_group_name, None) is None:
+                self.company_group_name2num_dict[company_group_name] = len(self.company_group_num2name_list)
+                self.company_group_num2name_list.append(company_group_name)
             element_list.append(company_group_name)
-            element_list.append(u"%d" % self.company_group_dict[company_group_name])
+            element_list.append(u"%d" % self.company_group_name2num_dict[company_group_name])
 
 # Modify the some element content slightly
 # Modify the date to the standard format
@@ -347,7 +358,8 @@ class WebScrapyCompanyProfileLookup(object):
             #     assert (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u""), u"The company[%s] Industry is NOT Empty: %s" % (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY])
             #     element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] = COMPANY_GROUP_EXCEPTION_DICT[COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT]
 
-            self.company_code_number_info_list.append(element_list)
+            self.company_profile_list.append(element_list)
+        self.company_group_size = len(self.company_group_num2name_list)
 # 有價證券代號及名稱
 # 國際證券辨識號碼(ISIN Code) 
 # 上市日 
@@ -358,7 +370,20 @@ class WebScrapyCompanyProfileLookup(object):
 # Company Group Number (Added)
 
 
-    def __write_company_code_number_info_to_file(self):
+    def __generate_company_group_profile_list(self):
+        # import pdb; pdb.set_trace()
+        # if self.company_group_profile_list != None:
+        #     raise ValueError("The self.company_group_profile_list is NOT None");
+        self.company_group_profile_list = []
+        for index in range(self.company_group_size):
+            self.company_group_profile_list.append([])
+
+        for company_profile in self.company_profile_list:
+            company_group_number = company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER];
+            self.company_group_profile_list[int(company_group_number)].append(company_profile)
+
+
+    def __write_company_profile_to_file(self):
         # import pdb; pdb.set_trace()
         current_path = os.path.dirname(os.path.realpath(__file__))
         [project_folder, lib_folder] = current_path.rsplit('/', 1)
@@ -367,30 +392,30 @@ class WebScrapyCompanyProfileLookup(object):
         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
-                for company_code_number_info in self.company_code_number_info_list:
-                    self.company_profile_dict[company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_code_number_info
-                    company_code_number_info_unicode = u",".join(company_code_number_info)
-                    # g_logger.debug(u"Company Code Number Data: %s", company_code_number_info_unicode)
+                for company_profile in self.company_profile_list:
+                    self.company_profile_dict[company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_profile
+                    company_profile_unicode = u",".join(company_profile)
+                    # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-                    fp.write(company_code_number_info_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
+                    fp.write(company_profile_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
  
             except Exception as e:
                 g_logger.error(u"Error occur while writing Company Code Number info into config file, due to %s" %str(e))
-                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_code_number_info_unicode, str(e)))
+                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
                 raise e
 # File for keeping track of the company group info
         conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
         g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
-                for index, company_group in enumerate(self.company_group_list):
+                for index, company_group in enumerate(self.company_group_num2name_list):
                     company_group_unicode = u"%d %s" % (index, company_group)
 # Can be readable for the CSV reader by encoding utf-8 unicode
                     fp.write(company_group_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
  
             except Exception as e:
                 g_logger.error(u"Error occur while writing Company Group into config file, due to %s" %str(e))
-                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_code_number_info_unicode, str(e)))
+                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
                 raise e
 
 
@@ -402,16 +427,16 @@ class WebScrapyCompanyProfileLookup(object):
         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
-                for company_code_number_info in self.company_code_number_info_list:
-                    self.company_profile_dict[company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_code_number_info
-                    company_code_number_info_unicode = u",".join(company_code_number_info)
-                    # g_logger.debug(u"Company Code Number Data: %s", company_code_number_info_unicode)
+                for company_profile in self.company_profile_list:
+                    self.company_profile_dict[company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_profile
+                    company_profile_unicode = u",".join(company_profile)
+                    # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-                    fp.write(company_code_number_info_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
+                    fp.write(company_profile_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
  
             except Exception as e:
                 g_logger.error(u"Error occur while writing Company Code Number info into config file, due to %s" %str(e))
-                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_code_number_info_unicode, str(e)))
+                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
                 raise e
 
 
@@ -426,8 +451,8 @@ class WebScrapyCompanyProfileLookup(object):
 
     def __group_company_by_company_code_number_first_2_digit(self, show_detail):
         group_dict = {}
-        for company_code_number_info in self.company_code_number_info_list:
-            company_code_number = str(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+        for company_profile in self.company_profile_list:
+            company_code_number = str(company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             company_code_number_first_2_digit = company_code_number[0:2]
             if group_dict.get(company_code_number_first_2_digit, None) is None:
                 group_dict[company_code_number_first_2_digit] = []
@@ -444,20 +469,20 @@ class WebScrapyCompanyProfileLookup(object):
 
     def __group_company_by_industry(self, show_detail):
 
-        def get_company_group_name(company_code_number_info):
+        def get_company_group_name(company_profile):
             company_group_name = None
-            if company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
-                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            if company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
+                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             else:
-                company_group_name = company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
+                company_group_name = company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
             return company_group_name
 
         group_dict = {}
-        for company_code_number_info in self.company_code_number_info_list:
-            company_group_name = get_company_group_name(company_code_number_info)
+        for company_profile in self.company_profile_list:
+            company_group_name = get_company_group_name(company_profile)
             if group_dict.get(company_group_name, None) is None:
                 group_dict[company_group_name] = []       
-            group_dict[company_group_name].append(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            group_dict[company_group_name].append(company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
         # for group_key, group_value in group_dict.items():
         #     print "Group: %s, Len: %d; %s" % (group_key, len(group_value), ",".join(group_value))
         for group_key in sorted(group_dict):
@@ -470,22 +495,22 @@ class WebScrapyCompanyProfileLookup(object):
 
     def __group_company_by_industry_and_market(self, show_detail):
 
-        def get_company_group_name(company_code_number_info):
+        def get_company_group_name(company_profile):
             company_group_name = None
-            if company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
-                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            if company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u"":
+                company_group_name = self.__get_exceptional_company_industry_by_company_code_number_first_2_digit(company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
             else:
-                company_group_name = company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
+                company_group_name = company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
                 if company_group_name in LARGE_INDUSTRY_COMPANY_GROUP_LIST:
-                    company_group_name = u"%s-%s" % (company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET])
+                    company_group_name = u"%s-%s" % (company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET])
             return company_group_name
 
         group_dict = {}
-        for company_code_number_info in self.company_code_number_info_list:
-            company_group_name = get_company_group_name(company_code_number_info)
+        for company_profile in self.company_profile_list:
+            company_group_name = get_company_group_name(company_profile)
             if group_dict.get(company_group_name, None) is None:
                 group_dict[company_group_name] = []       
-            group_dict[company_group_name].append(company_code_number_info[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            group_dict[company_group_name].append(company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
         # for group_key, group_value in group_dict.items():
         #     print "Group: %s, Len: %d; %s" % (group_key, len(group_value), ",".join(group_value))
         for group_key in sorted(group_dict):
@@ -496,8 +521,29 @@ class WebScrapyCompanyProfileLookup(object):
         print "There are totally %d groups" % len(group_dict.keys())
 
 
+    def iterator(self):
+        return self.self.company_profile_list
+
+
+    def group_iterator(self, company_group_index):
+        # import pdb; pdb.set_trace()
+        if not (0 <= company_group_index < self.company_group_size):
+            raise ValueError("The company group index[%d] is Out Of Range [0, %d)" % (company_group_index, self.company_group_size))
+        return self.company_group_profile_list[company_group_index]
+
+
     def group_company(self, method_number, show_detail):
         (self.group_company_func_ptr[method_number])(show_detail)
+
+
+    def get_company_group_size(self):
+        return self.company_group_size
+
+
+    def get_company_group_description(self, index):
+        if index < 0 or index >= self.company_group_size:
+            raise ValueError("index[%d] is Out Of Range [0, %d)" % (index, self.company_group_size));
+        return self.company_group_num2name_list[index];
 
 
     def lookup_company_profile(self, company_number):

@@ -24,6 +24,7 @@ class Singleton:
     def __init__(self, decorated):
         self._decorated = decorated
 
+
     def Instance(self):
         """
         Returns the singleton instance. Upon its first call, it creates a
