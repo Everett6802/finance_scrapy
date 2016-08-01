@@ -6,26 +6,27 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
-import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
 # 集保戶股權分散表
-class WebScrapyDepositoryShareholderDistributionTable(web_scrapy_base.WebScrapyBase):
+class WebScrapyDepositoryShareholderDistributionTable(web_scrapy_base.WebScrapyStockBase):
 
-    def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(
-            "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1}{2}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
-            __file__, 
-            # 'big5', 
-            # 'table tbody tr', 
-            CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
-            datetime_range_start, 
-            datetime_range_end
-        )
-        self.generate_day_time_list_rule = self.__generate_day_time_list_rule_select_friday
+    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
+    #     super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(
+    #         "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1}{2}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
+    #         __file__, 
+    #         # 'big5', 
+    #         # 'table tbody tr', 
+    #         CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+    #         datetime_range_start, 
+    #         datetime_range_end
+    #     )
+    #     self.generate_day_time_list_rule = self.__generate_day_time_list_rule_select_friday
+    def __init__(self, **kwargs):
+        super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(__file__, **kwargs)
 
 
     def assemble_web_url(self, timeslice):

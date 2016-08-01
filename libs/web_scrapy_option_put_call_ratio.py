@@ -6,24 +6,25 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
-import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
 # 臺指選擇權賣權買權比
-class WebScrapyOptionPutCallRatio(web_scrapy_base.WebScrapyBase):
+class WebScrapyOptionPutCallRatio(web_scrapy_base.WebScrapyMarketBase):
 
-    def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyOptionPutCallRatio, self).__init__(
-            # "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={3}%2F{4}%2F{5}", 
-            __file__
-            # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),
-            # datetime_range_start, 
-            # datetime_range_end,
-            # enable_time_range_mode = True,
-        )
+    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
+    #     super(WebScrapyOptionPutCallRatio, self).__init__(
+    #         # "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={3}%2F{4}%2F{5}", 
+    #         __file__
+    #         # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),
+    #         # datetime_range_start, 
+    #         # datetime_range_end,
+    #         # enable_time_range_mode = True,
+    #     )
+    def __init__(self, **kwargs):
+        super(WebScrapyOptionPutCallRatio, self).__init__(__file__, **kwargs)
 
 
     def assemble_web_url(self, timeslice):

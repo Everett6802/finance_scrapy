@@ -6,46 +6,47 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
-import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
 # 期貨大額交易人未沖銷部位結構表 : 臺股期貨
-class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyBase):
+class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyMarketBase):
 
-    def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        self.OLD_FORMAT_ROW_START = 3
-        self.OLD_FORMAT_ROW_END = 5
-        self.NEW_FORMAT_ROW_START = 4
-        self.NEW_FORMAT_ROW_END = 6
-        self.DATETIME_OLD_FORMAT = datetime(2013, 7, 26)
+    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
+    #     self.OLD_FORMAT_ROW_START = 3
+    #     self.OLD_FORMAT_ROW_END = 5
+    #     self.NEW_FORMAT_ROW_START = 4
+    #     self.NEW_FORMAT_ROW_END = 6
+    #     self.DATETIME_OLD_FORMAT = datetime(2013, 7, 26)
 
-        super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(
-            # "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
-            __file__
-            # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
-            # datetime_range_start, 
-            # datetime_range_end
-        )
+    #     super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(
+    #         # "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
+    #         __file__
+    #         # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
+    #         # datetime_range_start, 
+    #         # datetime_range_end
+    #     )
 
-        self.need_check_everytime = False
-        self.data_row_start_index = self.NEW_FORMAT_ROW_START
-        self.data_row_end_index = self.NEW_FORMAT_ROW_END
-        self.datetime_curday = None
-        self.start_index_list = [1, 1]
-        datetime_real_start = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_start()
-        datetime_real_end = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_end()
-        if datetime_real_start <= self.DATETIME_OLD_FORMAT and datetime_real_end > self.DATETIME_OLD_FORMAT:
-            self.need_check_everytime = True
-            self.data_row_start_index = None
-            self.data_row_end_index = None
-            self.start_index_list = None
-        elif datetime_real_end <= self.DATETIME_OLD_FORMAT:
-            self.data_row_start_index = self.OLD_FORMAT_ROW_START
-            self.data_row_end_index = self.OLD_FORMAT_ROW_END  
-            self.start_index_list = [2, 1] 
+    #     self.need_check_everytime = False
+    #     self.data_row_start_index = self.NEW_FORMAT_ROW_START
+    #     self.data_row_end_index = self.NEW_FORMAT_ROW_END
+    #     self.datetime_curday = None
+    #     self.start_index_list = [1, 1]
+    #     datetime_real_start = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_start()
+    #     datetime_real_end = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_end()
+    #     if datetime_real_start <= self.DATETIME_OLD_FORMAT and datetime_real_end > self.DATETIME_OLD_FORMAT:
+    #         self.need_check_everytime = True
+    #         self.data_row_start_index = None
+    #         self.data_row_end_index = None
+    #         self.start_index_list = None
+    #     elif datetime_real_end <= self.DATETIME_OLD_FORMAT:
+    #         self.data_row_start_index = self.OLD_FORMAT_ROW_START
+    #         self.data_row_end_index = self.OLD_FORMAT_ROW_END  
+    #         self.start_index_list = [2, 1] 
+    def __init__(self, **kwargs):
+        super(WWebScrapyFutureTop10DealersAndLegalPersons, self).__init__(__file__, **kwargs)
 
 
     def assemble_web_url(self, timeslice):

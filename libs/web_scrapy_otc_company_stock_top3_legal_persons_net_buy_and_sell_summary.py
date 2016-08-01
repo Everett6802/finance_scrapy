@@ -7,23 +7,24 @@ import json
 # from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
-import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
 # 三大法人上櫃個股買賣超日報
-class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
+class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScrapyStockBase):
 
-    def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
-            # "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1}/{2}&_=1460104675945", 
-            __file__
-            # CMN_CLS.ParseURLDataByJSON('aaData'),
-            # datetime_range_start, 
-            # datetime_range_end
-        )
+    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
+    #     super(WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
+    #         # "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1}/{2}&_=1460104675945", 
+    #         __file__
+    #         # CMN_CLS.ParseURLDataByJSON('aaData'),
+    #         # datetime_range_start, 
+    #         # datetime_range_end
+    #     )
+    def __init__(self, **kwargs):
+        super(WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(__file__, **kwargs)
 
 
     def assemble_web_url(self, timeslice):

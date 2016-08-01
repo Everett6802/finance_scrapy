@@ -6,7 +6,6 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
-import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -18,18 +17,20 @@ NEW_FORAMT_START_DATE_CFG = CMN.transform_string2datetime(NEW_FORAMT_START_DATE_
 # NEW_FORMAT_ENTRY_END_INDEX = 11
 
 # 三大法人上市個股買賣超日報
-class WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
+class WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.WebScrapyStockBase):
 
-    def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
-            # "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
-            __file__
-            # CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
-            # datetime_range_start, 
-            # datetime_range_end
-        )
-        self.new_format_table = False
-        # self.entry_index_index = OLD_FORMAT_ENTRY_END_INDEX
+    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
+    #     super(WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(
+    #         # "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
+    #         __file__
+    #         # CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+    #         # datetime_range_start, 
+    #         # datetime_range_end
+    #     )
+    #     self.new_format_table = False
+    #     # self.entry_index_index = OLD_FORMAT_ENTRY_END_INDEX
+    def __init__(self, **kwargs):
+        super(WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(__file__, **kwargs)
 
 
     def assemble_web_url(self, timeslice):

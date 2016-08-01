@@ -6,24 +6,25 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import common as CMN
-import common_class as CMN_CLS
 import web_scrapy_base
 from libs import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
 
 # 臺指選擇權買賣權未平倉口數與契約金額
-class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_base.WebScrapyBase):
+class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(web_scrapy_base.WebScrapyMarketBase):
 
-    def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(
-            # "http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
-            __file__
-            # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
-            # datetime_range_start, 
-            # datetime_range_end
-        )
-        
+    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
+    #     super(WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(
+    #         # "http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
+    #         __file__
+    #         # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
+    #         # datetime_range_start, 
+    #         # datetime_range_end
+    #     )
+    def __init__(self, **kwargs):
+        super(WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(__file__, **kwargs)
+
 
     def assemble_web_url(self, timeslice):
         url = self.url_format.format(*(timeslice.year, timeslice.month, timeslice.day))

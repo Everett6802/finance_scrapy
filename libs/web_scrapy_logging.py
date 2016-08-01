@@ -3,6 +3,7 @@
 import os
 import logging
 
+
 LOG_FILE_FOLDER = "log"
 LOG_FILE_NAME = "web_scrapy.log"
 LOG_FILE_PATH = "%s/%s" % (LOG_FILE_FOLDER, LOG_FILE_NAME)

@@ -12,17 +12,19 @@ g_logger = WSL.get_web_scrapy_logger()
 
 
 # 自營商買賣超彙總表
-class WebScrapyCompanyDealersNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
+class WebScrapyCompanyDealersNetBuyOrSellSummary(web_scrapy_base.WebScrapyStockBase):
 
-    def __init__(self, datetime_range_start=None, datetime_range_end=None):
-        super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(
-            "http://www.twse.com.tw/ch/trading/fund/TWT43U/TWT43U.php?download=&qdate={0}%2F{1}%2F{2}&sorting=by_stkno", 
-            __file__, 
-            'utf-8', 
-            'table tr', 
-            datetime_range_start, 
-            datetime_range_end
-        )
+    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
+    #     super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(
+    #         "http://www.twse.com.tw/ch/trading/fund/TWT43U/TWT43U.php?download=&qdate={0}%2F{1}%2F{2}&sorting=by_stkno", 
+    #         __file__, 
+    #         'utf-8', 
+    #         'table tr', 
+    #         datetime_range_start, 
+    #         datetime_range_end
+    #     )
+    def __init__(self, **kwargs):
+        super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(__file__, **kwargs)
 
 
     def assemble_web_url(self, timeslice):

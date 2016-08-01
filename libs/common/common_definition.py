@@ -139,7 +139,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_BIG5,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
-        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),    
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 三大法人上櫃個股買賣超日報
         "url_format": "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1}/{2}&_=1460104675945", 
@@ -148,20 +148,28 @@ DEF_SOURCE_URL_PARSING = [
         "url_css_selector": 'aaData',
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByJSON('aaData'),    
     },
+    {# 集保戶股權分散表
+        "url_format": "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1}{2}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_encoding": URL_ENCODING_BIG5,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": 'table tbody tr',
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+    },
 ]
 
-DEF_CSV_TIME_UNIT = [
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,
-    DATA_TIME_UNIT_YEAR,  
-]
+# DEF_CSV_TIME_UNIT = [
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,
+#     DATA_TIME_UNIT_YEAR,  
+# ]
 
 DEF_START_YEAR = 2000
 DEF_END_YEAR = 2100
@@ -189,6 +197,8 @@ DEF_TODAY_STOCK_DATA_EXIST_HOUR = 20
 DEF_TODAY_STOCK_DATA_EXIST_MINUTE = 0
 DEF_CONF_FOLDER = "conf"
 DEF_CSV_FILE_PATH = "/var/tmp/finance"
+CSV_MARKET_FOLDERNAME = "market"
+CSV_STOCK_FOLDERNAME = "stock"
 DEF_SNAPSHOT_FOLDER = "snapshot"
 DEF_SCRAPY_WAIT_TIMEOUT = 8
 DEF_SCRAPY_RETRY_TIMES = 3
