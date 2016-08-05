@@ -10,8 +10,7 @@ import time
 from bs4 import BeautifulSoup
 # from datetime import datetime, timedelta
 import libs.common as CMN
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER = 0

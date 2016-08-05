@@ -5,14 +5,15 @@ import requests
 import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import common as CMN
-import web_scrapy_base
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+import libs.common as CMN
+import web_scrapy_market_base as WebScrapyMarketBase
+# import web_scrapy_market_url_date_range as WebScrapyMarketURLTimeRange
+# from libs import web_scrapy_logging as WSL
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 # 臺股指數及成交量
-class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyMarketBase):
+class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
 
     # def __init__(self, datetime_range_start=None, datetime_range_end=None):
     #     super(WebScrapyStockExchangeAndVolume, self).__init__(
@@ -32,14 +33,29 @@ class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyMarketBase):
     #     if  datetime_start_cfg.day > 1 or datetime_end_cfg.day < CMN.get_cfg_month_last_day(datetime_end_cfg):
     #         self.whole_month_data = False
     def __init__(self, **kwargs):
+        # import pdb; pdb.set_trace()
         super(WebScrapyStockExchangeAndVolume, self).__init__(__file__, **kwargs)
+        self.whole_month_data = True
+        self.data_not_whole_month_list = []
+        if self.xcfg["time_start"].day > 1:
+            self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_start"].year, self.xcfg["time_start"].month))
+        if not CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_start"], self.xcfg["time_end"]):
+            if self.xcfg["time_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_end"].year, self.xcfg["time_end"].month):
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month))
 
 
     def assemble_web_url(self, timeslice):
-        assert (timeslice is None), "timeslice is NOT None"
-        datetime_month_cfg = self.get_datetime_startday()
-        url = self.url_format.format(*(datetime_month_cfg.year, datetime_month_cfg.month))
-
+        # assert (timeslice is None), "timeslice is NOT None"
+        # import pdb; pdb.set_trace()
+        # datetime_month_cfg = self.get_datetime_startday()
+        # url = self.url_format.format(*(datetime_month_cfg.year, datetime_month_cfg.month))
+        url = self.url_format.format(*(timeslice.year, timeslice.month))
+# Check if it's no need to acquire the whole month data in this month
+        try:
+            index = self.data_not_whole_month_list.index(timeslice)
+            self.whole_month_data = False
+        except ValueError:
+            self.whole_month_data = True
         return url
 
 
@@ -48,18 +64,21 @@ class WebScrapyStockExchangeAndVolume(web_scrapy_base.WebScrapyMarketBase):
         if len(web_data) == 0:
             return None
         data_list = []
-        
+
         # print "len: %d" % data_len
         for tr in web_data[2:]:
             td = tr.select('td')
             date_list = td[0].text.split('/')
             if len(date_list) != 3:
                 raise RuntimeError("The date format is NOT as expected: %s", date_list)
-            entry = [CMN.transform_datetime2string(date_list[0], date_list[1], date_list[2], True),]
+            # entry = [CMN.transform_datetime2string(date_list[0], date_list[1], date_list[2], True),]
+            entry = [CMN.FUNC.transform_date_str(int(date_list[0]) + CMN.DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET, int(date_list[1]), int(date_list[2])),]
 
             if not self.whole_month_data:
-                datetime_cur = CMN.transform_string2datetime(entry[0])
-                if datetime_cur < self.get_datetime_startday() or datetime_cur > self.get_datetime_endday():
+                # datetime_cur = CMN.transform_string2datetime(entry[0])
+                # if datetime_cur < self.get_datetime_startday() or datetime_cur > self.get_datetime_endday():
+                date_cur = CMN.CLS.FinanceDate.from_string(entry[0])
+                if date_cur < self.xcfg["time_start"] or date_cur > self.xcfg["time_end"]:
                     continue
             for index in range(1, 6):
                 entry.append(str(td[index].text).replace(',', ''))

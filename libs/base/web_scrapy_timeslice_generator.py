@@ -9,11 +9,9 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from requests.exceptions import ConnectionError
 import libs.common as CMN
-from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
-from libs import web_scrapy_url_date_range as URLTimeRange
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
-
+# from libs import web_scrapy_url_date_range as URLTimeRange
+import web_scrapy_workday_canlendar as WorkdayCanlendar
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 @CMN.CLS.Singleton
 class WebScrapyTimeSliceGenerator(object):
@@ -290,13 +288,14 @@ class WebScrapyTimeSliceGenerator(object):
 # Caution: For Stock Mode, the data_source_id is company code number.
         if date_start > date_end:
             raise RuntimeError("The Start Time[%s] should NOT be later than the End Time[%s]" % (date_start, date_end))
-        if self.url_date_range is None:
-            self.url_date_range = URLTimeRange.WebScrapyMarketURLTimeRange.Instance() if CMN.IS_FINANCE_MARKET_MODE else URLTimeRange.WebScrapyStockURLTimeRange.Instance()
-        if date_start is None or date_start < self.url_date_range.get_date_range_start(data_source_id):
-            date_start = self.url_date_range.get_date_range_start(data_source_id)
-        if date_end is None or date_end > self.url_date_range.get_date_range_end(data_source_id):
-            date_end = self.url_date_range.get_date_range_end(data_source_id)
-        g_logger.debug("The URL[ID: %d] restricted date range: %s %s" % (data_source_id, date_start, date_end))
+# TBD
+        # if self.url_date_range is None:
+        #     self.url_date_range = URLTimeRange.WebScrapyMarketURLTimeRange.Instance() if CMN.IS_FINANCE_MARKET_MODE else URLTimeRange.WebScrapyStockURLTimeRange.Instance()
+        # if date_start is None or date_start < self.url_date_range.get_date_range_start(data_source_id):
+        #     date_start = self.url_date_range.get_date_range_start(data_source_id)
+        # if date_end is None or date_end > self.url_date_range.get_date_range_end(data_source_id):
+        #     date_end = self.url_date_range.get_date_range_end(data_source_id)
+        # g_logger.debug("The URL[ID: %d] restricted date range: %s %s" % (data_source_id, date_start, date_end))
         return (date_start, date_end)
 
 

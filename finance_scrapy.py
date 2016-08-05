@@ -13,11 +13,10 @@ CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()
 CMN.DEF.IS_FINANCE_STOCK_MODE = not CMN.DEF.IS_FINANCE_MARKET_MODE
 from libs import web_scrapy_mgr as MGR
 g_mgr = MGR.WebSracpyMgr()
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
-from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
-from libs import web_scrapy_timeslice_generator as TimesliceGenerator
+# from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
+# from libs import web_scrapy_timeslice_generator as TimesliceGenerator
 
 
 def show_usage():

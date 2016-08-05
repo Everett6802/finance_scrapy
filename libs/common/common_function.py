@@ -6,7 +6,7 @@ import errno
 import logging
 import calendar
 from datetime import datetime, timedelta
-from libs import web_scrapy_logging as WSL
+import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 import common_definition as CMN_DEF
 import common_class as CMN_CLS
@@ -109,7 +109,7 @@ def transform_quarter_str(year_value, quarter_value):
 #     element_arr = date_string.split('-')
 #     if len(element_arr) != 3:
 #         raise ValueError("Incorrect config date format: %s" % date_string)
-#     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
+#     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET)), int(element_arr[1]), int(element_arr[2]))
 
 
 # def transform_datetime_cfg2string(datetime_cfg, need_year_transform=False):
@@ -117,7 +117,7 @@ def transform_quarter_str(year_value, quarter_value):
 
 
 # def transform_datetime2string(year, month, day, need_year_transform=False):
-#     year_transform = (int(year) + 1911) if need_year_transform else int(year)
+#     year_transform = (int(year) + CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET) if need_year_transform else int(year)
 #     return DATE_STRING_FORMAT % (year_transform, int(month), int(day))
 
 

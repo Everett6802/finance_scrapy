@@ -5,11 +5,12 @@ import sys
 import time
 import requests
 from datetime import datetime
-import common as CMN
-import web_scrapy_thread
-from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+import libs.common as CMN
+import libs.base as BASE
+# import libs.base.web_scrapy_thread
+# from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
+# from libs import web_scrapy_logging as WSL
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 class WebSracpyMgr(object):
@@ -21,13 +22,15 @@ class WebSracpyMgr(object):
         self.thread_pool_list = []
         # self.retry_config_list = []
 
-        self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
+        # self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
 
 
-    def __import_module(self, module_name):
+    def __import_module(self, module_folder, module_name):
+        # import pdb; pdb.set_trace()
         current_path = os.path.dirname(os.path.realpath(__file__))
-        sys.path.insert(0, current_path)
-        module_file = '%s/%s.py' % (current_path, module_name)
+        module_path = "%s/%s" % (current_path, module_folder)
+        sys.path.insert(0, module_path)
+        module_file = '%s/%s.py' % (module_path, module_name)
         assert os.path.exists(module_file), "module file does not exist: %s" % module_file
         try:
             module = __import__(module_name)
@@ -39,9 +42,9 @@ class WebSracpyMgr(object):
             raise Exception(msg)
 
 
-    def __get_class_for_name(self, module_name, class_name):
+    def __get_class_for_name(self, module_folder, module_name, class_name):
         # import pdb; pdb.set_trace()
-        m = self.__import_module(module_name)
+        m = self.__import_module(module_folder, module_name)
         parts = module_name.split('.')
         parts.append(class_name)
         for comp in parts[1:]:
@@ -49,19 +52,20 @@ class WebSracpyMgr(object):
         return m
 
 
-    def __instantiate_web_scrapy_object(self, module_name, class_name, **kwargs):
+    def __instantiate_web_scrapy_object(self, module_folder, module_name, class_name, **kwargs):
 # Find the module
-        web_scrapy_class_type = self.__get_class_for_name(module_name, class_name)
+        web_scrapy_class_type = self.__get_class_for_name(module_folder, module_name, class_name)
 # Instantiate the class 
         web_scrapy_class_obj = web_scrapy_class_type(**kwargs)
         return web_scrapy_class_obj
 
 
-    def __do_scrapy(self, module_name, class_name, **kwargs):
-        web_scrapy_class_obj = self.__instantiate_web_scrapy_object(module_name, class_name, **kwargs)
+    def __do_scrapy(self, module_folder, module_name, class_name, **kwargs):
+        web_scrapy_class_obj = self.__instantiate_web_scrapy_object(module_folder, module_name, class_name, **kwargs)
         if web_scrapy_class_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
         g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
+        # import pdb; pdb.set_trace()
         web_scrapy_class_obj.scrap_web_to_csv()
 
 #         datetime_range_list = CMN.get_datetime_range_by_month_list(time_start, time_end)
@@ -201,12 +205,13 @@ class WebSracpyMgr(object):
         # import pdb; pdb.set_trace()
         for config in config_list:
             try:
+                module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[config['index']]
                 module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[config['index']]
                 class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[config['index']]
                 g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
                 if not multi_thread:
                     scrapy_obj_cfg = {"time_start": config['start'], "time_end": config['end']}
-                    self.__do_scrapy(module_name, class_name, **scrapy_obj_cfg)
+                    self.__do_scrapy(module_folder, module_name, class_name, **scrapy_obj_cfg)
                 else:
                     raise ValueError("Multi-thread mode is NOT supported")
                     # self.__do_scrapy_by_multithread(module_name, class_name, config['start'], config['end'])

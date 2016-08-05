@@ -4,14 +4,14 @@ import os
 import sys
 import re
 import requests
-import csv
+# import csv
 import shutil
 from bs4 import BeautifulSoup
 # from datetime import datetime, timedelta
 import libs.common as CMN
 # import common_class as CMN.CLS
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+# from libs import web_scrapy_logging as WSL
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 @CMN.CLS.Singleton

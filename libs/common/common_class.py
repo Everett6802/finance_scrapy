@@ -77,22 +77,22 @@ class FinanceTimeBase(object):
 
 
     def get_year(self):
-        assert (self.year is None), "year value should NOT be None"
+        assert (self.year is not None), "year value should NOT be None"
         return self.year
 
 
     def get_republic_era_year(self):
-        assert (self.republic_era_year is None), "republic_era_year value should NOT be None"
+        assert (self.republic_era_year is not None), "republic_era_year value should NOT be None"
         return self.republic_era_year
 
 
     def setup_year_value(self, year_value):
         if CMN_FUNC.is_republic_era_year(year_value):
             self.republic_era_year = int(year_value)
-            self.year = self.republic_era_year + 1911
+            self.year = self.republic_era_year + CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET
         else:
             self.year = int(year_value)
-            self.republic_era_year = self.year - 1911
+            self.republic_era_year = self.year - CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET
 
 
     def __str__(self):
@@ -212,6 +212,11 @@ class FinanceDate(FinanceTimeBase):
         if self.datetime_cfg is None:
             self.datetime_cfg = datetime(self.year, self.month, self.day)
         return self.datetime_cfg
+
+
+    @staticmethod
+    def is_same_month(finance_date1, finance_date2):
+        return (True if FinanceMonth(finance_date1.year, finance_date1.month) == FinanceMonth(finance_date2.year, finance_date2.month) else False)
 
 
 class FinanceMonth(FinanceTimeBase):

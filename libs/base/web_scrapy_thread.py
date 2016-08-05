@@ -4,9 +4,9 @@ import re
 import requests
 import threading
 from datetime import datetime, timedelta
-import common as CMN
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+import libs.common as CMN
+# import web_scrapy_logging as WSL
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 class WebScrapyThread(threading.Thread):

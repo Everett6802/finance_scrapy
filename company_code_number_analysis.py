@@ -5,14 +5,11 @@ import os
 import re
 import sys
 import time
-# import shutil
-# import subprocess
-# from datetime import datetime, timedelta
 import libs.common as CMN
-from libs import web_scrapy_company_profile_lookup as CompanyProfileLookup
-# g_lookup = CompanyProfileLookup.WebScrapyCompanyProfileLookup.Instance()
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+import libs.stock.web_scrapy_company_profile as CompanyProfile
+# g_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
+# from libs import web_scrapy_logging as WSL
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 def show_usage():
@@ -20,8 +17,8 @@ def show_usage():
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "-g --group\nDescription: Define and show the group of the company\nCaution: Ignore other parameters when set"
     print "--group_detail\nDescription: Define and show the group of the company in detail\nCaution: Ignore other parameters when set"
-    for index, source in enumerate(CompanyProfileLookup.COMPANY_GROUP_METHOD_DESCRIPTION_LIST):
-        print "  %d: %s" % (index, CompanyProfileLookup.COMPANY_GROUP_METHOD_DESCRIPTION_LIST[index])
+    for index, source in enumerate(CompanyProfile.COMPANY_GROUP_METHOD_DESCRIPTION_LIST):
+        print "  %d: %s" % (index, CompanyProfile.COMPANY_GROUP_METHOD_DESCRIPTION_LIST[index])
     print "--renew_table\nDescription: Acquire the latest data from the web"
     print "--lookup_company\nDescription: Lookup company info by company code number"
     print "--lookup_company_group\nDescription: Lookup company group name/number by company code number"
@@ -100,7 +97,7 @@ if __name__ == "__main__":
 # Parse the parameters
     param_dict = parse_param()
 # Initialize the instance
-    g_lookup = CompanyProfileLookup.WebScrapyCompanyProfileLookup.Instance()
+    g_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
 # Run by argument
     if param_dict.get("group", None) is not None:
         g_lookup.group_company(param_dict["group"], param_dict["group_detail"])

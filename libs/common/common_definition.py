@@ -6,7 +6,7 @@ import errno
 import logging
 import calendar
 from datetime import datetime, timedelta
-from libs import web_scrapy_logging as WSL
+import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 import common_function as CMN_FUNC
 
@@ -29,6 +29,7 @@ RET_WARN_URL_NOT_EXIST = RET_WARN_BASE + 1
 RET_FAILURE_BASE = 100
 RET_FAILURE_UNKNOWN = RET_FAILURE_BASE + 1
 RET_FAILURE_TIMEOUT = RET_FAILURE_BASE + 2
+
 #################################################################################
 
 RUN_RESULT_FILENAME = "run_result"
@@ -171,10 +172,11 @@ DEF_SOURCE_URL_PARSING = [
 #     DATA_TIME_UNIT_YEAR,  
 # ]
 
+DEF_REPUBLIC_ERA_YEAR_OFFSET = 1911
 DEF_START_YEAR = 2000
 DEF_END_YEAR = 2100
-DEF_REPUBLIC_ERA_START_YEAR = DEF_START_YEAR - 1911
-DEF_REPUBLIC_ERA_END_YEAR = DEF_END_YEAR - 1911
+DEF_REPUBLIC_ERA_START_YEAR = DEF_START_YEAR - DEF_REPUBLIC_ERA_YEAR_OFFSET
+DEF_REPUBLIC_ERA_END_YEAR = DEF_END_YEAR - DEF_REPUBLIC_ERA_YEAR_OFFSET
 DEF_START_QUARTER = 1
 DEF_END_QUARTER = 4
 DEF_START_MONTH = 1
@@ -240,6 +242,24 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
     # "company_dealers_net_buy_and_sell_summary",
 ]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
+
+DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING = [
+    "market",
+    "market",
+    "market",
+    "market",
+    "market",
+    "market",
+    "market",
+    "market",
+    "stock",
+    "stock",
+    "stock",
+    # "company_foreign_investors_shareholder",
+    # "company_foreign_investors_net_buy_and_sell_summary",
+    # "company_investment_trust_net_buy_and_sell_summary",
+    # "company_dealers_net_buy_and_sell_summary",
+]
 
 DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
     "WebScrapyStockExchangeAndVolume",
@@ -397,7 +417,7 @@ DEF_MAX_QUARTER_STRING_LENGTH = 6
 # #     element_arr = date_string.split('-')
 # #     if len(element_arr) != 3:
 # #         raise ValueError("Incorrect config date format: %s" % date_string)
-# #     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + 1911)), int(element_arr[1]), int(element_arr[2]))
+# #     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + DEF_REPUBLIC_ERA_YEAR_OFFSET)), int(element_arr[1]), int(element_arr[2]))
 
 
 # # def transform_datetime_cfg2string(datetime_cfg, need_year_transform=False):
