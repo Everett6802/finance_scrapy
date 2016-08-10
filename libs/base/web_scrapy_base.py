@@ -83,7 +83,8 @@ class WebScrapyBase(object):
 
     @staticmethod
     def _write_to_csv(csv_filepath, csv_data_list):
-        with open(csv_filepath, 'w') as fp:
+        g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
+        with open(csv_filepath, 'a+') as fp:
             fp_writer = csv.writer(fp, delimiter=',')
 # Write the web data into CSV
             fp_writer.writerows(csv_data_list)

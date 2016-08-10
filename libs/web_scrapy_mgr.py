@@ -152,17 +152,17 @@ class WebSracpyMgr(object):
 #                     g_logger.debug("All threads are DONE")
 #                     break
 
-    def __assemble_csv_filepath(self, datetime_cfg, data_source_index):
-        if CMN.DEF.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
-            file_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_cfg.year, datetime_cfg.month)
-            file_path = CMN.DEF.DEF_CSV_FILE_PATH + "/" + file_name
-        elif CMN.DEF.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_DAY_PER_FILE:
-            folder_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d" % (datetime_cfg.year, datetime_cfg.month)
-            file_name = (CMN.DATE_STRING_FORMAT + ".csv") % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)
-            file_path = CMN.DEF.DEF_CSV_FILE_PATH + "/" + folder_name + "/" + file_name
-        else:
-            raise RuntimeError("Unknown data source index: %d" % data_source_index)
-        return (file_path, file_name)
+    # def __assemble_csv_filepath(self, datetime_cfg, data_source_index):
+    #     if CMN.DEF.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
+    #         file_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_cfg.year, datetime_cfg.month)
+    #         file_path = CMN.DEF.DEF_CSV_FILE_PATH + "/" + file_name
+    #     elif CMN.DEF.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_DAY_PER_FILE:
+    #         folder_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d" % (datetime_cfg.year, datetime_cfg.month)
+    #         file_name = (CMN.DATE_STRING_FORMAT + ".csv") % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)
+    #         file_path = CMN.DEF.DEF_CSV_FILE_PATH + "/" + folder_name + "/" + file_name
+    #     else:
+    #         raise RuntimeError("Unknown data source index: %d" % data_source_index)
+    #     return (file_path, file_name)
 
 
     def check_scrapy(self, config_list):

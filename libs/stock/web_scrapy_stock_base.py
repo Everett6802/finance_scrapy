@@ -43,7 +43,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     def assemble_csv_filepath(cls, data_source_index, company_code_number, company_group_index=-1):
         if company_group_index == -1:
             company_group_index = cls.__get_company_profile().lookup_company_group_number(company_code_number)
-        csv_filepath = "%s/%s%02d/%s%s" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME, company_group_index, company_code_number, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index]) 
+        csv_filepath = "%s/%s%02d/%s%s.csv" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME, company_group_index, company_code_number, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index]) 
         return csv_filepath
 
 
@@ -60,7 +60,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                         csv_data_list = self.parse_web_data(self._get_web_data(url))
                         if csv_data_list is None:
                             raise RuntimeError(url)
-                        csv_filepath = self.assemble_csv_filepath(timeslice, company_code_number, company_group_number)
+                        csv_filepath = self.assemble_csv_filepath(self.source_type_index, company_code_number, company_group_number)
                         g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
                         WebScrapyBase._write_to_csv(csv_filepath, csv_data_list)
                     except Exception as e:
