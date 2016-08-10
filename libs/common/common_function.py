@@ -263,7 +263,7 @@ def check_file_exist(filepath):
         if exception.errno != errno.ENOENT:
             print "%s: %s" % (errno.errorcode[exception.errno], os.strerror(exception.errno))
             raise
-        check_exist = True
+        check_exist = False
     return check_exist
 
 

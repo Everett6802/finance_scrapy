@@ -7,8 +7,6 @@ import sys
 import time
 import libs.common as CMN
 import libs.stock.web_scrapy_company_profile as CompanyProfile
-# g_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
-# from libs import web_scrapy_logging as WSL
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 

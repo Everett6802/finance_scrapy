@@ -7,9 +7,6 @@ import requests
 from datetime import datetime
 import libs.common as CMN
 import libs.base as BASE
-# import libs.base.web_scrapy_thread
-# from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
-# from libs import web_scrapy_logging as WSL
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 

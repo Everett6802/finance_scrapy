@@ -7,8 +7,6 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import web_scrapy_market_base as WebScrapyMarketBase
-# import web_scrapy_market_url_date_range as WebScrapyMarketURLTimeRange
-# from libs import web_scrapy_logging as WSL
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 

@@ -60,7 +60,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     def scrap_web_to_csv(self):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         csv_filepath = WebScrapyMarketBase.assemble_csv_filepath(self.source_type_index)
         timeslice_iterable = self.__get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
         csv_data_list_each_year = None
@@ -87,8 +87,6 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # Write the data of last year into csv
         if csv_data_list_each_year is not None:
             self._write_to_csv(csv_filepath, csv_data_list_each_year)
-
-        return CMN.RET_SUCCESS
 
 
     def assemble_web_url(self, timeslice):

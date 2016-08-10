@@ -16,7 +16,6 @@ import libs.base as BASE
 # import libs.base.web_scrapy_timeslice_generator as TimeSliceGenerator
 import web_scrapy_company_profile as CompanyProfile
 import web_scrapy_company_group_set as CompanyGroupSet
-# from libs import web_scrapy_logging as WSL
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -65,8 +64,6 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                         WebScrapyBase._write_to_csv(csv_filepath, csv_data_list)
                     except Exception as e:
                         g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
-
-        return CMN.RET_SUCCESS
 
 
     def assemble_web_url(self, timeslice, company_code_number):

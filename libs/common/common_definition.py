@@ -18,6 +18,7 @@ IS_FINANCE_MARKET_MODE = False
 IS_FINANCE_STOCK_MODE = True
 
 DEF_PROJECT_FOLDERPATH = CMN_FUNC.get_project_folderpath()
+DEF_PROJECT_LIB_FOLDERPATH = "%s/libs" % DEF_PROJECT_FOLDERPATH
 
 #################################################################################
 # Return Value

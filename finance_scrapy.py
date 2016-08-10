@@ -11,8 +11,12 @@ from datetime import datetime, timedelta
 from libs import common as CMN
 CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()
 CMN.DEF.IS_FINANCE_STOCK_MODE = not CMN.DEF.IS_FINANCE_MARKET_MODE
-from libs import web_scrapy_mgr as MGR
-g_mgr = MGR.WebSracpyMgr()
+if CMN.DEF.IS_FINANCE_MARKET_MODE:
+    from libs.market import web_scrapy_market_mgr as MGR
+    g_mgr = MGR.WebSracpyMarketMgr()
+else:
+    from libs.stock import web_scrapy_stock_mgr as MGR
+    g_mgr = MGR.WebSracpyStockMgr()
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 # from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
