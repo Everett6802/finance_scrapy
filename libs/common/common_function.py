@@ -181,7 +181,7 @@ def parse_config_file(conf_filename):
                     continue
                 param_list = line_strip.split(' ')
                 param_list_len = len(param_list)
-                data_source_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
+                source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
                 datetime_range_start = None
                 if param_list_len >= 2:
                     datetime_range_start = transform_string2datetime(param_list[1])
@@ -189,11 +189,12 @@ def parse_config_file(conf_filename):
                 if param_list_len >= 3:
                     datetime_range_end = transform_string2datetime(param_list[2])
                 total_param_list.append(
-                    {
-                        "index": data_source_index,
-                        "start": datetime_range_start,
-                        "end": datetime_range_end,
-                    }
+                    # {
+                    #     "index": source_type_index,
+                    #     "start": datetime_range_start,
+                    #     "end": datetime_range_end,
+                    # }
+                    CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, datetime_range_start, datetime_range_end)
                 )
     except Exception as e:
         g_logger.error("Error occur while parsing config file[%s], due to %s" % (conf_filename, str(e)))

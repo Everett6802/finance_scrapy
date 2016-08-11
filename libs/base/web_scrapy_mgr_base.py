@@ -13,8 +13,12 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebSracpyMgrBase(object):
 
     __metaclass__ = ABCMeta
-    def __init__(self):
-        pass
+    def __init__(self, **kwargs):
+        self.xcfg = {
+            "need_remove_old_finance_folder": True,
+            "try_to_scrap_all": True,
+        }
+        self.xcfg.update(kwargs)
 
 
     @classmethod
@@ -55,7 +59,7 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def __scrap_web_data(cls, module_folder, module_name, class_name, **kwargs):
+    def __scrap_web_data_to_csv_file(cls, module_folder, module_name, class_name, **kwargs):
         web_scrapy_class_obj = cls.__instantiate_web_scrapy_object(module_folder, module_name, class_name, **kwargs)
         if web_scrapy_class_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
@@ -65,34 +69,37 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def do_scrapy(cls, config_list, try_to_run_all=True):
+    def _scrap_data(cls, source_type_time_range_list, need_remove_old_finance_folder=True, try_to_scrap_all=True):
         # import pdb; pdb.set_trace()
+        if need_remove_old_finance_folder:
+            cls._remove_old_finance_folder()
         cls._create_finance_folder_if_not_exist()
         total_errmsg = ""
-        for config in config_list:
+        for source_type_time_range in source_type_time_range_list:
             try:
-                module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[config['index']]
-                module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[config['index']]
-                class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[config['index']]
+                source_type_index = source_type_time_range.source_type_index
+                module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
+                module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
+                class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
                 g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
-                scrapy_obj_cfg = {"time_start": config['start'], "time_end": config['end']}
-                cls.__scrap_web_data(module_folder, module_name, class_name, **scrapy_obj_cfg)
+                scrapy_obj_cfg = {
+                    "time_start": source_type_time_range.time_start, 
+                    "time_end": source_type_time_range.time_end
+                }
+                cls.__scrap_web_data_to_csv_file(module_folder, module_name, class_name, **scrapy_obj_cfg)
             except Exception as e:
-                errmsg = u"Error occur while scraping %s data, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], str(e))
+                errmsg = u"Error occur while scraping %s data, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index], str(e))
                 g_logger.error(errmsg)
                 total_errmsg += errmsg
                 print total_errmsg
-                if not try_to_run_all:
+                if not try_to_scrap_all:
                     break
         if total_errmsg:
             raise RuntimeError(total_errmsg) 
 
 
-    def check_scrapy(self, config_list):
-        raise RuntimeError("TBD")
-
-
-    def do_debug(self, source_type_index):
+    @classmethod
+    def do_scrapy_debug(cls, source_type_index):
         module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
         class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
         g_logger.debug("Try to initiate %s.%s for debugging......" % (module_name, class_name))
@@ -103,4 +110,20 @@ class WebSracpyMgrBase(object):
     @abstractmethod
     def _create_finance_folder_if_not_exist(cls):
         """IMPORTANT: This is a class method, override it with @classmethod !"""
-        pass
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def _remove_old_finance_folder(cls):
+        """IMPORTANT: This is a class method, override it with @classmethod !"""
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def do_scrapy(self, source_type_time_range_list):
+       raise NotImplementedError
+
+
+    @abstractmethod
+    def check_scrapy(self, source_type_time_range_list):
+        raise NotImplementedError

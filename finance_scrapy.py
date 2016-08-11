@@ -45,8 +45,8 @@ def show_usage():
     print "==================================================="
 
 
-def do_debug(data_source_index):
-    g_mgr.do_debug(data_source_index)
+def do_debug(data_source_type_index):
+    g_mgr.do_debug(data_source_type_index)
     sys.exit(0)
 
 
@@ -71,7 +71,7 @@ def snapshot_result(run_result_str):
 
 
 def parse_param():
-    source_index_list = None
+    source_type_index_list = None
     datetime_range_start = None
     datetime_range_end = None
     method_index = None
@@ -94,14 +94,14 @@ def parse_param():
             sys.exit(0)
         elif re.match("(-s|--source)", sys.argv[index]):
             source = sys.argv[index + 1]
-            source_index_str_list = source.split(",")
-            source_index_list = []
-            for source_index_str in source_index_str_list:
-                source_index = int(source_index_str)
-                if source_index < 0 or source_index >= CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN:
+            source_type_index_str_list = source.split(",")
+            source_type_index_list = []
+            for source_type_index_str in source_type_index_str_list:
+                source_type_index = int(source_type_index_str)
+                if source_type_index < 0 or source_type_index >= CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN:
                     errmsg = "Unsupported source: %s" % source
                     show_error_and_exit(errmsg)
-                source_index_list.append(source_index)
+                source_type_index_list.append(source_type_index)
             g_logger.debug("Param source: %s", source)
             index_offset = 2
         elif re.match("(-t|--time)", sys.argv[index]):
@@ -142,8 +142,8 @@ def parse_param():
             clone_result = True
             index_offset = 1
         elif re.match("--do_debug", sys.argv[index]):
-            data_source_index = int(sys.argv[index + 1])
-            do_debug(data_source_index)
+            data_source_type_index = int(sys.argv[index + 1])
+            do_debug(data_source_type_index)
             sys.exit(0)
         elif re.match("--run_daily", sys.argv[index]):
             method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
@@ -165,30 +165,31 @@ def parse_param():
 
 # Create the time range list
     # import pdb; pdb.set_trace()
-    config_list = None
+    source_type_time_range_list = None
     if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
-        if source_index_list is not None or datetime_range_start is not None:
+        if source_type_index_list is not None or datetime_range_start is not None:
             msg = "Ignore other parameters when the method is %s\n" % CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX]     
             if not show_console:
                 g_logger.info(msg)
             else:
                 sys.stdout.write(msg)
         conf_filename = CMN.DEF.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
-        config_list = CMN.FUNC.parse_config_file(conf_filename)
-        if config_list is None:
+        source_type_time_range_list = CMN.FUNC.parse_config_file(conf_filename)
+        if source_type_time_range_list is None:
             show_error_and_exit("Fail to parse the config file: %s" % conf_filename)
     else:
-        config_list = []
-        if source_index_list is None:
-            source_index_list = range(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN)
+        source_type_time_range_list = []
+        if source_type_index_list is None:
+            source_type_index_list = range(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN)
         # import pdb; pdb.set_trace()
-        for source_index in source_index_list:
-            config_list.append(
-                {
-                    "index": source_index,
-                    "start": datetime_range_start,
-                    "end": datetime_range_end,
-                }
+        for source_type_index in source_type_index_list:
+            source_type_time_range_list.append(
+                # {
+                #     "source_type_index": source_type_index,
+                #     "time_start": datetime_range_start,
+                #     "time_end": datetime_range_end,
+                # }
+                CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, datetime_range_start, datetime_range_end)
             )
 
 # Adjust the end date since some data of the last day are NOT released at the moment while scraping data
@@ -198,7 +199,7 @@ def parse_param():
     # datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, CMN.DEF.DEF_TODAY_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_DATA_EXIST_MINUTE)
     # import pdb; pdb.set_trace()
 #     datetime_threshold = CMN.get_latest_url_data_datetime(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE)
-#     for config in config_list:
+#     for config in source_type_time_range_list:
 #         if config['start'] is None:
 #             config['start'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
 #         if config['end'] is None:
@@ -223,7 +224,7 @@ def parse_param():
         if show_console:
             sys.stdout.write("%s\n" % msg)
 
-    return (config_list, multi_thread, check_result, clone_result, show_console)
+    return (source_type_time_range_list, multi_thread, check_result, clone_result, show_console)
 
 
 # from libs import web_scrapy_logging as WSL
@@ -294,7 +295,7 @@ if __name__ == "__main__":
 
 # Parse the parameters
     # import pdb; pdb.set_trace()
-    (config_list, multi_thread, check_result, clone_result, show_console) = parse_param()
+    (source_type_time_range_list, multi_thread, check_result, clone_result, show_console) = parse_param()
 # Create the folder for CSV files if not exist
     if not os.path.exists(CMN.DEF.DEF_CSV_FILE_PATH):
         os.makedirs(CMN.DEF.DEF_CSV_FILE_PATH)
@@ -310,7 +311,7 @@ if __name__ == "__main__":
     else:
         sys.stdout.write("Scrap the data from the website......\n")
     time_start_second = int(time.time())
-    g_mgr.do_scrapy(config_list, multi_thread)
+    g_mgr.do_scrapy(source_type_time_range_list)
     time_end_second = int(time.time())
     time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
     if not show_console:
@@ -325,7 +326,7 @@ if __name__ == "__main__":
             g_logger.info("Let's check error......")
         else:
             sys.stdout.write("Let's check error......\n")
-        (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy(config_list)
+        (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy(source_type_time_range_list)
         for file_not_found in file_not_found_list:
             error_msg = u"FileNotFound: %s, %s\n" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
             if not show_console:
