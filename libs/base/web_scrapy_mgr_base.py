@@ -88,14 +88,14 @@ class WebSracpyMgrBase(object):
                 }
                 cls.__scrap_web_data_to_csv_file(module_folder, module_name, class_name, **scrapy_obj_cfg)
             except Exception as e:
-                errmsg = u"Error occur while scraping %s data, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index], str(e))
+                errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_range.source_type_index], str(e))
                 g_logger.error(errmsg)
                 total_errmsg += errmsg
                 print total_errmsg
                 if not try_to_scrap_all:
                     break
         if total_errmsg:
-            raise RuntimeError(total_errmsg) 
+            RuntimeError(total_errmsg)
 
 
     @classmethod

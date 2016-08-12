@@ -96,6 +96,18 @@ class FinanceTimeBase(object):
             self.republic_era_year = self.year - CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET
 
 
+    @staticmethod
+    def from_string(time_string):
+        if CMN_FUNC.check_date_str_format(time_string):
+            return FinanceDate.from_string(time_string)
+        elif CMN_FUNC.check_month_str_format(time_string):
+            return FinanceMonth.from_string(time_string)
+        elif CMN_FUNC.check_quarter_str_format(time_string):
+            return FinanceQuarter.from_string(time_string)
+        else:
+            ValueError("Unknown time format: %s" % time_string)
+
+
     def __str__(self):
         return self.to_string()
 

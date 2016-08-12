@@ -35,9 +35,12 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
         super(WebScrapyStockExchangeAndVolume, self).__init__(__file__, **kwargs)
         self.whole_month_data = True
         self.data_not_whole_month_list = []
-        if self.xcfg["time_start"].day > 1:
-            self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_start"].year, self.xcfg["time_start"].month))
-        if not CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_start"], self.xcfg["time_end"]):
+        if CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_start"], self.xcfg["time_end"]):
+            if self.xcfg["time_start"].day > 1 or self.xcfg["time_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_end"].year, self.xcfg["time_end"].month):
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month))
+        else:
+            if self.xcfg["time_start"].day > 1:
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_start"].year, self.xcfg["time_start"].month))
             if self.xcfg["time_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_end"].year, self.xcfg["time_end"].month):
                 self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month))
 

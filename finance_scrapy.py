@@ -5,7 +5,7 @@ import os
 import re
 import sys
 import time
-import shutil
+# import shutil
 import subprocess
 from datetime import datetime, timedelta
 from libs import common as CMN
@@ -72,8 +72,8 @@ def snapshot_result(run_result_str):
 
 def parse_param():
     source_type_index_list = None
-    datetime_range_start = None
-    datetime_range_end = None
+    time_start = None
+    time_end = None
     method_index = None
 
     argc = len(sys.argv)
@@ -88,7 +88,6 @@ def parse_param():
     while index < argc:
         if not sys.argv[index].startswith('-'):
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
-
         if re.match("(-h|--help)", sys.argv[index]):
             show_usage()
             sys.exit(0)
@@ -107,17 +106,27 @@ def parse_param():
         elif re.match("(-t|--time)", sys.argv[index]):
             time = sys.argv[index + 1]
             g_logger.debug("Param time: %s", time)
-            mobj = re.match("([\d]{4})-([\d]{1,2})-([\d]{1,2}),([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
-            if mobj is not None:
-                datetime_range_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
-                datetime_range_end = datetime(int(mobj.group(4)), int(mobj.group(5)), int(mobj.group(6)))
+            time_range_list = time.split(",")
+            time_range_list_len = len(time_range_list)
+            if time_range_list_len == 2:
+                time_start = CMN.CLS.FinanceTimeBase.from_string(time_range_list[0])
+                time_end = CMN.CLS.FinanceTimeBase.from_string(time_range_list[1])
+            elif time_range_list_len == 1:
+                time_start = CMN.CLS.FinanceTimeBase.from_string(time_range_list[0])
             else:
-                mobj = re.match("([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
-                if mobj is not None:
-                    datetime_range_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
-                else:
-                    errmsg = "Unsupoorted time: %s" % time
-                    show_error_and_exit(errmsg)
+                errmsg = "Unsupoorted time: %s" % time
+                show_error_and_exit(errmsg)
+            # mobj = re.match("([\d]{4})-([\d]{1,2})-([\d]{1,2}),([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
+            # if mobj is not None:
+            #     time_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
+            #     time_end = datetime(int(mobj.group(4)), int(mobj.group(5)), int(mobj.group(6)))
+            # else:
+            #     mobj = re.match("([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
+            #     if mobj is not None:
+            #         time_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
+            #     else:
+            #         errmsg = "Unsupoorted time: %s" % time
+            #         show_error_and_exit(errmsg)
             index_offset = 2           
         elif re.match("(-m|--method)", sys.argv[index]):
             method = sys.argv[index + 1]
@@ -159,15 +168,15 @@ def parse_param():
     if method_index is None:
         method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
 
-# Remove the old data if necessary
-    if remove_old:
-        shutil.rmtree(CMN.DEF.DEF_CSV_FILE_PATH, ignore_errors=True)
+# # Remove the old data if necessary
+#     if remove_old:
+#         shutil.rmtree(CMN.DEF.DEF_CSV_FILE_PATH, ignore_errors=True)
 
 # Create the time range list
     # import pdb; pdb.set_trace()
     source_type_time_range_list = None
     if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
-        if source_type_index_list is not None or datetime_range_start is not None:
+        if source_type_index_list is not None or time_start is not None:
             msg = "Ignore other parameters when the method is %s\n" % CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX]     
             if not show_console:
                 g_logger.info(msg)
@@ -186,10 +195,10 @@ def parse_param():
             source_type_time_range_list.append(
                 # {
                 #     "source_type_index": source_type_index,
-                #     "time_start": datetime_range_start,
-                #     "time_end": datetime_range_end,
+                #     "time_start": time_start,
+                #     "time_end": time_end,
                 # }
-                CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, datetime_range_start, datetime_range_end)
+                CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
             )
 
 # Adjust the end date since some data of the last day are NOT released at the moment while scraping data
@@ -216,13 +225,13 @@ def parse_param():
 #             g_logger.warn("Out of range in %s! Chnage end date from %s to %s", CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], CMN.transform_datetime_cfg2string(config['end']), datetime_threshold)
 #             config['end'] = datetime_threshold
 
-        if config['end'] == config['start']:
-            msg = "%s: %04d-%02d-%02d" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day)
-        else:
-            msg = "%s: %04d-%02d-%02d:%04d-%02d-%02d" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day, config['end'].year, config['end'].month, config['end'].day)
-        g_logger.info(msg)
-        if show_console:
-            sys.stdout.write("%s\n" % msg)
+        # if config['end'] == config['start']:
+        #     msg = "%s: %04d-%02d-%02d" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day)
+        # else:
+        #     msg = "%s: %04d-%02d-%02d:%04d-%02d-%02d" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], config['start'].year, config['start'].month, config['start'].day, config['end'].year, config['end'].month, config['end'].day)
+        # g_logger.info(msg)
+        # if show_console:
+        #     sys.stdout.write("%s\n" % msg)
 
     return (source_type_time_range_list, multi_thread, check_result, clone_result, show_console)
 
@@ -296,9 +305,9 @@ if __name__ == "__main__":
 # Parse the parameters
     # import pdb; pdb.set_trace()
     (source_type_time_range_list, multi_thread, check_result, clone_result, show_console) = parse_param()
-# Create the folder for CSV files if not exist
-    if not os.path.exists(CMN.DEF.DEF_CSV_FILE_PATH):
-        os.makedirs(CMN.DEF.DEF_CSV_FILE_PATH)
+# # Create the folder for CSV files if not exist
+#     if not os.path.exists(CMN.DEF.DEF_CSV_FILE_PATH):
+#         os.makedirs(CMN.DEF.DEF_CSV_FILE_PATH)
 # Reset the file positon of the log file to 0
     if check_result:
         if os.path.exists(WSL.LOG_FILE_PATH):
