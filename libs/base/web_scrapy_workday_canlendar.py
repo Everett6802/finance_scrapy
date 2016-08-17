@@ -87,9 +87,7 @@ class WebScrapyWorkdayCanlendar(object):
 
     def __update_workday_from_file(self):
         need_update_from_web = True
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         g_logger.debug("Try to Acquire the Workday Canlendar data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Workday Canlendar config file does NOT exist")
@@ -254,9 +252,7 @@ class WebScrapyWorkdayCanlendar(object):
 
     def __write_workday_canlendar_to_file(self):
         # import pdb; pdb.set_trace()
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         g_logger.debug("Write the Workday Canlendar data to the file: %s......" % conf_filepath)
         try:
             date_range_str = None

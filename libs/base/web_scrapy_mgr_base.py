@@ -51,6 +51,7 @@ class WebSracpyMgrBase(object):
 
     @classmethod
     def __instantiate_web_scrapy_object(cls, module_folder, module_name, class_name, **kwargs):
+        # import pdb; pdb.set_trace()
 # Find the module
         web_scrapy_class_type = cls.__get_class_for_name(module_folder, module_name, class_name)
 # Instantiate the class 
@@ -60,11 +61,11 @@ class WebSracpyMgrBase(object):
 
     @classmethod
     def __scrap_web_data_to_csv_file(cls, module_folder, module_name, class_name, **kwargs):
+        # import pdb; pdb.set_trace()
         web_scrapy_class_obj = cls.__instantiate_web_scrapy_object(module_folder, module_name, class_name, **kwargs)
         if web_scrapy_class_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
         g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
-        # import pdb; pdb.set_trace()
         web_scrapy_class_obj.scrap_web_to_csv()
 
 

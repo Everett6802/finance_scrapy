@@ -37,7 +37,7 @@ def show_usage():
     print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
     print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
     print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF.DEF_CSV_FILE_PATH
-    print "--multi_thread\nDescription: Scrap Web data by using multiple threads\nCaution: Deprecated"
+    # print "--multi_thread\nDescription: Scrap Web data by using multiple threads\nCaution: Deprecated"
     print "--check_result\nDescription: Check the CSV files after Scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
     print "--do_debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
@@ -80,7 +80,7 @@ def parse_param():
     index = 1
     index_offset = None
     remove_old = False
-    multi_thread = False
+    # multi_thread = False
     check_result = False
     clone_result = False
     show_console = True
@@ -141,9 +141,9 @@ def parse_param():
         elif re.match("--remove_old", sys.argv[index]):
             remove_old = True
             index_offset = 1
-        elif re.match("--multi_thread", sys.argv[index]):
-            multi_thread = True
-            index_offset = 1
+        # elif re.match("--multi_thread", sys.argv[index]):
+        #     multi_thread = True
+        #     index_offset = 1
         elif re.match("--check_result", sys.argv[index]):
             check_result = True
             index_offset = 1
@@ -233,7 +233,7 @@ def parse_param():
         # if show_console:
         #     sys.stdout.write("%s\n" % msg)
 
-    return (source_type_time_range_list, multi_thread, check_result, clone_result, show_console)
+    return (source_type_time_range_list, check_result, clone_result, show_console)
 
 
 # from libs import web_scrapy_logging as WSL
@@ -304,7 +304,7 @@ if __name__ == "__main__":
 
 # Parse the parameters
     # import pdb; pdb.set_trace()
-    (source_type_time_range_list, multi_thread, check_result, clone_result, show_console) = parse_param()
+    (source_type_time_range_list, check_result, clone_result, show_console) = parse_param()
 # # Create the folder for CSV files if not exist
 #     if not os.path.exists(CMN.DEF.DEF_CSV_FILE_PATH):
 #         os.makedirs(CMN.DEF.DEF_CSV_FILE_PATH)

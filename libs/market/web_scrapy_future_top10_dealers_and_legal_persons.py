@@ -5,14 +5,13 @@ import requests
 import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import common as CMN
-import web_scrapy_base
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+import libs.common as CMN
+import web_scrapy_market_base as WebScrapyMarketBase
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 # 期貨大額交易人未沖銷部位結構表 : 臺股期貨
-class WebScrapyFutureTop10DealersAndLegalPersons(web_scrapy_base.WebScrapyMarketBase):
+class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMarketBase):
 
     # def __init__(self, datetime_range_start=None, datetime_range_end=None):
     #     self.OLD_FORMAT_ROW_START = 3
