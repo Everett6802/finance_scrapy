@@ -23,6 +23,7 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
     #     )
     def __init__(self, **kwargs):
         super(WebScrapyStockTop3LegalPersonsNetBuyOrSell, self).__init__(__file__, **kwargs)
+        self.cur_date_str = None
 
 
     def assemble_web_url(self, timeslice):
@@ -33,13 +34,14 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
                 "%02d" % timeslice.day
             )
         )
+        self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 
 
     def parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
-        data_list = []
+        data_list = [self.cur_date_str,]
         for tr in web_data[2:6]:
             td = tr.select('td')
             for i in range(1, 4):

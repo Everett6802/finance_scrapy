@@ -50,8 +50,12 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def __instantiate_web_scrapy_object(cls, module_folder, module_name, class_name, **kwargs):
+    def __instantiate_web_scrapy_object(cls, source_type_index, **kwargs):
         # import pdb; pdb.set_trace()
+        module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
+        module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
+        class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
+        g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
 # Find the module
         web_scrapy_class_type = cls.__get_class_for_name(module_folder, module_name, class_name)
 # Instantiate the class 
@@ -60,9 +64,9 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def __scrap_web_data_to_csv_file(cls, module_folder, module_name, class_name, **kwargs):
+    def __scrap_web_data_to_csv_file(cls, source_type_index, **kwargs):
         # import pdb; pdb.set_trace()
-        web_scrapy_class_obj = cls.__instantiate_web_scrapy_object(module_folder, module_name, class_name, **kwargs)
+        web_scrapy_class_obj = cls.__instantiate_web_scrapy_object(source_type_index, **kwargs)
         if web_scrapy_class_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
         g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
@@ -79,15 +83,11 @@ class WebSracpyMgrBase(object):
         for source_type_time_range in source_type_time_range_list:
             try:
                 source_type_index = source_type_time_range.source_type_index
-                module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
-                module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
-                class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
-                g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
                 scrapy_obj_cfg = {
                     "time_start": source_type_time_range.time_start, 
                     "time_end": source_type_time_range.time_end
                 }
-                cls.__scrap_web_data_to_csv_file(module_folder, module_name, class_name, **scrapy_obj_cfg)
+                cls.__scrap_web_data_to_csv_file(source_type_index, **scrapy_obj_cfg)
             except Exception as e:
                 errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_range.source_type_index], str(e))
                 g_logger.error(errmsg)
@@ -101,10 +101,8 @@ class WebSracpyMgrBase(object):
 
     @classmethod
     def do_scrapy_debug(cls, source_type_index):
-        module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
-        class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
-        g_logger.debug("Try to initiate %s.%s for debugging......" % (module_name, class_name))
-        web_scrapy_class_obj = WebSracpyMgrBase.__instantiate_web_scrapy_object(module_name, class_name)
+        import pdb; pdb.set_trace()
+        web_scrapy_class_obj = WebSracpyMgrBase.__instantiate_web_scrapy_object(source_type_index)
         web_scrapy_class_obj.do_debug()
 
 

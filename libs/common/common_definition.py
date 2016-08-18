@@ -77,6 +77,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_BIG5,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": True,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 三大法人買賣金額統計表
@@ -85,6 +86,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_BIG5,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 融資融券餘額統計表
@@ -93,6 +95,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', 'tr'),
     },
     {# 期貨和選擇權未平倉口數與契約金額
@@ -101,6 +104,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_c tr'), 
     },
     {# 期貨或選擇權未平倉口數與契約金額
@@ -109,6 +113,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
     },
     {# 臺指選擇權買賣權未平倉口數與契約金額
@@ -117,6 +122,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),  
     },
     {# 臺指選擇權賣權買權比
@@ -125,6 +131,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),    
     },
     {# 期貨大額交易人未沖銷部位結構表 : 臺股期貨
@@ -133,6 +140,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),    
     },
     {# 三大法人上市個股買賣超日報
@@ -141,6 +149,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_BIG5,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": '.board_trad tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 三大法人上櫃個股買賣超日報
@@ -148,6 +157,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
         "url_css_selector": 'aaData',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByJSON('aaData'),    
     },
     {# 集保戶股權分散表
@@ -156,6 +166,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_encoding": URL_ENCODING_BIG5,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": 'table tbody tr',
+        "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
 ]

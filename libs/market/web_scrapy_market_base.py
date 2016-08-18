@@ -12,8 +12,6 @@ from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
 import web_scrapy_url_date_range as URLDateRange
-# import libs.base.web_scrapy_base as WebScrapyBase
-# import libs.base.web_scrapy_timeslice_generator as TimeSliceGenerator
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -61,16 +59,18 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
     def scrap_web_to_csv(self):
         # import pdb; pdb.set_trace()
+# Find the file path for writing data into csv
         csv_filepath = WebScrapyMarketBase.assemble_csv_filepath(self.source_type_index)
+# Generate the time slice list
         timeslice_iterable = self.__get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
-        csv_data_list_each_year = None
+        csv_data_list_each_year = []
         cur_year = None
         for timeslice in timeslice_iterable:
 # Write the data into csv year by year
             if timeslice.year != cur_year:
-                if csv_data_list_each_year is not None:
-                    self._write_to_csv(csv_filepath, csv_data_list_each_year)
-                csv_data_list_each_year = []
+                if len(csv_data_list_each_year) > 0:
+                    self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])
+                    csv_data_list_each_year = []
                 cur_year = timeslice.year
             url = self.assemble_web_url(timeslice)
             g_logger.debug("Get the data by date from URL: %s" % url)
@@ -79,14 +79,12 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
                 csv_data_list = self.parse_web_data(self._get_web_data(url))
                 if csv_data_list is None:
                     raise RuntimeError(url)
-                csv_data_list_each_year.extend(csv_data_list)
-                # g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
-                # WebScrapyBase._write_to_csv(csv_filepath, csv_data_list)
+                csv_data_list_each_year.append(csv_data_list)
             except Exception as e:
                 g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
 # Write the data of last year into csv
-        if csv_data_list_each_year is not None:
-            self._write_to_csv(csv_filepath, csv_data_list_each_year)
+        if len(csv_data_list_each_year) > 0:
+            self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])
 
 
     def assemble_web_url(self, timeslice):

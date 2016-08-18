@@ -82,7 +82,15 @@ class WebScrapyBase(object):
 
 
     @staticmethod
-    def _write_to_csv(csv_filepath, csv_data_list):
+    def _write_to_csv(csv_filepath, csv_data_list, multi_data_one_page):
+        # import pdb; pdb.set_trace()
+        if multi_data_one_page:
+            g_logger.debug("Multi-data in one page, need to transform data")
+            csv_data_list_tmp = csv_data_list
+            csv_data_list = []
+            for csv_data_tmp in csv_data_list_tmp:
+                csv_data_list.extend(csv_data_tmp)
+
         g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
         with open(csv_filepath, 'a+') as fp:
             fp_writer = csv.writer(fp, delimiter=',')

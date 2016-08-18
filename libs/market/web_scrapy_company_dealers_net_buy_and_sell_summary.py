@@ -38,6 +38,7 @@ class WebScrapyCompanyDealersNetBuyOrSellSummary(WebScrapyMarketBase.WebScrapyMa
 
 
     def parse_web_data(self, web_data):
+        import pdb; pdb.set_trace()
         if len(web_data) == 0:
             return None
         data_list = []

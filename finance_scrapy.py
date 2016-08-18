@@ -45,8 +45,8 @@ def show_usage():
     print "==================================================="
 
 
-def do_debug(data_source_type_index):
-    g_mgr.do_debug(data_source_type_index)
+def do_debug(source_type_index):
+    g_mgr.do_scrapy_debug(source_type_index)
     sys.exit(0)
 
 
@@ -151,8 +151,8 @@ def parse_param():
             clone_result = True
             index_offset = 1
         elif re.match("--do_debug", sys.argv[index]):
-            data_source_type_index = int(sys.argv[index + 1])
-            do_debug(data_source_type_index)
+            source_type_index = int(sys.argv[index + 1])
+            do_debug(source_type_index)
             sys.exit(0)
         elif re.match("--run_daily", sys.argv[index]):
             method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
