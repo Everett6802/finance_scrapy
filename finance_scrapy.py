@@ -19,13 +19,13 @@ else:
     g_mgr = MGR.WebSracpyStockMgr()
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
-# from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
-# from libs import web_scrapy_timeslice_generator as TimesliceGenerator
 
+show_console = True
 
 def show_usage():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
+    print "--silent\nDescription: Disable print log on console\nCaution: This argument should be placed in the first place if set"
     print "-s --source\nDescription: The date source from the website\nDefault: All data sources\nCaution: Only work when Method is USER_DEFINED"
     for index, source in enumerate(CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING):
         print "  %d: %s" % (index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[index])
@@ -83,7 +83,6 @@ def parse_param():
     # multi_thread = False
     check_result = False
     clone_result = False
-    show_console = True
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
@@ -91,6 +90,9 @@ def parse_param():
         if re.match("(-h|--help)", sys.argv[index]):
             show_usage()
             sys.exit(0)
+        elif re.match("--silent", sys.argv[index]):
+            show_console = False
+            index_offset = 1
         elif re.match("(-s|--source)", sys.argv[index]):
             source = sys.argv[index + 1]
             source_type_index_str_list = source.split(",")
@@ -233,31 +235,7 @@ def parse_param():
         # if show_console:
         #     sys.stdout.write("%s\n" % msg)
 
-    return (source_type_time_range_list, check_result, clone_result, show_console)
-
-
-# from libs import web_scrapy_logging as WSL
-# from libs import web_scrapy_company_group_set as CompanyGroupSet
-
-# class MyClass(object):
-
-#     FUNC_PTR = None
-#     def __init__(self):
-#         self.get_cls()
-#     @classmethod
-#     def get_cls(cls):
-#         if cls.FUNC_PTR is None:
-#             cls.FUNC_PTR = [cls.__test1, cls.__test2]
-#         return cls.FUNC_PTR
-#     @classmethod
-#     def __test1(cls):
-#         print "test1"
-#     @classmethod
-#     def __test2(cls):
-#         print "test2"
-#     def test(self, index):
-#         (self.get_cls()[index])()
-
+    return (source_type_time_range_list, check_result, clone_result)
 
 
 if __name__ == "__main__":
@@ -304,7 +282,7 @@ if __name__ == "__main__":
 
 # Parse the parameters
     # import pdb; pdb.set_trace()
-    (source_type_time_range_list, check_result, clone_result, show_console) = parse_param()
+    (source_type_time_range_list, check_result, clone_result) = parse_param()
 # # Create the folder for CSV files if not exist
 #     if not os.path.exists(CMN.DEF.DEF_CSV_FILE_PATH):
 #         os.makedirs(CMN.DEF.DEF_CSV_FILE_PATH)

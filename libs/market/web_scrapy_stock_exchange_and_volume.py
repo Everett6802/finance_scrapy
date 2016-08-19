@@ -72,15 +72,13 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
             date_list = td[0].text.split('/')
             if len(date_list) != 3:
                 raise RuntimeError("The date format is NOT as expected: %s", date_list)
-            # entry = [CMN.transform_datetime2string(date_list[0], date_list[1], date_list[2], True),]
             entry = [CMN.FUNC.transform_date_str(int(date_list[0]) + CMN.DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET, int(date_list[1]), int(date_list[2])),]
-
             if not self.whole_month_data:
-                # datetime_cur = CMN.transform_string2datetime(entry[0])
-                # if datetime_cur < self.get_datetime_startday() or datetime_cur > self.get_datetime_endday():
                 date_cur = CMN.CLS.FinanceDate.from_string(entry[0])
-                if date_cur < self.xcfg["time_start"] or date_cur > self.xcfg["time_end"]:
+                if date_cur < self.xcfg["time_start"]:
                     continue
+                elif date_cur > self.xcfg["time_end"]:
+                    break
             for index in range(1, 6):
                 entry.append(str(td[index].text).replace(',', ''))
             data_list.append(entry)

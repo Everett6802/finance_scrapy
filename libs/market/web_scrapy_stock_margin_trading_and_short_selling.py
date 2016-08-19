@@ -23,9 +23,11 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
     #     )
     def __init__(self, **kwargs):
         super(WebScrapyStockMarginTradingAndShortSelling, self).__init__(__file__, **kwargs)
+        self.cur_date_str = None
 
 
     def assemble_web_url(self, timeslice):
+        # import pdb; pdb.set_trace()
         url = self.url_format.format(
             *(
                 timeslice.year - 1911, 
@@ -33,13 +35,15 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
                 "%02d" % timeslice.day
             )
         )
+        self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 
 
     def parse_web_data(self, web_data):
+        # import pdb; pdb.set_trace()
         if len(web_data) == 0:
             return None
-        data_list = []
+        data_list = [self.cur_date_str,]
         for tr in web_data[2:]:
             td = tr.select('td')
             for i in range(1, 6):

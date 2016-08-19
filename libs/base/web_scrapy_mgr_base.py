@@ -101,7 +101,7 @@ class WebSracpyMgrBase(object):
 
     @classmethod
     def do_scrapy_debug(cls, source_type_index):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         web_scrapy_class_obj = WebSracpyMgrBase.__instantiate_web_scrapy_object(source_type_index)
         web_scrapy_class_obj.do_debug()
 
