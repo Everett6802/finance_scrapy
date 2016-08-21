@@ -23,17 +23,19 @@ class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(WebScrapyMarke
     #     )
     def __init__(self, **kwargs):
         super(WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(__file__, **kwargs)
+        self.cur_date_str = None
 
 
     def assemble_web_url(self, timeslice):
         url = self.url_format.format(*(timeslice.year, timeslice.month, timeslice.day))
+        self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 
 
     def parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
-        data_list = []
+        data_list = [self.cur_date_str,]
         # start_index_list = [4, 1, 1, 2, 1, 1]
         # column_num = 12
         start_index_list = [10, 7, 7, 8, 7, 7]

@@ -166,6 +166,7 @@ def is_market_mode():
 def is_stock_mode():
     return get_finance_analysis_mode() == CMN_DEF.FINANCE_ANALYSIS_STOCK
 
+
 def parse_config_file(conf_filename):
     # import pdb; pdb.set_trace()
     conf_filepath = get_config_filepath(conf_filename)
