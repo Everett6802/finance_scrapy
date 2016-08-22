@@ -214,7 +214,7 @@ class FinanceDate(FinanceTimeBase):
 
 
     def get_value(self):
-        return (self.year << 8 | self.month << 4 | self.day)
+        return (self.year << 12 | self.month << 8 | self.day)
 
 
     def get_value_tuple(self):

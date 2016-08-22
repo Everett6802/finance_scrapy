@@ -278,6 +278,7 @@ class WebScrapyTimeSliceGenerator(object):
 
 
     def __check_time_range(self, time_start, time_end):
+        # import pdb; pdb.set_trace()
         if time_start is not None and time_end is not None:
             if time_start > time_end:
                 raise RuntimeError("The Start Time[%s] should NOT be later than the End Time[%s]" % (time_start, time_end))
@@ -287,7 +288,7 @@ class WebScrapyTimeSliceGenerator(object):
 # Caution: For Market mode, the data_source_id is date source type.
 # Caution: For Stock Mode, the data_source_id is company code number.
         if date_start > date_end:
-            raise RuntimeError("The Start Time[%s] should NOT be later than the End Time[%s]" % (date_start, date_end))
+            raise RuntimeError("The Start Date[%s] should NOT be later than the End Date[%s]" % (date_start, date_end))
 # TBD
         # if self.url_date_range is None:
         #     self.url_date_range = URLTimeRange.WebScrapyMarketURLTimeRange.Instance() if CMN.IS_FINANCE_MARKET_MODE else URLTimeRange.WebScrapyStockURLTimeRange.Instance()

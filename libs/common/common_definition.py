@@ -140,7 +140,7 @@ DEF_SOURCE_URL_PARSING = [
         "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
-        "url_css_selector": '.board_trad tr',
+        "url_css_selector": '.table_f tr',
         "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),    
     },
