@@ -5,7 +5,6 @@ import os
 import re
 import sys
 import time
-# import shutil
 import subprocess
 from datetime import datetime, timedelta
 from libs import common as CMN
@@ -167,8 +166,8 @@ def parse_param():
         index += index_offset
 
 # Set the default value if it is None
-    if method_index is None:
-        method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
+    # if method_index is None:
+    #     method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
 
 # # Remove the old data if necessary
 #     if remove_old:
@@ -176,32 +175,32 @@ def parse_param():
 
 # Create the time range list
     # import pdb; pdb.set_trace()
-    source_type_time_range_list = None
-    if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
-        if source_type_index_list is not None or time_start is not None:
-            msg = "Ignore other parameters when the method is %s\n" % CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX]     
-            if not show_console:
-                g_logger.info(msg)
-            else:
-                sys.stdout.write(msg)
-        conf_filename = CMN.DEF.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
-        source_type_time_range_list = CMN.FUNC.parse_config_file(conf_filename)
-        if source_type_time_range_list is None:
-            show_error_and_exit("Fail to parse the config file: %s" % conf_filename)
-    else:
-        source_type_time_range_list = []
-        if source_type_index_list is None:
-            source_type_index_list = range(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN)
-        # import pdb; pdb.set_trace()
-        for source_type_index in source_type_index_list:
-            source_type_time_range_list.append(
-                # {
-                #     "source_type_index": source_type_index,
-                #     "time_start": time_start,
-                #     "time_end": time_end,
-                # }
-                CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
-            )
+    # source_type_time_range_list = None
+    # if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
+    #     if source_type_index_list is not None or time_start is not None:
+    #         msg = "Ignore other parameters when the method is %s\n" % CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX]     
+    #         if not show_console:
+    #             g_logger.info(msg)
+    #         else:
+    #             sys.stdout.write(msg)
+    #     conf_filename = CMN.DEF.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
+    #     source_type_time_range_list = CMN.FUNC.parse_config_file(conf_filename)
+    #     if source_type_time_range_list is None:
+    #         show_error_and_exit("Fail to parse the config file: %s" % conf_filename)
+    # else:
+    #     source_type_time_range_list = []
+    #     if source_type_index_list is None:
+    #         source_type_index_list = range(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN)
+    #     # import pdb; pdb.set_trace()
+    #     for source_type_index in source_type_index_list:
+    #         source_type_time_range_list.append(
+    #             # {
+    #             #     "source_type_index": source_type_index,
+    #             #     "time_start": time_start,
+    #             #     "time_end": time_end,
+    #             # }
+    #             CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
+    #         )
 
 # Adjust the end date since some data of the last day are NOT released at the moment while scraping data
     # datetime_now = datetime.today()
@@ -237,7 +236,7 @@ def parse_param():
 
     return (source_type_time_range_list, check_result, clone_result)
 
-
+import libs.stock.web_scrapy_company_group_set as CompanyGroupSet
 if __name__ == "__main__":
     # get_whole_company_group_set()
     # import pdb; pdb.set_trace()
@@ -259,11 +258,11 @@ if __name__ == "__main__":
     # time_slice_iterable = timeslice_generator_obj.generate_time_slice(4, CMN.CLS.FinanceQuarter(2015, 4), CMN.CLS.FinanceQuarter(2016, 3))
     # for time_slice in time_slice_iterable:
     #     print time_slice
-    # company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
-    # for company_group_number, company_code_number_list in company_group_set.items():
-    #     print "============ company_group_number: %d ============" % company_group_number
-    #     for company_code_number in company_code_number_list:
-    #         print "%s ;" % company_code_number
+    company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
+    for company_group_number, company_code_number_list in company_group_set.items():
+        print "============ company_group_number: %d ============" % company_group_number
+        for company_code_number in company_code_number_list:
+            print "%s ;" % company_code_number
 
     # partial_company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
     # company_list = ["3086", "5263",]
@@ -278,7 +277,7 @@ if __name__ == "__main__":
     # my_class = MyClass()
     # my_class.test(0)
     # my_class.test(1)
-    # sys.exit(0)
+    sys.exit(0)
 
 # Parse the parameters
     # import pdb; pdb.set_trace()

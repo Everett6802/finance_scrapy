@@ -11,9 +11,9 @@ from datetime import datetime, timedelta
 # import common as CMN
 # import common_class as CMN.CLS
 import libs.common as CMN
-from libs.stock.web_scrapy_company_profile_lookup as CompanyProfileLookup
+import web_scrapy_company_profile as CompanyProfile
 # from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 @CMN.CLS.Singleton

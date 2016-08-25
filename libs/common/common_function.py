@@ -167,7 +167,7 @@ def is_stock_mode():
     return get_finance_analysis_mode() == CMN_DEF.FINANCE_ANALYSIS_STOCK
 
 
-def parse_config_file(conf_filename):
+def parse_source_type_time_range_config_file(conf_filename):
     # import pdb; pdb.set_trace()
     conf_filepath = get_config_filepath(conf_filename)
     total_param_list = []

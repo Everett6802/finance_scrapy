@@ -10,6 +10,7 @@ import libs.common as CMN
 import libs.base as BASE
 import libs.web_scrapy_mgr_base as MgrBase
 import web_scrapy_company_profile as CompanyProfile
+import web_scrapy_company_group_set as CompanyGroupSet
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -48,6 +49,21 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
         for index in range(company_group_size):
             folderpath = folderpath_format % index
             shutil.rmtree(folderpath, ignore_errors=True)
+
+
+    def initialize(**kwargs):
+        super(WebSracpyStockMgr, self).initialize(**kwargs)
+        if kwargs.get("company_number_list", None) is not None:
+            company_group_set = WebScrapyCompanyGroupSet()
+            for company_number in kwargs["company_number_list"]:
+                company_group_set.add_company(company_number)
+            company_group_set.add_done();
+            if kwargs.get("company_group_set", None) is not None:
+                g_logger.warn("The company_group_set field is ignored......")
+        elif kwargs.get("company_group_set", None) is not None:
+            self.xcfg["company_group_set"] = kwargs["company_group_set"]
+        else:
+            self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
 
 
     def do_scrapy(self, source_type_time_range_list):

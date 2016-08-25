@@ -1,13 +1,13 @@
 # -*- coding: utf8 -*-
 
 import libs.common as CMN
-from libs import web_scrapy_company_profile as CompanyProfile
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+import web_scrapy_company_profile as CompanyProfile
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 class WebScrapyCompanyGroupSet(object):
 
+    company_profile = None
     whole_company_number_in_group_dict = None
 
     def __init__(self):
@@ -17,15 +17,21 @@ class WebScrapyCompanyGroupSet(object):
 
 
     @classmethod
+    def __get_company_profile(cls):
+        if cls.company_profile is None:
+            cls.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
+        return cls.company_profile
+
+
+    @classmethod
     def __get_whole_company_number_in_group_dict(cls):
         # import pdb; pdb.set_trace()
         if cls.whole_company_number_in_group_dict is None:
-            company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
             cls.whole_company_number_in_group_dict = {}
-            company_group_size = company_profile.get_company_group_size();
+            company_group_size = cls.__get_company_profile().get_company_group_size();
             for company_group_index in range(company_group_size):
                 company_number_list = []
-                for entry in company_profile.group_iterator(company_group_index):
+                for entry in cls.__get_company_profile().group_iterator(company_group_index):
                     company_number_list.append(entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
                 cls.whole_company_number_in_group_dict[company_group_index] = company_number_list
         return cls.whole_company_number_in_group_dict
@@ -69,6 +75,11 @@ class WebScrapyCompanyGroupSet(object):
         company_code_number_in_group_array = []
         company_code_number_in_group_array.append(company_code_number)
         self.add_company_list(company_group_number, company_code_number_in_group_array)
+
+
+    def add_company(self, company_code_number):
+        company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+        add_company(company_group_number, company_code_number)
 
 
     def add_company_group(self, company_group_number):

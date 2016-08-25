@@ -42,6 +42,7 @@ LARGE_INDUSTRY_COMPANY_GROUP_LIST = [u"光電業", u"半導體業", u"電子零�
 class WebScrapyCompanyProfile(object):
 
     def __init__(self):
+        # import pdb; pdb.set_trace()
         self.COMPANY_PROFILE_ELEMENT_LEN = 7
         self.COMPANY_PROFILE_ELEMENT_EX_LEN = self.COMPANY_PROFILE_ELEMENT_LEN + 2
         self.UNICODE_ENCODING_IN_FILE = "utf-8"

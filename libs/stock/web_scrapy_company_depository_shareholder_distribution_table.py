@@ -5,14 +5,13 @@ import requests
 import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import common as CMN
-import web_scrapy_base
-from libs import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+import libs.common as CMN
+import web_scrapy_stock_base as WebScrapyStockBase
+g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 # 集保戶股權分散表
-class WebScrapyDepositoryShareholderDistributionTable(web_scrapy_base.WebScrapyStockBase):
+class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScrapyStockBase):
 
     # def __init__(self, datetime_range_start=None, datetime_range_end=None):
     #     super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(
@@ -29,12 +28,13 @@ class WebScrapyDepositoryShareholderDistributionTable(web_scrapy_base.WebScrapyS
         super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(__file__, **kwargs)
 
 
-    def assemble_web_url(self, timeslice):
+    def assemble_web_url(self, timeslice, company_code_number):
         url = self.url_format.format(
             *(
                 timeslice.year, 
                 "%02d" % timeslice.month,
-                "%02d" % timeslice.day
+                "%02d" % timeslice.day,
+                company_code_number
             )
         )
         return url

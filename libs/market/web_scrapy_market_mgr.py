@@ -37,7 +37,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def do_scrapy(self, source_type_time_range_list):
        # import pdb; pdb.set_trace()
-        WebSracpyMarketMgr._scrap_data(source_type_time_range_list, self.xcfg["need_remove_old_finance_folder"], self.xcfg["try_to_scrap_all"])
+        self._scrap_data(source_type_time_range_list, self.xcfg["need_remove_old_finance_folder"], self.xcfg["try_to_scrap_all"])
 
 
     def check_scrapy(self, source_type_time_range_list):

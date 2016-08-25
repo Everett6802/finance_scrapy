@@ -11,17 +11,16 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
-# from libs import web_scrapy_workday_canlendar as WorkdayCanlendar
-# import libs.base.web_scrapy_base as WebScrapyBase
-# import libs.base.web_scrapy_timeslice_generator as TimeSliceGenerator
-import web_scrapy_company_profile as CompanyProfile
 import web_scrapy_company_group_set as CompanyGroupSet
+import web_scrapy_company_profile as CompanyProfile
+import web_scrapy_url_time_range as URLTimeRange
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
     company_profile = None
+    url_time_range = None
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyStockBase, self).__init__(cur_file_path, **kwargs)
         self.company_group_set = None
@@ -29,6 +28,19 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
         else:
             self.company_group_set = kwargs["company_group_set"]
+# Determine the time range
+        if self.xcfg["time_start"] is None:
+            self.xcfg["time_start"] = self.__get_url_time_range().get_date_range_start(self.source_type_index)
+        if self.xcfg["time_end"] is None:
+            self.xcfg["time_end"] = self.__get_url_time_range().get_date_range_end(self.source_type_index)
+        if self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
+            self.time_slice_kwargs["time_start"] = self.xcfg["time_start"]
+            self.time_slice_kwargs["time_end"] = self.xcfg["time_end"]
+        elif self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+            self.time_slice_kwargs["time_start"] = CMN.CLS.FinanceMonth(self.xcfg["time_start"].year, self.xcfg["time_start"].month)
+            self.time_slice_kwargs["time_end"] = CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month)
+        else:
+            raise ValueError("Unsupported time unit: %d" % self.url_time_unit)
 
 
     @classmethod
@@ -36,6 +48,14 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         if cls.company_profile is None:
             cls.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
         return cls.company_profile
+
+
+    @classmethod
+    def __get_url_time_range(cls):
+        # import pdb; pdb.set_trace()
+        if cls.url_time_range is None:
+            cls.url_time_range = URLTimeRange.WebScrapyURLTimeRange.Instance()
+        return cls.url_time_range
 
 
     @classmethod
@@ -47,6 +67,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
 
     def scrap_web_to_csv(self):
+        import pdb; pdb.set_trace()
         timeslice_generator = self._get_time_slice_generator()
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:

@@ -17,11 +17,12 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
-    URL_DATE_RANGE = None
-    TIME_SLICE_GENERATOR = None
+    url_date_range = None
+    # TIME_SLICE_GENERATOR = None
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyMarketBase, self).__init__(cur_file_path, **kwargs)
         # import pdb; pdb.set_trace()
+# Determine the time range
         if self.xcfg["time_start"] is None:
             self.xcfg["time_start"] = self.__get_url_date_range().get_date_range_start(self.source_type_index)
         if self.xcfg["time_end"] is None:
@@ -39,16 +40,16 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
     @classmethod
     def __get_url_date_range(cls):
         # import pdb; pdb.set_trace()
-        if cls.URL_DATE_RANGE is None:
-            cls.URL_DATE_RANGE = URLDateRange.WebScrapyURLDateRange.Instance()
-        return cls.URL_DATE_RANGE
+        if cls.url_date_range is None:
+            cls.url_date_range = URLDateRange.WebScrapyURLDateRange.Instance()
+        return cls.url_date_range
 
 
-    @classmethod
-    def __get_time_slice_generator(cls):
-        if cls.TIME_SLICE_GENERATOR is None:
-            cls.TIME_SLICE_GENERATOR = BASE.TSG.WebScrapyTimeSliceGenerator.Instance()
-        return cls.TIME_SLICE_GENERATOR
+    # @classmethod
+    # def __get_time_slice_generator(cls):
+    #     if cls.TIME_SLICE_GENERATOR is None:
+    #         cls.TIME_SLICE_GENERATOR = BASE.TSG.WebScrapyTimeSliceGenerator.Instance()
+    #     return cls.TIME_SLICE_GENERATOR
 
 
     @classmethod
@@ -62,7 +63,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # Find the file path for writing data into csv
         csv_filepath = WebScrapyMarketBase.assemble_csv_filepath(self.source_type_index)
 # Generate the time slice list
-        timeslice_iterable = self.__get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
+        timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
         csv_data_list_each_year = []
         cur_year = None
         for timeslice in timeslice_iterable:
