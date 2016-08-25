@@ -1,11 +1,12 @@
 # -*- coding: utf8 -*-
 
+import collections
 import libs.common as CMN
 import web_scrapy_company_profile as CompanyProfile
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-class WebScrapyCompanyGroupSet(object):
+class WebScrapyCompanyGroupSet(collections.MutableMapping):
 
     company_profile = None
     whole_company_number_in_group_dict = None
