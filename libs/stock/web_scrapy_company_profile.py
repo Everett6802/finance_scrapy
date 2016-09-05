@@ -554,6 +554,10 @@ class WebScrapyCompanyProfile(object):
         return company_profile
 
 
+    def is_company_exist(self, company_number):
+        return True if self.lookup_company_profile(company_number) is not None else False
+
+
     def lookup_company_listing_date(self, company_number):
         COMPANY_PROFILE = self.lookup_company_profile(company_number)
         return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE]

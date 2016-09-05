@@ -13,8 +13,8 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
-    def __init__(self, **kwargs):
-        super(WebSracpyMarketMgr, self).__init__(**kwargs)
+    def __init__(self):
+        super(WebSracpyMarketMgr, self).__init__()
 
 
     @classmethod
@@ -35,10 +35,10 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         shutil.rmtree(folderpath, ignore_errors=True)
 
 
-    def do_scrapy(self, source_type_time_range_list):
+    def do_scrapy(self):
        # import pdb; pdb.set_trace()
-        self._scrap_data(source_type_time_range_list, self.xcfg["need_remove_old_finance_folder"], self.xcfg["try_to_scrap_all"])
+        self._scrap_data()
 
 
-    def check_scrapy(self, source_type_time_range_list):
+    def check_scrapy(self):
         raise NotImplementedError

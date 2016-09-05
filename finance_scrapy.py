@@ -19,38 +19,40 @@ else:
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-show_console = True
+param_cfg = None
 
 def show_usage():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--silent\nDescription: Disable print log on console\nCaution: This argument should be placed in the first place if set"
+    print "--debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "-s --source\nDescription: The date source from the website\nDefault: All data sources\nCaution: Only work when Method is USER_DEFINED"
     for index, source in enumerate(CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING):
         print "  %d: %s" % (index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[index])
     print "-t --time\nDescription: The time range of the data source\nDefault: Today\nCaution: Only work when Method is USER_DEFINED"
     print "  Format 1 (start_time): 2015-01-01"
     print "  Format 2 (start_time,end_time): 2015-01-01,2015-09-04"
-    print "-m --method\nDescription: The method of setting the parameters\nDefault: TODAY"
-    print "  TODAY: Read the today.conf file and only scrap today's data"
-    print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
-    print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
+    # print "-m --method\nDescription: The method of setting the parameters\nDefault: TODAY"
+    # print "  TODAY: Read the today.conf file and only scrap today's data"
+    # print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
+    # print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
     print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF.DEF_CSV_FILE_PATH
     # print "--multi_thread\nDescription: Scrap Web data by using multiple threads\nCaution: Deprecated"
     print "--check_result\nDescription: Check the CSV files after Scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
-    print "--do_debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
     print "==================================================="
 
 
-def do_debug(source_type_index):
-    g_mgr.do_scrapy_debug(source_type_index)
-    sys.exit(0)
+def show_msg(msg):
+    if not param_cfg["silent"]:
+        sys.stdout.write(msg)
+        sys.stderr.write("\n")
+    g_logger.info(msg)
 
 
 def show_error_and_exit(errmsg):
-    if show_console:
+    if not param_cfg["silent"]:
         sys.stderr.write(errmsg)
         sys.stderr.write("\n")
     g_logger.error(errmsg)
@@ -69,19 +71,23 @@ def snapshot_result(run_result_str):
     subprocess.call(["rm", CMN.RUN_RESULT_FILENAME])
 
 
-def parse_param():
-    source_type_index_list = None
-    time_start = None
-    time_end = None
-    method_index = None
+def init_param():
+    param_cfg = {}
+    param_cfg["silent"] = False
+    param_cfg["reserve_old"] = False
+    param_cfg["check_result"] = False
+    param_cfg["clone_result"] = False
+    param_cfg["source"] = None
+    param_cfg["time_range"] = None
+    param_cfg["source_from_file"] = None
+    param_cfg["company"] = None
+    param_cfg["company_from_file"] = None
 
+
+def parse_param():
     argc = len(sys.argv)
     index = 1
     index_offset = None
-    remove_old = False
-    # multi_thread = False
-    check_result = False
-    clone_result = False
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
@@ -89,89 +95,61 @@ def parse_param():
         if re.match("(-h|--help)", sys.argv[index]):
             show_usage()
             sys.exit(0)
+        elif re.match("--debug", sys.argv[index]):
+            source_type_index = int(sys.argv[index + 1])
+            g_mgr.do_scrapy_debug(source_type_index)
+            sys.exit(0)
         elif re.match("--silent", sys.argv[index]):
-            show_console = False
+            param_cfg["silent"] = True
             index_offset = 1
-        elif re.match("(-s|--source)", sys.argv[index]):
-            source = sys.argv[index + 1]
-            source_type_index_str_list = source.split(",")
-            source_type_index_list = []
-            for source_type_index_str in source_type_index_str_list:
-                source_type_index = int(source_type_index_str)
-                if source_type_index < 0 or source_type_index >= CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN:
-                    errmsg = "Unsupported source: %s" % source
-                    show_error_and_exit(errmsg)
-                source_type_index_list.append(source_type_index)
-            g_logger.debug("Param source: %s", source)
-            index_offset = 2
-        elif re.match("(-t|--time)", sys.argv[index]):
-            time = sys.argv[index + 1]
-            g_logger.debug("Param time: %s", time)
-            time_range_list = time.split(",")
-            time_range_list_len = len(time_range_list)
-            if time_range_list_len == 2:
-                time_start = CMN.CLS.FinanceTimeBase.from_string(time_range_list[0])
-                time_end = CMN.CLS.FinanceTimeBase.from_string(time_range_list[1])
-            elif time_range_list_len == 1:
-                time_start = CMN.CLS.FinanceTimeBase.from_string(time_range_list[0])
-            else:
-                errmsg = "Unsupoorted time: %s" % time
-                show_error_and_exit(errmsg)
-            # mobj = re.match("([\d]{4})-([\d]{1,2})-([\d]{1,2}),([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
-            # if mobj is not None:
-            #     time_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
-            #     time_end = datetime(int(mobj.group(4)), int(mobj.group(5)), int(mobj.group(6)))
-            # else:
-            #     mobj = re.match("([\d]{4})-([\d]{1,2})-([\d]{1,2})", time)
-            #     if mobj is not None:
-            #         time_start = datetime(int(mobj.group(1)), int(mobj.group(2)), int(mobj.group(3)))
-            #     else:
-            #         errmsg = "Unsupoorted time: %s" % time
-            #         show_error_and_exit(errmsg)
-            index_offset = 2           
-        elif re.match("(-m|--method)", sys.argv[index]):
-            method = sys.argv[index + 1]
-            # import pdb; pdb.set_trace()
-            try:
-                method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(method)
-            except ValueError as e:
-                errmsg = "Unsupoorted method: %s" % method
-                show_error_and_exit(errmsg)
-            g_logger.debug("Param method: %s", method)
-            index_offset = 2
-        elif re.match("--remove_old", sys.argv[index]):
-            remove_old = True
+        elif re.match("--reserve_old", sys.argv[index]):
+            param_cfg["reserve_old"] = True
             index_offset = 1
         # elif re.match("--multi_thread", sys.argv[index]):
         #     multi_thread = True
         #     index_offset = 1
         elif re.match("--check_result", sys.argv[index]):
-            check_result = True
+            param_cfg["check_result"] = True
             index_offset = 1
         elif re.match("--clone_result", sys.argv[index]):
-            clone_result = True
+            param_cfg["clone_result"] = True
             index_offset = 1
-        elif re.match("--do_debug", sys.argv[index]):
-            source_type_index = int(sys.argv[index + 1])
-            do_debug(source_type_index)
-            sys.exit(0)
-        elif re.match("--run_daily", sys.argv[index]):
-            method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
-            show_console = False
-            remove_old = True
-            check_result = True
-            break
+        # elif re.match("--run_daily", sys.argv[index]):
+        #     # method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
+        #     show_console = False
+        #     remove_old = True
+        #     check_result = True
+        #     break
+        elif re.match("(-s|--source)", sys.argv[index]):
+            param_cfg["source"] = sys.argv[index + 1]
+            g_logger.debug("Param source: %s", param_cfg["source"])
+            index_offset = 2
+        elif re.match("(-t|--time_range)", sys.argv[index]):
+            param_cfg["time_range"] = sys.argv[index + 1]
+            g_logger.debug("Param time range: %s", param_cfg["time_range"])
+            index_offset = 2
+        elif re.match("--source_from_file", sys.argv[index]):
+            param_cfg["source_from_file"] = sys.argv[index + 1]
+            index_offset = 2  
+        # elif re.match("(-m|--method)", sys.argv[index]):
+        #     method = sys.argv[index + 1]
+        #     # import pdb; pdb.set_trace()
+        #     try:
+        #         method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(method)
+        #     except ValueError as e:
+        #         errmsg = "Unsupoorted method: %s" % method
+        #         show_error_and_exit(errmsg)
+        #     g_logger.debug("Param method: %s", method)
+        #     index_offset = 2
+        elif re.match("(-c|--company)", sys.argv[index]):
+            param_cfg["company"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--company_from_file", sys.argv[index]):
+            param_cfg["company_from_file"] = sys.argv[index + 1]
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
-
-# Set the default value if it is None
-    # if method_index is None:
-    #     method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
-
-# # Remove the old data if necessary
-#     if remove_old:
-#         shutil.rmtree(CMN.DEF.DEF_CSV_FILE_PATH, ignore_errors=True)
 
 # Create the time range list
     # import pdb; pdb.set_trace()
@@ -234,10 +212,87 @@ def parse_param():
         # if show_console:
         #     sys.stdout.write("%s\n" % msg)
 
-    return (source_type_time_range_list, check_result, clone_result)
+    # return (source_type_time_range_list, check_result, clone_result)
 
-import libs.stock.web_scrapy_company_group_set as CompanyGroupSet
+
+def check_param():
+    if param_cfg["source_from_file"] is not None:
+        if param_cfg["source"] is not None:
+            param_cfg["source"] = None
+            g_logger.warn("The 'source' argument is ignored since 'source_from_file' is set")
+            if not param_cfg["silent"]:
+                sys.stdout.write("The 'source' argument is ignored since 'source_from_file' is set\n")
+        if param_cfg["time_range"] is not None:
+            param_cfg["time_range"] = None
+            g_logger.warn("The 'time_range' argument is ignored since 'source_from_file' is set")
+            if not param_cfg["silent"]:
+                sys.stdout.write("The 'time_range' argument is ignored since 'source_from_file' is set\n")
+    if CMN.DEF.IS_FINANCE_MARKET_MODE:
+        if param_cfg["company"] is not None:
+            param_cfg["company"] = None
+            g_logger.warn("The 'company' argument is ignored since it's 'Market' mode")
+            if not param_cfg["silent"]:
+                sys.stdout.write("The 'company' argument is ignored since it's 'Market' mode\n")
+        if param_cfg["company_from_file"] is not None:
+            param_cfg["company_from_file"] = None
+            g_logger.warn("The 'company_from_file' argument is ignored since it's 'Market' mode")
+            if not param_cfg["silent"]:
+                sys.stdout.write("The 'company_from_file' argument is ignored since it's 'Market' mode\n")
+    else:
+        if param_cfg["company_from_file"] is not None:
+            if param_cfg["company"] is not None:
+                param_cfg["company"] = None
+                g_logger.warn("The 'company' argument is ignored since 'company_from_file' is set")
+                if not param_cfg["silent"]:
+                    sys.stdout.write("The 'company' argument is ignored since 'company_from_file' is set\n")
+
+
+def setup_param():
+# Set source type and time range
+    if param_cfg["source_from_file"] is not None:
+        g_mgr.set_source_type_time_range_from_file(param_cfg["source_from_file"])
+    else:
+        source_type_index_list = None
+        time_start = None
+        time_end = None
+        if param_cfg["source"] is not None:
+            source_type_index_str_list = param_cfg["source"].split(",")
+            source_type_index_list = []
+            for source_type_index_str in source_type_index_str_list:
+                source_type_index = int(source_type_index_str)
+                if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
+                    errmsg = "Unsupported source type index: %d" % source_type_index
+                    show_error_and_exit(errmsg)
+                source_type_index_list.append(source_type_index)
+        if param_cfg["time_range"] is not None:
+            time_range_list = param_cfg["time_range"].split(",")
+            time_range_list_len = len(time_range_list)
+            if time_range_list_len == 2:
+                time_start = CMN.CLS.FinanceTimeBase.from_string(time_range_list[0])
+                time_end = CMN.CLS.FinanceTimeBase.from_string(time_range_list[1])
+            elif time_range_list_len == 1:
+                time_start = CMN.CLS.FinanceTimeBase.from_string(time_range_list[0])
+            else:
+                errmsg = "Incorrect time range format: %s" % param_cfg["time_range"]
+                show_error_and_exit(errmsg)
+        g_mgr.set_source_type_time_range(source_type_index_list, time_start, time_end)
+# Set company list. For stock mode only
+    if CMN.DEF.IS_FINANCE_STOCK_MODE:
+        if param_cfg["company_from_file"] is not None:
+            g_mgr.set_company_from_file(param_cfg["company_from_file"])
+        elif param_cfg["company"] is not None:
+            g_mgr.set_company_from_file(param_cfg["company"])
+
+    g_mgr.need_reserve_old_finance_folder(param_cfg["reserve_old"])
+
+
+# import libs.stock.web_scrapy_company_group_set as CompanyGroupSet
 if __name__ == "__main__":
+    # my_list = [1, 2, 3,]
+    # my_dict = {"one": 1, "two": 2, "three": 3}
+    # my_dict["test"] = "fuck"
+    # # my_test(*my_list, **my_dict)
+    # my_test1(*my_list, **my_dict)
     # get_whole_company_group_set()
     # import pdb; pdb.set_trace()
     # workday_canlendar_obj = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
@@ -258,11 +313,11 @@ if __name__ == "__main__":
     # time_slice_iterable = timeslice_generator_obj.generate_time_slice(4, CMN.CLS.FinanceQuarter(2015, 4), CMN.CLS.FinanceQuarter(2016, 3))
     # for time_slice in time_slice_iterable:
     #     print time_slice
-    company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
-    for company_group_number, company_code_number_list in company_group_set.items():
-        print "============ company_group_number: %d ============" % company_group_number
-        for company_code_number in company_code_number_list:
-            print "%s ;" % company_code_number
+    # company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
+    # for company_group_number, company_code_number_list in company_group_set.items():
+    #     print "============ company_group_number: %d ============" % company_group_number
+    #     for company_code_number in company_code_number_list:
+    #         print "%s ;" % company_code_number
 
     # partial_company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
     # company_list = ["3086", "5263",]
@@ -274,17 +329,14 @@ if __name__ == "__main__":
     #     print "============ company_group_number: %d ============" % company_group_number
     #     for company_code_number in company_code_number_list:
     #         print "%s ;" % company_code_number
-    # my_class = MyClass()
-    # my_class.test(0)
-    # my_class.test(1)
-    sys.exit(0)
 
-# Parse the parameters
+# Parse the parameters and apply to manager class
     # import pdb; pdb.set_trace()
-    (source_type_time_range_list, check_result, clone_result) = parse_param()
-# # Create the folder for CSV files if not exist
-#     if not os.path.exists(CMN.DEF.DEF_CSV_FILE_PATH):
-#         os.makedirs(CMN.DEF.DEF_CSV_FILE_PATH)
+    init_param()
+    parse_param()
+    check_param()
+    setup_param()
+
 # Reset the file positon of the log file to 0
     if check_result:
         if os.path.exists(WSL.LOG_FILE_PATH):
@@ -297,7 +349,7 @@ if __name__ == "__main__":
     else:
         sys.stdout.write("Scrap the data from the website......\n")
     time_start_second = int(time.time())
-    g_mgr.do_scrapy(source_type_time_range_list)
+    g_mgr.do_scrapy()
     time_end_second = int(time.time())
     time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
     if not show_console:

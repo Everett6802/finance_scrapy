@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 
 import os
+import re
 import sys
 import time
 import requests
@@ -18,7 +19,8 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
 
 	company_profile = None
     def __init__(self):
-        super(WebSracpyStockMgr, self).__init__(**kwargs)
+        super(WebSracpyStockMgr, self).__init__()
+        self.company_group_set = None
 
 
     @classmethod
@@ -51,6 +53,46 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
             shutil.rmtree(folderpath, ignore_errors=True)
 
 
+    def __transform_company_list_to_group_set(self, company_number_list):
+    """
+    The argument type:
+    Company code number: 2347
+    Company code number range: 2100-2200
+    Company code number/number range hybrid: 2347,2100-2200,2362,1500-1510
+    Company group number: [Gg]12
+    """
+        self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
+        for company_number in company_number_list:
+            mobj = re.match("([\d]{d})-([\d]{4})", company_number)
+            if mobj is None:
+# Check if data is company code/group number
+                if mobj = re.match("[Gg]([\d]{1,})", company_number)
+                    if mobj is None:
+# Company code number
+                        self.company_group_set.add_company(company_number)
+                    else:
+# Compgny group number
+                        company_group_number = int(mobj.group(1))
+                        self.company_group_set.add_company_group(company_group_number)
+            else:
+# Company code number Range
+                start_company_number_int = int(mobj.group(1))
+                end_company_number_int = int(mobj.group(2))
+                number_list = []
+                for number in range(start_company_number_int, end_company_number_int + 1):
+                    number_list.append("%04d" % number)
+                self.company_group_set.add_company_list(number_list)
+
+
+    def set_company_from_file(self, filename):
+        company_list = CMN.FUNC.parse_source_type_time_range_config_file(filename)
+        self.__transform_company_list_to_group_set(company_list)
+
+
+    def set_company(self, company_list):
+        self.__transform_company_list_to_group_set(company_list)
+
+
     def initialize(**kwargs):
         super(WebSracpyStockMgr, self).initialize(**kwargs)
         if kwargs.get("company_number_list", None) is not None:
@@ -66,9 +108,9 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
             self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
 
 
-    def do_scrapy(self, source_type_time_range_list):
-        raise NotImplementedError
+    def do_scrapy(self):
+        self._scrap_data()
 
 
-    def check_scrapy(self, source_type_time_range_list):
+    def check_scrapy(self):
         raise NotImplementedError

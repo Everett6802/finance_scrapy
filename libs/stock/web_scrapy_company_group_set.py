@@ -6,7 +6,7 @@ import web_scrapy_company_profile as CompanyProfile
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-class WebScrapyCompanyGroupSet(collections.MutableMapping):
+class WebScrapyCompanyGroupSet(object):
 
     company_profile = None
     whole_company_number_in_group_dict = None
@@ -15,6 +15,7 @@ class WebScrapyCompanyGroupSet(collections.MutableMapping):
         self.company_number_in_group_dict = None
         self.altered_company_number_in_group_dict = None
         self.is_add_done = False
+        self.check_company_exist = True
 
 
     @classmethod
@@ -52,7 +53,7 @@ class WebScrapyCompanyGroupSet(collections.MutableMapping):
         return self.altered_company_number_in_group_dict.items()
 
 
-    def add_company_list(self, company_group_number, company_code_number_in_group_list):
+    def add_company_in_group_list(self, company_group_number, company_code_number_in_group_list):
         if self.is_add_done:
             g_logger.error("The add_done flag has already been set to True");
             raise RuntimeError("The add_done flag has already been set to True")
@@ -66,16 +67,33 @@ class WebScrapyCompanyGroupSet(collections.MutableMapping):
                 raise ValueError("The company group[%d] has already been set to NULL" % company_group_number)
 
         for company_code_number in company_code_number_in_group_list:
+            if self.check_company_exist:
+                if not self.__get_company_profile().is_company_exist(company_code_number):
+                    g_logger.warn("The company of company code number[%s] does NOT exist" % (company_code_number, company_group_number))
+                    continue
             if company_code_number in self.company_number_in_group_dict[company_group_number]:
                 g_logger.warn("The company code number[%s] has already been added to the group[%d]" % (company_code_number, company_group_number))
                 continue
             self.company_number_in_group_dict[company_group_number].append(company_code_number)
 
 
+    def add_company_list(self, company_code_number_list):
+# Categorize the company code number in the list into correct group
+        company_code_number_in_group_dict = {}
+        for company_code_number in company_code_number_list:
+            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            if company_code_number_in_group_dict.get(company_group_number, None) is None:
+                 company_code_number_in_group_dict[company_group_number] = []
+            company_code_number_in_group_dict[company_group_number].append(company_code_number)
+# Add data by group
+        for company_group_number, company_code_number_in_group_list in company_code_number_in_group_dict.items():
+            self.add_company_in_group_list(company_group_number, company_code_number_in_group_list):
+
+
     def add_company(self, company_group_number, company_code_number):
         company_code_number_in_group_array = []
         company_code_number_in_group_array.append(company_code_number)
-        self.add_company_list(company_group_number, company_code_number_in_group_array)
+        self.add_company_in_group_list(company_group_number, company_code_number_in_group_array)
 
 
     def add_company(self, company_code_number):

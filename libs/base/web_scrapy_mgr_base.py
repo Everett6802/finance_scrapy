@@ -13,12 +13,13 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebSracpyMgrBase(object):
 
     __metaclass__ = ABCMeta
-    def __init__(self, **kwargs):
+    def __init__(self):
         self.xcfg = {
-            "need_remove_old_finance_folder": True,
+            "reserve_old_finance_folder": False,
             "try_to_scrap_all": True,
         }
-        self.xcfg.update(kwargs)
+        # self.xcfg.update(kwargs)
+        self.source_type_time_range_list = None
 
 
     @classmethod
@@ -74,13 +75,13 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def _scrap_data(cls, source_type_time_range_list, need_remove_old_finance_folder=True, try_to_scrap_all=True):
+    def _scrap_data(cls):
         # import pdb; pdb.set_trace()
-        if need_remove_old_finance_folder:
+        if not self.xcfg["need_remove_old_finance_folder"]:
             cls._remove_old_finance_folder()
         cls._create_finance_folder_if_not_exist()
         total_errmsg = ""
-        for source_type_time_range in source_type_time_range_list:
+        for source_type_time_range in self.source_type_time_range_list:
             try:
                 source_type_index = source_type_time_range.source_type_index
                 # scrapy_obj_cfg = {
@@ -93,7 +94,7 @@ class WebSracpyMgrBase(object):
                 g_logger.error(errmsg)
                 total_errmsg += errmsg
                 print total_errmsg
-                if not try_to_scrap_all:
+                if not self.xcfg["try_to_scrap_all"]:
                     break
         if total_errmsg:
             RuntimeError(total_errmsg)
@@ -106,51 +107,66 @@ class WebSracpyMgrBase(object):
         web_scrapy_class_obj.do_debug()
 
 
-    def initialize(**kwargs):
-        # import pdb; pdb.set_trace()
-# Determine the source type method first
-        if kwargs.get("source_type_method", None) is not None:
-            self.xcfg["source_type_method"] = kwargs["source_type_method"]
-        else: # Set the default value if it is None
-            self.xcfg["source_type_method"] = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
-        try:
-            method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(method)
-        except ValueError as e:
-            g_logger.error("Unsupoorted method: %s" % method)
-            raise e
+    def set_source_type_time_range_from_file(self, filename):
+        self.source_type_time_range_list = CMN.FUNC.parse_source_type_time_range_config_file(filename)
 
-        source_type_time_range_list = None
-        if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
-            conf_filename = CMN.DEF.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
-            source_type_time_range_list = CMN.FUNC.parse_source_type_time_range_config_file(conf_filename)
-            if source_type_time_range_list is None:
-                errmsg = "Fail to parse the config file: %s" % conf_filename
-                g_logger.error(errmsg)
-                raise ValueError(errmsg)
-        else:
-            if kwargs.get("source_type_index_list", None) is not None:
-                self.xcfg["source_type_index_list"] = kwargs["source_type_index_list"]
-            else:
-                self.xcfg["source_type_index_list"] = []
-                if CMN.DEF.IS_FINANCE_MARKET_MODE: # Set all market soure type as the default value if it is None
-                    for index in range(CMN.DEF.DEF_DATA_SOURCE_MARKET_START, CMN.DEF.DEF_DATA_SOURCE_MARKET_END):
-                        self.xcfg["source_type_index_list"].append(index)
-                elif CMN.DEF.IS_FINANCE_STOCK_MODE: # Set all stock soure type as the default value if it is None
-                    for index in range(CMN.DEF.DEF_DATA_SOURCE_STOCK_START, CMN.DEF.DEF_DATA_SOURCE_STOCK_END):
-                        self.xcfg["source_type_index_list"].append(index)
 
-        if kwargs.get("time_start", None) is not None:
-            self.xcfg["time_start"] = kwargs["time_start"]
-        else:
-            self.xcfg["time_start"] = None
-        if kwargs.get("time_end", None) is not None:
-            self.xcfg["time_end"] = kwargs["time_end"]
-        else:
-            self.xcfg["time_end"] = None
-        for source_type_index in self.xcfg["source_type_index_list"]:
-            source_type_time_range_list.append(
-                CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
+    def set_source_type_time_range(self, source_type_index_list, time_start, time_end):
+        self.source_type_time_range_list = []
+        for source_type_index in source_type_index_list:
+            source_type_time_range_config_list.append(
+                CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
             )
+
+
+    def need_reserve_old_finance_folder(self, enable):
+        self.xcfg["reserve_old_finance_folder"] = enable
+
+#     def initialize(**kwargs):
+#         # import pdb; pdb.set_trace()
+# # Determine the source type method first
+#         if kwargs.get("source_type_method", None) is not None:
+#             self.xcfg["source_type_method"] = kwargs["source_type_method"]
+#         else: # Set the default value if it is None
+#             self.xcfg["source_type_method"] = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
+#         try:
+#             method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(method)
+#         except ValueError as e:
+#             g_logger.error("Unsupported method: %s" % method)
+#             raise e
+
+#         source_type_time_range_list = None
+#         if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
+#             conf_filename = CMN.DEF.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
+#             source_type_time_range_list = CMN.FUNC.parse_source_type_time_range_config_file(conf_filename)
+#             if source_type_time_range_list is None:
+#                 errmsg = "Fail to parse the config file: %s" % conf_filename
+#                 g_logger.error(errmsg)
+#                 raise ValueError(errmsg)
+#         else:
+#             if kwargs.get("source_type_index_list", None) is not None:
+#                 self.xcfg["source_type_index_list"] = kwargs["source_type_index_list"]
+#             else:
+#                 self.xcfg["source_type_index_list"] = []
+#                 if CMN.DEF.IS_FINANCE_MARKET_MODE: # Set all market soure type as the default value if it is None
+#                     for index in range(CMN.DEF.DEF_DATA_SOURCE_MARKET_START, CMN.DEF.DEF_DATA_SOURCE_MARKET_END):
+#                         self.xcfg["source_type_index_list"].append(index)
+#                 elif CMN.DEF.IS_FINANCE_STOCK_MODE: # Set all stock soure type as the default value if it is None
+#                     for index in range(CMN.DEF.DEF_DATA_SOURCE_STOCK_START, CMN.DEF.DEF_DATA_SOURCE_STOCK_END):
+#                         self.xcfg["source_type_index_list"].append(index)
+
+#         if kwargs.get("time_start", None) is not None:
+#             self.xcfg["time_start"] = kwargs["time_start"]
+#         else:
+#             self.xcfg["time_start"] = None
+#         if kwargs.get("time_end", None) is not None:
+#             self.xcfg["time_end"] = kwargs["time_end"]
+#         else:
+#             self.xcfg["time_end"] = None
+#         for source_type_index in self.xcfg["source_type_index_list"]:
+#             source_type_time_range_list.append(
+#                 CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
+#             )
 
 
     @abstractmethod
@@ -166,10 +182,10 @@ class WebSracpyMgrBase(object):
 
 
     @abstractmethod
-    def do_scrapy(self, source_type_time_range_list):
+    def do_scrapy(self):
        raise NotImplementedError
 
 
     @abstractmethod
-    def check_scrapy(self, source_type_time_range_list):
+    def check_scrapy(self):
         raise NotImplementedError

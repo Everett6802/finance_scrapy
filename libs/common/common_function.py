@@ -14,6 +14,16 @@ import common_class as CMN_CLS
 
 ########################################################################################
 
+def check_source_type_index_in_range(source_type_index):
+    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+        if CMN_DEF.DEF_DATA_SOURCE_MARKET_START <= source_type_index < DEF_DATA_SOURCE_MARKET_END:
+            return True
+    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+        if CMN_DEF.DEF_DATA_SOURCE_STOCK_START <= source_type_index < DEF_DATA_SOURCE_STOCK_END:
+            return True
+    return False
+
+
 def is_republic_era_year(year_value):
     if isinstance(year_value, int):
         return True if (year_value / 1000 == 0) else False
@@ -167,40 +177,56 @@ def is_stock_mode():
     return get_finance_analysis_mode() == CMN_DEF.FINANCE_ANALYSIS_STOCK
 
 
-def parse_source_type_time_range_config_file(conf_filename):
-    # import pdb; pdb.set_trace()
+def get_config_file_lines(conf_filename):
     conf_filepath = get_config_filepath(conf_filename)
-    total_param_list = []
+    config_line_list = []
     try:
         with open(conf_filepath, 'r') as fp:
             for line in fp:
-                # import pdb; pdb.set_trace()
                 if line.startswith('#'):
                     continue
                 line_strip = line.strip('\n')
                 if len(line_strip) == 0:
                     continue
-                param_list = line_strip.split(' ')
-                param_list_len = len(param_list)
-                source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
-                datetime_range_start = None
-                if param_list_len >= 2:
-                    datetime_range_start = transform_string2datetime(param_list[1])
-                datetime_range_end = None
-                if param_list_len >= 3:
-                    datetime_range_end = transform_string2datetime(param_list[2])
-                total_param_list.append(
-                    # {
-                    #     "index": source_type_index,
-                    #     "start": datetime_range_start,
-                    #     "end": datetime_range_end,
-                    # }
-                    CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, datetime_range_start, datetime_range_end)
-                )
+                config_line_list.append(line_strip)
     except Exception as e:
-        g_logger.error("Error occur while parsing config file[%s], due to %s" % (conf_filename, str(e)))
-        return None
-    return total_param_list
+        errmsg = "Error occur while parsing config file[%s], due to %s" % (conf_filename, str(e))
+        g_logger.error(errmsg)
+        raise ValueError(errmsg)
+    return config_line_list
+
+
+def parse_source_type_time_range_config_file(conf_filename):
+    # import pdb; pdb.set_trace()
+    config_line_list = get_config_file_lines(conf_filename)
+    source_type_time_range_config_list = []
+    for line in config_line_list:
+        param_list = line.split(' ')
+        param_list_len = len(param_list)
+        source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
+        time_start = None
+        if param_list_len >= 2:
+            # time_start = transform_string2datetime(param_list[1])
+            time_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
+        time_end = None
+        if param_list_len >= 3:
+            # time_end = transform_string2datetime(param_list[2])
+            time_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
+        source_type_time_range_config_list.append(
+            CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
+        )
+    return source_type_time_range_config_list
+
+
+def parse_company_config_file(conf_filename):
+    # import pdb; pdb.set_trace()
+    config_line_list = get_config_file_lines(conf_filename)
+    company_config_list = []
+    for line in config_line_list:
+        param_list = line.split(' ')
+        for param in param_list:
+            company_config_list.append(param)
+    return company_config_list
 
 
 def get_cfg_month_last_day(datetime_cfg):

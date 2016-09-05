@@ -76,7 +76,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     url = self.assemble_web_url(timeslice, company_code_number)
                     g_logger.debug("Get the data by date from URL: %s" % url)
                     try:
-        # Grab the data from website and assemble the data to the entry of CSV
+# Grab the data from website and assemble the data to the entry of CSV
                         csv_data_list = self.parse_web_data(self._get_web_data(url))
                         if csv_data_list is None:
                             raise RuntimeError(url)
