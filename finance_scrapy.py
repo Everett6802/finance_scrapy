@@ -19,29 +19,37 @@ else:
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-param_cfg = None
+param_cfg = {}
 
 def show_usage():
-    print "====================== Usage ======================"
+    print "=========================== Usage ==========================="
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
-    print "--silent\nDescription: Disable print log on console\nCaution: This argument should be placed in the first place if set"
     print "--debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
-    print "-s --source\nDescription: The date source from the website\nDefault: All data sources\nCaution: Only work when Method is USER_DEFINED"
-    for index, source in enumerate(CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING):
+    print "--silent\nDescription: Disable print log on console"
+    print "--reserve_old\nDescription: Reserve the old CSV file in %s" % CMN.DEF.DEF_CSV_FILE_PATH
+    print "--check_result\nDescription: Check the CSV files after scraping Web data"
+    print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
+    print "-s --source\nDescription: The list of the finance data sources\nDefault: All finance data sources\nCaution: Only work when source_from_file is NOT set"
+    start_index = CMN.DEF.DEF_DATA_SOURCE_MARKET_START if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_DATA_SOURCE_STOCK_START
+    end_index = CMN.DEF.DEF_DATA_SOURCE_MARKET_END if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_DATA_SOURCE_STOCK_END
+    for index in range(start_index, end_index):
         print "  %d: %s" % (index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[index])
-    print "-t --time\nDescription: The time range of the data source\nDefault: Today\nCaution: Only work when Method is USER_DEFINED"
+    print "-t --time_range\nDescription: The max time range of the selected finance data source\nDefault: Today\nCaution: Only work when source_from_file is NOT set"
     print "  Format 1 (start_time): 2015-01-01"
     print "  Format 2 (start_time,end_time): 2015-01-01,2015-09-04"
+    print "--source_from_file\nDescription: The finance data source from file\nDefault: All data sources\nCaution: source/time_range are ignored when set"
+    print "--source_from_default_today_file\nDescription: The finance data source from file: %s\nCaution: source/time_range are ignored when set" % CMN.DEF.DEF_TODAY_CONFIG_FILENAME
+    print "--source_from_default_history_file\nDescription: The finance data source from file: %s\nCaution: source/time_range are ignored when set" % CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
+    if CMN.DEF.IS_FINANCE_STOCK_MODE:
+        print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only work when company_from_file is NOT set"
+        print "--company_from_file\nDescription: The company code number from file\nDefault: All company code nubmers\nCaution: company is ignored when set"
     # print "-m --method\nDescription: The method of setting the parameters\nDefault: TODAY"
     # print "  TODAY: Read the today.conf file and only scrap today's data"
     # print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
     # print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
-    print "--remove_old\nDescription: Remove the old CSV file in %s" % CMN.DEF.DEF_CSV_FILE_PATH
     # print "--multi_thread\nDescription: Scrap Web data by using multiple threads\nCaution: Deprecated"
-    print "--check_result\nDescription: Check the CSV files after Scraping Web data"
-    print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
     print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
-    print "==================================================="
+    print "============================================================="
 
 
 def show_msg(msg):
@@ -72,7 +80,7 @@ def snapshot_result(run_result_str):
 
 
 def init_param():
-    param_cfg = {}
+    # import pdb; pdb.set_trace()
     param_cfg["silent"] = False
     param_cfg["reserve_old"] = False
     param_cfg["check_result"] = False
@@ -120,6 +128,15 @@ def parse_param():
         #     remove_old = True
         #     check_result = True
         #     break
+        elif re.match("--source_from_default_today_file", sys.argv[index]):
+            param_cfg["source_from_file"] = CMN.DEF.DEF_TODAY_CONFIG_FILENAME
+            index_offset = 1
+        elif re.match("--source_from_default_history_file", sys.argv[index]):
+            param_cfg["source_from_file"] = CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
+            index_offset = 1
+        elif re.match("--source_from_file", sys.argv[index]):
+            param_cfg["source_from_file"] = sys.argv[index + 1]
+            index_offset = 2
         elif re.match("(-s|--source)", sys.argv[index]):
             param_cfg["source"] = sys.argv[index + 1]
             g_logger.debug("Param source: %s", param_cfg["source"])
@@ -128,9 +145,6 @@ def parse_param():
             param_cfg["time_range"] = sys.argv[index + 1]
             g_logger.debug("Param time range: %s", param_cfg["time_range"])
             index_offset = 2
-        elif re.match("--source_from_file", sys.argv[index]):
-            param_cfg["source_from_file"] = sys.argv[index + 1]
-            index_offset = 2  
         # elif re.match("(-m|--method)", sys.argv[index]):
         #     method = sys.argv[index + 1]
         #     # import pdb; pdb.set_trace()
@@ -141,11 +155,11 @@ def parse_param():
         #         show_error_and_exit(errmsg)
         #     g_logger.debug("Param method: %s", method)
         #     index_offset = 2
-        elif re.match("(-c|--company)", sys.argv[index]):
-            param_cfg["company"] = sys.argv[index + 1]
-            index_offset = 2
         elif re.match("--company_from_file", sys.argv[index]):
             param_cfg["company_from_file"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("(-c|--company)", sys.argv[index]):
+            param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
@@ -336,6 +350,7 @@ if __name__ == "__main__":
     parse_param()
     check_param()
     setup_param()
+    sys.exit(0)
 
 # Reset the file positon of the log file to 0
     if check_result:
