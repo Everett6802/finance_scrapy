@@ -93,19 +93,19 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
         self.__transform_company_list_to_group_set(company_list)
 
 
-    def initialize(**kwargs):
-        super(WebSracpyStockMgr, self).initialize(**kwargs)
-        if kwargs.get("company_number_list", None) is not None:
-            company_group_set = WebScrapyCompanyGroupSet()
-            for company_number in kwargs["company_number_list"]:
-                company_group_set.add_company(company_number)
-            company_group_set.add_done();
-            if kwargs.get("company_group_set", None) is not None:
-                g_logger.warn("The company_group_set field is ignored......")
-        elif kwargs.get("company_group_set", None) is not None:
-            self.xcfg["company_group_set"] = kwargs["company_group_set"]
-        else:
-            self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
+    # def initialize(**kwargs):
+    #     super(WebSracpyStockMgr, self).initialize(**kwargs)
+    #     if kwargs.get("company_number_list", None) is not None:
+    #         company_group_set = WebScrapyCompanyGroupSet()
+    #         for company_number in kwargs["company_number_list"]:
+    #             company_group_set.add_company(company_number)
+    #         company_group_set.add_done();
+    #         if kwargs.get("company_group_set", None) is not None:
+    #             g_logger.warn("The company_group_set field is ignored......")
+    #     elif kwargs.get("company_group_set", None) is not None:
+    #         self.xcfg["company_group_set"] = kwargs["company_group_set"]
+    #     else:
+    #         self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
 
 
     def do_scrapy(self):
@@ -113,4 +113,25 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
 
 
     def check_scrapy(self):
-        raise NotImplementedError
+        file_not_found_list = []
+        file_is_empty_list = []
+        for source_type_time_range in self.source_type_time_range_list:
+            for company_group_number, company_code_number_list in self.company_group_set.items():
+                for company_code_number in company_code_number_list:
+                    csv_filepath = WebScrapyStockBase.assemble_csv_filepath(source_type_time_range.source_type_index, company_code_number, company_group_index)
+# Check if the file exists
+                    if not os.path.exists(csv_filepath):
+                        file_not_found_list.append(
+                            {
+                                "index": source_type_time_range.source_type_index,
+                                "filename" : WebSracpyMgrBase._get_csv_filename_from_filepath(csv_filepath),
+                            }
+                        )
+                    elif os.path.getsize(csv_filepath) == 0:
+                        file_is_empty_list.append(
+                            {
+                                "index": source_type_time_range.source_type_index,
+                                "filename" : WebSracpyMgrBase._get_csv_filename_from_filepath(csv_filepath),
+                            }
+                        )
+        return (file_not_found_list, file_is_empty_list)

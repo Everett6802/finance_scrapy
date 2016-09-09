@@ -41,4 +41,24 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def check_scrapy(self):
-        raise NotImplementedError
+       # import pdb; pdb.set_trace()
+        file_not_found_list = []
+        file_is_empty_list = []
+        for source_type_time_range in self.source_type_time_range_list:
+            csv_filepath = WebScrapyMarketBase.assemble_csv_filepath(source_type_time_range.source_type_index)
+# Check if the file exists
+            if not os.path.exists(csv_filepath):
+                file_not_found_list.append(
+                    {
+                        "index": source_type_time_range.source_type_index,
+                        "filename" : WebSracpyMgrBase._get_csv_filename_from_filepath(csv_filepath)
+                    }
+                )
+            elif os.path.getsize(csv_filepath) == 0:
+                file_is_empty_list.append(
+                    {
+                        "index": source_type_time_range.source_type_index,
+                        "filename" : WebSracpyMgrBase._get_csv_filename_from_filepath(csv_filepath)
+                    }
+                )
+        return (file_not_found_list, file_is_empty_list)

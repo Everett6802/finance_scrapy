@@ -52,18 +52,26 @@ def show_usage():
     print "============================================================="
 
 
-def show_msg(msg):
+def show_debug(msg):
+    g_logger.debug(msg)
     if not param_cfg["silent"]:
-        sys.stdout.write(msg)
-        sys.stderr.write("\n")
+        sys.stdout.write(msg + "\n")
+def show_info(msg):
     g_logger.info(msg)
+    if not param_cfg["silent"]:
+        sys.stdout.write(msg + "\n")
+def show_warn(msg):
+    g_logger.warn(msg)
+    if not param_cfg["silent"]:
+        sys.stdout.write(msg + "\n")
+def show_error(msg):
+    g_logger.error(msg)
+    if not param_cfg["silent"]:
+        sys.stderr.write(msg + "\n")
 
 
 def show_error_and_exit(errmsg):
-    if not param_cfg["silent"]:
-        sys.stderr.write(errmsg)
-        sys.stderr.write("\n")
-    g_logger.error(errmsg)
+    show_error(errmsg)
     sys.exit(1)  
 
 
@@ -233,32 +241,22 @@ def check_param():
     if param_cfg["source_from_file"] is not None:
         if param_cfg["source"] is not None:
             param_cfg["source"] = None
-            g_logger.warn("The 'source' argument is ignored since 'source_from_file' is set")
-            if not param_cfg["silent"]:
-                sys.stdout.write("The 'source' argument is ignored since 'source_from_file' is set\n")
+            show_warn("The 'source' argument is ignored since 'source_from_file' is set")
         if param_cfg["time_range"] is not None:
             param_cfg["time_range"] = None
-            g_logger.warn("The 'time_range' argument is ignored since 'source_from_file' is set")
-            if not param_cfg["silent"]:
-                sys.stdout.write("The 'time_range' argument is ignored since 'source_from_file' is set\n")
+            show_warn("The 'time_range' argument is ignored since 'source_from_file' is set")
     if CMN.DEF.IS_FINANCE_MARKET_MODE:
         if param_cfg["company"] is not None:
             param_cfg["company"] = None
-            g_logger.warn("The 'company' argument is ignored since it's 'Market' mode")
-            if not param_cfg["silent"]:
-                sys.stdout.write("The 'company' argument is ignored since it's 'Market' mode\n")
+            show_warn("The 'company' argument is ignored since it's 'Market' mode")
         if param_cfg["company_from_file"] is not None:
             param_cfg["company_from_file"] = None
-            g_logger.warn("The 'company_from_file' argument is ignored since it's 'Market' mode")
-            if not param_cfg["silent"]:
-                sys.stdout.write("The 'company_from_file' argument is ignored since it's 'Market' mode\n")
+            show_warn("The 'company_from_file' argument is ignored since it's 'Market' mode")
     else:
         if param_cfg["company_from_file"] is not None:
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
-                g_logger.warn("The 'company' argument is ignored since 'company_from_file' is set")
-                if not param_cfg["silent"]:
-                    sys.stdout.write("The 'company' argument is ignored since 'company_from_file' is set\n")
+                show_warn("The 'company' argument is ignored since 'company_from_file' is set")
 
 
 def setup_param():
@@ -345,62 +343,49 @@ if __name__ == "__main__":
     #         print "%s ;" % company_code_number
 
 # Parse the parameters and apply to manager class
-    # import pdb; pdb.set_trace()
     init_param()
     parse_param()
     check_param()
+    import pdb; pdb.set_trace()
     setup_param()
-    sys.exit(0)
 
 # Reset the file positon of the log file to 0
-    if check_result:
-        if os.path.exists(WSL.LOG_FILE_PATH):
-            with open(WSL.LOG_FILE_PATH, "w") as fp:
-                fp.seek(0, 0)
+    if param_cfg["check_result"]:
+        CMN.WSL.reset_web_scrapy_logger_content()
 
 # Try to scrap the web data
-    if not show_console:
-        g_logger.info("Scrap the data from the website......")
-    else:
-        sys.stdout.write("Scrap the data from the website......\n")
+    show_info("Scrap the data from the website......")
     time_start_second = int(time.time())
     g_mgr.do_scrapy()
     time_end_second = int(time.time())
+    show_info("Scrap the data from the website...... DONE!!!")
     time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
-    if not show_console:
-        g_logger.info("Scrap the data from the website...... DONE.")
-        g_logger.info(time_lapse_msg)
-    else:
-        sys.stdout.write("Scrap the data from the website...... DONE.\n" + time_lapse_msg)
+    show_info(time_lapse_msg)
 
-    if check_result:
+    error_found = False
+# Check if all the csv files are created
+    if param_cfg["check_result"]:
+    show_info("Let's check error......")
+        (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy()
         error_msg_list = []
-        if not show_console:
-            g_logger.info("Let's check error......")
-        else:
-            sys.stdout.write("Let's check error......\n")
-        (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy(source_type_time_range_list)
         for file_not_found in file_not_found_list:
-            error_msg = u"FileNotFound: %s, %s\n" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
-            if not show_console:
-                g_logger.error(error_msg)
-            else:
-                sys.stderr.write(error_msg)
+            error_msg = u"FileNotFound: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
+            show_error(error_msg)
             error_msg_list.append(error_msg)
         for file_is_empty in file_is_empty_list:
-            error_msg = u"FileIsEmpty: %s, %s\n" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
-            if not show_console:
-                g_logger.error(error_msg)
-            else:
-                sys.stderr.write(error_msg)
+            error_msg = u"FileIsEmpty: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
+            show_error(error_msg)
             error_msg_list.append(error_msg)
         if len(error_msg_list) != 0:
             run_result_str = time_lapse_msg
             run_result_str += "".join(error_msg_list)
             snapshot_result(run_result_str)
-        else:
-            if clone_result:
-                datetime_now = datetime.today()
-                clone_foldername = CMN.DEF.DEF_CSV_FILE_PATH + "_ok" + CMN.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
-                g_logger.debug("Clone the CSV folder to %s", clone_foldername)
-                subprocess.call(["cp", "-r", CMN.DEF.DEF_CSV_FILE_PATH, clone_foldername])
+            error_found = True
+
+# Clone the csv files if necessary
+    if param_cfg["clone_result"]:
+        if not error_found:
+            datetime_now = datetime.today()
+            clone_foldername = CMN.DEF.DEF_CSV_FILE_PATH + "_ok" + CMN.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
+            show_debug("Clone the CSV folder to %s" % clone_foldername)
+            subprocess.call(["cp", "-r", CMN.DEF.DEF_CSV_FILE_PATH, clone_foldername])

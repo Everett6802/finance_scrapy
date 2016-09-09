@@ -99,6 +99,10 @@ class WebSracpyMgrBase(object):
         if total_errmsg:
             RuntimeError(total_errmsg)
 
+    @classmethod
+    def _get_csv_filename_from_filepath(cls, csv_filename):
+        return csv_filepath.rsplit("/", 1)[-1]
+
 
     @classmethod
     def do_scrapy_debug(cls, source_type_index):
