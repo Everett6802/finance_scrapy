@@ -197,8 +197,10 @@ DEF_END_MONTH = 12
 DEF_START_DAY = 1
 
 DEF_WEB_SCRAPY_BEGIN_DATE_STR = "%d-01-01" % DEF_START_YEAR
-DEF_TODAY_CONFIG_FILENAME = "def_today.conf"
-DEF_HISTORY_CONFIG_FILENAME = "def_history.conf"
+DEF_MARKET_TODAY_CONFIG_FILENAME = "def_market_today.conf"
+DEF_MARKET_HISTORY_CONFIG_FILENAME = "def_market_history.conf"
+DEF_STOCK_TODAY_CONFIG_FILENAME = "def_stock_today.conf"
+DEF_STOCK_HISTORY_CONFIG_FILENAME = "def_stock_history.conf"
 DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
 DEF_COMPANY_PROFILE_CONF_FILENAME = ".company_profile.conf"
 DEF_COMPANY_GROUP_CONF_FILENAME = ".company_group.conf"

@@ -37,7 +37,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def do_scrapy(self):
        # import pdb; pdb.set_trace()
-        self._scrap_data()
+        self._scrap_data(self.xcfg["reserve_old_finance_folder"])
 
 
     def check_scrapy(self):

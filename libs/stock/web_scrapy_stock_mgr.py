@@ -9,15 +9,15 @@ import shutil
 from datetime import datetime
 import libs.common as CMN
 import libs.base as BASE
-import libs.web_scrapy_mgr_base as MgrBase
 import web_scrapy_company_profile as CompanyProfile
 import web_scrapy_company_group_set as CompanyGroupSet
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
+class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
-	company_profile = None
+    company_profile = None
+    company_group_size = 0
     def __init__(self):
         super(WebSracpyStockMgr, self).__init__()
         self.company_group_set = None
@@ -25,21 +25,21 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
 
     @classmethod
     def __get_finance_folderpath_format(cls):
-        return folderpath_format = ("%s/%s" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME)) + "%02d"
+        return ("%s/%s" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME)) + "%02d"
 
 
     @classmethod
     def __get_company_profile(cls):
         if cls.company_profile is None:
             cls.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
+            cls.company_group_size = cls.company_profile.get_company_group_size()
         return cls.company_profile
 
 
     @classmethod
     def _create_finance_folder_if_not_exist(cls):
-    	company_group_size = cls.__get_company_profile().get_company_group_size()
         folderpath_format = cls.__get_finance_folderpath_format()
-        for index in range(company_group_size):
+        for index in range(cls.company_group_size):
         	folderpath = folderpath_format % index
         	CMN.FUNC.create_folder_if_not_exist(folderpath)
 
@@ -48,32 +48,33 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
     def _remove_old_finance_folder(cls):
 # Remove the old data if necessary
         folderpath_format = cls.__get_finance_folderpath_format()
-        for index in range(company_group_size):
+        for index in range(cls.company_group_size):
             folderpath = folderpath_format % index
             shutil.rmtree(folderpath, ignore_errors=True)
 
 
     def __transform_company_list_to_group_set(self, company_number_list):
-    """
-    The argument type:
-    Company code number: 2347
-    Company code number range: 2100-2200
-    Company code number/number range hybrid: 2347,2100-2200,2362,1500-1510
-    Company group number: [Gg]12
-    """
+        """
+        The argument type:
+        Company code number: 2347
+        Company code number range: 2100-2200
+        Company code number/number range hybrid: 2347,2100-2200,2362,1500-1510
+        Company group number: [Gg]12
+
+        """
         self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
         for company_number in company_number_list:
             mobj = re.match("([\d]{d})-([\d]{4})", company_number)
             if mobj is None:
 # Check if data is company code/group number
-                if mobj = re.match("[Gg]([\d]{1,})", company_number)
-                    if mobj is None:
+                mobj = re.match("[Gg]([\d]{1,})", company_number)
+                if mobj is None:
 # Company code number
-                        self.company_group_set.add_company(company_number)
-                    else:
+                    self.company_group_set.add_company(company_number)
+                else:
 # Compgny group number
-                        company_group_number = int(mobj.group(1))
-                        self.company_group_set.add_company_group(company_group_number)
+                    company_group_number = int(mobj.group(1))
+                    self.company_group_set.add_company_group(company_group_number)
             else:
 # Company code number Range
                 start_company_number_int = int(mobj.group(1))
@@ -109,7 +110,7 @@ class WebSracpyStockMgr(MgrBase.WebSracpyMgrBase):
 
 
     def do_scrapy(self):
-        self._scrap_data()
+        self._scrap_data(self.xcfg["reserve_old_finance_folder"])
 
 
     def check_scrapy(self):

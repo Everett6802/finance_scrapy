@@ -74,12 +74,11 @@ class WebSracpyMgrBase(object):
         web_scrapy_class_obj.scrap_web_to_csv()
 
 
-    @classmethod
-    def _scrap_data(cls):
+    def _scrap_data(self, reserve_old_finance_folder):
         # import pdb; pdb.set_trace()
-        if not self.xcfg["need_remove_old_finance_folder"]:
-            cls._remove_old_finance_folder()
-        cls._create_finance_folder_if_not_exist()
+        if not self.xcfg["reserve_old_finance_folder"]:
+            self._remove_old_finance_folder()
+        self._create_finance_folder_if_not_exist()
         total_errmsg = ""
         for source_type_time_range in self.source_type_time_range_list:
             try:
@@ -88,7 +87,7 @@ class WebSracpyMgrBase(object):
                 #     "time_start": source_type_time_range.time_start, 
                 #     "time_end": source_type_time_range.time_end
                 # }
-                cls.__scrap_web_data_to_csv_file(source_type_index, **scrapy_obj_cfg)
+                self.__scrap_web_data_to_csv_file(source_type_index, **scrapy_obj_cfg)
             except Exception as e:
                 errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_range.source_type_index], str(e))
                 g_logger.error(errmsg)
@@ -98,6 +97,7 @@ class WebSracpyMgrBase(object):
                     break
         if total_errmsg:
             RuntimeError(total_errmsg)
+
 
     @classmethod
     def _get_csv_filename_from_filepath(cls, csv_filename):

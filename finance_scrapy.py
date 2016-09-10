@@ -137,10 +137,16 @@ def parse_param():
         #     check_result = True
         #     break
         elif re.match("--source_from_default_today_file", sys.argv[index]):
-            param_cfg["source_from_file"] = CMN.DEF.DEF_TODAY_CONFIG_FILENAME
+            if CMN.DEF.IS_FINANCE_MARKET_MODE:
+                param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_TODAY_CONFIG_FILENAME
+            elif CMN.DEF.IS_FINANCE_STOCK_MODE:
+                param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_TODAY_CONFIG_FILENAME
             index_offset = 1
         elif re.match("--source_from_default_history_file", sys.argv[index]):
-            param_cfg["source_from_file"] = CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
+            if CMN.DEF.IS_FINANCE_MARKET_MODE:
+                param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_HISTORY_CONFIG_FILENAME
+            elif CMN.DEF.IS_FINANCE_STOCK_MODE:
+                param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_HISTORY_CONFIG_FILENAME
             index_offset = 1
         elif re.match("--source_from_file", sys.argv[index]):
             param_cfg["source_from_file"] = sys.argv[index + 1]
@@ -346,7 +352,6 @@ if __name__ == "__main__":
     init_param()
     parse_param()
     check_param()
-    import pdb; pdb.set_trace()
     setup_param()
 
 # Reset the file positon of the log file to 0
@@ -356,6 +361,7 @@ if __name__ == "__main__":
 # Try to scrap the web data
     show_info("Scrap the data from the website......")
     time_start_second = int(time.time())
+    import pdb; pdb.set_trace()
     g_mgr.do_scrapy()
     time_end_second = int(time.time())
     show_info("Scrap the data from the website...... DONE!!!")
@@ -365,7 +371,7 @@ if __name__ == "__main__":
     error_found = False
 # Check if all the csv files are created
     if param_cfg["check_result"]:
-    show_info("Let's check error......")
+        show_info("Let's check error......")
         (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy()
         error_msg_list = []
         for file_not_found in file_not_found_list:

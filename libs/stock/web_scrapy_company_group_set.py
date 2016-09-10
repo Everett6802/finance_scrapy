@@ -87,7 +87,7 @@ class WebScrapyCompanyGroupSet(object):
             company_code_number_in_group_dict[company_group_number].append(company_code_number)
 # Add data by group
         for company_group_number, company_code_number_in_group_list in company_code_number_in_group_dict.items():
-            self.add_company_in_group_list(company_group_number, company_code_number_in_group_list):
+            self.add_company_in_group_list(company_group_number, company_code_number_in_group_list)
 
 
     def add_company(self, company_group_number, company_code_number):
