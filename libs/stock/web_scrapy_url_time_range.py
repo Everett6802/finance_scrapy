@@ -12,7 +12,6 @@ from datetime import datetime, timedelta
 # import common_class as CMN.CLS
 import libs.common as CMN
 import web_scrapy_company_profile as CompanyProfile
-# from libs import web_scrapy_logging as WSL
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -20,13 +19,13 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebScrapyURLTimeRange(object):
 
     def __init__(self):
-        super(WebScrapyURLDateRange, self).__init__()
+        super(WebScrapyURLTimeRange, self).__init__()
         self.company_profile_lookup = None
         self.company_listing_date_dict = None
 
 
     def initialize(self):
-        self.company_profile_lookup = WebScrapyCompanyProfileLookup.Instance()
+        # self.company_profile_lookup = WebScrapyCompanyProfileLookup.Instance()
         self.company_listing_date_dict = {}
 
 

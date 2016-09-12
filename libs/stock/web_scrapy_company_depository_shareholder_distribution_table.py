@@ -25,6 +25,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     #     )
     #     self.generate_day_time_list_rule = self.__generate_day_time_list_rule_select_friday
     def __init__(self, **kwargs):
+        import pdb; pdb.set_trace()
         super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(__file__, **kwargs)
 
 

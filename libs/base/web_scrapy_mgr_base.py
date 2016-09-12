@@ -79,7 +79,7 @@ class WebSracpyMgrBase(object):
             self._remove_old_finance_folder()
         self._create_finance_folder_if_not_exist()
         total_errmsg = ""
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         for source_type_time_range in self.source_type_time_range_list:
             try:
                 scrapy_obj_cfg = {

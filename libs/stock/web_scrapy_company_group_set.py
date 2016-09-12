@@ -30,7 +30,7 @@ class WebScrapyCompanyGroupSet(object):
         # import pdb; pdb.set_trace()
         if cls.whole_company_number_in_group_dict is None:
             cls.whole_company_number_in_group_dict = {}
-            company_group_size = cls.__get_company_profile().get_company_group_size();
+            company_group_size = cls.__get_company_profile().company_group_size;
             for company_group_index in range(company_group_size):
                 company_number_list = []
                 for entry in cls.__get_company_profile().group_iterator(company_group_index):
