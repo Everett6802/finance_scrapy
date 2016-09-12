@@ -25,6 +25,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     @classmethod
     def _create_finance_folder_if_not_exist(cls):
         folderpath = cls.__get_finance_folderpath()
+        g_logger.debug("Try to create new folder: %s" % folderpath)
         CMN.FUNC.create_folder_if_not_exist(folderpath)
 
 
@@ -32,6 +33,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def _remove_old_finance_folder(cls):
 # Remove the old data if necessary
         folderpath = cls.__get_finance_folderpath()
+        g_logger.debug("Remove old folder: %s" % folderpath)
         shutil.rmtree(folderpath, ignore_errors=True)
 
 

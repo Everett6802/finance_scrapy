@@ -361,7 +361,7 @@ if __name__ == "__main__":
 # Try to scrap the web data
     show_info("Scrap the data from the website......")
     time_start_second = int(time.time())
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     g_mgr.do_scrapy()
     time_end_second = int(time.time())
     show_info("Scrap the data from the website...... DONE!!!")

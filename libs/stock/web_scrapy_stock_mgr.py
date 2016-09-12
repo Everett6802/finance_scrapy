@@ -17,7 +17,6 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     company_profile = None
-    company_group_size = 0
     def __init__(self):
         super(WebSracpyStockMgr, self).__init__()
         self.company_group_set = None
@@ -25,31 +24,32 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     @classmethod
     def __get_finance_folderpath_format(cls):
-        return ("%s/%s" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME)) + "%02d"
+        return ("%s/%s" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
 
 
     @classmethod
     def __get_company_profile(cls):
         if cls.company_profile is None:
             cls.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
-            cls.company_group_size = cls.company_profile.get_company_group_size()
         return cls.company_profile
 
 
     @classmethod
     def _create_finance_folder_if_not_exist(cls):
         folderpath_format = cls.__get_finance_folderpath_format()
-        for index in range(cls.company_group_size):
-        	folderpath = folderpath_format % index
-        	CMN.FUNC.create_folder_if_not_exist(folderpath)
+        for index in range(cls.__get_company_profile().company_group_size):
+            folderpath = folderpath_format % index
+            g_logger.debug("Try to create new folder: %s" % folderpath)
+            CMN.FUNC.create_folder_if_not_exist(folderpath)
 
 
     @classmethod
     def _remove_old_finance_folder(cls):
 # Remove the old data if necessary
         folderpath_format = cls.__get_finance_folderpath_format()
-        for index in range(cls.company_group_size):
+        for index in range(cls.__get_company_profile().company_group_size):
             folderpath = folderpath_format % index
+            g_logger.debug("Remove old folder: %s" % folderpath)
             shutil.rmtree(folderpath, ignore_errors=True)
 
 

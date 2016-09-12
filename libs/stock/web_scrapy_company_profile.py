@@ -56,7 +56,7 @@ class WebScrapyCompanyProfile(object):
         self.company_group_num2name_list = None
         self.company_group_name2num_dict = None
         self.update_from_web = False
-        self.company_group_size = 0
+        self.__company_group_size = 0
 
         self.ETF_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
         self.TDR_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
@@ -167,7 +167,7 @@ class WebScrapyCompanyProfile(object):
                 g_logger.error("Error occur while parsing Company Code Number info, due to %s" % str(e))
                 raise e
             else:
-                self.company_group_size = len(self.company_group_num2name_list)
+                self.__company_group_size = len(self.company_group_num2name_list)
                 self.__generate_company_group_profile_list()
 
         return need_update_from_web
@@ -359,7 +359,7 @@ class WebScrapyCompanyProfile(object):
             #     element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] = COMPANY_GROUP_EXCEPTION_DICT[COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT]
 
             self.company_profile_list.append(element_list)
-        self.company_group_size = len(self.company_group_num2name_list)
+        self.__company_group_size = len(self.company_group_num2name_list)
 # 有價證券代號及名稱
 # 國際證券辨識號碼(ISIN Code) 
 # 上市日 
@@ -375,7 +375,7 @@ class WebScrapyCompanyProfile(object):
         # if self.company_group_profile_list != None:
         #     raise ValueError("The self.company_group_profile_list is NOT None");
         self.company_group_profile_list = []
-        for index in range(self.company_group_size):
+        for index in range(self.__company_group_size):
             self.company_group_profile_list.append([])
 
         for company_profile in self.company_profile_list:
@@ -527,8 +527,8 @@ class WebScrapyCompanyProfile(object):
 
     def group_iterator(self, company_group_index):
         # import pdb; pdb.set_trace()
-        if not (0 <= company_group_index < self.company_group_size):
-            raise ValueError("The company group index[%d] is Out Of Range [0, %d)" % (company_group_index, self.company_group_size))
+        if not (0 <= company_group_index < self.__company_group_size):
+            raise ValueError("The company group index[%d] is Out Of Range [0, %d)" % (company_group_index, self.__company_group_size))
         return self.company_group_profile_list[company_group_index]
 
 
@@ -536,13 +536,14 @@ class WebScrapyCompanyProfile(object):
         (self.group_company_func_ptr[method_number])(show_detail)
 
 
-    def get_company_group_size(self):
-        return self.company_group_size
+    @property
+    def company_group_size(self):
+        return self.__company_group_size
 
 
     def get_company_group_description(self, index):
-        if index < 0 or index >= self.company_group_size:
-            raise ValueError("index[%d] is Out Of Range [0, %d)" % (index, self.company_group_size));
+        if index < 0 or index >= self.__company_group_size:
+            raise ValueError("index[%d] is Out Of Range [0, %d)" % (index, self.__company_group_size));
         return self.company_group_num2name_list[index];
 
 
