@@ -150,7 +150,7 @@ DEF_SOURCE_URL_PARSING = [
 # Stock Start
     {# 集保戶股權分散表
         "url_format": "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1}{2}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
-        "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
+        "url_timeslice": TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER,
         "url_encoding": URL_ENCODING_BIG5,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_css_selector": 'table tbody tr',
@@ -318,7 +318,7 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
 # DEF_STOCK_DATA_SOURCE_START_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyDepositoryShareholderDistributionTable")
 # DEF_COMPANY_DATA_SOURCE_END_INDEX = DEF_STOCK_DATA_SOURCE_START_INDEX - 1
 # DEF_STOCK_DATA_SOURCE_END_INDEX = len(DEF_WEB_SCRAPY_CLASS_NAME_MAPPING)
-# DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
+DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
 
 # DEF_SOURCE_WRITE2CSV_METHOD = [
 #     WRITE2CSV_ONE_MONTH_PER_FILE,

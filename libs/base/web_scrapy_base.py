@@ -23,6 +23,7 @@ class WebScrapyBase(object):
             "time_start": None,
             "time_end": None,
         }
+        # import pdb; pdb.set_trace()
         self.xcfg.update(kwargs)
 # Find which module is instansiate
         cur_module_name = re.sub(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.FUNC.get_cur_module_name(cur_file_path))

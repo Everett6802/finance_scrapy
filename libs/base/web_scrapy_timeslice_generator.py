@@ -69,6 +69,12 @@ class WebScrapyTimeSliceGenerator(object):
     #     return financial_statement_season_cfg
 
 
+    def __get_workday_calendar(self):
+        if self.workday_canlendar is None:
+            self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
+        return self.workday_canlendar
+
+
     def __find_company_foreign_investors_shareholder_url_data(self, date_str_for_financial_statement, company_code_number):
         url = self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT.format(*(date_str_for_financial_statement, company_code_number))
         for retry in range(5):
@@ -89,10 +95,13 @@ class WebScrapyTimeSliceGenerator(object):
 
     def __find_friday_date_str_for_financial_statement(self):
         def find_friday_date():
+            # import pdb; pdb.set_trace()
             DATE_OFFSET = 45
-            date_iterator = WorkdayCanlendar.WorkdayNearestIterator(self.date_today - DATE_OFFSET, self.date_today)
+            date_iterator = WorkdayCanlendar.WorkdayNearestIterator(self.__get_workday_calendar().get_last_workday() - DATE_OFFSET, None)
             for date_cur in date_iterator:
                 if date_cur.to_datetime().isoweekday() == 5:
+                    # import pdb; pdb.set_trace()
+                    g_logger.debug("The workday[%s] is Friday" % date_cur)
                     return date_cur
             raise ValueError("Fail to find a certain Friday for the past %d days from the date[%s]" % (DATE_OFFSET, self.date_today)) 
 
@@ -122,15 +131,13 @@ class WebScrapyTimeSliceGenerator(object):
 
     def __generate_time_slice_by_workday(self, date_start, date_end, **kwargs):
 # The data type in the list is datetime
-        if self.workday_canlendar is None:
-            self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
 # Check time range
-        if date_start < self.workday_canlendar.get_first_workday():
-            g_logger.warn("The start workday [%s] is earlier than the first day[%s]" % (date_start, self.workday_canlendar.get_first_workday()))
-            date_start = self.workday_canlendar.get_first_workday()
-        if date_end > self.workday_canlendar.get_last_workday():
-            g_logger.warn("The end workday [%s] is later than the last day[%s]" % (date_end, self.workday_canlendar.get_last_workday()))
-            date_end = self.workday_canlendar.get_last_workday()
+        if date_start < self.__get_workday_calendar().get_first_workday():
+            g_logger.warn("The start workday [%s] is earlier than the first day[%s]" % (date_start, self.__get_workday_calendar().get_first_workday()))
+            date_start = self.__get_workday_calendar().get_first_workday()
+        if date_end > self.__get_workday_calendar().get_last_workday():
+            g_logger.warn("The end workday [%s] is later than the last day[%s]" % (date_end, self.__get_workday_calendar().get_last_workday()))
+            date_end = self.__get_workday_calendar().get_last_workday()
 # Check time type
         if not isinstance(date_start, CMN.CLS.FinanceDate):
             raise TypeError("The type of date_start should be FinanceDate, NOT %s" % type(date_start))

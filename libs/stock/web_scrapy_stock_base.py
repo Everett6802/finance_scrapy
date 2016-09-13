@@ -33,7 +33,8 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             self.xcfg["time_start"] = self.__get_url_time_range().get_date_range_start(self.source_type_index)
         if self.xcfg["time_end"] is None:
             self.xcfg["time_end"] = self.__get_url_time_range().get_date_range_end(self.source_type_index)
-        if self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
+# Create the dict for the time slice generator
+        if self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY or self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_WEEK:
             self.time_slice_kwargs["time_start"] = self.xcfg["time_start"]
             self.time_slice_kwargs["time_end"] = self.xcfg["time_end"]
         elif self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
@@ -41,6 +42,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             self.time_slice_kwargs["time_end"] = CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month)
         else:
             raise ValueError("Unsupported time unit: %d" % self.url_time_unit)
+        self.time_slice_kwargs["company_code_number"] = None
 
 
     @classmethod
@@ -71,6 +73,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         timeslice_generator = self._get_time_slice_generator()
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
+                self.time_slice_kwargs["company_code_number"] = company_code_number
                 timeslice_iterable = timeslice_generator.generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
                 for timeslice in timeslice_iterable:
                     url = self.assemble_web_url(timeslice, company_code_number)
