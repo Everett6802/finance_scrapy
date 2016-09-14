@@ -44,12 +44,12 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     def parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
-
+        # import pdb; pdb.set_trace()
         data_list = []
         for tr in web_data[9:25]:
             td = tr.select('td')
-            data_list.append(str(CMN.remove_comma_in_string(td[2].text)))
-            data_list.append(str(CMN.transform_share_number_string_to_board_lot(td[3].text)))
+            data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
+            data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
             data_list.append(td[4].text)
 
         return data_list

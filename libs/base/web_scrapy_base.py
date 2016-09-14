@@ -82,8 +82,8 @@ class WebScrapyBase(object):
         return json_url_data[parse_url_data_type_cfg["url_css_selector"]]
 
 
-    @staticmethod
-    def _write_to_csv(csv_filepath, csv_data_list, multi_data_one_page):
+    @classmethod
+    def _write_to_csv(cls, csv_filepath, csv_data_list, multi_data_one_page):
         # import pdb; pdb.set_trace()
         if multi_data_one_page:
             g_logger.debug("Multi-data in one page, need to transform data")

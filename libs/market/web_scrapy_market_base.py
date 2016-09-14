@@ -45,13 +45,6 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         return cls.url_date_range
 
 
-    # @classmethod
-    # def __get_time_slice_generator(cls):
-    #     if cls.TIME_SLICE_GENERATOR is None:
-    #         cls.TIME_SLICE_GENERATOR = BASE.TSG.WebScrapyTimeSliceGenerator.Instance()
-    #     return cls.TIME_SLICE_GENERATOR
-
-
     @classmethod
     def assemble_csv_filepath(cls, data_source_index):
         csv_filepath = "%s/%s/%s.csv" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index]) 
