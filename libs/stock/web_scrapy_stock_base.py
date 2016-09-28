@@ -28,20 +28,6 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
         else:
             self.company_group_set = kwargs["company_group_set"]
-# Determine the time range
-        if self.xcfg["time_start"] is None:
-            self.xcfg["time_start"] = self.__get_url_time_range().get_date_range_start(self.source_type_index)
-        if self.xcfg["time_end"] is None:
-            self.xcfg["time_end"] = self.__get_url_time_range().get_date_range_end(self.source_type_index)
-# Create the dict for the time slice generator
-        if self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY or self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_WEEK:
-            self.time_slice_kwargs["time_start"] = self.xcfg["time_start"]
-            self.time_slice_kwargs["time_end"] = self.xcfg["time_end"]
-        elif self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
-            self.time_slice_kwargs["time_start"] = CMN.CLS.FinanceMonth(self.xcfg["time_start"].year, self.xcfg["time_start"].month)
-            self.time_slice_kwargs["time_end"] = CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month)
-        else:
-            raise ValueError("Unsupported time unit: %d" % self.url_time_unit)
         self.time_slice_kwargs["company_code_number"] = None
 
 
@@ -61,6 +47,19 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
 
     @classmethod
+    def _get_time_last_start_and_end_time(cls, *args):
+        last_finance_date = CMN.FUNC.get_last_url_data_date(CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_MINUTE) 
+        return (last_finance_date, last_finance_date)
+
+
+    @classmethod
+    def _get_time_range_start_and_end_time(cls, *args):
+# args[0]: source_type_index
+# args[1]: company_code_number
+        return (cls.__get_url_time_range().get_time_range_start(args[0], args[1]), cls.__get_url_time_range().get_time_range_end(args[0], args[1]))
+
+
+    @classmethod
     def assemble_csv_company_folderpath(cls, company_code_number, company_group_number=-1):
         if company_group_number == -1:
             company_group_number = cls.__get_company_profile().lookup_company_group_number(company_code_number)
@@ -76,21 +75,48 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         return csv_filepath
 
 
+    def _adjust_time_duration_from_lookup_table(self, company_code_number):
+        (self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]) = (self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR[self.xcfg["time_duration_type"]])(self.source_type_index, company_code_number)
+        # if self.xcfg["time_duration_start"] is None:
+        #     self.xcfg["time_duration_start"] = self.__get_url_time_range().get_date_range_start(self.source_type_index)
+        # if self.xcfg["time_duration_end"] is None:
+        #     self.xcfg["time_duration_end"] = self.__get_url_time_range().get_date_range_end(self.source_type_index)
+# Create the dict for the time slice generator
+        if self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY or self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_WEEK:
+            self.time_slice_kwargs["time_duration_start"] = self.xcfg["time_duration_start"]
+            self.time_slice_kwargs["time_duration_end"] = self.xcfg["time_duration_end"]
+        elif self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+            self.time_slice_kwargs["time_duration_start"] = CMN.CLS.FinanceMonth(self.xcfg["time_duration_start"].year, self.xcfg["time_duration_start"].month)
+            self.time_slice_kwargs["time_duration_end"] = CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month)
+        else:
+            raise ValueError("Unsupported time unit: %d" % self.url_time_unit)
+        # g_logger.debug("The time range after adjustment: %s-%s" % (self.time_slice_kwargs["time_duration_start"], self.time_slice_kwargs["time_duration_end"]))
+
+
     def scrap_web_to_csv(self):
-        import pdb; pdb.set_trace()
-        timeslice_generator = self._get_time_slice_generator()
+        # import pdb; pdb.set_trace()
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
 # Create a folder for a specific company
                 csv_group_folderpath = self.assemble_csv_company_folderpath(company_code_number, company_group_number)
                 CMN.FUNC.create_folder_if_not_exist(csv_group_folderpath)
-                import pdb; pdb.set_trace()
+                # import pdb; pdb.set_trace()
                 self.time_slice_kwargs["company_code_number"] = company_code_number
 # Find the file path for writing data into csv
                 csv_filepath = WebScrapyStockBase.assemble_csv_filepath(self.source_type_index, company_code_number, company_group_number)
-                timeslice_iterable = timeslice_generator.generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
+# Determine the actual time range
+                self._adjust_time_duration_from_lookup_table(company_code_number)
+                scrap_msg = "[%s:%s] %s %s-%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[source_type_time_duration.time_duration_type], source_type_time_duration.time_duration_start,source_type_time_duration.time_duration_end, csv_filepath)
+                g_logger.debug(scrap_msg)
+# Check if only dry-run
+                if self.xcfg["dry_run_only"]:
+                    print scrap_msg
+                    continue
+# Create the time slice iterator due to correct time range
+                timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
                 csv_data_list_each_year = []
                 cur_year = None
+# Generate the time slice list                
                 for timeslice in timeslice_iterable:
 # Write the data into csv year by year
                     if timeslice.year != cur_year:
@@ -103,7 +129,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     g_logger.debug("Get the data by date from URL: %s" % url)
                     try:
 # Grab the data from website and assemble the data to the entry of CSV
-                        csv_data_list = self.parse_web_data(self._get_web_data(url))
+                        csv_data_list = self._parse_web_data(self._get_web_data(url))
                         if csv_data_list is None:
                             raise RuntimeError(url)
                         csv_data_list_each_year.append(csv_data_list)

@@ -3,7 +3,7 @@ import math
 import collections
 MonthTuple = collections.namedtuple('MonthTuple', ('year', 'month'))
 QuarterTuple = collections.namedtuple('QuarterTuple', ('year', 'quarter'))
-SourceTypeTimeRangeTuple = collections.namedtuple('SourceTypeTimeRangeTuple', ('source_type_index', 'time_start', 'time_end'))
+SourceTypeTimeRangeTuple = collections.namedtuple('SourceTypeTimeRangeTuple', ('source_type_index', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
 import common_definition as CMN_DEF
 import common_function as CMN_FUNC
 
@@ -138,6 +138,7 @@ class FinanceTimeBase(object):
 
 class FinanceDate(FinanceTimeBase):
 
+    today_finance_date = None
     def __init__(self, *args):
         super(FinanceDate, self).__init__()
         self.month = None # range: 1 - 12
@@ -189,6 +190,13 @@ class FinanceDate(FinanceTimeBase):
     @classmethod
     def from_string(cls, time_string):
         return cls(time_string)
+
+
+    @classmethod
+    def get_today_finance_date(cls):
+        if cls.today_finance_date is None:
+            cls.today_finance_date = FinanceDate(datetime.today())
+        return cls.today_finance_date
 
 
     def __add__(self, day_delta):

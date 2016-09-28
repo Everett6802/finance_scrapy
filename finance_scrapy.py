@@ -26,28 +26,37 @@ def show_usage():
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--silent\nDescription: Disable print log on console"
-    print "--reserve_old\nDescription: Reserve the old CSV file in %s" % CMN.DEF.DEF_CSV_FILE_PATH
     print "--check_result\nDescription: Check the CSV files after scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
+    print "--reserve_old\nDescription: Reserve the old CSV file in %s" % CMN.DEF.DEF_CSV_FILE_PATH
+    print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
+    print "--source_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
+    print "--source_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
+    print "--source_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
+    print "--source_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
+    # print "--source_from_file\nDescription: The last finance data source from file: %s\nCaution: source/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_LAST_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_LAST_CONFIG_FILENAME)
     print "-s --source\nDescription: The list of the finance data sources\nDefault: All finance data sources\nCaution: Only work when source_from_file is NOT set"
     start_index = CMN.DEF.DEF_DATA_SOURCE_MARKET_START if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_DATA_SOURCE_STOCK_START
     end_index = CMN.DEF.DEF_DATA_SOURCE_MARKET_END if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_DATA_SOURCE_STOCK_END
     for index in range(start_index, end_index):
         print "  %d: %s" % (index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[index])
-    print "-t --time_range\nDescription: The max time range of the selected finance data source\nDefault: Today\nCaution: Only work when source_from_file is NOT set"
+    print "  Format: 1,3,5"
+    print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
+    print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
+    print "--time_duration_range_all\nDescription: The data in the all time range of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
+    print "--time_duration_range\nDescription: The data in the time range of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
     print "  Format 1 (start_time): 2015-01-01"
-    print "  Format 2 (start_time,end_time): 2015-01-01,2015-09-04"
-    print "--source_from_file\nDescription: The finance data source from file\nDefault: All data sources\nCaution: source/time_range are ignored when set"
-    print "--source_from_default_today_file\nDescription: The finance data source from file: %s\nCaution: source/time_range are ignored when set" % CMN.DEF.DEF_TODAY_CONFIG_FILENAME
-    print "--source_from_default_history_file\nDescription: The finance data source from file: %s\nCaution: source/time_range are ignored when set" % CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
-    if CMN.DEF.IS_FINANCE_STOCK_MODE:
-        print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only work when company_from_file is NOT set"
-        print "--company_from_file\nDescription: The company code number from file\nDefault: All company code nubmers\nCaution: company is ignored when set"
+    print "  Format 2 (,end_time): ,2015-01-01"
+    print "  Format 3 (start_time,end_time): 2015-01-01,2015-09-04"
+    print "--time_today --time_last --time_duration_range --time_duration_range_all\nCaution: Shuold NOT be set simultaneously. Will select the first one"
     # print "-m --method\nDescription: The method of setting the parameters\nDefault: TODAY"
     # print "  TODAY: Read the today.conf file and only scrap today's data"
     # print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
     # print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
     # print "--multi_thread\nDescription: Scrap Web data by using multiple threads\nCaution: Deprecated"
+    if CMN.DEF.IS_FINANCE_STOCK_MODE:
+        print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only work when company_from_file is NOT set"
+        print "--company_from_file\nDescription: The company code number from file\nDefault: All company code nubmers\nCaution: company is ignored when set"
     print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
     print "============================================================="
 
@@ -90,11 +99,13 @@ def snapshot_result(run_result_str):
 def init_param():
     # import pdb; pdb.set_trace()
     param_cfg["silent"] = False
-    param_cfg["reserve_old"] = False
     param_cfg["check_result"] = False
     param_cfg["clone_result"] = False
+    param_cfg["reserve_old"] = False
+    param_cfg["dry_run"] = False
     param_cfg["source"] = None
-    param_cfg["time_range"] = None
+    param_cfg["time_duration_type"] = None # Should be check in check_param()
+    param_cfg["time_duration_range"] = None
     param_cfg["source_from_file"] = None
     param_cfg["company"] = None
     param_cfg["company_from_file"] = None
@@ -118,9 +129,6 @@ def parse_param():
         elif re.match("--silent", sys.argv[index]):
             param_cfg["silent"] = True
             index_offset = 1
-        elif re.match("--reserve_old", sys.argv[index]):
-            param_cfg["reserve_old"] = True
-            index_offset = 1
         # elif re.match("--multi_thread", sys.argv[index]):
         #     multi_thread = True
         #     index_offset = 1
@@ -130,34 +138,69 @@ def parse_param():
         elif re.match("--clone_result", sys.argv[index]):
             param_cfg["clone_result"] = True
             index_offset = 1
+        elif re.match("--reserve_old", sys.argv[index]):
+            param_cfg["reserve_old"] = True
+            index_offset = 1
+        elif re.match("--dry_run", sys.argv[index]):
+            param_cfg["dry_run"] = True
+            index_offset = 1
         # elif re.match("--run_daily", sys.argv[index]):
         #     # method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
         #     show_console = False
         #     remove_old = True
         #     check_result = True
         #     break
-        elif re.match("--source_from_default_today_file", sys.argv[index]):
+        elif re.match("--source_from_all_time_range_default_file", sys.argv[index]):
             if CMN.DEF.IS_FINANCE_MARKET_MODE:
-                param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_TODAY_CONFIG_FILENAME
+                param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
             elif CMN.DEF.IS_FINANCE_STOCK_MODE:
-                param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_TODAY_CONFIG_FILENAME
+                param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
+            param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 1
-        elif re.match("--source_from_default_history_file", sys.argv[index]):
-            if CMN.DEF.IS_FINANCE_MARKET_MODE:
-                param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_HISTORY_CONFIG_FILENAME
-            elif CMN.DEF.IS_FINANCE_STOCK_MODE:
-                param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_HISTORY_CONFIG_FILENAME
-            index_offset = 1
-        elif re.match("--source_from_file", sys.argv[index]):
+        elif re.match("--source_from_today_file", sys.argv[index]):
             param_cfg["source_from_file"] = sys.argv[index + 1]
+            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
             index_offset = 2
+        elif re.match("--source_from_last_file", sys.argv[index]):
+            param_cfg["source_from_file"] = sys.argv[index + 1]
+            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
+            index_offset = 2
+        elif re.match("--source_from_time_range_file", sys.argv[index]):
+            param_cfg["source_from_file"] = sys.argv[index + 1]
+            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
+            index_offset = 2
+        # elif re.match("--source_from_file", sys.argv[index]):
+        #     param_cfg["source_from_file"] = sys.argv[index + 1]
+        #     index_offset = 2
         elif re.match("(-s|--source)", sys.argv[index]):
             param_cfg["source"] = sys.argv[index + 1]
             g_logger.debug("Param source: %s", param_cfg["source"])
             index_offset = 2
-        elif re.match("(-t|--time_range)", sys.argv[index]):
-            param_cfg["time_range"] = sys.argv[index + 1]
-            g_logger.debug("Param time range: %s", param_cfg["time_range"])
+        elif re.match("--time_today", sys.argv[index]):
+            if param_cfg["time_duration_type"] is not None:
+                g_logger.debug("Time duration has already been set to: %d, ignore the time_today attribute...", param_cfg["time_duration_type"])
+            else:
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
+            index_offset = 1
+        elif re.match("--time_last", sys.argv[index]):
+            if param_cfg["time_duration_type"] is not None:
+                g_logger.debug("Time duration has already been set to: %d, ignore the time_last attribute...", param_cfg["time_duration_type"])
+            else:
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
+            index_offset = 1
+        elif re.match("--time_duration_range_all", sys.argv[index]):
+            if param_cfg["time_duration_type"] is not None:
+                g_logger.debug("Time duration has already been set to: %d, ignore the time_duration_range_all attribute...", param_cfg["time_duration_type"])
+            else:
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_DURATION
+            index_offset = 1
+        elif re.match("--time_duration_range", sys.argv[index]):
+            if param_cfg["time_duration_type"] is not None:
+                g_logger.debug("Time duration has already been set to: %d, ignore the time_duration_range attribute...", param_cfg["time_duration_type"])
+            else:
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
+                param_cfg["time_duration_range"] = sys.argv[index + 1]
+            # g_logger.debug("Param time range: %s", param_cfg["time_duration_range"])
             index_offset = 2
         # elif re.match("(-m|--method)", sys.argv[index]):
         #     method = sys.argv[index + 1]
@@ -181,31 +224,31 @@ def parse_param():
 
 # Create the time range list
     # import pdb; pdb.set_trace()
-    # source_type_time_range_list = None
+    # source_type_time_duration_range_list = None
     # if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
-    #     if source_type_index_list is not None or time_start is not None:
+    #     if source_type_index_list is not None or time_range_start is not None:
     #         msg = "Ignore other parameters when the method is %s\n" % CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE[CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX]     
     #         if not show_console:
     #             g_logger.info(msg)
     #         else:
     #             sys.stdout.write(msg)
     #     conf_filename = CMN.DEF.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
-    #     source_type_time_range_list = CMN.FUNC.parse_config_file(conf_filename)
-    #     if source_type_time_range_list is None:
+    #     source_type_time_duration_range_list = CMN.FUNC.parse_config_file(conf_filename)
+    #     if source_type_time_duration_range_list is None:
     #         show_error_and_exit("Fail to parse the config file: %s" % conf_filename)
     # else:
-    #     source_type_time_range_list = []
+    #     source_type_time_duration_range_list = []
     #     if source_type_index_list is None:
     #         source_type_index_list = range(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN)
     #     # import pdb; pdb.set_trace()
     #     for source_type_index in source_type_index_list:
-    #         source_type_time_range_list.append(
+    #         source_type_time_duration_range_list.append(
     #             # {
     #             #     "source_type_index": source_type_index,
-    #             #     "time_start": time_start,
-    #             #     "time_end": time_end,
+    #             #     "time_range_start": time_range_start,
+    #             #     "time_range_end": time_range_end,
     #             # }
-    #             CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
+    #             CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_range_start, time_range_end)
     #         )
 
 # Adjust the end date since some data of the last day are NOT released at the moment while scraping data
@@ -215,7 +258,7 @@ def parse_param():
     # datetime_threshold = datetime(datetime_today.year, datetime_today.month, datetime_today.day, CMN.DEF.DEF_TODAY_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_DATA_EXIST_MINUTE)
     # import pdb; pdb.set_trace()
 #     datetime_threshold = CMN.get_latest_url_data_datetime(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE)
-#     for config in source_type_time_range_list:
+#     for config in source_type_time_duration_range_list:
 #         if config['start'] is None:
 #             config['start'] = datetime_today if datetime_now >= datetime_threshold else datetime_yesterday
 #         if config['end'] is None:
@@ -240,7 +283,7 @@ def parse_param():
         # if show_console:
         #     sys.stdout.write("%s\n" % msg)
 
-    # return (source_type_time_range_list, check_result, clone_result)
+    # return (source_type_time_duration_range_list, check_result, clone_result)
 
 
 def check_param():
@@ -248,9 +291,12 @@ def check_param():
         if param_cfg["source"] is not None:
             param_cfg["source"] = None
             show_warn("The 'source' argument is ignored since 'source_from_file' is set")
-        if param_cfg["time_range"] is not None:
-            param_cfg["time_range"] = None
-            show_warn("The 'time_range' argument is ignored since 'source_from_file' is set")
+        # if param_cfg["time_duration_type"] is not None:
+        #     param_cfg["time_duration_type"] = None
+        #     show_warn("The 'time_duration' argument is ignored since 'source_from_file' is set")
+    if param_cfg["time_duration_type"] is None:
+        param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
+        show_warn("Set the 'time_duration_type' argument to DATA_TIME_DURATION_TODAY as default")        
     if CMN.DEF.IS_FINANCE_MARKET_MODE:
         if param_cfg["company"] is not None:
             param_cfg["company"] = None
@@ -268,11 +314,11 @@ def check_param():
 def setup_param():
 # Set source type and time range
     if param_cfg["source_from_file"] is not None:
-        g_mgr.set_source_type_time_range_from_file(param_cfg["source_from_file"])
+        g_mgr.set_source_type_time_duration_from_file(param_cfg["source_from_file"], param_cfg["time_duration_type"])
     else:
         source_type_index_list = None
-        time_start = None
-        time_end = None
+        time_range_start = None
+        time_range_end = None
         if param_cfg["source"] is not None:
             source_type_index_str_list = param_cfg["source"].split(",")
             source_type_index_list = []
@@ -282,18 +328,20 @@ def setup_param():
                     errmsg = "Unsupported source type index: %d" % source_type_index
                     show_error_and_exit(errmsg)
                 source_type_index_list.append(source_type_index)
-        if param_cfg["time_range"] is not None:
-            time_range_list = param_cfg["time_range"].split(",")
-            time_range_list_len = len(time_range_list)
-            if time_range_list_len == 2:
-                time_start = CMN.CLS.FinanceTimeBase.from_string(time_range_list[0])
-                time_end = CMN.CLS.FinanceTimeBase.from_string(time_range_list[1])
-            elif time_range_list_len == 1:
-                time_start = CMN.CLS.FinanceTimeBase.from_string(time_range_list[0])
+        if param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
+            time_duration_range_list = param_cfg["time_duration_range"].split(",")
+            time_duration_range_list_len = len(time_duration_range_list)
+            if time_duration_range_list_len == 2:
+                if not param_cfg["time_duration_range"].startswith(","):
+# For time range
+                    time_range_start = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[0])
+                time_range_end = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[1])
+            elif time_duration_range_list_len == 1:
+                time_range_start = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[0])
             else:
-                errmsg = "Incorrect time range format: %s" % param_cfg["time_range"]
+                errmsg = "Incorrect time range format: %s" % param_cfg["time_duration_range"]
                 show_error_and_exit(errmsg)
-        g_mgr.set_source_type_time_range(source_type_index_list, time_start, time_end)
+        g_mgr.set_source_type_time_duration_range(source_type_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
 # Set company list. For stock mode only
     if CMN.DEF.IS_FINANCE_STOCK_MODE:
         if param_cfg["company_from_file"] is not None:
@@ -302,10 +350,54 @@ def setup_param():
             g_mgr.set_company_from_file(param_cfg["company"])
 
     g_mgr.need_reserve_old_finance_folder(param_cfg["reserve_old"])
+    g_mgr.enable_dry_run(param_cfg["dry_run"])
+
+class MyTestBase(object):
+
+    func_ptr = None
+    @classmethod
+    def init_func(cls):
+        cls.func_ptr = [cls.test1, cls.test2, cls.test3,]
+    def __init__(self):
+        pass
+
+    @classmethod
+    def test1(cls, *args):
+        print "base 1: %s" % args[0]
+    @classmethod
+    def test2(cls, *args):
+        print "base 2: %s" % args[0]
+    @classmethod
+    def test3(cls, *args):
+        print "base 3: %s" % args[0]
+    def test(self, method, *args):
+        self.init_func()
+        # print self.__class__.__name__
+        (self.func_ptr[method])(*args)
+
+class MyTest(MyTestBase):
+    @classmethod
+    def test1(cls, *args):
+        print "1: %s" % args[0]
+    # def test2(self):
+    #     print "2: %s" % args
+    @classmethod
+    def test3(cls, *args):
+        print "3: %s" % args[0]
+    def test(self,m, *args):
+        super(MyTest, self).test(m, *args)
+        # print self.__class__.__name__
 
 
 # import libs.stock.web_scrapy_company_group_set as CompanyGroupSet
 if __name__ == "__main__":
+    # my_list = ["one", "two"]
+    # my_test = MyTest()
+    # my_test.test(0, "one", "two")
+    # my_test.test(1, *my_list)
+    # my_test.test(2, *my_list)
+    # sys.exit(0)
+
     # my_list = [1, 2, 3,]
     # my_dict = {"one": 1, "two": 2, "three": 3}
     # my_dict["test"] = "fuck"
@@ -360,12 +452,12 @@ if __name__ == "__main__":
 
 # Try to scrap the web data
     show_info("Scrap the data from the website......")
-    time_start_second = int(time.time())
+    time_range_start_second = int(time.time())
     # import pdb; pdb.set_trace()
     g_mgr.do_scrapy()
-    time_end_second = int(time.time())
+    time_range_end_second = int(time.time())
     show_info("Scrap the data from the website...... DONE!!!")
-    time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_end_second - time_start_second)
+    time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_range_end_second - time_range_start_second)
     show_info(time_lapse_msg)
 
     error_found = False

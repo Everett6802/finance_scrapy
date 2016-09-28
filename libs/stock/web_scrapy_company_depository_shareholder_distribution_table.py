@@ -27,9 +27,11 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(__file__, **kwargs)
+        self.date_cur_string = None
 
 
     def assemble_web_url(self, timeslice, company_code_number):
+        import pdb; pdb.set_trace()
         url = self.url_format.format(
             *(
                 timeslice.year, 
@@ -38,14 +40,16 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
                 company_code_number
             )
         )
+        self.date_cur_string = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 
 
-    def parse_web_data(self, web_data):
+    def _parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         data_list = []
+        data_list.append(self.date_cur_string)
         for tr in web_data[9:25]:
             td = tr.select('td')
             data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
@@ -103,9 +107,9 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 # 合計佔集保庫存數比例
 
 
-    def __generate_day_time_list_rule_select_friday(self, datetime_cfg):
-        day_of_week = datetime_cfg.weekday()
-        return (True if day_of_week == 4 else False)
+    # def __generate_day_time_list_rule_select_friday(self, datetime_cfg):
+    #     day_of_week = datetime_cfg.weekday()
+    #     return (True if day_of_week == 4 else False)
 
 
     def do_debug(self):

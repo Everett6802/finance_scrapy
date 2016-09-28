@@ -26,14 +26,14 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
         super(WebScrapyOptionPutCallRatio, self).__init__(__file__, **kwargs)
         self.whole_month_data = True
         self.data_not_whole_month_list = []
-        if CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_start"], self.xcfg["time_end"]):
-            if self.xcfg["time_start"].day > 1 or self.xcfg["time_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_end"].year, self.xcfg["time_end"].month):
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month))
+        if CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]):
+            if self.xcfg["time_duration_start"].day > 1 or self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
         else:
-            if self.xcfg["time_start"].day > 1:
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_start"].year, self.xcfg["time_start"].month))
-            if self.xcfg["time_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_end"].year, self.xcfg["time_end"].month):
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month))
+            if self.xcfg["time_duration_start"].day > 1:
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_start"].year, self.xcfg["time_duration_start"].month))
+            if self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
 
 
     def assemble_web_url(self, timeslice):
@@ -48,13 +48,13 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
         try:
             index = self.data_not_whole_month_list.index(timeslice)
             if len(self.data_not_whole_month_list) == 1:
-                url = self.url_format.format(*(timeslice.year, timeslice.month, self.xcfg["time_start"].day, self.xcfg["time_end"].day))
+                url = self.url_format.format(*(timeslice.year, timeslice.month, self.xcfg["time_duration_start"].day, self.xcfg["time_duration_end"].day))
             else:
                 if index == 0:
                     end_day_in_month = CMN.FUNC.get_month_last_day(timeslice.year, timeslice.month)
-                    url = self.url_format.format(*(timeslice.year, timeslice.month, self.xcfg["time_start"].day, end_day_in_month))
+                    url = self.url_format.format(*(timeslice.year, timeslice.month, self.xcfg["time_duration_start"].day, end_day_in_month))
                 else:
-                    url = self.url_format.format(*(timeslice.year, timeslice.month, 1, self.xcfg["time_start"].day))
+                    url = self.url_format.format(*(timeslice.year, timeslice.month, 1, self.xcfg["time_duration_start"].day))
             self.whole_month_data = False
         except ValueError:
             end_day_in_month = CMN.FUNC.get_month_last_day(timeslice.year, timeslice.month)
@@ -63,7 +63,7 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
         return url
 
 
-    def parse_web_data(self, web_data):
+    def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
         web_data_len = len(web_data)
         if web_data_len == 0:

@@ -39,7 +39,7 @@ class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_bas
         return url
 
 
-    def parse_web_data(self, web_data):
+    def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
         if len(web_data) == 0:
             return None

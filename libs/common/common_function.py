@@ -196,26 +196,26 @@ def get_config_file_lines(conf_filename):
     return config_line_list
 
 
-def parse_source_type_time_range_config_file(conf_filename):
+def parse_source_type_time_duration_config_file(conf_filename, time_duration_type):
     # import pdb; pdb.set_trace()
     config_line_list = get_config_file_lines(conf_filename)
-    source_type_time_range_config_list = []
+    source_type_time_duration_config_list = []
     for line in config_line_list:
         param_list = line.split(' ')
         param_list_len = len(param_list)
         source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
-        time_start = None
+        time_range_start = None
         if param_list_len >= 2:
-            # time_start = transform_string2datetime(param_list[1])
-            time_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
-        time_end = None
+            # time_range_start = transform_string2datetime(param_list[1])
+            time_range_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
+        time_range_end = None
         if param_list_len >= 3:
-            # time_end = transform_string2datetime(param_list[2])
-            time_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
-        source_type_time_range_config_list.append(
-            CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, time_start, time_end)
+            # time_range_end = transform_string2datetime(param_list[2])
+            time_range_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
+        source_type_time_duration_config_list.append(
+            CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, time_duration_type, time_range_start, time_range_end)
         )
-    return source_type_time_range_config_list
+    return source_type_time_duration_config_list
 
 
 def parse_company_config_file(conf_filename):
@@ -241,34 +241,34 @@ def get_month_last_day(year, month):
 #     return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
 
 
-# def get_datetime_range_by_month_list(datetime_range_start=None, datetime_range_end=None):
+# def get_datetime_duration_by_month_list(datetime_duration_start=None, datetime_duration_end=None):
 # # Parse the current time
-#     if datetime_range_end is None:
-#         datetime_range_end = datetime.today()
-#     datetime_range_list = []
-#     datetime_cur = datetime_range_start
+#     if datetime_duration_end is None:
+#         datetime_duration_end = datetime.today()
+#     datetime_duration_list = []
+#     datetime_cur = datetime_duration_start
 #     # import pdb; pdb.set_trace()
 #     while True:
 #         last_day = get_cfg_month_last_day(datetime_cur)
-#         datetime_range_list.append(
+#         datetime_duration_list.append(
 #             {
 #                 'start': datetime(datetime_cur.year, datetime_cur.month, 1),
 #                 'end': datetime(datetime_cur.year, datetime_cur.month, last_day),
 #             }
 #         )
-#         if datetime_range_end.year == datetime_cur.year and datetime_range_end.month == datetime_cur.month:
+#         if datetime_duration_end.year == datetime_cur.year and datetime_duration_end.month == datetime_cur.month:
 #             break
 #         offset_day = 15 if datetime_cur.day > 20 else last_day
 #         datetime_cur +=  timedelta(days = offset_day)
 #     # import pdb; pdb.set_trace()
-#     if len(datetime_range_list) == 0:
-#         raise RuntimeError("The length of the datetime_range_list list should NOT be 0")
-#     if datetime_range_start is not None:
-#         datetime_range_list[0]['start'] = datetime_range_start
-#     if datetime_range_end is not None:
-#         datetime_range_list[-1]['end'] = datetime_range_end
+#     if len(datetime_duration_list) == 0:
+#         raise RuntimeError("The length of the datetime_duration_list list should NOT be 0")
+#     if datetime_duration_start is not None:
+#         datetime_duration_list[0]['start'] = datetime_duration_start
+#     if datetime_duration_end is not None:
+#         datetime_duration_list[-1]['end'] = datetime_duration_end
 
-#     return datetime_range_list
+#     return datetime_duration_list
 
 
 def get_cur_module_name(module):

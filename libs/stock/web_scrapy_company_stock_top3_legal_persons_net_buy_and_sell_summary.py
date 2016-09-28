@@ -47,7 +47,7 @@ class WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.W
         return url
 
 
-    def parse_web_data(self, web_data):
+    def _parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
         data_list = []

@@ -17,11 +17,14 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebScrapyBase(object):
 
     PARSE_URL_DATA_FUNC_PTR = None
+    GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
     timeslice_generator = None
     def __init__(self, cur_file_path, **kwargs):
         self.xcfg = {
-            "time_start": None,
-            "time_end": None,
+            "time_duration_type": CMN.DEF.DATA_TIME_DURATION_TODAY,
+            "time_duration_start": None,
+            "time_duration_end": None,
+            "dry_run_only": False,
         }
         # import pdb; pdb.set_trace()
         self.xcfg.update(kwargs)
@@ -40,7 +43,7 @@ class WebScrapyBase(object):
         # self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file if url_time_unit == csv_time_unit self.__scrap_single_web_data_to_single_csv_file
         # self.timeslice_iterable = timeslice_generator_obj.generate_time_slice(self.timeslice_generate_method, **kwargs)
 # To be fixed...
-        self.time_slice_kwargs = {"time_start": None, "time_end": None}
+        self.time_slice_kwargs = {"time_duration_start": None, "time_duration_end": None}
         self.description = None
 
         # self.timeslice_list_generated = False
@@ -80,6 +83,28 @@ class WebScrapyBase(object):
         g_logger.debug("Parse URL data by JSON, Selector: %s" % parse_url_data_type_cfg["url_css_selector"])
         json_url_data = json.loads(url_data.text)
         return json_url_data[parse_url_data_type_cfg["url_css_selector"]]
+
+
+    @classmethod
+    def get_time_duration_start_and_end_time_func_ptr(cls, time_duration_type):
+        if cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR is None:
+            cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = [cls.__select_web_data_by_bs4, cls.__select_web_data_by_json]
+        return cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR[time_duration_type]
+
+
+    @classmethod
+    def _get_time_today_start_and_end_time(cls, *args):
+        return (CMN.CLS.FinanceDate.get_today_finance_date(), CMN.CLS.FinanceDate.get_today_finance_date())
+
+
+    @classmethod
+    def _get_time_last_start_and_end_time(cls, *args):
+        raise NotImplementedError
+
+
+    @classmethod
+    def _get_time_range_start_and_end_time(cls, *args):
+        raise NotImplementedError
 
 
     @classmethod
@@ -211,13 +236,12 @@ class WebScrapyBase(object):
     #     return timeslice_buffer
 
 
-    def parse_web_data(self, web_data):
+    def _parse_web_data(self, web_data):
         raise NotImplementedError
 
 
-    def is_same_time_unit(self, timeslice):
-        raise NotImplementedError
-
+    # def _is_same_time_unit(self, timeslice):
+    #     raise NotImplementedError
 
     # def scrap_web_to_csv(self):
     #     raise NotImplementedError

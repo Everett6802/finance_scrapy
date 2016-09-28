@@ -59,12 +59,12 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
         self.start_index_list = [1, 1]
         # datetime_real_start = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_start()
         # datetime_real_end = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_end()
-        if self.xcfg["time_start"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT and self.xcfg["time_end"] > WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
+        if self.xcfg["time_duration_start"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT and self.xcfg["time_duration_end"] > WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
             self.need_check_everytime = True
             self.data_row_start_index = None
             self.data_row_end_index = None
             self.start_index_list = None
-        elif self.xcfg["time_end"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
+        elif self.xcfg["time_duration_end"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
             self.data_row_start_index = WebScrapyFutureTop10DealersAndLegalPersons.OLD_FORMAT_ROW_START
             self.data_row_end_index = WebScrapyFutureTop10DealersAndLegalPersons.OLD_FORMAT_ROW_END  
             self.start_index_list = [2, 1] 
@@ -80,7 +80,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
         return url
 
 
-    def parse_web_data(self, web_data):
+    def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
         if len(web_data) == 0:
             return None

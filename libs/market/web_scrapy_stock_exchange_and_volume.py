@@ -35,14 +35,18 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
         super(WebScrapyStockExchangeAndVolume, self).__init__(__file__, **kwargs)
         self.whole_month_data = True
         self.data_not_whole_month_list = []
-        if CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_start"], self.xcfg["time_end"]):
-            if self.xcfg["time_start"].day > 1 or self.xcfg["time_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_end"].year, self.xcfg["time_end"].month):
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month))
+
+
+    def _adjust_time_duration_from_lookup_table(self):
+        super(WebScrapyStockExchangeAndVolume, self)._adjust_time_duration_from_lookup_table()
+        if CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]):
+            if self.xcfg["time_duration_start"].day > 1 or self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
         else:
-            if self.xcfg["time_start"].day > 1:
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_start"].year, self.xcfg["time_start"].month))
-            if self.xcfg["time_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_end"].year, self.xcfg["time_end"].month):
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_end"].year, self.xcfg["time_end"].month))
+            if self.xcfg["time_duration_start"].day > 1:
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_start"].year, self.xcfg["time_duration_start"].month))
+            if self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
+                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
 
 
     def assemble_web_url(self, timeslice):
@@ -60,7 +64,7 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
         return url
 
 
-    def parse_web_data(self, web_data):
+    def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
         if len(web_data) == 0:
             return None
@@ -75,9 +79,9 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
             entry = [CMN.FUNC.transform_date_str(int(date_list[0]) + CMN.DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET, int(date_list[1]), int(date_list[2])),]
             if not self.whole_month_data:
                 date_cur = CMN.CLS.FinanceDate.from_string(entry[0])
-                if date_cur < self.xcfg["time_start"]:
+                if date_cur < self.xcfg["time_duration_start"]:
                     continue
-                elif date_cur > self.xcfg["time_end"]:
+                elif date_cur > self.xcfg["time_duration_end"]:
                     break
             for index in range(1, 6):
                 entry.append(str(td[index].text).replace(',', ''))

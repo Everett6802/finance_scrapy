@@ -22,7 +22,7 @@ class WebScrapyURLTimeRange(object):
         self.company_listing_date_dict = {}
 
 
-    def get_date_range_start(self, date_source_id):
+    def get_time_range_start(self, date_source_id, company_code_number):
         # listing_date = self.company_listing_date_dict.get(date_source_id, None)
         # if listing_date is None:
         #     listing_date_str = self.company_profile_lookup.lookup_company_listing_date(date_source_id)
@@ -30,7 +30,7 @@ class WebScrapyURLTimeRange(object):
         return CMN.CLS.FinanceDate("2000-01-01")
 
 
-    def get_date_range_end(self, date_source_id):
+    def get_time_range_end(self, date_source_id, company_code_number):
         # if self.last_url_data_date is None:
         #     self.__get_date_range_end(CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_MINUTE)
         return CMN.CLS.FinanceDate("2099-12-31")

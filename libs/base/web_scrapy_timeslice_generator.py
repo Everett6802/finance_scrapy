@@ -115,6 +115,12 @@ class WebScrapyTimeSliceGenerator(object):
         g_logger.debug("The last friday date string for financial statement season: %s" % self.last_friday_date_str_for_financial_statement)
 
 
+    def get_last_friday_date_str_for_financial_statement(self):
+        if self.last_friday_date_str_for_financial_statement is None:
+            self.__find_friday_date_str_for_financial_statement()
+        return self.last_friday_date_str_for_financial_statement
+
+
     def __get_company_foreign_investors_shareholder_date_list(self, company_code_number):
         if self.last_friday_date_str_for_financial_statement is None:
             self.__find_friday_date_str_for_financial_statement()
