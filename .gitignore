@@ -5,3 +5,4 @@ snapshot/
 .workday_canlendar.conf
 .company_profile.conf
 .company_group.conf
+conf/market_stock_switch.conf

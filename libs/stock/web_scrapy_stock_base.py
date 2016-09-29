@@ -76,7 +76,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
 
     def _adjust_time_duration_from_lookup_table(self, company_code_number):
-        (self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]) = (self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR[self.xcfg["time_duration_type"]])(self.source_type_index, company_code_number)
+        (self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]) = (self.get_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index, company_code_number)
         # if self.xcfg["time_duration_start"] is None:
         #     self.xcfg["time_duration_start"] = self.__get_url_time_range().get_date_range_start(self.source_type_index)
         # if self.xcfg["time_duration_end"] is None:
@@ -110,7 +110,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 g_logger.debug(scrapy_msg)
 # Check if only dry-run
                 if self.xcfg["dry_run_only"]:
-                    print scrapvs_msg
+                    print scrapy_msg
                     continue
 # Create the time slice iterator due to correct time range
                 timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
