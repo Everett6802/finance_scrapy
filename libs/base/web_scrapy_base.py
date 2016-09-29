@@ -88,7 +88,7 @@ class WebScrapyBase(object):
     @classmethod
     def get_time_duration_start_and_end_time_func_ptr(cls, time_duration_type):
         if cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR is None:
-            cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = [cls.__select_web_data_by_bs4, cls.__select_web_data_by_json]
+            cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = [cls._get_time_today_start_and_end_time, cls._get_time_last_start_and_end_time, cls._get_time_range_start_and_end_time]
         return cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR[time_duration_type]
 
 

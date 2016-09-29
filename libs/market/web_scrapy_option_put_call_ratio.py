@@ -26,6 +26,10 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
         super(WebScrapyOptionPutCallRatio, self).__init__(__file__, **kwargs)
         self.whole_month_data = True
         self.data_not_whole_month_list = []
+
+
+    def _adjust_time_duration_from_lookup_table(self):
+        super(WebScrapyOptionPutCallRatio, self)._adjust_time_duration_from_lookup_table()
         if CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]):
             if self.xcfg["time_duration_start"].day > 1 or self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
                 self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))

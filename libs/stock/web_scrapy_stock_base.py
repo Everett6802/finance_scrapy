@@ -106,11 +106,11 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 csv_filepath = WebScrapyStockBase.assemble_csv_filepath(self.source_type_index, company_code_number, company_group_number)
 # Determine the actual time range
                 self._adjust_time_duration_from_lookup_table(company_code_number)
-                scrap_msg = "[%s:%s] %s %s-%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[source_type_time_duration.time_duration_type], source_type_time_duration.time_duration_start,source_type_time_duration.time_duration_end, csv_filepath)
-                g_logger.debug(scrap_msg)
+                scrapy_msg = "[%s:%s] %s %s-%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["time_duration_start"], self.xcfg["time_duration_end"], csv_filepath)
+                g_logger.debug(scrapy_msg)
 # Check if only dry-run
                 if self.xcfg["dry_run_only"]:
-                    print scrap_msg
+                    print scrapvs_msg
                     continue
 # Create the time slice iterator due to correct time range
                 timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
