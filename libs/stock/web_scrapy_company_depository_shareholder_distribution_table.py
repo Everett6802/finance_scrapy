@@ -45,7 +45,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 
 
     def assemble_web_url(self, timeslice, company_code_number):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         url = self.url_format.format(
             *(
                 timeslice.year, 
@@ -61,7 +61,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     def _parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         data_list = []
         data_list.append(self.date_cur_string)
         for tr in web_data[9:25]:

@@ -113,6 +113,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     print scrapy_msg
                     continue
 # Create the time slice iterator due to correct time range
+                # import pdb; pdb.set_trace()
                 timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
                 csv_data_list_each_year = []
                 cur_year = None

@@ -313,8 +313,8 @@ class WebScrapyTimeSliceGenerator(object):
         return (date_start, date_end)
 
 
-    def generate_time_slice(self, time_slice_type, time_start, time_end, **kwargs):
-        self.__check_time_range(time_start, time_end)
+    def generate_time_slice(self, time_slice_type, time_duration_start, time_duration_end, **kwargs):
+        self.__check_time_range(time_duration_start, time_duration_end)
         self.__init_today_time_cfg()
 # Check input argument
         # data_source_index = kwargs.get("data_source_index", None)
@@ -335,7 +335,7 @@ class WebScrapyTimeSliceGenerator(object):
         # time_slice_kwargs = {}
         # if CMN.IS_FINANCE_STOCK_MODE:
         #     time_slice_kwargs["company_code_number"] = company_code_number
-        return (self.generate_time_slice_func_ptr[time_slice_type])(time_start, time_end, **kwargs)
+        return (self.generate_time_slice_func_ptr[time_slice_type])(time_duration_start, time_duration_end, **kwargs)
 
 
     def generate_source_time_slice(self, data_source_type, time_start, time_end, **kwargs):
