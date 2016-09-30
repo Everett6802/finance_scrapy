@@ -6,7 +6,9 @@ import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
+import libs.base as BASE
 import web_scrapy_stock_base as WebScrapyStockBase
+# import web_scrapy_timeslice_generator as TimeSliceGenerator
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -24,10 +26,22 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     #         datetime_range_end
     #     )
     #     self.generate_day_time_list_rule = self.__generate_day_time_list_rule_select_friday
+    last_finance_date = None
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(__file__, **kwargs)
         self.date_cur_string = None
+
+
+    @classmethod
+    def _get_time_last_start_and_end_time(cls, *args):
+        # import pdb; pdb.set_trace()
+        if cls.last_finance_date is None:
+            timeslice_generator = BASE.TSG.WebScrapyTimeSliceGenerator.Instance()
+            last_friday_date_str_for_financial_statement = timeslice_generator.get_last_friday_date_str_for_financial_statement()
+            last_finance_date_str = "%s-%s-%s" % (last_friday_date_str_for_financial_statement[0:4], last_friday_date_str_for_financial_statement[4:6], last_friday_date_str_for_financial_statement[6:8])
+            cls.last_finance_date = CMN.CLS.FinanceDate(last_finance_date_str) 
+        return (cls.last_finance_date, cls.last_finance_date)
 
 
     def assemble_web_url(self, timeslice, company_code_number):

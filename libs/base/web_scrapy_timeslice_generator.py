@@ -111,7 +111,7 @@ class WebScrapyTimeSliceGenerator(object):
         COMPANY_CODE_NUMBER_FOR_FRIDAY_DATE = 2330
         company_foreign_investors_shareholder_url_data = self.__find_company_foreign_investors_shareholder_url_data(a_friday_date_str_for_financial_statement, COMPANY_CODE_NUMBER_FOR_FRIDAY_DATE)
         assert (len(company_foreign_investors_shareholder_url_data) != 0), "The company foreign investors shareholder date list should NOT be 0"
-        self.last_friday_date_str_for_financial_statement = company_foreign_investors_shareholder_url_data[0].text
+        self.last_friday_date_str_for_financial_statement = str(company_foreign_investors_shareholder_url_data[0].text)
         g_logger.debug("The last friday date string for financial statement season: %s" % self.last_friday_date_str_for_financial_statement)
 
 

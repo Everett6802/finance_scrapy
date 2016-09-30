@@ -389,13 +389,23 @@ class MyTest(MyTestBase):
         # print self.__class__.__name__
 
 
+def get_ret():
+    my_list = [1,2,3]
+    return my_list, "fuck"
+
 # import libs.stock.web_scrapy_company_group_set as CompanyGroupSet
 if __name__ == "__main__":
+    # my_ret = [None] * 5
+    # my_ret[2] = 2
+    # print my_ret
     # my_list = ["one", "two"]
     # my_test = MyTest()
     # my_test.test(0, "one", "two")
     # my_test.test(1, *my_list)
     # my_test.test(2, *my_list)
+    # one, two = get_ret()
+    # print one
+    # print two 
     # sys.exit(0)
 
     # my_list = [1, 2, 3,]
