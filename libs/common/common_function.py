@@ -16,10 +16,10 @@ import common_class as CMN_CLS
 
 def check_source_type_index_in_range(source_type_index):
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        if CMN_DEF.DEF_DATA_SOURCE_MARKET_START <= source_type_index < DEF_DATA_SOURCE_MARKET_END:
+        if CMN_DEF.DEF_DATA_SOURCE_MARKET_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_MARKET_END:
             return True
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        if CMN_DEF.DEF_DATA_SOURCE_STOCK_START <= source_type_index < DEF_DATA_SOURCE_STOCK_END:
+        if CMN_DEF.DEF_DATA_SOURCE_STOCK_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_STOCK_END:
             return True
     return False
 
@@ -158,23 +158,34 @@ def get_config_filepath(conf_filename):
 
 
 def get_finance_analysis_mode():
-    conf_filepath = get_config_filepath(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
-    try:
-        with open(conf_filepath, 'r') as fp:
-            for line in fp:
-                mode = int(line)
-                if mode not in [CMN_DEF.FINANCE_ANALYSIS_MARKET, CMN_DEF.FINANCE_ANALYSIS_STOCK]:
-                    raise ValueError("Unknown finance analysis mode: %d" % mode)
-                return mode
-    except Exception as e:
-        g_logger.error("Error occur while parsing config file[%s], due to %s" % (CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME, str(e)))
-        raise e
+    config_line_list = get_config_file_lines(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+    if len(config_line_list) != 1:
+        raise ValueError("Incorrect setting in %s" % CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+    mode = int(config_line_list[0])
+    if mode not in [CMN_DEF.FINANCE_ANALYSIS_MARKET, CMN_DEF.FINANCE_ANALYSIS_STOCK]:
+        raise ValueError("Unknown finance analysis mode: %d" % mode)
+    return mode
+    # conf_filepath = get_config_filepath(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+    # try:
+    #     with open(conf_filepath, 'r') as fp:
+    #         for line in fp:
+    #             mode = int(line)
+    #             if mode not in [CMN_DEF.FINANCE_ANALYSIS_MARKET, CMN_DEF.FINANCE_ANALYSIS_STOCK]:
+    #                 raise ValueError("Unknown finance analysis mode: %d" % mode)
+    #             return mode
+    # except Exception as e:
+    #     g_logger.error("Error occur while parsing config file[%s], due to %s" % (CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME, str(e)))
+    #     raise e
 
 
 def is_market_mode():
-    return get_finance_analysis_mode() == CMN_DEF.FINANCE_ANALYSIS_MARKET
+    if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
+        CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
+    return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_MARKET
 def is_stock_mode():
-    return get_finance_analysis_mode() == CMN_DEF.FINANCE_ANALYSIS_STOCK
+    if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
+        CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
+    return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_STOCK
 
 
 def get_config_file_lines(conf_filename):

@@ -9,7 +9,7 @@ import subprocess
 from datetime import datetime, timedelta
 from libs import common as CMN
 CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()
-CMN.DEF.IS_FINANCE_STOCK_MODE = not CMN.DEF.IS_FINANCE_MARKET_MODE
+CMN.DEF.IS_FINANCE_STOCK_MODE = CMN.FUNC.is_stock_mode()
 if CMN.DEF.IS_FINANCE_MARKET_MODE:
     from libs.market import web_scrapy_market_mgr as MGR
     g_mgr = MGR.WebSracpyMarketMgr()

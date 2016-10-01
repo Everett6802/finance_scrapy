@@ -113,9 +113,25 @@ class WebSracpyMgrBase(object):
         web_scrapy_class_obj.do_debug()
 
 
+
+    def __check_source_type_in_correct_finance_mode(self):
+        g_logger.debug("************* Source Type Time Range *************")
+        for source_type_time_duration in self.source_type_time_duration_list:
+            if not CMN.FUNC.check_source_type_index_in_range(source_type_time_duration.source_type_index):
+                raise ValueError("The source type index[%d] is NOT in %s mode" % (source_type_time_duration.source_type_index, CMN.DEF.FINANCE_MODE_DESCRIPTION[CMN.DEF.FINANCE_MODE]))
+            g_logger.debug("[%s] %s-%s" % (
+                CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], 
+                source_type_time_duration.time_duration_start, 
+                source_type_time_duration.time_duration_end
+                )
+            )
+        g_logger.debug("**************************************************")
+
+
     def set_source_type_time_duration_from_file(self, filename, time_duration_type):
         # import pdb; pdb.set_trace()
         self.source_type_time_duration_list = CMN.FUNC.parse_source_type_time_duration_config_file(filename, time_duration_type)
+        self.__check_source_type_in_correct_finance_mode()
 
 
     def set_source_type_time_duration(self, source_type_index_list, time_duration_type, time_duration_start, time_duration_end):
@@ -126,6 +142,7 @@ class WebSracpyMgrBase(object):
             source_type_time_duration_config_list.append(
                 CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
             )
+        self.__check_source_type_in_correct_finance_mode()
 
 
     def need_reserve_old_finance_folder(self, enable):
