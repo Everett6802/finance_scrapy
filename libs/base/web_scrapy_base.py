@@ -19,6 +19,7 @@ class WebScrapyBase(object):
     PARSE_URL_DATA_FUNC_PTR = None
     GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
     timeslice_generator = None
+    url_time_range = None
     def __init__(self, cur_file_path, **kwargs):
         self.xcfg = {
             "time_duration_type": CMN.DEF.DATA_TIME_DURATION_TODAY,
@@ -86,28 +87,6 @@ class WebScrapyBase(object):
 
 
     @classmethod
-    def get_time_duration_start_and_end_time_func_ptr(cls, time_duration_type):
-        if cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR is None:
-            cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = [cls._get_time_today_start_and_end_time, cls._get_time_last_start_and_end_time, cls._get_time_range_start_and_end_time]
-        return cls.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR[time_duration_type]
-
-
-    @classmethod
-    def _get_time_today_start_and_end_time(cls, *args):
-        return (CMN.CLS.FinanceDate.get_today_finance_date(), CMN.CLS.FinanceDate.get_today_finance_date())
-
-
-    @classmethod
-    def _get_time_last_start_and_end_time(cls, *args):
-        raise NotImplementedError
-
-
-    @classmethod
-    def _get_time_range_start_and_end_time(cls, *args):
-        raise NotImplementedError
-
-
-    @classmethod
     def _write_to_csv(cls, csv_filepath, csv_data_list, multi_data_one_page):
         # import pdb; pdb.set_trace()
         if multi_data_one_page:
@@ -122,6 +101,11 @@ class WebScrapyBase(object):
             fp_writer = csv.writer(fp, delimiter=',')
 # Write the web data into CSV
             fp_writer.writerows(csv_data_list)
+
+
+    @classmethod
+    def _get_url_time_range(cls):
+        raise NotImplementedError
 
 
     # def __generate_timeslice_list(self):
@@ -160,18 +144,6 @@ class WebScrapyBase(object):
         return self.description
 
 
-    # def get_timeslice_list_description(self):
-    #     if self.timeslice_list_description is None:
-    #         if not self.timeslice_list_generated:
-    #             self.__generate_timeslice_list()
-    #         self.timeslice_list_description = "Range[%s %s]; Totally %d data" % (self.timeslice_start.to_string, self.timeslice_end.to_string(), self.timeslice_cnt)
-    #     return self.timeslice_list_description
-
-
-    def get_source_type_index(self):
-        return self.source_type_index
-
-
     def _get_web_data(self, url):
         try:
             # g_logger.debug("Try to Scrap data [%s]" % url)
@@ -198,50 +170,41 @@ class WebScrapyBase(object):
         return (self.get_parse_url_data_func_ptr()[self.url_parsing_method])(res, self.source_url_parsing_cfg)
 
 
-    # def __check_datetime_input(self, datetime_range_start, datetime_range_end):
-    #     datetime_tmp = datetime.today()
-    #     datetime_today = datetime(datetime_tmp.year, datetime_tmp.month, datetime_tmp.day)
-    #     datetime_start = None
-    #     datetime_end = None
-    #     if datetime_range_start is None:
-    #         if datetime_range_end is not None:
-    #             raise ValueError("datetime_range_start is None but datetime_range_end is NOT None")
-    #         else:
-    #             datetime_start = datetime_end = datetime_today
-    #             g_logger.debug("Only grab the data today[%s]" % CMN.to_date_only_str(datetime_today))
-    #     else:
-    #         datetime_start = datetime_range_start
-    #         if datetime_range_end is not None:
-    #             datetime_end = datetime_range_end
-    #         else:
-    #             datetime_end = datetime_today
-    #         g_logger.debug("Grab the data from date[%s] to date[%s]" % (CMN.to_date_only_str(datetime_start), CMN.to_date_only_str(datetime_end)))
-
-    #     return (datetime_start, datetime_end)
+    def _adjust_time_duration_start_and_end_time_func_ptr(self, time_duration_type):
+        if self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR is None:
+            self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = [self._adjust_time_today_start_and_end_time, self._adjust_time_last_start_and_end_time, self._adjust_time_range_start_and_end_time]
+        return self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR[time_duration_type]
 
 
-    # def __reset_time_slice_buffer(self):
-    #     self.timeslice_buffer = []
-    #     self.timeslice_buffer_len = 0
+    def _adjust_time_today_start_and_end_time(self, *args):
+        self.xcfg["time_duration_start"] = self.xcfg["time_duration_end"] = CMN.CLS.FinanceDate.get_today_finance_date()
 
 
-    # def __add_to_time_slice_buffer(self, timeslice):
-    #     assert (elf.timeslice_buffer is not None), "self.timeslice_buffer is None"
-    #     timeslice_buffer = None
-    #     if self.timeslice_buffer_len != 0 && not self.is_same_time_unit(timeslice):
-    #         timeslice_buffer = self.timeslice_buffer
-    #         self.__reset_time_slice_buffer()
-    #     self.timeslice_buffer.append(timeslice)
-    #     self.timeslice_buffer_len += 1
-    #     return timeslice_buffer
+    def _adjust_time_last_start_and_end_time(self, *args):
+        today_data_exist_hour = CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
+        today_data_exist_minute = CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
+        self.xcfg["time_duration_start"] = self.xcfg["time_duration_end"] = CMN.FUNC.get_last_url_data_date(today_data_exist_hour, today_data_exist_minute) 
+
+
+    def _adjust_time_range_start_and_end_time(self, *args):
+# in Market mode
+# args[0]: source_type_index
+# in Stock mode
+# args[0]: source_type_index
+# args[1]: company_code_number
+        time_duration_start_from_lookup_table = self._get_url_time_range().get_time_range_start(*args)
+        time_duration_end_from_lookup_table = self._get_url_time_range().get_time_range_end(*args)
+        if self.xcfg["time_duration_start"] is None:
+            self.xcfg["time_duration_start"] = time_duration_start_from_lookup_table
+        else:
+            if self.xcfg["time_duration_start"] < time_duration_start_from_lookup_table:
+                self.xcfg["time_duration_start"] = time_duration_start_from_lookup_table    
+        if self.xcfg["time_duration_end"] is None:
+            self.xcfg["time_duration_end"] = time_duration_end_from_lookup_table
+        else:
+            if self.xcfg["time_duration_end"] > time_duration_end_from_lookup_table:
+                self.xcfg["time_duration_end"] = time_duration_end_from_lookup_table    
 
 
     def _parse_web_data(self, web_data):
         raise NotImplementedError
-
-
-    # def _is_same_time_unit(self, timeslice):
-    #     raise NotImplementedError
-
-    # def scrap_web_to_csv(self):
-    #     raise NotImplementedError

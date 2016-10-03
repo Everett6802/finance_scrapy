@@ -9,7 +9,7 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 @CMN.CLS.Singleton
-class WebScrapyURLDateRange(object):
+class WebScrapyURLTimeRange(object):
 
     def __init__(self):
         # import pdb; pdb.set_trace()
@@ -43,13 +43,13 @@ class WebScrapyURLDateRange(object):
         return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
 
 
-    def get_date_range_start(self, date_source_id):
-        if date_source_id < 0 or date_source_id >= self.DEF_DATA_SOURCE_START_DATE_CFG_LEN:
-            raise ValueError("The data source ID[%d] is OUT OF RANGE[0, %d)" % (date_source_id, self.DEF_DATA_SOURCE_START_DATE_CFG_LEN))
-        return self.DEF_DATA_SOURCE_START_DATE_CFG[date_source_id]
+    def get_time_range_start(self, source_type_index):
+        CMN.FUNC.check_source_type_index_in_range(source_type_index)
+        return self.DEF_DATA_SOURCE_START_DATE_CFG[source_type_index]
 
 
-    def get_date_range_end(self, date_source_id):
+    def get_time_range_end(self, source_type_index):
+        CMN.FUNC.check_source_type_index_in_range(source_type_index)
         if self.last_url_data_date is None:
             self.last_url_data_date = CMN.FUNC.get_last_url_data_date(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE)
         return self.last_url_data_date

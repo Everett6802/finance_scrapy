@@ -113,7 +113,6 @@ class WebSracpyMgrBase(object):
         web_scrapy_class_obj.do_debug()
 
 
-
     def __check_source_type_in_correct_finance_mode(self):
         g_logger.debug("************* Source Type Time Range *************")
         for source_type_time_duration in self.source_type_time_duration_list:
@@ -139,8 +138,8 @@ class WebSracpyMgrBase(object):
             raise ValueError("source_type_index_list should NOT be None")
         self.source_type_time_duration_list = []
         for source_type_index in source_type_index_list:
-            source_type_time_duration_config_list.append(
-                CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
+            self.source_type_time_duration_list.append(
+                CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
             )
         self.__check_source_type_in_correct_finance_mode()
 

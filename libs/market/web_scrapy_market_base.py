@@ -11,13 +11,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
-import web_scrapy_url_date_range as URLDateRange
+import web_scrapy_url_time_range as URLTimeRange
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
-    url_date_range = None
+    # url_date_range = None
     # TIME_SLICE_GENERATOR = None
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyMarketBase, self).__init__(cur_file_path, **kwargs)
@@ -25,23 +25,11 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     @classmethod
-    def __get_url_date_range(cls):
+    def _get_url_time_range(cls):
         # import pdb; pdb.set_trace()
-        if cls.url_date_range is None:
-            cls.url_date_range = URLDateRange.WebScrapyURLDateRange.Instance()
-        return cls.url_date_range
-
-
-    @classmethod
-    def _get_time_last_start_and_end_time(cls, *args):
-        last_finance_date = CMN.FUNC.get_last_url_data_date(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE) 
-        return (last_finance_date, last_finance_date)
-
-
-    @classmethod
-    def _get_time_range_start_and_end_time(cls, *args):
-# args[0]: source_type_index
-        return (cls.__get_url_date_range().get_date_range_start(args[0]), cls.__get_url_date_range().get_date_range_end(args[0]))
+        if cls.url_time_range is None:
+            cls.url_time_range = URLTimeRange.WebScrapyURLTimeRange.Instance()
+        return cls.url_time_range
 
 
     @classmethod
@@ -51,7 +39,8 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     def _adjust_time_duration_from_lookup_table(self):
-        (self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]) = (self.get_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index)
+# Find the actual time range for each source
+        (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index)
         # if self.xcfg["time_duration_start"] is None:
         #     self.xcfg["time_duration_start"] = self.__get_url_date_range().get_date_range_start(self.source_type_index)
         # if self.xcfg["time_duration_end"] is None:
@@ -74,7 +63,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         csv_filepath = WebScrapyMarketBase.assemble_csv_filepath(self.source_type_index)
 # Determine the actual time range
         self._adjust_time_duration_from_lookup_table()
-        scrapy_msg = "[%s] %s %s-%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["time_duration_start"], self.xcfg["time_duration_end"], csv_filepath)
+        scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["time_duration_start"], self.xcfg["time_duration_end"], csv_filepath)
         g_logger.debug(scrapy_msg)
 # Check if only dry-run
         if self.xcfg["dry_run_only"]:

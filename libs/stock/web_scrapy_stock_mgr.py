@@ -114,7 +114,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             source_type_index_list = []
             for index in range(FinanceRecorderCmnDef.DEF_DATA_SOURCE_STOCK_START, FinanceRecorderCmnDef.DEF_DATA_SOURCE_STOCK_END + 1):
                 source_type_index_list.append(index)
-        super(WebSracpyMarketMgr, self).set_source_type_time_duration(source_type_index_list, time_duration_type, time_duration_start, time_duration_end)
+        super(WebSracpyStockMgr, self).set_source_type_time_duration(source_type_index_list, time_duration_type, time_duration_start, time_duration_end)
 
 
     def do_scrapy(self):

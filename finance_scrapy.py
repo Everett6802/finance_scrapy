@@ -192,7 +192,7 @@ def parse_param():
             if param_cfg["time_duration_type"] is not None:
                 g_logger.debug("Time duration has already been set to: %d, ignore the time_duration_range_all attribute...", param_cfg["time_duration_type"])
             else:
-                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_DURATION
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 1
         elif re.match("--time_duration_range", sys.argv[index]):
             if param_cfg["time_duration_type"] is not None:
@@ -329,19 +329,21 @@ def setup_param():
                     show_error_and_exit(errmsg)
                 source_type_index_list.append(source_type_index)
         if param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
-            time_duration_range_list = param_cfg["time_duration_range"].split(",")
-            time_duration_range_list_len = len(time_duration_range_list)
-            if time_duration_range_list_len == 2:
-                if not param_cfg["time_duration_range"].startswith(","):
+            if param_cfg["time_duration_range"] is not None:
+                time_duration_range_list = param_cfg["time_duration_range"].split(",")
+                time_duration_range_list_len = len(time_duration_range_list)
+                if time_duration_range_list_len == 2:
+                    if not param_cfg["time_duration_range"].startswith(","):
 # For time range
+                        time_range_start = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[0])
+                    time_range_end = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[1])
+                elif time_duration_range_list_len == 1:
                     time_range_start = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[0])
-                time_range_end = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[1])
-            elif time_duration_range_list_len == 1:
-                time_range_start = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[0])
-            else:
-                errmsg = "Incorrect time range format: %s" % param_cfg["time_duration_range"]
-                show_error_and_exit(errmsg)
-        g_mgr.set_source_type_time_duration_range(source_type_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
+                else:
+                    errmsg = "Incorrect time range format: %s" % param_cfg["time_duration_range"]
+                    show_error_and_exit(errmsg)
+        # import pdb; pdb.set_trace()
+        g_mgr.set_source_type_time_duration(source_type_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
 # Set company list. For stock mode only
     if CMN.DEF.IS_FINANCE_STOCK_MODE:
         if param_cfg["company_from_file"] is not None:
@@ -376,6 +378,7 @@ class MyTestBase(object):
         (self.func_ptr[method])(*args)
 
 class MyTest(MyTestBase):
+    test_value = None
     @classmethod
     def test1(cls, *args):
         print "1: %s" % args[0]
@@ -384,9 +387,26 @@ class MyTest(MyTestBase):
     @classmethod
     def test3(cls, *args):
         print "3: %s" % args[0]
+    def __init__(self):
+        self.value = 1
     def test(self,m, *args):
         super(MyTest, self).test(m, *args)
+        if self.test_value is None:
+            self.test_value = 111111
+        print "%d" % self.test_value
         # print self.__class__.__name__
+    def test_args1(self, arg1, arg2):
+        print "arg1: %s, arg2: %s" % (arg1, arg2)
+    def test_args2(self, arg1, arg2, arg3):
+        print "arg1: %s, arg2: %s, arg3: %s" % (arg1, arg2, arg3)
+    def test_kwargs1(self, arg1, arg2):
+        print "arg1: %s, arg2: %s" % (arg1, arg2)
+    def test_kwargs2(self, arg1, arg2, arg3):
+        print "arg1: %s, arg2: %s, arg3: %s" % (arg1, arg2, arg3)
+    @property
+    def source_type_index(self):
+        print "Fuck"
+        return self.source_type_index
 
 
 def get_ret():
@@ -402,10 +422,19 @@ if __name__ == "__main__":
     # my_test = MyTest()
     # my_test.test(0, "one", "two")
     # my_test.test(1, *my_list)
-    # my_test.test(2, *my_list)
-    # one, two = get_ret()
-    # print one
-    # print two 
+    # my_list1 = ["one", "two"]
+    # my_list2 = ["one", "two", "three"]
+    # my_test.test_args1(*my_list1)
+    # my_test.test_args2(*my_list2)
+    # my_dict1 = {"arg1": "one", "arg2": "two"}
+    # my_dict2 = {"arg1": "one", "arg2": "two", "arg3": "three"}
+    # my_test.test_kwargs1(**my_dict1)
+    # my_test.test_kwargs2(**my_dict2)
+    # # print my_test.source_type_index
+    # # my_test.test(2, *my_list)
+    # # one, two = get_ret()
+    # # print one
+    # # print two 
     # sys.exit(0)
 
     # my_list = [1, 2, 3,]
