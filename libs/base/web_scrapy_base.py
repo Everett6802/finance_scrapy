@@ -143,11 +143,20 @@ class WebScrapyBase(object):
             #     self.description = "%s" % CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index]
         return self.description
 
+    def _try_to_get_request_obj(self, url):
+        # g_logger.debug("Try to Scrap data [%s]" % url)
+        res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+        if res.status_code != 200:
+            errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
+            g_logger.error(errmsg)
+            raise RuntimeError(errmsg)
+        return res
+
 
     def _get_web_data(self, url):
         try:
-            # g_logger.debug("Try to Scrap data [%s]" % url)
-            res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+            # res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+            res = self._try_to_get_request_obj(url)
         except requests.exceptions.Timeout as e:
             # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
             fail_to_scrap = False

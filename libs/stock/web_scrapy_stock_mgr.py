@@ -58,18 +58,19 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         The argument type:
         Company code number: 2347
         Company code number range: 2100-2200
-        Company code number/number range hybrid: 2347,2100-2200,2362,1500-1510
         Company group number: [Gg]12
-
+        Company code number/number range hybrid: 2347,2100-2200,2362,g2,1500-1510
         """
         self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
         for company_number in company_number_list:
-            mobj = re.match("([\d]{d})-([\d]{4})", company_number)
+            mobj = re.match("([\d]{4})-([\d]{4})", company_number)
             if mobj is None:
 # Check if data is company code/group number
                 mobj = re.match("[Gg]([\d]{1,})", company_number)
                 if mobj is None:
 # Company code number
+                    if not re.match("([\d]{4})", company_number):
+                        raise ValueError("Unknown company number format: %s" % company_number)
                     self.company_group_set.add_company(company_number)
                 else:
 # Compgny group number

@@ -4,13 +4,10 @@ import os
 import sys
 import re
 import requests
-# import csv
 import shutil
 from bs4 import BeautifulSoup
 # from datetime import datetime, timedelta
 import libs.common as CMN
-# import common_class as CMN.CLS
-# from libs import web_scrapy_logging as WSL
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -57,10 +54,10 @@ class WebScrapyWorkdayCanlendar(object):
         return day in self.workday_canlendar[year][month - 1]
 
 
-    def update_workday_canlendar(self):
-        # import pdb; pdb.set_trace()
+    def update_workday_canlendar(self, force_from_web=False):
+        import pdb; pdb.set_trace()
 # Update data from the file
-        need_update_from_web = self.__update_workday_from_file()
+        need_update_from_web = True if force_from_web else self.__update_workday_from_file()
 # It's required to update the new data
         if need_update_from_web:
 # Update data from the web

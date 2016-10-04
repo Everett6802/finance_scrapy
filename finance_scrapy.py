@@ -8,6 +8,7 @@ import time
 import subprocess
 from datetime import datetime, timedelta
 from libs import common as CMN
+from libs import base as BASE
 CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()
 CMN.DEF.IS_FINANCE_STOCK_MODE = CMN.FUNC.is_stock_mode()
 if CMN.DEF.IS_FINANCE_MARKET_MODE:
@@ -25,6 +26,7 @@ def show_usage():
     print "=========================== Usage ==========================="
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
+    print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
     print "--silent\nDescription: Disable print log on console"
     print "--check_result\nDescription: Check the CSV files after scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
@@ -55,8 +57,12 @@ def show_usage():
     # print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
     # print "--multi_thread\nDescription: Scrap Web data by using multiple threads\nCaution: Deprecated"
     if CMN.DEF.IS_FINANCE_STOCK_MODE:
-        print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only work when company_from_file is NOT set"
         print "--company_from_file\nDescription: The company code number from file\nDefault: All company code nubmers\nCaution: company is ignored when set"
+        print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only work when company_from_file is NOT set"
+        print "  Format 1 Company code number: 2347"
+        print "  Format 2 Company code number range: 2100-2200"
+        print "  Format 3 Company group number: [Gg]12"
+        print "  Format 4 Company code number/number range/group hybrid: 2347,2100-2200,G12,2362,g2,1500-1510"
     print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
     print "============================================================="
 
@@ -125,6 +131,10 @@ def parse_param():
         elif re.match("--debug", sys.argv[index]):
             source_type_index = int(sys.argv[index + 1])
             g_mgr.do_scrapy_debug(source_type_index)
+            sys.exit(0)
+        if re.match("--update_workday_calendar", sys.argv[index]):
+            workday_calendar = BASE.WC.WebScrapyWorkdayCanlendar.Instance()
+            workday_calendar.update_workday_canlendar(True)
             sys.exit(0)
         elif re.match("--silent", sys.argv[index]):
             param_cfg["silent"] = True
@@ -213,10 +223,16 @@ def parse_param():
         #     g_logger.debug("Param method: %s", method)
         #     index_offset = 2
         elif re.match("--company_from_file", sys.argv[index]):
-            param_cfg["company_from_file"] = sys.argv[index + 1]
+            if CMN.DEF.IS_FINANCE_MARKET_MODE:
+                g_logger.warn("The company_from_file arguemnt is ignored in the Market mode")
+            else:
+                param_cfg["company_from_file"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("(-c|--company)", sys.argv[index]):
-            param_cfg["company"] = sys.argv[index + 1]
+            if CMN.DEF.IS_FINANCE_MARKET_MODE:
+                g_logger.warn("The company arguemnt is ignored in the Market mode")
+            else:
+                param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])

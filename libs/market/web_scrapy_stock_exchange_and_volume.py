@@ -96,7 +96,9 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
 
 
     def do_debug(self):
-        res = requests.get("http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report201511/201511_F3_1_2.php?STK_NO=&myear=2015&mmon=11")
+        # import pdb; pdb.set_trace()
+        # res = requests.get("http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report201511/201511_F3_1_2.php?STK_NO=&myear=2015&mmon=11")
+        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report201511/201511_F3_1_2.php?STK_NO=&myear=2015&mmon=11")
         # print res.text
         res.encoding = 'big5'
         soup = BeautifulSoup(res.text)
