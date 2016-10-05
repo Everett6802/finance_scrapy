@@ -25,8 +25,9 @@ param_cfg = {}
 def show_usage():
     print "=========================== Usage ==========================="
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
-    print "--debug\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
+    print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
+    print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--silent\nDescription: Disable print log on console"
     print "--check_result\nDescription: Check the CSV files after scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
@@ -38,10 +39,9 @@ def show_usage():
     print "--source_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
     # print "--source_from_file\nDescription: The last finance data source from file: %s\nCaution: source/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_LAST_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_LAST_CONFIG_FILENAME)
     print "-s --source\nDescription: The list of the finance data sources\nDefault: All finance data sources\nCaution: Only work when source_from_file is NOT set"
-    start_index = CMN.DEF.DEF_DATA_SOURCE_MARKET_START if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_DATA_SOURCE_STOCK_START
-    end_index = CMN.DEF.DEF_DATA_SOURCE_MARKET_END if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_DATA_SOURCE_STOCK_END
-    for index in range(start_index, end_index):
-        print "  %d: %s" % (index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[index])
+    source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
+    for source_type_index in source_type_index_list:
+        print "  %d: %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index])
     print "  Format: 1,3,5"
     print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
     print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
@@ -128,13 +128,31 @@ def parse_param():
         if re.match("(-h|--help)", sys.argv[index]):
             show_usage()
             sys.exit(0)
-        elif re.match("--debug", sys.argv[index]):
-            source_type_index = int(sys.argv[index + 1])
-            g_mgr.do_scrapy_debug(source_type_index)
-            sys.exit(0)
-        if re.match("--update_workday_calendar", sys.argv[index]):
+        elif re.match("--update_workday_calendar", sys.argv[index]):
             workday_calendar = BASE.WC.WebScrapyWorkdayCanlendar.Instance()
             workday_calendar.update_workday_canlendar(True)
+            sys.exit(0)
+        elif re.match("--check_url", sys.argv[index]):
+            # import pdb; pdb.set_trace()
+            source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
+            error_found = False
+            errmsg = "**************** Check URL ****************\n"
+            for source_type_index in source_type_index_list:
+                try:
+                    g_mgr.do_scrapy_debug(source_type_index, True)
+                except Exception as e:
+                    error_found = True
+                    errmsg += " %d: %s %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[index], str(e))
+            if error_found:
+                show_error_and_exit(errmsg)
+            else:
+                sys.exit(0)
+        elif re.match("--debug_source", sys.argv[index]):
+            source_type_index = int(sys.argv[index + 1])
+            if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
+                errmsg = "Unsupported source type index: %d" % source_type_index
+                show_error_and_exit(errmsg)
+            g_mgr.do_scrapy_debug(source_type_index)
             sys.exit(0)
         elif re.match("--silent", sys.argv[index]):
             param_cfg["silent"] = True

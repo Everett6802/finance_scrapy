@@ -95,7 +95,7 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
 # "漲跌點數",
 
 
-    def do_debug(self):
+    def do_debug(self, silent_mode=False):
         # import pdb; pdb.set_trace()
         # res = requests.get("http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report201511/201511_F3_1_2.php?STK_NO=&myear=2015&mmon=11")
         res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report201511/201511_F3_1_2.php?STK_NO=&myear=2015&mmon=11")
@@ -111,7 +111,7 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
             if len(date_list) != 3:
                 raise RuntimeError("The date format is NOT as expected: %s", date_list)
             date_str = CMN.transform_datetime2string(date_list[0], date_list[1], date_list[2], True)
-            print date_str, td[1].text, td[2].text, td[3].text , td[4].text, td[5].text
+            if not silent_mode: print date_str, td[1].text, td[2].text, td[3].text , td[4].text, td[5].text
 
 # 2015/10/1 469,154 363,160 129.19 528,800 444,977 118.84
 # 2015/10/2 227,935 188,407 120.98 566,471 460,938 122.90

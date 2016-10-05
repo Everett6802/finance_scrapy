@@ -62,8 +62,9 @@ class WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.W
 # "外資_多空淨額_契約金額",
 
 
-    def do_debug(self):
-        res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=10&sday=1&datestart=1979%2F09%2F04")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=10&sday=1&datestart=1979%2F09%2F04")
+        res = self._try_to_get_request_obj("http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=10&sday=1&datestart=1979%2F09%2F04")
         res.encoding = 'utf-8'
         #print res.text
         soup = BeautifulSoup(res.text)
@@ -74,19 +75,19 @@ class WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.W
         for tr in g_data[3:6]:
             th = tr.select('th')
             td = tr.select('td')
-            print th[0].text, td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text
+            if not silent_mode: print th[0].text, td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text
 # ==== result: ====
 # 自營商 404,438 53,429 396,842 50,928 7,596 2,501
 # 投信 1,150 1,298 566 721 584 577
 # 外資 186,318 98,294 189,514 97,276 -3,196 1,018
-        print "\n"
+        if not silent_mode: print "\n"
 # 未平倉口數與契約金額
         g_data = soup.select('.table_c tr')
         #print "len: %d" % len(g_data)
         for tr in g_data[3:6]:
             th = tr.select('th')
             td = tr.select('td')
-            print th[0].text, td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text
+            if not silent_mode: print th[0].text, td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text
 # ==== result: ====
 # 自營商 324,371 24,235 312,783 32,145 11,588 -7,910
 # 投信 9,323 8,006 9,403 13,131 -80 -5,125

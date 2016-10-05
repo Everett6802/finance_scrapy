@@ -62,14 +62,15 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
 # 外資及陸資_買賣差額
 
 
-    def do_debug(self):
-        res = requests.get("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
+        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
         res.encoding = 'big5'
         soup = BeautifulSoup(res.text)
         # print soup
         for tr in soup.select('.board_trad tr')[2:6]:
             td = tr.select('td')
-            print td[0].text, td[1].text, td[2].text, td[3].text 
+            if not silent_mode: print td[0].text, td[1].text, td[2].text, td[3].text 
 # ==== result: ====
 # 自營商(自行買賣) 976,637,210 830,450,307 146,186,903
 # 自營商(避險) 4,858,793,774 5,360,634,883 -501,841,109

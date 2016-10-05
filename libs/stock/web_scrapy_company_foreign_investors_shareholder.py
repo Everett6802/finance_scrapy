@@ -69,9 +69,10 @@ class WebScrapyCompanyForeignInvestorsShareholder(web_scrapy_base.WebScrapyBase)
 # 陸資法令投資上限比率
 
 
-    def do_debug(self):
+    def do_debug(self, silent_mode=False):
         # import pdb; pdb.set_trace()
-        res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F12&select2=02&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
+        # res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F12&select2=02&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
+        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F12&select2=02&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
         # res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F11&select2=01&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
         # # #print res.text
         res.encoding = 'big5'
@@ -80,7 +81,7 @@ class WebScrapyCompanyForeignInvestorsShareholder(web_scrapy_base.WebScrapyBase)
         # import pdb; pdb.set_trace()
         for tr in g_data:
             td = tr.select('td')
-            print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text, td[6].text, td[7].text, td[8].text, td[9].text
+            if not silent_mode: print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text, td[6].text, td[7].text, td[8].text, td[9].text
 # ==== result: ====
 # 1101 台泥 TW0001101004 3,692,175,869 2,729,877,785 962,298,084 73.93 26.06 100.00 100.00
 # 1102 亞泥 TW0001102002 3,361,447,198 2,769,219,754 592,227,444 82.38 17.61 100.00 100.00

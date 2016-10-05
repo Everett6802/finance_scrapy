@@ -107,10 +107,10 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def do_scrapy_debug(cls, source_type_index):
+    def do_scrapy_debug(cls, source_type_index, silent_mode=False):
         # import pdb; pdb.set_trace()
         web_scrapy_class_obj = WebSracpyMgrBase.__instantiate_web_scrapy_object(source_type_index)
-        web_scrapy_class_obj.do_debug()
+        web_scrapy_class_obj.do_debug(silent_mode)
 
 
     def __check_source_type_in_correct_finance_mode(self):
@@ -135,7 +135,7 @@ class WebSracpyMgrBase(object):
 
     def set_source_type_time_duration(self, source_type_index_list, time_duration_type, time_duration_start, time_duration_end):
         if source_type_index_list is None:
-            raise ValueError("source_type_index_list should NOT be None")
+            source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
         self.source_type_time_duration_list = []
         for source_type_index in source_type_index_list:
             self.source_type_time_duration_list.append(

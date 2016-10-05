@@ -126,9 +126,10 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     #     return (True if day_of_week == 4 else False)
 
 
-    def do_debug(self):
+    def do_debug(self, silent_mode=False):
         # import pdb; pdb.set_trace()
-        res = requests.get("https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE=20160408&SqlMethod=StockNo&StockNo=2347&StockName=&sub=%ACd%B8%DF")
+        # res = requests.get("https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE=20160408&SqlMethod=StockNo&StockNo=2347&StockName=&sub=%ACd%B8%DF")
+        res = self._try_to_get_request_obj("https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE=20160408&SqlMethod=StockNo&StockNo=2347&StockName=&sub=%ACd%B8%DF")
         res.encoding = 'big5'
         # print res.text
         soup = BeautifulSoup(res.text)
@@ -139,7 +140,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
         for tr in g_data[9:25]:
         #     print tr.text
             td = tr.select('td')
-            print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text
+            if not silent_mode: print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text
 # ==== result: ====
 # 1 1-999 10,306 2,826,860 0.17
 # 2 1,000-5,000 25,902 58,118,814 3.65

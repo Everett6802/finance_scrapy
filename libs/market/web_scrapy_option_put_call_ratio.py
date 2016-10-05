@@ -91,8 +91,9 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
 # "買賣權未平倉量比率%",
 
 
-    def do_debug(self):
-        res = requests.get("http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart=2015%2F10%2F1&dateend=2015%2F10%2F31")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart=2015%2F10%2F1&dateend=2015%2F10%2F31")
+        res = self._try_to_get_request_obj("http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart=2015%2F10%2F1&dateend=2015%2F10%2F31")
         # print res.text
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text)
@@ -101,8 +102,8 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
         # print "len: %d" % data_len
         for tr in g_data[data_len - 1 : 0 : -1]:
             td = tr.select('td')
-            print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text, td[6].text
-        print "\n"
+            if not silent_mode: print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text, td[5].text, td[6].text
+        if not silent_mode: print "\n"
 # 2015/10/1 469,154 363,160 129.19 528,800 444,977 118.84
 # 2015/10/2 227,935 188,407 120.98 566,471 460,938 122.90
 # 2015/10/5 313,428 294,016 106.60 604,928 497,533 121.59

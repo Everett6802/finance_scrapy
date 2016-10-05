@@ -67,8 +67,9 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
 # 融資金額(仟元)_今日餘額
 
 
-    def do_debug(self):
-        res = requests.get("http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate=104%2F11%2F19&selectType=MS")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate=104%2F11%2F19&selectType=MS")
+        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate=104%2F11%2F19&selectType=MS")
         # print res.text
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text)
@@ -76,7 +77,7 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
         # print g_data
         for tr in g_data[2:]:
             td = tr.select('td')
-            print td[0].text, td[1].text, td[2].text, td[3].text , td[4].text, td[5].text
+            if not silent_mode: print td[0].text, td[1].text, td[2].text, td[3].text , td[4].text, td[5].text
 
 # ==== result: ====
 # 融資(交易單位) 306,709 265,329 4,091 9,062,601 9,099,890

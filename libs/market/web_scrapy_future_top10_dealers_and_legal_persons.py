@@ -129,8 +129,9 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
 # "臺股期貨_所有契約_全市場未沖銷部位數",
 
 
-    def do_debug(self):
-        res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=ALL&goday=&choose_yy=2013&choose_mm=6&choose_dd=17&datestart=1979%2F9%2F4&choose_item=TX+++++")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=ALL&goday=&choose_yy=2013&choose_mm=6&choose_dd=17&datestart=1979%2F9%2F4&choose_item=TX+++++")
+        res = self._try_to_get_request_obj("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=ALL&goday=&choose_yy=2013&choose_mm=6&choose_dd=17&datestart=1979%2F9%2F4&choose_item=TX+++++")
         res.encoding = 'utf-8'
         #print res.text
         soup = BeautifulSoup(res.text)
@@ -139,7 +140,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
         for tr in g_data[4:6]:
             td = tr.select('td')
             for i in range(10):
-                print re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)
+                if not silent_mode: print re.sub('(\(.+\)|[\%\r\t\n])', "", td[i].text)
 # ==== result: ====
 # 201509 (臺股期貨_到期月份)
 # 20,642 (臺股期貨_到期月份_買方_前五大交易人合計_部位數)  

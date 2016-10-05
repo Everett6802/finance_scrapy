@@ -57,8 +57,9 @@ class WebScrapyCompanyDealersNetBuyOrSellSummary(WebScrapyMarketBase.WebScrapyMa
 # 自營商買賣超股數
 
 
-    def do_debug(self):
-        res = requests.get("http://www.twse.com.tw/ch/trading/fund/TWT43U/TWT43U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.twse.com.tw/ch/trading/fund/TWT43U/TWT43U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
+        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/fund/TWT43U/TWT43U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
         #print res.text
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text)
@@ -69,8 +70,8 @@ class WebScrapyCompanyDealersNetBuyOrSellSummary(WebScrapyMarketBase.WebScrapyMa
         for tr in g_data[3:]:
             td = tr.select('td')
         #     print td
-            print td[0].text, td[1].text, td[8].text, td[9].text, td[10].text
-        print "\n"
+            if not silent_mode: print td[0].text, td[1].text, td[8].text, td[9].text, td[10].text
+        if not silent_mode: print "\n"
 # ==== result: ====
 # 0050   台灣50           2,002,000 415,000 1,587,000
 # 0051   中100            0 15,000 -15,000

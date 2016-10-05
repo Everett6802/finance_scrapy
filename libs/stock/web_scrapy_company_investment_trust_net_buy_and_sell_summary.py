@@ -55,15 +55,16 @@ class WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary(web_scrapy_base.WebScra
 # 買賣超股數
 
 
-    def do_debug(self):
-        res = requests.get("http://www.twse.com.tw/ch/trading/fund/TWT44U/TWT44U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.twse.com.tw/ch/trading/fund/TWT44U/TWT44U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
+        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/fund/TWT44U/TWT44U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
         #print res.text
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text)
         g_data = soup.select('table tr')
         for tr in g_data[2:]:
             td = tr.select('td')
-            print td[1].text, td[2].text, td[3].text, td[4].text, td[5].text
+            if not silent_mode: print td[1].text, td[2].text, td[3].text, td[4].text, td[5].text
 # ==== result: ====
 # 00632R T50反1           250,000 0 250,000
 # 00633L 上証2X           31,000 0 31,000

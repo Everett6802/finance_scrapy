@@ -16,12 +16,27 @@ import common_class as CMN_CLS
 
 def check_source_type_index_in_range(source_type_index):
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        if CMN_DEF.DEF_DATA_SOURCE_MARKET_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_MARKET_END:
-            return True
+        return True if CMN_DEF.DEF_DATA_SOURCE_MARKET_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_MARKET_END else False
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        if CMN_DEF.DEF_DATA_SOURCE_STOCK_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_STOCK_END:
-            return True
-    return False
+        return True if CMN_DEF.DEF_DATA_SOURCE_STOCK_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_STOCK_END else False
+    raise RuntimeError("Unknown finance mode")
+
+
+def get_source_type_index_range():
+    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+        return (CMN_DEF.DEF_DATA_SOURCE_MARKET_START, CMN_DEF.DEF_DATA_SOURCE_MARKET_END)
+    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+        return (CMN_DEF.DEF_DATA_SOURCE_STOCK_START, CMN_DEF.DEF_DATA_SOURCE_STOCK_END)
+    raise RuntimeError("Unknown finance mode")
+
+
+def get_source_type_index_range_list():
+    source_type_index_list = []
+    (source_type_start_index, source_type_end_index) = get_source_type_index_range()
+# Semi-open interval
+    for index in range(source_type_start_index, source_type_end_index):
+        source_type_index_list.append(index)
+    return source_type_index_list
 
 
 def is_republic_era_year(year_value):

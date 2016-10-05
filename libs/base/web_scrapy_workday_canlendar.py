@@ -55,7 +55,7 @@ class WebScrapyWorkdayCanlendar(object):
 
 
     def update_workday_canlendar(self, force_from_web=False):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 # Update data from the file
         need_update_from_web = True if force_from_web else self.__update_workday_from_file()
 # It's required to update the new data

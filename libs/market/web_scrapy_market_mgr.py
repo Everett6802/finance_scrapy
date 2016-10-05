@@ -37,14 +37,6 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         shutil.rmtree(folderpath, ignore_errors=True)
 
 
-    def set_source_type_time_duration(self, source_type_index_list, time_duration_type, time_duration_start, time_duration_end):
-        if source_type_index_list is None:
-            source_type_index_list = []
-            for index in range(FinanceRecorderCmnDef.DEF_DATA_SOURCE_MARKET_START, FinanceRecorderCmnDef.DEF_DATA_SOURCE_MARKET_END + 1):
-                source_type_index_list.append(index)
-        super(WebSracpyMarketMgr, self).set_source_type_time_duration(source_type_index_list, time_duration_type, time_duration_start, time_duration_end)
-
-
     def do_scrapy(self):
        # import pdb; pdb.set_trace()
         self._scrap_data(self.xcfg["reserve_old_finance_folder"])

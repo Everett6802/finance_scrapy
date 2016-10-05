@@ -59,7 +59,8 @@ class WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary(web_scrapy_base.WebScr
 
 
     def do_debug(self):
-        res = requests.get("http://www.twse.com.tw/ch/trading/fund/TWT38U/TWT38U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
+        # res = requests.get("http://www.twse.com.tw/ch/trading/fund/TWT38U/TWT38U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
+        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/fund/TWT38U/TWT38U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
         #print res.text
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text)

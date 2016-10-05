@@ -87,8 +87,9 @@ class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(WebScrapyMarke
 # "賣權_外資_買賣差額_契約金額",
 
 
-    def do_debug(self):
-        res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=2015&DATA_DATE_M=11&DATA_DATE_D=3&syear=2015&smonth=11&sday=3&datestart=2015%2F11%2F3&COMMODITY_ID=TXO")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=2015&DATA_DATE_M=11&DATA_DATE_D=3&syear=2015&smonth=11&sday=3&datestart=2015%2F11%2F3&COMMODITY_ID=TXO")
+        res = self._try_to_get_request_obj("http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=2015&DATA_DATE_M=11&DATA_DATE_D=3&syear=2015&smonth=11&sday=3&datestart=2015%2F11%2F3&COMMODITY_ID=TXO")
         res.encoding = 'utf-8'
         # print res.text
         soup = BeautifulSoup(res.text)
@@ -103,7 +104,7 @@ class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(WebScrapyMarke
             for i in range(start_index, start_index + column_num):
                 data_str += "%s " % td[i].text
             row_index += 1
-            print data_str
+            if not silent_mode: print data_str
 # ==== result: ====
 # 169,747 379,279 158,878 326,883 10,869 52,396 80,822 456,221 105,149 300,919 -24,327 155,302 
 # 15 54 12 6 3 48 207 2,090 173 1,186 34 904 

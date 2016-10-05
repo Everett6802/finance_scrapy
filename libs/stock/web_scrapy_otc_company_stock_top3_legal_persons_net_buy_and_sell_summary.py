@@ -76,15 +76,16 @@ class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_bas
 # 三大法人買賣超股數
 
 
-    def do_debug(self):
-        res = requests.get("http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d=105/04/01&_=1460104675945")
+    def do_debug(self, silent_mode=False):
+        # res = requests.get("http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d=105/04/01&_=1460104675945")
+        res = self._try_to_get_request_obj("http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d=105/04/01&_=1460104675945")
         json_res = json.loads(res.text)
         g_data = json_res['aaData']
         for data in g_data:
             entry = "%s" % str(data[0]).strip(' ')
             for i in range(2, 16):
                 entry += ",%s" % str(data[i]).strip(' ')
-            print entry
+            if not silent_mode: print entry
 # 代號
 # 名稱
 # 外資及陸資買股數
