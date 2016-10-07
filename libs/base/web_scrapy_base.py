@@ -143,36 +143,28 @@ class WebScrapyBase(object):
             #     self.description = "%s" % CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index]
         return self.description
 
-    def _try_to_get_request_obj(self, url):
-        # g_logger.debug("Try to Scrap data [%s]" % url)
-        res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-        if res.status_code != 200:
-            errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
-            g_logger.error(errmsg)
-            raise RuntimeError(errmsg)
-        return res
-
 
     def _get_web_data(self, url):
-        try:
-            # res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-            res = self._try_to_get_request_obj(url)
-        except requests.exceptions.Timeout as e:
-            # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
-            fail_to_scrap = False
-            for index in range(CMN.DEF.DEF_SCRAPY_RETRY_TIMES):
-                time.sleep(randint(3,9))
-                try:
-                    # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
-                    res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-                except requests.exceptions.Timeout as ex:
-                    # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
-                    fail_to_scrap = True
-                if not fail_to_scrap:
-                    break
-            if fail_to_scrap:
-                g_logger.error("Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, self.SCRAPY_RETRY_TIMES))
-                raise e
+        # try:
+        #     # res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+        #     res = self._try_to_get_request_obj(url)
+        # except requests.exceptions.Timeout as e:
+        #     # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
+        #     fail_to_scrap = False
+        #     for index in range(CMN.DEF.DEF_SCRAPY_RETRY_TIMES):
+        #         time.sleep(randint(3,9))
+        #         try:
+        #             # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
+        #             res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+        #         except requests.exceptions.Timeout as ex:
+        #             # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
+        #             fail_to_scrap = True
+        #         if not fail_to_scrap:
+        #             break
+        #     if fail_to_scrap:
+        #         g_logger.error("Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, self.SCRAPY_RETRY_TIMES))
+        #         raise e
+        req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
         # parse_url_data_type = self.parse_url_data_type_obj.get_type()
         # return (self.PARSE_URL_DATA_FUNC_PTR[parse_url_data_type])(res)
         # import pdb; pdb.set_trace()

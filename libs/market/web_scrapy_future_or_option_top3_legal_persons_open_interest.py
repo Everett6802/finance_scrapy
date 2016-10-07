@@ -82,7 +82,7 @@ class WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.We
 
     def do_debug(self, silent_mode=False):
         # res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=11&sday=9&datestart=1979%2F09%2F04")
-        res = self._try_to_get_request_obj("http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=11&sday=9&datestart=1979%2F09%2F04")
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=11&sday=9&datestart=1979%2F09%2F04")
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text)
         g_data = soup.select('.table_f tr')

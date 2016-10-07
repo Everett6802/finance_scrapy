@@ -61,7 +61,8 @@ class WebScrapyCompanyStockMarketCodeNumber(web_scrapy_base.WebScrapyBase):
 
     def do_debug(self):
         # import pdb; pdb.set_trace()
-        res = requests.get("http://isin.twse.com.tw/isin/C_public.jsp?strMode=%d" % self.str_mode)
+        # res = requests.get("http://isin.twse.com.tw/isin/C_public.jsp?strMode=%d" % self.str_mode)
+        res = CMN.FUNC.request_from_url_and_check_return("http://isin.twse.com.tw/isin/C_public.jsp?strMode=%d" % self.str_mode)
         res.encoding = 'big5'
         # print res.text
         soup = BeautifulSoup(res.text)

@@ -129,7 +129,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     def do_debug(self, silent_mode=False):
         # import pdb; pdb.set_trace()
         # res = requests.get("https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE=20160408&SqlMethod=StockNo&StockNo=2347&StockName=&sub=%ACd%B8%DF")
-        res = self._try_to_get_request_obj("https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE=20160408&SqlMethod=StockNo&StockNo=2347&StockName=&sub=%ACd%B8%DF")
+        res = CMN.FUNC.request_from_url_and_check_return("https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE=20160408&SqlMethod=StockNo&StockNo=2347&StockName=&sub=%ACd%B8%DF")
         res.encoding = 'big5'
         # print res.text
         soup = BeautifulSoup(res.text)

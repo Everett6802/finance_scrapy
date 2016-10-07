@@ -79,7 +79,7 @@ class WebScrapyTimeSliceGenerator(object):
         url = self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT.format(*(date_str_for_financial_statement, company_code_number))
         for retry in range(5):
             try:
-                res = requests.get(url)
+                res = CMN.FUNC.request_from_url_and_check_return(url)
             except ConnectionError as e:
                 g_logger.debug("Connection Reset by peer from URL: %s !!!" % url)
                 time.sleep(1)

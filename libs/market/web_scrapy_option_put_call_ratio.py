@@ -93,7 +93,7 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
 
     def do_debug(self, silent_mode=False):
         # res = requests.get("http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart=2015%2F10%2F1&dateend=2015%2F10%2F31")
-        res = self._try_to_get_request_obj("http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart=2015%2F10%2F1&dateend=2015%2F10%2F31")
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart=2015%2F10%2F1&dateend=2015%2F10%2F31")
         # print res.text
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text)

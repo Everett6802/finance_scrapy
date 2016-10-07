@@ -5,6 +5,7 @@ import re
 import errno
 import logging
 import calendar
+import requests
 from datetime import datetime, timedelta
 import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -386,6 +387,33 @@ def assemble_csv_month_time_str(timeslice_list):
         if not is_the_same_month(datetime_cfg_start, timeslice_list[index]):
             raise ValueError("The time[%s] is NOT in the month: %04d-%02d" % (to_date_only_str(timeslice_list[index]), datetime_cfg_start.year, datetime_cfg_start.month))
     return "%04d%02d" % (datetime_cfg_start.year, datetime_cfg_start.month)
+
+# DEF_SCRAPY_WAIT_TIMEOUT = 8
+def request_from_url_and_check_return(url, timeout=None):
+    if timeout is None:
+        timeout = CMN_DEF.DEF_SCRAPY_WAIT_TIMEOUT
+    res = requests.get(url, timeout=timeout)
+    if res.status_code != 200:
+        errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
+        g_logger.error(errmsg)
+        raise RuntimeError(errmsg)
+    return res
+
+
+def try_to_request_from_url_and_check_return(url, timeout=None):
+    req = None
+    for index in range(CMN_DEF.DEF_SCRAPY_RETRY_TIMES):
+        try:
+            # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
+            req = request_from_url_and_check_return(url, timeout)
+        except requests.exceptions.Timeout as ex:
+            # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
+            time.sleep(randint(3,9))
+        else:
+            return req
+    errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.DEF_SCRAPY_RETRY_TIMES)
+    g_logger.error(errmsg)
+    raise RuntimeError(errmsg)
 
 
 # DEF_DATA_SOURCE_START_DATE_CFG = [

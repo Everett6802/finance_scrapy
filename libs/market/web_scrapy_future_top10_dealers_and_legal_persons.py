@@ -131,7 +131,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
 
     def do_debug(self, silent_mode=False):
         # res = requests.get("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=ALL&goday=&choose_yy=2013&choose_mm=6&choose_dd=17&datestart=1979%2F9%2F4&choose_item=TX+++++")
-        res = self._try_to_get_request_obj("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=ALL&goday=&choose_yy=2013&choose_mm=6&choose_dd=17&datestart=1979%2F9%2F4&choose_item=TX+++++")
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=ALL&goday=&choose_yy=2013&choose_mm=6&choose_dd=17&datestart=1979%2F9%2F4&choose_item=TX+++++")
         res.encoding = 'utf-8'
         #print res.text
         soup = BeautifulSoup(res.text)

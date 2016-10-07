@@ -72,7 +72,7 @@ class WebScrapyCompanyForeignInvestorsShareholder(web_scrapy_base.WebScrapyBase)
     def do_debug(self, silent_mode=False):
         # import pdb; pdb.set_trace()
         # res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F12&select2=02&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
-        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F12&select2=02&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F12&select2=02&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
         # res = requests.get("http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date=105%2F04%2F11&select2=01&login_btn=%ACd%B8%DF&orderby=SortByStockCode")
         # # #print res.text
         res.encoding = 'big5'

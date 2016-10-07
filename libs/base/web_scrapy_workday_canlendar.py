@@ -167,45 +167,59 @@ class WebScrapyWorkdayCanlendar(object):
 
 
     def __update_workday_from_web_by_month(self, year, month, start_day=None, end_day=None):
-# Check if scrapying the whole month data 
+# Check if scrapying the whole month data
+        # import pdb; pdb.set_trace()
         whole_month_data = False
-        if start_day is None and end_day is None:
+#***************************************************
+# # Check if the whole month data is required
+#         if start_day is None and end_day is None:
+#             whole_month_data = True
+#         elif end_day is None and start_day == 1:
+#             whole_month_data = True
+#         elif start_day is None and end_day == CMN.FUNC.get_month_last_day(year, month):
+#             whole_month_data = True
+# # Assemble the URL
+#         url = self.url_format.format(*(year, month))
+#***************************************************
+# Setup the start/end date if it's None
+        if start_day is None: start_day = 1
+        if end_day is None: end_day = CMN.FUNC.get_month_last_day(year, month)
+        if start_day == 1 and end_day == CMN.FUNC.get_month_last_day(year, month):
             whole_month_data = True
-        elif end_day is None and start_day == 1:
-            whole_month_data = True
-        elif start_day is None and end_day == CMN.FUNC.get_month_last_day(year, month):
-            whole_month_data = True
-
-# Assemble the URL
-        url = self.url_format.format(*(year, month))
+        url = self.url_format.format(*(year, month, start_day, end_day))
 # Scrap the web data
-        try:
-            # g_logger.debug("Try to Scrap data [%s]" % url)
-            res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-        except requests.exceptions.Timeout as e:
-            # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
-            fail_to_scrap = False
-            for index in range(self.SCRAPY_RETRY_TIMES):
-                time.sleep(randint(1,3))
-                try:
-                    res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-                except requests.exceptions.Timeout as ex:
-                    fail_to_scrap = True
-                if not fail_to_scrap:
-                    break
-            if fail_to_scrap:
-                g_logger.error("Fail to scrap workday list data even retry for %d times !!!!!!" % self.SCRAPY_RETRY_TIMES)
-                raise e
+        # try:
+        #     # g_logger.debug("Try to Scrap data [%s]" % url)
+        #     res = CMN.FUNC.request_from_url_and_check_return(url)
+        # except requests.exceptions.Timeout as e:
+        #     # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
+        #     fail_to_scrap = False
+        #     for index in range(self.SCRAPY_RETRY_TIMES):
+        #         time.sleep(randint(1,3))
+        #         try:
+        #             res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+        #         except requests.exceptions.Timeout as ex:
+        #             fail_to_scrap = True
+        #         if not fail_to_scrap:
+        #             break
+        #     if fail_to_scrap:
+        #         g_logger.error("Fail to scrap workday list data even retry for %d times !!!!!!" % self.SCRAPY_RETRY_TIMES)
+        #         raise e
+        req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
 # Select the section we are interested in
-        res.encoding = self.encoding
+        req.encoding = self.encoding
         # print res.text
-        soup = BeautifulSoup(res.text)
+        soup = BeautifulSoup(req.text)
         web_data = soup.select(self.select_flag)
         workday_list = []
+        web_data_len = len(web_data)
 # Parse the web data and obtain the workday list
-        if len(web_data) != 0:
+        if web_data_len != 0:
         # print "len: %d" % data_len
-            for tr in web_data[2:]:
+#***************************************************
+            # for tr in web_data[2:]:
+#***************************************************
+            for tr in web_data[web_data_len - 1 : 0 : -1]:
                 td = tr.select('td')
                 date_list = td[0].text.split('/')
                 if len(date_list) != 3:
@@ -215,6 +229,7 @@ class WebScrapyWorkdayCanlendar(object):
 # Caution: It's NO need to consider the end date since the last data is always today
                     continue
                 workday_list.append(cur_day)
+        # import pdb; pdb.set_trace()
         self.__set_canlendar_each_month(year, month, workday_list)
 # # Find the workday list
 #         allday_list = []
@@ -248,7 +263,7 @@ class WebScrapyWorkdayCanlendar(object):
 
 
     def __write_workday_canlendar_to_file(self):
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         g_logger.debug("Write the Workday Canlendar data to the file: %s......" % conf_filepath)
         try:

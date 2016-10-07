@@ -57,7 +57,7 @@ class WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary(web_scrapy_base.WebScra
 
     def do_debug(self, silent_mode=False):
         # res = requests.get("http://www.twse.com.tw/ch/trading/fund/TWT44U/TWT44U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
-        res = self._try_to_get_request_obj("http://www.twse.com.tw/ch/trading/fund/TWT44U/TWT44U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/fund/TWT44U/TWT44U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
         #print res.text
         res.encoding = 'utf-8'
         soup = BeautifulSoup(res.text)

@@ -253,25 +253,25 @@ class WebScrapyCompanyProfile(object):
             raise ValueError("Unknown Market Type: %d", self.market_type)
 # Assemble the URL
         url = self.url_format % str_mode
-
 # Scrap the web data
-        try:
-            # g_logger.debug("Try to Scrap data [%s]" % url)
-            res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-        except requests.exceptions.Timeout as e:
-            # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
-            fail_to_scrap = False
-            for index in range(self.SCRAPY_RETRY_TIMES):
-                time.sleep(randint(1,3))
-                try:
-                    res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-                except requests.exceptions.Timeout as ex:
-                    fail_to_scrap = True
-                if not fail_to_scrap:
-                    break
-            if fail_to_scrap:
-                g_logger.error("Fail to scrap company code number info even retry for %d times !!!!!!" % self.SCRAPY_RETRY_TIMES)
-                raise e
+        # try:
+        #     # g_logger.debug("Try to Scrap data [%s]" % url)
+        #     res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+        # except requests.exceptions.Timeout as e:
+        #     # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
+        #     fail_to_scrap = False
+        #     for index in range(self.SCRAPY_RETRY_TIMES):
+        #         time.sleep(randint(1,3))
+        #         try:
+        #             res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+        #         except requests.exceptions.Timeout as ex:
+        #             fail_to_scrap = True
+        #         if not fail_to_scrap:
+        #             break
+        #     if fail_to_scrap:
+        #         g_logger.error("Fail to scrap company code number info even retry for %d times !!!!!!" % self.SCRAPY_RETRY_TIMES)
+        #         raise e
+        req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
 # Select the section we are interested in
         res.encoding = self.encoding
         # print res.text
