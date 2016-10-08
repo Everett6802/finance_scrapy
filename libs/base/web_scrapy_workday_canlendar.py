@@ -20,7 +20,7 @@ class WebScrapyWorkdayCanlendar(object):
         self.encoding = self.source_url_parsing_cfg["url_encoding"]
         self.select_flag = self.source_url_parsing_cfg["url_css_selector"]
 ###############################################################################################
-# Caution: The types of the following member variabiles are datetime
+# Caution: The types of the following member variabiles are FinanceDate
         self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_WEB_SCRAPY_BEGIN_DATE_STR) if date_start is None else date_start 
         self.date_end = CMN.FUNC.get_last_url_data_date(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE) if date_end is None else date_end
 # The start/end time of scrapying data from the web
@@ -30,9 +30,9 @@ class WebScrapyWorkdayCanlendar(object):
         self.date_first = None
         self.date_last = None
 ###############################################################################################
+        self.update_from_web_flag = False # Should be updated for just one time
         self.date_start_year = self.date_start.year
         self.workday_canlendar = None
-
         self.workday_year_list = None
 
 
@@ -54,10 +54,10 @@ class WebScrapyWorkdayCanlendar(object):
         return day in self.workday_canlendar[year][month - 1]
 
 
-    def update_workday_canlendar(self, force_from_web=False):
+    def update_workday_canlendar(self):
         # import pdb; pdb.set_trace()
 # Update data from the file
-        need_update_from_web = True if force_from_web else self.__update_workday_from_file()
+        need_update_from_web = self.__update_workday_from_file()
 # It's required to update the new data
         if need_update_from_web:
 # Update data from the web
@@ -143,8 +143,12 @@ class WebScrapyWorkdayCanlendar(object):
 
 
     def __update_workday_from_web(self):
+        if not self.update_from_web_flag:
+            self.update_from_web_flag = True
+        else:
+            raise RuntimeError("Update workday from web should NOT be called more than once")
         # import pdb; pdb.set_trace()
-        g_logger.debug("Try to Acquire the Workday Canlendar data from the web......")
+        g_logger.debug("Try to Acquire the Workday Canlendar [%s:%s] data from the web......" % (self.date_start_from_web, self.date_end_from_web))
         if self.date_start_from_web.year == self.date_end_from_web.year and self.date_start_from_web.month == self.date_end_from_web.month:
             self.__update_workday_from_web_by_month(self.date_start_from_web.year, self.date_start_from_web.month, self.date_start_from_web.day, self.date_end_from_web.day)
         else:
@@ -164,6 +168,9 @@ class WebScrapyWorkdayCanlendar(object):
                 self.__update_workday_from_web_by_month(year, month)
             self.__update_workday_from_web_by_month(self.date_end_from_web.year, self.date_end_from_web.month, end_day=self.date_end_from_web.day)
         self.workday_year_list = sorted(self.workday_canlendar.keys())
+        # for year in self.workday_year_list:
+        #     workday_month_list = self.workday_canlendar[year]
+        #     print "%d: %s" % (year, workday_month_list)
 
 
     def __update_workday_from_web_by_month(self, year, month, start_day=None, end_day=None):
@@ -263,7 +270,7 @@ class WebScrapyWorkdayCanlendar(object):
 
 
     def __write_workday_canlendar_to_file(self):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         g_logger.debug("Write the Workday Canlendar data to the file: %s......" % conf_filepath)
         try:
@@ -271,9 +278,10 @@ class WebScrapyWorkdayCanlendar(object):
             with open(conf_filepath, 'w') as fp:
                 g_logger.debug("Start to write workday into %s", CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
                 fp.write("%s %s\n" % (self.date_start, self.date_end))
-                year_list = sorted(self.workday_canlendar)
-                for year in year_list:
+                # year_list = sorted(self.workday_canlendar)
+                for year in self.workday_year_list:
                     workday_month_list = self.workday_canlendar[year]
+                    # print "%d: %s" % (year, workday_month_list)
                     # sys.stderr.write("%s" % ("[%04d]" % year + ";".join(["%d:%s" % (month + 1, ",".join([str(workday) for workday in workday_month_list[month]])) for month in range(12)]) + "\n"))
                     workday_each_year_str = "[%04d]" % year + ";".join(["%d:%s" % (month + 1, ",".join([str(workday) for workday in workday_month_list[month]])) for month in range(12) if len(workday_month_list[month]) != 0]) + "\n"
                     # for month in range(12):
@@ -281,7 +289,7 @@ class WebScrapyWorkdayCanlendar(object):
                     # workday_each_year_str += "\n"
                     g_logger.debug("Write data: %s" % workday_each_year_str)
                     fp.write(workday_each_year_str)
-
+                    # print workday_each_year_str
         except Exception as e:
             g_logger.error("Error occur while writing Workday Canlendar into config file, due to %s" % str(e))
             raise e
@@ -306,8 +314,8 @@ class WebScrapyWorkdayCanlendar(object):
             if self.workday_canlendar is None:
                 raise RuntimeError("Incorrect Operation: self.workday_canlendar is None")
             # import pdb; pdb.set_trace()
-            workday_year_list = sorted(self.workday_canlendar.keys())
-            year = workday_year_list[-1]
+            # workday_year_list = sorted(self.workday_canlendar.keys())
+            year = self.workday_year_list[-1]
             for month in range(12):
                 if len(self.workday_canlendar[year][month]) == 0:
                     self.date_last = CMN.CLS.FinanceDate(year, month, self.workday_canlendar[year][month - 1][-1]) 

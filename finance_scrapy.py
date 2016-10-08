@@ -130,13 +130,12 @@ def parse_param():
             sys.exit(0)
         elif re.match("--update_workday_calendar", sys.argv[index]):
             workday_calendar = BASE.WC.WebScrapyWorkdayCanlendar.Instance()
-            workday_calendar.update_workday_canlendar(True)
             sys.exit(0)
         elif re.match("--check_url", sys.argv[index]):
             # import pdb; pdb.set_trace()
             source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
             error_found = False
-            errmsg = "**************** Check URL ****************\n"
+            errmsg = "**************** Check %s URL ****************\n" % CMN.FUNC.get_finance_mode_description()
             for source_type_index in source_type_index_list:
                 try:
                     g_mgr.do_scrapy_debug(source_type_index, True)

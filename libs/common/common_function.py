@@ -204,6 +204,12 @@ def is_stock_mode():
     return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_STOCK
 
 
+def get_finance_mode_description():
+    if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
+        CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
+    return CMN_DEF.FINANCE_MODE_DESCRIPTION[CMN_DEF.FINANCE_MODE]
+
+
 def get_config_file_lines(conf_filename):
     conf_filepath = get_config_filepath(conf_filename)
     config_line_list = []
