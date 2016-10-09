@@ -23,31 +23,28 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     @classmethod
-    def __get_finance_folderpath_format(cls):
-        return ("%s/%s" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
-
-
-    @classmethod
     def __get_company_profile(cls):
         if cls.company_profile is None:
             cls.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
         return cls.company_profile
 
 
-    @classmethod
-    def _create_finance_folder_if_not_exist(cls):
-        folderpath_format = cls.__get_finance_folderpath_format()
-        for index in range(cls.__get_company_profile().company_group_size):
+    def __get_finance_folderpath_format(self):
+        return ("%s/%s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
+
+
+    def _create_finance_folder_if_not_exist(self):
+        folderpath_format = self.__get_finance_folderpath_format()
+        for index in range(self.__get_company_profile().company_group_size):
             folderpath = folderpath_format % index
             g_logger.debug("Try to create new folder: %s" % folderpath)
             CMN.FUNC.create_folder_if_not_exist(folderpath)
 
 
-    @classmethod
-    def _remove_old_finance_folder(cls):
+    def _remove_old_finance_folder(self):
 # Remove the old data if necessary
-        folderpath_format = cls.__get_finance_folderpath_format()
-        for index in range(cls.__get_company_profile().company_group_size):
+        folderpath_format = self.__get_finance_folderpath_format()
+        for index in range(self.__get_company_profile().company_group_size):
             folderpath = folderpath_format % index
             g_logger.debug("Remove old folder: %s" % folderpath)
             shutil.rmtree(folderpath, ignore_errors=True)
@@ -111,7 +108,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def do_scrapy(self):
-        self._scrap_data(self.xcfg["reserve_old_finance_folder"])
+        self._scrap_data()
 
 
     def check_scrapy(self):

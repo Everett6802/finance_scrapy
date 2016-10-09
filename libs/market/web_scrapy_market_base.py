@@ -32,9 +32,8 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         return cls.url_time_range
 
 
-    @classmethod
-    def assemble_csv_filepath(cls, data_source_index):
-        csv_filepath = "%s/%s/%s.csv" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index]) 
+    def assemble_csv_filepath(self, source_type_index):
+        csv_filepath = "%s/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
         return csv_filepath
 
 
@@ -60,7 +59,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
     def scrap_web_to_csv(self):
         # import pdb; pdb.set_trace()
 # Find the file path for writing data into csv
-        csv_filepath = WebScrapyMarketBase.assemble_csv_filepath(self.source_type_index)
+        csv_filepath = self.assemble_csv_filepath(self.source_type_index)
 # Determine the actual time range
         self._adjust_time_duration_from_lookup_table()
         scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["time_duration_start"], self.xcfg["time_duration_end"], csv_filepath)

@@ -15,9 +15,10 @@ class WebSracpyMgrBase(object):
     __metaclass__ = ABCMeta
     def __init__(self):
         self.xcfg = {
-            "reserve_old_finance_folder": False,
+            "old_finance_folder_reservation": False,
             "try_to_scrap_all": True,
-            "dry_run_only": False
+            "dry_run_only": False,
+            "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
         }
         # self.xcfg.update(kwargs)
         self.source_type_time_duration_list = None
@@ -75,8 +76,8 @@ class WebSracpyMgrBase(object):
         web_scrapy_class_obj.scrap_web_to_csv()
 
 
-    def _scrap_data(self, reserve_old_finance_folder):
-        if not self.xcfg["reserve_old_finance_folder"]:
+    def _scrap_data(self):
+        if not self.xcfg["old_finance_folder_reservation"]:
             self._remove_old_finance_folder()
         self._create_finance_folder_if_not_exist()
         total_errmsg = ""
@@ -88,6 +89,7 @@ class WebSracpyMgrBase(object):
                     "time_duration_start": source_type_time_duration.time_duration_start, 
                     "time_duration_end": source_type_time_duration.time_duration_end,
                     "dry_run_only": self.xcfg["dry_run_only"],
+                    "finance_root_folderpath": self.xcfg["finance_root_folderpath"]
                 }
                 self.__scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
             except Exception as e:
@@ -102,7 +104,7 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def _get_csv_filename_from_filepath(cls, csv_filename):
+    def _get_csv_filename_from_filepath(cls, csv_filepath):
         return csv_filepath.rsplit("/", 1)[-1]
 
 
@@ -144,12 +146,34 @@ class WebSracpyMgrBase(object):
         self.__check_source_type_in_correct_finance_mode()
 
 
-    def need_reserve_old_finance_folder(self, enable):
-        self.xcfg["reserve_old_finance_folder"] = enable
+    def set_finance_root_folderpath(self, csv_root_folderpath):
+        g_logger.debug("Set CSV root folder path: %s" % csv_root_folderpath)
+        self.xcfg["csv_root_folderpath"] = csv_root_folderpath
+
+
+    @property
+    def FinanceRootFolderPath(self):
+        return self.xcfg["csv_root_folderpath"]
+
+
+    def enable_old_finance_folder_reservation(self, enable):
+        g_logger.debug("%s the old finance folder reservation" % ("Enable" if enable else "Disable"))
+        self.xcfg["old_finance_folder_reservation"] = enable
+
+
+    @property
+    def OldFinanceFolderReservation(self):
+        return self.xcfg["old_finance_folder_reservation"]
 
 
     def enable_dry_run(self, enable):
+        g_logger.debug("Enable Dry-Run ......")
         self.xcfg["dry_run_only"] = enable
+
+
+    @property
+    def DryRun(self):
+        return self.xcfg["dry_run_only"]
 
 
 #     def initialize(**kwargs):

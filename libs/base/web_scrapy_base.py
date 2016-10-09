@@ -26,6 +26,7 @@ class WebScrapyBase(object):
             "time_duration_start": None,
             "time_duration_end": None,
             "dry_run_only": False,
+            "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
         }
         # import pdb; pdb.set_trace()
         self.xcfg.update(kwargs)

@@ -31,7 +31,7 @@ def show_usage():
     print "--silent\nDescription: Disable print log on console"
     print "--check_result\nDescription: Check the CSV files after scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
-    print "--reserve_old\nDescription: Reserve the old CSV file in %s" % CMN.DEF.DEF_CSV_FILE_PATH
+    print "--reserve_old\nDescription: Reserve the old CSV file\n Default: %s" % CMN.DEF.DEF_CSV_FILE_PATH
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
     print "--source_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
     print "--source_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
@@ -97,7 +97,7 @@ def snapshot_result(run_result_str):
         fp.write(run_result_str.encode('utf8'))
     datetime_now = datetime.today()
     snapshot_filename = CMN.SNAPSHOT_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
-    subprocess.call(["tar", "cvzf", snapshot_filename, CMN.RUN_RESULT_FILENAME, CMN.DEF.DEF_CSV_FILE_PATH, WSL.LOG_FILE_PATH])
+    subprocess.call(["tar", "cvzf", snapshot_filename, CMN.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, WSL.LOG_FILE_PATH])
     subprocess.call(["mv", snapshot_filename, CMN.DEF.DEF_SNAPSHOT_FOLDER])
     subprocess.call(["rm", CMN.RUN_RESULT_FILENAME])
 
@@ -556,6 +556,6 @@ if __name__ == "__main__":
     if param_cfg["clone_result"]:
         if not error_found:
             datetime_now = datetime.today()
-            clone_foldername = CMN.DEF.DEF_CSV_FILE_PATH + "_ok" + CMN.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
+            clone_foldername = g_mgr.FinanceRootFolderPath + "_ok" + CMN.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
             show_debug("Clone the CSV folder to %s" % clone_foldername)
-            subprocess.call(["cp", "-r", CMN.DEF.DEF_CSV_FILE_PATH, clone_foldername])
+            subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])

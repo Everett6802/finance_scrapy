@@ -50,15 +50,14 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     def assemble_csv_company_folderpath(cls, company_code_number, company_group_number=-1):
         if company_group_number == -1:
             company_group_number = cls.__get_company_profile().lookup_company_group_number(company_code_number)
-        csv_company_folderpath = "%s/%s%02d/%s" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_code_number) 
+        csv_company_folderpath = "%s/%s%02d/%s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_code_number) 
         return csv_company_folderpath
 
 
-    @classmethod
-    def assemble_csv_filepath(cls, source_type_index, company_code_number, company_group_number=-1):
+    def assemble_csv_filepath(self, source_type_index, company_code_number, company_group_number=-1):
         if company_group_number == -1:
-            company_group_number = cls.__get_company_profile().lookup_company_group_number(company_code_number)
-        csv_filepath = "%s/%s%02d/%s/%s.csv" % (CMN.DEF.DEF_CSV_FILE_PATH, CMN.DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_code_number, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+        csv_filepath = "%s/%s%02d/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_code_number, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
         return csv_filepath
 
 
@@ -91,7 +90,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 # import pdb; pdb.set_trace()
                 self.time_slice_kwargs["company_code_number"] = company_code_number
 # Find the file path for writing data into csv
-                csv_filepath = WebScrapyStockBase.assemble_csv_filepath(self.source_type_index, company_code_number, company_group_number)
+                csv_filepath = self.assemble_csv_filepath(self.source_type_index, company_code_number, company_group_number)
 # Determine the actual time range
                 self._adjust_time_duration_from_lookup_table(company_code_number)
                 scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["time_duration_start"], self.xcfg["time_duration_end"], csv_filepath)
