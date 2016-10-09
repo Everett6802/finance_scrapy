@@ -76,20 +76,30 @@ class WebScrapyTimeSliceGenerator(object):
 
 
     def __find_company_foreign_investors_shareholder_url_data(self, date_str_for_financial_statement, company_code_number):
-        url = self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT.format(*(date_str_for_financial_statement, company_code_number))
+        source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[CMN.DEF.DEF_DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_DATA_SOURCE_REFERENCE_INDEX]
+        url = source_url_parsing_cfg["url_format"].format(*(date_str_for_financial_statement[0:4], date_str_for_financial_statement[4:6], date_str_for_financial_statement[6:8], company_code_number))
+        req = None
+        exception_for_url = None
         for retry in range(5):
             try:
-                res = CMN.FUNC.request_from_url_and_check_return(url)
-            except ConnectionError as e:
-                g_logger.debug("Connection Reset by peer from URL: %s !!!" % url)
-                time.sleep(1)
+                req = CMN.FUNC.request_from_url_and_check_return(url)
+            # except ConnectionError as e:
+            #     req = None
+            #     g_logger.debug("Connection Reset by peer from URL: %s ......%d" % (url, retry))
             except Exception as e:
-                raise e
+                req = None
+                exception_for_url = e
+                g_logger.debug("Exception occur, due to: %s ......%d" % (str(e), retry))
+                time.sleep(1)
             else:
                 break
-        res.encoding = 'big5'
-        soup = BeautifulSoup(res.text)
-        company_foreign_investors_shareholder_url_data = soup.select('table tbody tr option')
+        if req is None:
+            g_logger.error("Fail to get depository shareholder time table, due to: %s" % str(exception_for_url))
+            raise ConnectionError
+        req.encoding = source_url_parsing_cfg["url_encoding"]
+        soup = BeautifulSoup(req.text)
+        url_css_selector = source_url_parsing_cfg["url_css_selector"] + ' option'
+        company_foreign_investors_shareholder_url_data = soup.select(url_css_selector)
         return company_foreign_investors_shareholder_url_data
 
 

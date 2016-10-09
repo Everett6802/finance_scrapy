@@ -82,7 +82,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
 
     def scrap_web_to_csv(self):
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
 # Create a folder for a specific company
