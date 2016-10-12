@@ -18,7 +18,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def __get_finance_folderpath(self):
-    	return "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_MARKET_FOLDERNAME)
+    	return "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_CSV_MARKET_FOLDERNAME)
 
 
     def _create_finance_folder_if_not_exist(self):

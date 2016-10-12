@@ -45,7 +45,7 @@ class WebScrapyCompanyProfile(object):
         # import pdb; pdb.set_trace()
         self.COMPANY_PROFILE_ELEMENT_LEN = 7
         self.COMPANY_PROFILE_ELEMENT_EX_LEN = self.COMPANY_PROFILE_ELEMENT_LEN + 2
-        self.UNICODE_ENCODING_IN_FILE = "utf-8"
+        self.UNICODE_ENCODING_IN_FILE = CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE
         self.url_format = "http://isin.twse.com.tw/isin/C_public.jsp?strMode=%d"
         self.encoding = "big5"
         self.select_flag = "table tr"

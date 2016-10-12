@@ -30,7 +30,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def __get_finance_folderpath_format(self):
-        return ("%s/%s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
+        return ("%s/%s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_STOCK_FOLDERNAME)) + "%02d"
 
 
     def _create_finance_folder_if_not_exist(self):
@@ -105,6 +105,11 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #         self.xcfg["company_group_set"] = kwargs["company_group_set"]
     #     else:
     #         self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
+
+
+    def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):
+        super(WebSracpyStockMgr, self)._add_cfg_for_scrapy_obj(scrapy_obj_cfg)
+        scrapy_obj_cfg["company_group_set"] = self.company_group_set
 
 
     def do_scrapy(self):

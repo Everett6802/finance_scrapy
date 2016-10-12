@@ -33,13 +33,22 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     def assemble_csv_filepath(self, source_type_index):
-        csv_filepath = "%s/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+        csv_filepath = "%s/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_CSV_MARKET_FOLDERNAME, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
         return csv_filepath
+
+
+    def __adjust_time_duration_from_csv_data(self):
+# Only consider the time range which the csv data does NOT exist
+        if self.xcfg["csv_data_time_duration_start"] is not None:
+            if self.xcfg["csv_data_time_duration_start"] > self.time_slice_kwargs["time_duration_start"]:
+                g_logger.debug("Ignore the csv data [%s:%s), which already exist in the folder..." % (self.xcfg["time_duration_start"], self.xcfg["csv_data_time_duration_start"]))
+                self.time_slice_kwargs["time_duration_start"] = self.xcfg["csv_data_time_duration_start"]
 
 
     def _adjust_time_duration_from_lookup_table(self):
 # Find the actual time range for each source
         (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index)
+
         # if self.xcfg["time_duration_start"] is None:
         #     self.xcfg["time_duration_start"] = self.__get_url_date_range().get_date_range_start(self.source_type_index)
         # if self.xcfg["time_duration_end"] is None:

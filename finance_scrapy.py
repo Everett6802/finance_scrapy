@@ -31,7 +31,7 @@ def show_usage():
     print "--silent\nDescription: Disable print log on console"
     print "--check_result\nDescription: Check the CSV files after scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
-    print "--reserve_old\nDescription: Reserve the old CSV file\n Default: %s" % CMN.DEF.DEF_CSV_FILE_PATH
+    print "--reserve_old\nDescription: Reserve the old CSV file\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
     print "--source_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
     print "--source_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
@@ -281,7 +281,7 @@ def parse_param():
     #             #     "time_range_start": time_range_start,
     #             #     "time_range_end": time_range_end,
     #             # }
-    #             CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_range_start, time_range_end)
+    #             CMN.CLS.SourceTypeTimeDurationTuple(source_type_index, time_range_start, time_range_end)
     #         )
 
 # Adjust the end date since some data of the last day are NOT released at the moment while scraping data

@@ -76,6 +76,11 @@ class WebSracpyMgrBase(object):
         web_scrapy_class_obj.scrap_web_to_csv()
 
 
+    def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):
+        scrapy_obj_cfg["dry_run_only"] = self.xcfg["dry_run_only"]
+        scrapy_obj_cfg["finance_root_folderpath"] = self.xcfg["finance_root_folderpath"]
+
+
     def _scrap_data(self):
         if not self.xcfg["old_finance_folder_reservation"]:
             self._remove_old_finance_folder()
@@ -84,13 +89,17 @@ class WebSracpyMgrBase(object):
         # import pdb; pdb.set_trace()
         for source_type_time_duration in self.source_type_time_duration_list:
             try:
+# Setup the time duration configuration for the scrapy object
                 scrapy_obj_cfg = {
                     "time_duration_type": source_type_time_duration.time_duration_type,  
                     "time_duration_start": source_type_time_duration.time_duration_start, 
                     "time_duration_end": source_type_time_duration.time_duration_end,
-                    "dry_run_only": self.xcfg["dry_run_only"],
-                    "finance_root_folderpath": self.xcfg["finance_root_folderpath"]
+                    # "dry_run_only": self.xcfg["dry_run_only"],
+                    # "finance_root_folderpath": self.xcfg["finance_root_folderpath"]
                 }
+# Setup other required configuration for the scrapy object
+                self._add_cfg_for_scrapy_obj(scrapy_obj_cfg)
+# Create the scrapy object to transform the data from Web to CSV
                 self.__scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
             except Exception as e:
                 errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], str(e))
@@ -141,7 +150,7 @@ class WebSracpyMgrBase(object):
         self.source_type_time_duration_list = []
         for source_type_index in source_type_index_list:
             self.source_type_time_duration_list.append(
-                CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
+                CMN.CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
             )
         self.__check_source_type_in_correct_finance_mode()
 
@@ -219,7 +228,7 @@ class WebSracpyMgrBase(object):
 #             self.xcfg["time_duration_end"] = None
 #         for source_type_index in self.xcfg["source_type_index_list"]:
 #             source_type_time_duration_list.append(
-#                 CMN.CLS.SourceTypeTimeRangeTuple(source_type_index, time_duration_start, time_duration_end)
+#                 CMN.CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_start, time_duration_end)
 #             )
 
 

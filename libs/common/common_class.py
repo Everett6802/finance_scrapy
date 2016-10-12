@@ -3,7 +3,8 @@ import math
 import collections
 MonthTuple = collections.namedtuple('MonthTuple', ('year', 'month'))
 QuarterTuple = collections.namedtuple('QuarterTuple', ('year', 'quarter'))
-SourceTypeTimeRangeTuple = collections.namedtuple('SourceTypeTimeRangeTuple', ('source_type_index', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
+TimeDurationTuple = collections.namedtuple('TimeDurationTuple', ('time_duration_start', 'time_duration_end'))
+SourceTypeTimeDurationTuple = collections.namedtuple('SourceTypeTimeDurationTuple', ('source_type_index', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
 import common_definition as CMN_DEF
 import common_function as CMN_FUNC
 

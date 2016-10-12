@@ -236,7 +236,7 @@ def parse_source_type_time_duration_config_file(conf_filename, time_duration_typ
     for line in config_line_list:
         param_list = line.split(' ')
         param_list_len = len(param_list)
-        source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode('utf-8'))
+        source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
         time_range_start = None
         if param_list_len >= 2:
             # time_range_start = transform_string2datetime(param_list[1])
@@ -246,9 +246,33 @@ def parse_source_type_time_duration_config_file(conf_filename, time_duration_typ
             # time_range_end = transform_string2datetime(param_list[2])
             time_range_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
         source_type_time_duration_config_list.append(
-            CMN_CLS.SourceTypeTimeRangeTuple(source_type_index, time_duration_type, time_range_start, time_range_end)
+            CMN_CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_type, time_range_start, time_range_end)
         )
     return source_type_time_duration_config_list
+
+
+def parse_csv_time_duration_config_file(conf_filename):
+    # import pdb; pdb.set_trace()
+    config_line_list = get_config_file_lines(conf_filename)
+    csv_time_duration_dict = {}
+    for line in config_line_list:
+        param_list = line.split(' ')
+        param_list_len = len(param_list)
+        source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
+        if param_list_len != 3:
+            raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
+        time_range_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
+        time_range_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
+        csv_time_duration_dict[source_type_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
+    return csv_time_duration_dict
+
+
+def write_csv_time_duration_config_file(conf_filename, csv_time_duration_dict):
+    # import pdb; pdb.set_trace()
+    with open(conf_filename, "wb") as fp:
+        for soruce_type_index, time_duration_dict in csv_time_duration_dict.items():
+            csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING[soruce_type_index], time_duration_dict.time_duration_start, time_duration_dict.time_duration_end)
+            fp.write(csv_time_duration_entry_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n")
 
 
 def parse_company_config_file(conf_filename):
@@ -420,6 +444,15 @@ def try_to_request_from_url_and_check_return(url, timeout=None):
     errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.DEF_SCRAPY_RETRY_TIMES)
     g_logger.error(errmsg)
     raise RuntimeError(errmsg)
+
+
+def is_time_range_overlap(CMN_CLS.FinanceTimeBase finance_time1_start, CMN_CLS.FinanceTimeBase finance_time1_end, CMN_CLS.FinanceTimeBase finance_time2_start, CMN_CLS.FinanceTimeBase finance_time2_end):
+    check_overlap1 = True
+    if finance_time1_start is not None and finance_time2_end is not None:
+        check_overlap1 = finance_date1_start <= finance_date2_end
+    if finance_time2start is not None and finance_time1_end is not None:
+        check_overlap2 = finance_date2_start <= finance_date1_end    
+    return (check_overlap1 and check_overlap2)
 
 
 # DEF_DATA_SOURCE_START_DATE_CFG = [
