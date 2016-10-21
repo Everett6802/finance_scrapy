@@ -6,6 +6,7 @@ import json
 import requests
 import csv
 import time
+import collections
 from random import randint
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -16,10 +17,76 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 class WebScrapyBase(object):
 
+    class Web2CSVTimeRangeUpdate(object):
+        WEB2CSV_APPEND_NONE = 0 # No new web data to append
+        WEB2CSV_APPEND_FRONT = 1 #  new web data will be appended in front of the old csv data
+        WEB2CSV_APPEND_BACK = 2 #  new web data will be appended in back of the old csv data
+        def __init__(self):
+            self.append_direction = WEB2CSV_APPEND_NONE
+            self.old_csv_start = None
+            self.old_csv_end = None
+            self.new_web_start = None
+            self.new_web_end = None
+            self.new_csv_start = None
+            self.new_csv_end = None
+
+        def need_update(self):
+            return (True if (self.append_direction != self.WEB2CSV_APPEND_NONE) else False)
+
+        @property
+        def AppendDirection(self):
+            return self.append_direction
+        @AppendDirection.setter
+        def AppendDirection(self, append_direction):
+            self.append_direction
+
+        @property
+        def OldCSVStart(self):
+            return self.old_csv_start
+        @OldCSVStart.setter
+        def OldCSVStart(self, old_csv_start):
+            self.old_csv_start
+
+        @property
+        def OldCSVEnd(self):
+            return self.old_csv_end
+        @OldCSVEnd.setter
+        def OldCSVEnd(self, old_csv_end):
+            self.old_csv_end
+
+        @property
+        def NewWebStart(self):
+            return self.new_web_start
+        @NewWebStart.setter
+        def NewWebStart(self, new_web_start):
+            self.new_web_start
+
+        @property
+        def NewWebEnd(self):
+            return self.new_web_end
+        @NewWebEnd.setter
+        def NewWebEnd(self, new_web_end):
+            self.new_web_end
+
+        @property
+        def NewCSVStart(self):
+            return self.new_csv_start
+        @NewCSVStart.setter
+        def NewCSVStart(self, new_csv_start):
+            self.new_csv_start
+
+        @property
+        def NewCSVEnd(self):
+            return self.new_csv_end
+        @NewCSVEnd.setter
+        def NewCSVEnd(self, new_csv_end):
+            self.new_csv_end
+
     PARSE_URL_DATA_FUNC_PTR = None
     GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
     timeslice_generator = None
     url_time_range = None
+
     def __init__(self, cur_file_path, **kwargs):
         self.xcfg = {
             "time_duration_type": CMN.DEF.DATA_TIME_DURATION_TODAY,
@@ -27,9 +94,9 @@ class WebScrapyBase(object):
             "time_duration_end": None,
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH,
-            "csv_data_time_duration_start": None,
-            "csv_data_time_duration_end": None,
+            "csv_time_duration_table": None,
         }
+        self.web2csv_time_range_update = None
         # import pdb; pdb.set_trace()
         self.xcfg.update(kwargs)
 # Find which module is instansiate
@@ -46,7 +113,6 @@ class WebScrapyBase(object):
         self.url_time_unit = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
         # self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file if url_time_unit == csv_time_unit self.__scrap_single_web_data_to_single_csv_file
         # self.timeslice_iterable = timeslice_generator_obj.generate_time_slice(self.timeslice_generate_method, **kwargs)
-# To be fixed...
         self.time_slice_kwargs = {"time_duration_start": None, "time_duration_end": None}
         self.description = None
 

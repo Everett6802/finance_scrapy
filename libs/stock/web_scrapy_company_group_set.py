@@ -10,6 +10,7 @@ class WebScrapyCompanyGroupSet(object):
 
     company_profile = None
     whole_company_number_in_group_dict = None
+    whole_company_number_list = None
 
     def __init__(self):
         self.company_number_in_group_dict = None
@@ -26,17 +27,43 @@ class WebScrapyCompanyGroupSet(object):
 
 
     @classmethod
-    def __get_whole_company_number_in_group_dict(cls):
-        # import pdb; pdb.set_trace()
+    def __init_whole_company_number_in_group_dict(cls):
+        assert (cls.whole_company_number_in_group_dict == None), "whole_company_number_in_group_dict is NOT None"
+
         if cls.whole_company_number_in_group_dict is None:
             cls.whole_company_number_in_group_dict = {}
-            company_group_size = cls.__get_company_profile().company_group_size;
+            company_group_size = cls.__get_company_profile().CompanyGroupSize;
             for company_group_index in range(company_group_size):
                 company_number_list = []
                 for entry in cls.__get_company_profile().group_iterator(company_group_index):
                     company_number_list.append(entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
                 cls.whole_company_number_in_group_dict[company_group_index] = company_number_list
         return cls.whole_company_number_in_group_dict
+
+
+    @classmethod
+    def __init_whole_company_number_list(cls):
+        assert (cls.whole_company_number_list == None), "whole_company_number_list is NOT None"
+
+        whole_company_number_list = [];
+        for entry in cls.__get_company_profile().iterator():
+            cls.company_number_list.append(entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+
+
+    @classmethod
+    def get_whole_company_number_in_group_dict(cls):
+        # import pdb; pdb.set_trace()
+        if cls.whole_company_number_in_group_dict is None:
+            cls.__init_whole_company_number_in_group_dict()
+        return cls.whole_company_number_in_group_dict
+
+
+    @classmethod
+    def get_whole_company_number_list(cls):
+        # import pdb; pdb.set_trace()
+        if cls.whole_company_number_list is None:
+            cls.__init_whole_company_number_list()
+        return cls.whole_company_number_list
 
 
     @staticmethod

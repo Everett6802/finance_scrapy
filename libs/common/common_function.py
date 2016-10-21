@@ -6,6 +6,7 @@ import errno
 import logging
 import calendar
 import requests
+import shutil
 from datetime import datetime, timedelta
 import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -29,6 +30,25 @@ def get_source_type_index_range():
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
         return (CMN_DEF.DEF_DATA_SOURCE_STOCK_START, CMN_DEF.DEF_DATA_SOURCE_STOCK_END)
     raise RuntimeError("Unknown finance mode")
+
+
+def get_source_type_size():
+    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+        return CMN_DEF.DEF_DATA_SOURCE_MARKET_SIZE
+    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+        return CMN_DEF.DEF_DATA_SOURCE_STOCK_SIZE
+    raise RuntimeError("Unknown finance mode")
+
+
+def get_source_type_index_from_description(source_type_description, ignore_exception=False):
+    source_type_index = -1
+    try:
+        source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(source_type_description)
+    except ValueError as e:
+        if not ignore_exception:
+            raise e
+        g_logger.warn("Unknown source type description: %s", source_type_description);
+    return source_type_index
 
 
 def get_source_type_index_range_list():
@@ -210,8 +230,12 @@ def get_finance_mode_description():
     return CMN_DEF.FINANCE_MODE_DESCRIPTION[CMN_DEF.FINANCE_MODE]
 
 
-def get_config_file_lines(conf_filename):
-    conf_filepath = get_config_filepath(conf_filename)
+def get_config_file_lines(conf_filename, conf_folderpath=None):
+    conf_filepath = None
+    if conf_folderpath is None:
+        conf_filepath = get_config_filepath(conf_filename)
+    else:
+        conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
     config_line_list = []
     try:
         with open(conf_filepath, 'r') as fp:
@@ -236,34 +260,39 @@ def parse_source_type_time_duration_config_file(conf_filename, time_duration_typ
     for line in config_line_list:
         param_list = line.split(' ')
         param_list_len = len(param_list)
-        source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
-        time_range_start = None
+        # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
+        source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
+        time_duration_start = None
         if param_list_len >= 2:
-            # time_range_start = transform_string2datetime(param_list[1])
-            time_range_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
-        time_range_end = None
+            # time_duration_start = transform_string2datetime(param_list[1])
+            time_duration_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
+        time_duration_end = None
         if param_list_len >= 3:
-            # time_range_end = transform_string2datetime(param_list[2])
-            time_range_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
+            # time_duration_end = transform_string2datetime(param_list[2])
+            time_duration_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
         source_type_time_duration_config_list.append(
-            CMN_CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_type, time_range_start, time_range_end)
+            CMN_CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
         )
     return source_type_time_duration_config_list
 
 
-def parse_csv_time_duration_config_file(conf_filename):
+def parse_csv_time_duration_config_file(conf_filename, conf_folderpath):
     # import pdb; pdb.set_trace()
-    config_line_list = get_config_file_lines(conf_filename)
     csv_time_duration_dict = {}
-    for line in config_line_list:
-        param_list = line.split(' ')
-        param_list_len = len(param_list)
-        source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
-        if param_list_len != 3:
-            raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
-        time_range_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
-        time_range_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
-        csv_time_duration_dict[source_type_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
+    try:
+        config_line_list = get_config_file_lines(conf_filename, conf_folderpath)
+        for line in config_line_list:
+            param_list = line.split(' ')
+            param_list_len = len(param_list)
+            # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
+            if param_list_len != 3:
+                raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
+            source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
+            time_range_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
+            time_range_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
+            csv_time_duration_dict[source_type_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
+    except ValueError as e:
+        csv_time_duration_dict = None
     return csv_time_duration_dict
 
 
@@ -352,9 +381,56 @@ def check_file_exist(filepath):
     return check_exist
 
 
-def create_folder_if_not_exist(filepath):
-    if not check_file_exist(filepath):
-        os.mkdir(filepath)
+def create_folder(folderpath):
+    os.mkdir(folderpath)
+
+
+def create_folder_if_not_exist(folderpath):
+    need_create = not check_file_exist(folderpath)
+    if need_create:
+        create_folder(folderpath)
+    return need_create
+
+
+def rename_file(old_filepath, new_filepath):
+    os.rename(old_filepath, new_filepath)
+
+
+def rename_file_if_exist(old_filepath, new_filepath):
+    can_rename = check_file_exist(old_filepath)
+    if can_rename:
+        rename_file(old_filepath, new_filepath)
+    return can_rename
+
+
+def remove_file(filepath):
+    os.remove(filepath)
+
+
+def remove_file_if_exist(filepath):
+    can_remove = check_file_exist(filepath)
+    if can_remove:
+        remove_file(filepath)
+    return can_remove
+
+
+def copy_file(src_filepath, dst_filepath):
+    shutil.copy2(src_filepath, dst_filepath)
+
+
+def copy_file_if_exist(src_filepath, dst_filepath):
+    can_copy = check_file_exist(src_filepath)
+    if can_copy:
+        copy_file(src_filepath, dst_filepath)
+    return can_copy
+
+
+def append_data_into_file(src_filepath, dst_filepath):
+    if not check_file_exist(src_filepath):
+        raise ValueError("The file[%s] does NOT exist" % src_filepath)
+    with open(src_filepath, 'r') as src_fp, open(dst_filepath, 'a+') as dst_fp:
+        for line in src_fp:
+            dst_fp.write(line)
 
 
 def remove_comma_in_string(original_string):
@@ -446,13 +522,21 @@ def try_to_request_from_url_and_check_return(url, timeout=None):
     raise RuntimeError(errmsg)
 
 
-def is_time_range_overlap(CMN_CLS.FinanceTimeBase finance_time1_start, CMN_CLS.FinanceTimeBase finance_time1_end, CMN_CLS.FinanceTimeBase finance_time2_start, CMN_CLS.FinanceTimeBase finance_time2_end):
+def is_time_range_overlap(finance_time1_start, finance_time1_end, finance_time2_start, finance_time2_end):
     check_overlap1 = True
     if finance_time1_start is not None and finance_time2_end is not None:
         check_overlap1 = finance_date1_start <= finance_date2_end
+    check_overlap2 = True
     if finance_time2start is not None and finance_time1_end is not None:
         check_overlap2 = finance_date2_start <= finance_date1_end    
     return (check_overlap1 and check_overlap2)
+
+
+def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_time):
+    if finance_time_range_start <= finance_time_range_end:
+        return (True if (finance_time_start <= finance_time <= finance_time_range_end) else False)
+    else:
+        return (True if (finance_time_start >= finance_time >= finance_time_range_end) else False)
 
 
 # DEF_DATA_SOURCE_START_DATE_CFG = [

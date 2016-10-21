@@ -447,7 +447,31 @@ def get_ret():
     return my_list, "fuck"
 
 # import libs.stock.web_scrapy_company_group_set as CompanyGroupSet
+import collections
+Web2CSVTimeRangeUpdateTuple1 = collections.namedtuple('Web2CSVTimeRangeUpdateTuple1', ('append_direction', 'old_csv_start', 'old_csv_end', 'new_web_start', 'new_web_end', 'new_csv_start', 'new_csv_end'))
 if __name__ == "__main__":
+    import pdb; pdb.set_trace()
+    folderpath = "/home/super/test_folder"
+    filename = "test.conf"
+    filepath = "%s/%s" % (folderpath, filename)
+    # res = CMN.FUNC.check_file_exist(folderpath)
+    # res = CMN.FUNC.create_folder_if_not_exist(folderpath)
+    # res = CMN.FUNC.create_folder_if_not_exist(folderpath)
+    # res = CMN.FUNC.rename_file_if_exist(filepath, filepath + ".old")
+    # res = CMN.FUNC.rename_file_if_exist(filepath, filepath + ".old")
+    # res = CMN.FUNC.remove_file_if_exist(filepath + ".old")
+    # res = CMN.FUNC.remove_file_if_exist(filepath + ".old")
+    # res = CMN.FUNC.copy_file_if_exist(filepath, filepath + ".old")
+    # res = CMN.FUNC.rename_file_if_exist(filepath, filepath + ".old")
+    # res = CMN.FUNC.copy_file_if_exist(filepath, filepath + ".old")
+    res = CMN.FUNC.append_data_into_file(filepath + ".old", filepath)
+    res = CMN.FUNC.append_data_into_file(filepath + ".old", filepath)
+
+
+    # web2csv_time_range_update_tuple = Web2CSVTimeRangeUpdateTuple1(None, 1, 2, 3, 4, 5, 6)
+    # print web2csv_time_range_update_tuple
+    # web2csv_time_range_update_tuple.append_direction = 0
+    # print web2csv_time_range_update_tuple
     # my_ret = [None] * 5
     # my_ret[2] = 2
     # print my_ret
@@ -468,7 +492,7 @@ if __name__ == "__main__":
     # # one, two = get_ret()
     # # print one
     # # print two 
-    # sys.exit(0)
+    sys.exit(0)
 
     # my_list = [1, 2, 3,]
     # my_dict = {"one": 1, "two": 2, "three": 3}

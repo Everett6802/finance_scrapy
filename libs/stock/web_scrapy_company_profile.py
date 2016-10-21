@@ -522,7 +522,7 @@ class WebScrapyCompanyProfile(object):
 
 
     def iterator(self):
-        return self.self.company_profile_list
+        return self.company_profile_list
 
 
     def group_iterator(self, company_group_index):
@@ -537,7 +537,7 @@ class WebScrapyCompanyProfile(object):
 
 
     @property
-    def company_group_size(self):
+    def CompanyGroupSize(self):
         return self.__company_group_size
 
 

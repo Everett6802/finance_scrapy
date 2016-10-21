@@ -21,7 +21,7 @@ class WebScrapyWorkdayCanlendar(object):
         self.select_flag = self.source_url_parsing_cfg["url_css_selector"]
 ###############################################################################################
 # Caution: The types of the following member variabiles are FinanceDate
-        self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_WEB_SCRAPY_BEGIN_DATE_STR) if date_start is None else date_start 
+        self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_START_DATE_STR) if date_start is None else date_start 
         self.date_end = CMN.FUNC.get_last_url_data_date(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE) if date_end is None else date_end
 # The start/end time of scrapying data from the web
         self.date_start_from_web = self.date_start

@@ -18,10 +18,11 @@ class WebSracpyMgrBase(object):
             "old_finance_folder_reservation": False,
             "try_to_scrap_all": True,
             "dry_run_only": False,
-            "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
+            "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH,
+            "csv_time_duration_table": None
         }
         # self.xcfg.update(kwargs)
-        self.source_type_time_duration_list = None
+        self.source_type_time_duration_list = None        
 
 
     @classmethod
@@ -84,6 +85,8 @@ class WebSracpyMgrBase(object):
     def _scrap_data(self):
         if not self.xcfg["old_finance_folder_reservation"]:
             self._remove_old_finance_folder()
+        else:
+            self._update_csv_data_time_duration()
         self._create_finance_folder_if_not_exist()
         total_errmsg = ""
         # import pdb; pdb.set_trace()
@@ -233,14 +236,20 @@ class WebSracpyMgrBase(object):
 
 
     @abstractmethod
-    def _create_finance_folder_if_not_exist(cls):
-        """IMPORTANT: This is a class method, override it with @classmethod !"""
+    def _create_finance_folder_if_not_exist(self):
+        # """IMPORTANT: This is a class method, override it with @classmethod !"""
         raise NotImplementedError
 
 
     @abstractmethod
-    def _remove_old_finance_folder(cls):
-        """IMPORTANT: This is a class method, override it with @classmethod !"""
+    def _remove_old_finance_folder(self):
+        # """IMPORTANT: This is a class method, override it with @classmethod !"""
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def _update_csv_data_time_duration(self):
+        # """IMPORTANT: This is a class method, override it with @classmethod !"""
         raise NotImplementedError
 
 
