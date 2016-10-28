@@ -22,6 +22,8 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyMarketBase, self).__init__(cur_file_path, **kwargs)
         # import pdb; pdb.set_trace()
+        # self.web2csv_time_duration_update = None
+        self.new_csv_time_duration = None
 
 
     @classmethod
@@ -37,90 +39,112 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         return csv_filepath
 
 
-    def __adjust_time_duration_from_csv_data(self):
-# Only consider the time range which the csv data does NOT exist
-        if self.xcfg["csv_data_time_duration_start"] is not None:
-            if self.xcfg["csv_data_time_duration_start"] > self.time_slice_kwargs["time_duration_start"]:
-                g_logger.debug("Ignore the csv data [%s:%s), which already exist in the folder..." % (self.xcfg["time_duration_start"], self.xcfg["csv_data_time_duration_start"]))
-                self.time_slice_kwargs["time_duration_start"] = self.xcfg["csv_data_time_duration_start"]
+    def _check_old_csv_time_duration_exist(self, *args):
+        if self.xcfg["csv_time_duration_table"] is None:
+            return False 
+        if self.xcfg["csv_time_duration_table"][self.source_type_index] is None:
+            return False 
+        return True
 
 
-    def _adjust_time_duration_from_lookup_table(self):
-# Find the actual time duration for each source
-        self.web2csv_time_range_update_cfg = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate()
-        (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index)
-        time_duration_start = self.xcfg["time_duration_start"]
-        time_duration_end = self.xcfg["time_duration_end"]
-        is_overlap = False
-# Adjust the time duration, ignore the data which already exist in the finance data folder
-# I assume that the time duration between the csv data and new data should be consecutive
-        if self.xcfg["csv_time_duration_table"] is not None && self.xcfg["csv_time_duration_table"][self.source_type_index] is not None:
-            time_duration_tuple = self.xcfg["csv_time_duration_table"][self.source_type_index]
-            if time_duration_tuple.source_type_index != self.source_type_index:
-                raise ValueError("The source type index is NOT identical: %d %d", (time_duration_tuple.source_type_index, self.source_type_index))
-            is_overlap = CMN.FUNC.is_time_range_overlap(time_duration_start, time_duration_end, time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end):
-            if is_overlap:
-                is_time_duration_start_in_range = CMN.FUNC.is_time_in_range(time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start) 
-                is_time_duration_end_in_range = CMN.FUNC.is_time_in_range(time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_end) 
-                if is_time_duration_start_in_range && is_time_duration_end_in_range:
-# All csv data already exists, no need to update the new data
-                    g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.FUNC.get_source_type_index_from_description(self.source_type_index)))
-                    return False
-                elif is_time_duration_start_in_range:
-# I just assume the new time range can be only extended from the start of end side of the original time range
-                    if time_duration_end < time_duration_tuple.time_duration_end:
-                        raise ValueError("The system does NOT support this type[0] of the range update; CSV data[%s:%s], new data[%s:%s]" % (time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-                    time_duration_start = time_duration_tuple.time_duration_end + 1
-                    self.web2csv_time_range_update_cfg.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK
-                elif is_time_duration_end_in_range:
-# I just assume the new time range can be only extended from the start of end side of the original time range
-                    if time_duration_start > time_duration_tuple.time_duration_start:
-                        raise ValueError("The system does NOT support this type[1] of the range update; CSV data[%s:%s], new data[%s:%s]" % (time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-                    time_duration_end = time_duration_tuple.time_duration_start - 1
-                    self.web2csv_time_range_update_cfg.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT
-                else:
-# If the time range of new data contain all the time range of csv data, the system is not desiged to update two time range interval
-                    raise ValueError("The system does NOT support this type[2] of the range update; CSV data[%s:%s], new data[%s:%s]" % (time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-                g_logger.debug("Time range overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.FUNC.get_source_type_index_from_description(self.source_type_index), time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-            else:
-# I assume that the two interval must be consecutive 
-                if time_duration_start > time_duration_tuple.time_duration_end: 
-                    time_duration_start = time_duration_tuple.time_duration_end + 1
-                    self.web2csv_time_range_update_cfg.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK
-                elif time_duration_end < time_duration_tuple.time_duration_start:
-                    time_duration_end = time_duration_tuple.time_duration_start -1
-                    self.web2csv_time_range_update_cfg.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT
-                else:
-                    raise ValueError("The system does NOT support this type[4] of the range update; CSV data[%s:%s], new data[%s:%s]" % (time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-                g_logger.debug("Time range Not olverlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.FUNC.get_source_type_index_from_description(self.source_type_index), time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-# Set the time range config
-                if self.web2csv_time_range_update_cfg.need_update():
-# The CSV time range is going to be modified due to new web data
-                    self.web2csv_time_range_update_cfg.OldCSVStart = time_duration_tuple.time_duration_start
-                    self.web2csv_time_range_update_cfg.OldCSVEnd = time_duration_tuple.time_duration_end
-                    self.web2csv_time_range_update_cfg.NewWebStart = time_duration_start
-                    self.web2csv_time_range_update_cfg.NewWebEnd = time_duration_end
-                    if self.web2csv_time_range_update_cfg.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
-# Check if the new CSV time range is continous
-                        if self.web2csv_time_range_update_cfg.OldCSVStart - self.web2csv_time_range_update_cfg.NewWebEnd != 1
-                            raise ValueError("Incorrect time range for update front; OldCSV[%s:%s], NewWeb[%s:%s]" % (self.web2csv_time_range_update_cfg.OldCSVStart, self.web2csv_time_range_update_cfg.OldCSVEnd, self.web2csv_time_range_update_cfg.NewWebStart, self.web2csv_time_range_update_cfg.NewWebEnd))
-                        self.web2csv_time_range_update_cfg.NewCSVStart = self.web2csv_time_range_update_cfg.NewWebStart
-                        self.web2csv_time_range_update_cfg.NewCSVEnd = self.web2csv_time_range_update_cfg.OldCSVEnd
-                    elif self.web2csv_time_range_update_cfg.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK:
-# Check if the new CSV time range is continous
-                        if self.web2csv_time_range_update_cfg.NewWebStart - self.web2csv_time_range_update_cfg.OldCSVEnd != 1
-                            raise ValueError("Incorrect time range for update back; OldCSV[%s:%s], NewWeb[%s:%s]" % (self.web2csv_time_range_update_cfg.OldCSVStart, self.web2csv_time_range_update_cfg.OldCSVEnd, self.web2csv_time_range_update_cfg.NewWebStart, self.web2csv_time_range_update_cfg.NewWebEnd))
-                        self.web2csv_time_range_update_cfg.NewCSVStart = self.web2csv_time_range_update_cfg.OldCSVStart
-                        self.web2csv_time_range_update_cfg.NewCSVEnd = self.web2csv_time_range_update_cfg.NewWebEnd 
-# Transform to correct time unit
-                    if self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
-                        self.time_slice_kwargs["time_duration_start"] = self.web2csv_time_range_update_cfg.NewWebStart
-                        self.time_slice_kwargs["time_duration_end"] = self.web2csv_time_range_update_cfg.NewWebEnd
-                    elif self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
-                        self.time_slice_kwargs["time_duration_start"] = CMN.CLS.FinanceMonth(self.web2csv_time_range_update_cfg.NewWebStart.year, self.web2csv_time_range_update_cfg.NewWebStart.month)
-                        self.time_slice_kwargs["time_duration_end"] = CMN.CLS.FinanceMonth(self.web2csv_time_range_update_cfg.NewWebEnd.year, self.web2csv_time_range_update_cfg.NewWebEnd.month)
-                    else:
-                        raise ValueError("Unsupported time unit: %d" % self.url_time_unit)
+    def _adjust_csv_time_duration(self):
+# Limit the time range from the web site
+        time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index)
+# Determine the CSV/Web time duration
+        web2csv_time_duration_update = None
+        if self._check_old_csv_time_duration_exist():
+            web2csv_time_duration_update = self._get_overlapped_web2csv_time_duration_update_cfg(
+                self.xcfg["csv_time_duration_table"][self.source_type_index], 
+                time_duration_after_lookup_time.time_duration_start, 
+                time_duration_after_lookup_time.time_duration_end
+            )
+        else:
+            web2csv_time_duration_update = self._get_non_overlapped_web2csv_time_duration_update_cfg(
+                time_duration_after_lookup_time.time_duration_start, 
+                time_duration_after_lookup_time.time_duration_end
+            )
+        if web2csv_time_duration_update.NeedUpdate:
+            self.new_csv_time_duration = CMN_CLS.TimeDurationTuple(web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd)
+# # Check if the CSV data in the specific time range has already existed
+#         self.web2csv_time_duration_update = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate()
+#         if self.xcfg["csv_time_duration_table"] is not None && self.xcfg["csv_time_duration_table"][self.source_type_index] is not None:
+#             time_duration_start = self.xcfg["time_duration_start"]
+#             time_duration_end = self.xcfg["time_duration_end"]
+#             is_overlap = False
+# # Adjust the time duration, ignore the data which already exist in the finance data folder
+# # I assume that the time duration between the csv data and new data should be consecutive
+#             time_duration_tuple = self.xcfg["csv_time_duration_table"][self.source_type_index]
+#             if time_duration_tuple.source_type_index != self.source_type_index:
+#                 raise ValueError("The source type index is NOT identical: %d %d", (time_duration_tuple.source_type_index, self.source_type_index))
+#             is_overlap = CMN.FUNC.is_time_range_overlap(time_duration_start, time_duration_end, time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end):
+#             if is_overlap:
+#                 is_time_duration_start_in_range = CMN.FUNC.is_time_in_range(time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start) 
+#                 is_time_duration_end_in_range = CMN.FUNC.is_time_in_range(time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_end) 
+#                 if is_time_duration_start_in_range && is_time_duration_end_in_range:
+# # All csv data already exists, no need to update the new data
+#                     g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.FUNC.get_source_type_index_from_description(self.source_type_index)))
+#                     return
+#                 elif is_time_duration_start_in_range:
+# # I just assume the new time range can be only extended from the start of end side of the original time range
+#                     if time_duration_end < time_duration_tuple.time_duration_end:
+#                         raise ValueError("The system does NOT support this type[0] of the range update; CSV data[%s:%s], new data[%s:%s]" % (time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+#                     time_duration_start = time_duration_tuple.time_duration_end + 1
+#                     self.web2csv_time_duration_update.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK
+#                 elif is_time_duration_end_in_range:
+# # I just assume the new time range can be only extended from the start of end side of the original time range
+#                     if time_duration_start > time_duration_tuple.time_duration_start:
+#                         raise ValueError("The system does NOT support this type[1] of the range update; CSV data[%s:%s], new data[%s:%s]" % (time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+#                     time_duration_end = time_duration_tuple.time_duration_start - 1
+#                     self.web2csv_time_duration_update.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT
+#                 else:
+# # If the time range of new data contain all the time range of csv data, the system is not desiged to update two time range interval
+#                     raise ValueError("The system does NOT support this type[2] of the range update; CSV data[%s:%s], new data[%s:%s]" % (time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+#                 g_logger.debug("Time range overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.FUNC.get_source_type_index_from_description(self.source_type_index), time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+#             else:
+# # I assume that the two interval must be consecutive 
+#                 if time_duration_start > time_duration_tuple.time_duration_end: 
+#                     time_duration_start = time_duration_tuple.time_duration_end + 1
+#                     self.web2csv_time_duration_update.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK
+#                 elif time_duration_end < time_duration_tuple.time_duration_start:
+#                     time_duration_end = time_duration_tuple.time_duration_start -1
+#                     self.web2csv_time_duration_update.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT
+#                 else:
+#                     raise ValueError("The system does NOT support this type[4] of the range update; CSV data[%s:%s], new data[%s:%s]" % (time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+#                 g_logger.debug("Time range Not olverlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.FUNC.get_source_type_index_from_description(self.source_type_index), time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+# # Set the time range config
+#                 if self.web2csv_time_duration_update.NeedUpdate:
+# # The CSV time range is going to be modified due to new web data
+#                     self.web2csv_time_duration_update.OldCSVStart = time_duration_tuple.time_duration_start
+#                     self.web2csv_time_duration_update.OldCSVEnd = time_duration_tuple.time_duration_end
+#                     self.web2csv_time_duration_update.NewWebStart = time_duration_start
+#                     self.web2csv_time_duration_update.NewWebEnd = time_duration_end
+#                     if self.web2csv_time_duration_update.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
+# # Check if the new CSV time range is continous
+#                         if self.web2csv_time_duration_update.OldCSVStart - self.web2csv_time_duration_update.NewWebEnd != 1
+#                             raise ValueError("Incorrect time range for update front; OldCSV[%s:%s], NewWeb[%s:%s]" % (self.web2csv_time_duration_update.OldCSVStart, self.web2csv_time_duration_update.OldCSVEnd, self.web2csv_time_duration_update.NewWebStart, self.web2csv_time_duration_update.NewWebEnd))
+#                         self.web2csv_time_duration_update.NewCSVStart = self.web2csv_time_duration_update.NewWebStart
+#                         self.web2csv_time_duration_update.NewCSVEnd = self.web2csv_time_duration_update.OldCSVEnd
+#                     elif self.web2csv_time_duration_update.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK:
+# # Check if the new CSV time range is continous
+#                         if self.web2csv_time_duration_update.NewWebStart - self.web2csv_time_duration_update.OldCSVEnd != 1
+#                             raise ValueError("Incorrect time range for update back; OldCSV[%s:%s], NewWeb[%s:%s]" % (self.web2csv_time_duration_update.OldCSVStart, self.web2csv_time_duration_update.OldCSVEnd, self.web2csv_time_duration_update.NewWebStart, self.web2csv_time_duration_update.NewWebEnd))
+#                         self.web2csv_time_duration_update.NewCSVStart = self.web2csv_time_duration_update.OldCSVStart
+#                         self.web2csv_time_duration_update.NewCSVEnd = self.web2csv_time_duration_update.NewWebEnd 
+#         else:
+# #If it's time first time to write the data from web to CSV ......
+#             self.web2csv_time_duration_update.NewCSVStart = self.web2csv_time_duration_update.NewWebStart = self.xcfg["time_duration_start"]
+#             self.web2csv_time_duration_update.NewCSVEnd = self.web2csv_time_duration_update.NewWebEnd = self.xcfg["time_duration_end"]
+#             self.web2csv_time_duration_update.AppendDirection = BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK
+
+# # Transform to correct time unit
+#         if self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
+#             self.time_slice_kwargs["time_duration_start"] = self.web2csv_time_duration_update.NewWebStart
+#             self.time_slice_kwargs["time_duration_end"] = self.web2csv_time_duration_update.NewWebEnd
+#         elif self.url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+#             self.time_slice_kwargs["time_duration_start"] = CMN.CLS.FinanceMonth(self.web2csv_time_duration_update.NewWebStart.year, self.web2csv_time_duration_update.NewWebStart.month)
+#             self.time_slice_kwargs["time_duration_end"] = CMN.CLS.FinanceMonth(self.web2csv_time_duration_update.NewWebEnd.year, self.web2csv_time_duration_update.NewWebEnd.month)
+#         else:
+#             raise ValueError("Unsupported time unit: %d" % self.url_time_unit)
 
 
     def scrap_web_to_csv(self):
@@ -128,18 +152,18 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # Find the file path for writing data into csv
         csv_filepath = self.assemble_csv_filepath(self.source_type_index)
 # Determine the actual time range
-        self._adjust_time_duration_from_lookup_table()
-        if self.web2csv_time_range_update_cfg.need_update():
-            g_logger.debug("[%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.web2csv_time_range_update_cfg.NewWebStart, self.web2csv_time_range_update_cfg.NewWebEnd))
+        web2csv_time_duration_update = self._adjust_csv_time_duration()
+        if not web2csv_time_duration_update.NeedUpdate:
+            g_logger.debug("[%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd))
             return
-        scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.web2csv_time_range_update_cfg.NewWebStart, self.web2csv_time_range_update_cfg.NewWebEnd, csv_filepath)
+        scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
         g_logger.debug(scrapy_msg)
 # Check if only dry-run
         if self.xcfg["dry_run_only"]:
             print scrapy_msg
             return
 # If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
-        if self.web2csv_time_range_update_cfg.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
+        if web2csv_time_duration_update.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
             g_logger.debug("Need add the new data in front of the old CSV data, rename the file: %s" % (csv_filepath + ".old"))
             CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
 # Create the time slice iterator due to correct time range
@@ -168,11 +192,17 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         if len(csv_data_list_each_year) > 0:
             self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])
 # Append the old CSV data after the new web data if necessary
-        if self.web2csv_time_range_update_cfg.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
+        if web2csv_time_duration_update.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
             g_logger.debug("Append the old CSV data to the file: %s" % csv_filepath)
             CMN.FUNC.append_data_into_file(csv_filepath + ".old", csv_filepath)
             CMN.FUNC.remove_file_if_exist(csv_filepath + ".old") 
-# Update the new CSV time range
+
+
+    def get_new_csv_time_duration(self):
+        # if web2csv_time_duration_update is None:
+        #     raise RuntimeError("web2csv_time_duration_update should NOT be None")
+        # return (CMN_CLS.TimeDurationTuple(web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd) if web2csv_time_duration_update.NeedUpdate else None)
+        return self.new_csv_time_duration
 
 
     def assemble_web_url(self, timeslice):

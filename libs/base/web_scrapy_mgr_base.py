@@ -63,18 +63,19 @@ class WebSracpyMgrBase(object):
 # Find the module
         web_scrapy_class_type = cls.__get_class_for_name(module_folder, module_name, class_name)
 # Instantiate the class 
-        web_scrapy_class_obj = web_scrapy_class_type(**kwargs)
-        return web_scrapy_class_obj
+        web_scrapy_obj = web_scrapy_class_type(**kwargs)
+        return web_scrapy_obj
 
 
-    @classmethod
-    def __scrap_web_data_to_csv_file(cls, source_type_index, **kwargs):
+    def __scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
         # import pdb; pdb.set_trace()
-        web_scrapy_class_obj = cls.__instantiate_web_scrapy_object(source_type_index, **kwargs)
-        if web_scrapy_class_obj is None:
+        web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **kwargs)
+        if web_scrapy_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
-        g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
-        web_scrapy_class_obj.scrap_web_to_csv()
+        g_logger.debug("Start to scrap %s......", web_scrapy_obj.get_description())
+        web_scrapy_obj.scrap_web_to_csv()
+# Update the new CSV time duration
+        self._update_csv_new_data_time_duration(web_scrapy_obj)
 
 
     def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):
@@ -86,7 +87,7 @@ class WebSracpyMgrBase(object):
         if not self.xcfg["old_finance_folder_reservation"]:
             self._remove_old_finance_folder()
         else:
-            self._update_csv_data_time_duration()
+            self._read_csv_old_data_time_duration()
         self._create_finance_folder_if_not_exist()
         total_errmsg = ""
         # import pdb; pdb.set_trace()
@@ -113,6 +114,8 @@ class WebSracpyMgrBase(object):
                     break
         if total_errmsg:
             RuntimeError(total_errmsg)
+# Write the new CSV data time range into file
+        self._write_csv_new_data_time_duration_to_file()
 
 
     @classmethod
@@ -123,8 +126,8 @@ class WebSracpyMgrBase(object):
     @classmethod
     def do_scrapy_debug(cls, source_type_index, silent_mode=False):
         # import pdb; pdb.set_trace()
-        web_scrapy_class_obj = WebSracpyMgrBase.__instantiate_web_scrapy_object(source_type_index)
-        web_scrapy_class_obj.do_debug(silent_mode)
+        web_scrapy_obj = WebSracpyMgrBase.__instantiate_web_scrapy_object(source_type_index)
+        web_scrapy_obj.do_debug(silent_mode)
 
 
     def __check_source_type_in_correct_finance_mode(self):
@@ -243,13 +246,21 @@ class WebSracpyMgrBase(object):
 
     @abstractmethod
     def _remove_old_finance_folder(self):
-        # """IMPORTANT: This is a class method, override it with @classmethod !"""
         raise NotImplementedError
 
 
     @abstractmethod
-    def _update_csv_data_time_duration(self):
-        # """IMPORTANT: This is a class method, override it with @classmethod !"""
+    def _read_csv_old_data_time_duration(self):
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def _update_csv_new_data_time_duration(self, web_scrapy_obj):
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def _write_csv_new_data_time_duration_to_file(self):
         raise NotImplementedError
 
 
@@ -260,4 +271,8 @@ class WebSracpyMgrBase(object):
 
     @abstractmethod
     def check_scrapy(self):
+        raise NotImplementedError
+
+
+    def _write_new_csv_time_duration(self):
         raise NotImplementedError

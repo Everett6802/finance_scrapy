@@ -86,7 +86,7 @@ class WebScrapyCompanyGroupSet(object):
             raise RuntimeError("The add_done flag has already been set to True")
         if self.company_number_in_group_dict is None:
             self.company_number_in_group_dict = {}
-        if company_group_number not in self.company_number_in_group_dict:
+        if self.company_number_in_group_dict.get(company_group_number, None) is None:
             self.company_number_in_group_dict[company_group_number] = []
         else:
             if self.company_number_in_group_dict[company_group_number] is None:
@@ -110,7 +110,7 @@ class WebScrapyCompanyGroupSet(object):
         for company_code_number in company_code_number_list:
             company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
             if company_code_number_in_group_dict.get(company_group_number, None) is None:
-                 company_code_number_in_group_dict[company_group_number] = []
+                company_code_number_in_group_dict[company_group_number] = []
             company_code_number_in_group_dict[company_group_number].append(company_code_number)
 # Add data by group
         for company_group_number, company_code_number_in_group_list in company_code_number_in_group_dict.items():
@@ -125,7 +125,7 @@ class WebScrapyCompanyGroupSet(object):
 
     def add_company(self, company_code_number):
         company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
-        add_company(company_group_number, company_code_number)
+        self.add_company(company_group_number, company_code_number)
 
 
     def add_company_group(self, company_group_number):

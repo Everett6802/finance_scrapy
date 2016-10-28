@@ -31,8 +31,9 @@ def show_usage():
     print "--silent\nDescription: Disable print log on console"
     print "--check_result\nDescription: Check the CSV files after scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
-    print "--reserve_old\nDescription: Reserve the old CSV file\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
+    print "--reserve_old\nDescription: Reserve the old CSV file if exist\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
+    print "--set_finance_folderpath\nDescription: Set the finance root folder\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
     print "--source_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
     print "--source_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
     print "--source_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
@@ -177,6 +178,9 @@ def parse_param():
         #     remove_old = True
         #     check_result = True
         #     break
+        elif re.match("--set_finance_folderpath", sys.argv[index]):
+            g_mgr.set_finance_root_folderpath(sys.argv[index + 1])
+            index_offset = 2
         elif re.match("--source_from_all_time_range_default_file", sys.argv[index]):
             if CMN.DEF.IS_FINANCE_MARKET_MODE:
                 param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
@@ -229,16 +233,6 @@ def parse_param():
                 param_cfg["time_duration_range"] = sys.argv[index + 1]
             # g_logger.debug("Param time range: %s", param_cfg["time_duration_range"])
             index_offset = 2
-        # elif re.match("(-m|--method)", sys.argv[index]):
-        #     method = sys.argv[index + 1]
-        #     # import pdb; pdb.set_trace()
-        #     try:
-        #         method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(method)
-        #     except ValueError as e:
-        #         errmsg = "Unsupoorted method: %s" % method
-        #         show_error_and_exit(errmsg)
-        #     g_logger.debug("Param method: %s", method)
-        #     index_offset = 2
         elif re.match("--company_from_file", sys.argv[index]):
             if CMN.DEF.IS_FINANCE_MARKET_MODE:
                 g_logger.warn("The company_from_file arguemnt is ignored in the Market mode")
@@ -442,6 +436,17 @@ class MyTest(MyTestBase):
         return self.source_type_index
 
 
+class MyUpdateTest(object):
+    def __new__(cls):
+        print "new"
+    def __init__(self):
+        print "init"
+    def update(self, my_list):
+        my_list.append(4)
+    def get(self):
+        return range(4)
+
+
 def get_ret():
     my_list = [1,2,3]
     return my_list, "fuck"
@@ -450,10 +455,10 @@ def get_ret():
 import collections
 Web2CSVTimeRangeUpdateTuple1 = collections.namedtuple('Web2CSVTimeRangeUpdateTuple1', ('append_direction', 'old_csv_start', 'old_csv_end', 'new_web_start', 'new_web_end', 'new_csv_start', 'new_csv_end'))
 if __name__ == "__main__":
-    import pdb; pdb.set_trace()
-    folderpath = "/home/super/test_folder"
-    filename = "test.conf"
-    filepath = "%s/%s" % (folderpath, filename)
+    # import pdb; pdb.set_trace()
+    # folderpath = "/home/super/test_folder"
+    # filename = "test.conf"
+    # filepath = "%s/%s" % (folderpath, filename)
     # res = CMN.FUNC.check_file_exist(folderpath)
     # res = CMN.FUNC.create_folder_if_not_exist(folderpath)
     # res = CMN.FUNC.create_folder_if_not_exist(folderpath)
@@ -464,8 +469,17 @@ if __name__ == "__main__":
     # res = CMN.FUNC.copy_file_if_exist(filepath, filepath + ".old")
     # res = CMN.FUNC.rename_file_if_exist(filepath, filepath + ".old")
     # res = CMN.FUNC.copy_file_if_exist(filepath, filepath + ".old")
-    res = CMN.FUNC.append_data_into_file(filepath + ".old", filepath)
-    res = CMN.FUNC.append_data_into_file(filepath + ".old", filepath)
+    # res = CMN.FUNC.append_data_into_file(filepath + ".old", filepath)
+    # res = CMN.FUNC.append_data_into_file(filepath + ".old", filepath)
+    my_update_test = MyUpdateTest()
+    my_update_test2 = MyUpdateTest()
+    my_update_test3 = MyUpdateTest()
+    # my_list = range(3)
+    # print my_list
+    # my_update_test.update(my_list)
+    # print my_list
+    # my_list = my_update_test.get()
+    # print my_list
 
 
     # web2csv_time_range_update_tuple = Web2CSVTimeRangeUpdateTuple1(None, 1, 2, 3, 4, 5, 6)

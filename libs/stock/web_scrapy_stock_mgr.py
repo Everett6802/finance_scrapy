@@ -51,7 +51,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             shutil.rmtree(folderpath, ignore_errors=True)
 
 
-    def _update_csv_data_time_duration(self):
+    def _read_csv_old_data_time_duration(self):
         whole_company_number_in_group_dict = CompanyGroupSet.get_whole_company_number_in_group_dict()
         folderpath_format = self.__get_finance_folderpath_format()
         for company_group_number, company_code_number_list in whole_company_number_in_group_dict:
@@ -71,6 +71,14 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
                     csv_time_duration_list[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START] = time_duration_tuple
                 self.csv_time_duration_dict[company_code_number] = csv_time_duration_list
+
+
+    def _update_csv_new_data_time_duration(self, web_scrapy_obj):
+        raise NotImplementedError
+
+
+    def _write_csv_new_data_time_duration_to_file(self):
+        raise NotImplementedError
 
 
     def __transform_company_list_to_group_set(self, company_number_list):
