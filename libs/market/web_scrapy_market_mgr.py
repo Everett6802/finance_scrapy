@@ -15,7 +15,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def __init__(self):
         super(WebSracpyMarketMgr, self).__init__()
-        self.csv_time_duration_list = None
+        self.source_type_csv_time_duration = None
 
 
     def __get_finance_folderpath(self):
@@ -35,36 +35,32 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         shutil.rmtree(folderpath, ignore_errors=True)
 
 
-    def _read_csv_old_data_time_duration(self):
-        self.csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_MARKET_SIZE
+    def _read_old_csv_time_duration(self):
         csv_data_folderpath = self.__get_finance_folderpath()
         g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
         csv_time_duration_dict = CMN.DEF.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
         if csv_time_duration_dict is None:
             g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
             return
-# update the time range of each source type from csv files
+# update the time range of each source type from config file
+        self.source_type_csv_time_duration = [None] * CMN.DEF.DEF_DATA_SOURCE_MARKET_SIZE
         for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
-            self.csv_time_duration_list[source_type_index] = time_duration_tuple
+            self.source_type_csv_time_duration[source_type_index] = time_duration_tuple
 
 
-    def _update_csv_new_data_time_duration(self, web_scrapy_obj):
-        new_csv_time_duration_tuple = web_scrapy_obj.get_new_csv_time_duration()
-        if new_csv_time_duration_tuple is None:
-# No need to update the CSV data time duration
-            return
-        if self.csv_time_duration_list is None:
-            raise RuntimeError("self.csv_time_duration_list should NOT be None")
-        self.csv_time_duration_list[web_scrapy_obj.SourceTypeIndex] = new_csv_time_duration_tuple
+    def _update_new_csv_time_duration(self, web_scrapy_obj):
+        new_csv_time_duration = web_scrapy_obj.get_new_csv_time_duration()
+        assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
+        self.source_type_csv_time_duration[web_scrapy_obj.SourceTypeIndex] = new_csv_time_duration
 
 
-    def _write_csv_new_data_time_duration_to_file(self):
+    def _write_new_csv_time_duration(self):
         raise NotImplementedError
 
 
     def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):
         super(WebSracpyMarketMgr, self)._add_cfg_for_scrapy_obj(scrapy_obj_cfg)
-        scrapy_obj_cfg["csv_time_duration_table"] = self.csv_time_duration_list
+        scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration
 
 
     def do_scrapy(self):

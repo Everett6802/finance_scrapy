@@ -19,10 +19,10 @@ class WebSracpyMgrBase(object):
             "try_to_scrap_all": True,
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH,
-            "csv_time_duration_table": None
+            # "csv_time_duration_table": None
         }
         # self.xcfg.update(kwargs)
-        self.source_type_time_duration_list = None        
+        self.source_type_time_duration_list = None
 
 
     @classmethod
@@ -75,7 +75,7 @@ class WebSracpyMgrBase(object):
         g_logger.debug("Start to scrap %s......", web_scrapy_obj.get_description())
         web_scrapy_obj.scrap_web_to_csv()
 # Update the new CSV time duration
-        self._update_csv_new_data_time_duration(web_scrapy_obj)
+        self._update_new_csv_time_duration(web_scrapy_obj)
 
 
     def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):
@@ -87,7 +87,7 @@ class WebSracpyMgrBase(object):
         if not self.xcfg["old_finance_folder_reservation"]:
             self._remove_old_finance_folder()
         else:
-            self._read_csv_old_data_time_duration()
+            self._read_old_csv_time_duration()
         self._create_finance_folder_if_not_exist()
         total_errmsg = ""
         # import pdb; pdb.set_trace()
@@ -115,7 +115,7 @@ class WebSracpyMgrBase(object):
         if total_errmsg:
             RuntimeError(total_errmsg)
 # Write the new CSV data time range into file
-        self._write_csv_new_data_time_duration_to_file()
+        self._write_new_csv_time_duration()
 
 
     @classmethod
@@ -250,17 +250,17 @@ class WebSracpyMgrBase(object):
 
 
     @abstractmethod
-    def _read_csv_old_data_time_duration(self):
+    def _read_old_csv_time_duration(self):
         raise NotImplementedError
 
 
     @abstractmethod
-    def _update_csv_new_data_time_duration(self, web_scrapy_obj):
+    def _update_new_csv_time_duration(self, web_scrapy_obj):
         raise NotImplementedError
 
 
     @abstractmethod
-    def _write_csv_new_data_time_duration_to_file(self):
+    def _write_new_csv_time_duration(self):
         raise NotImplementedError
 
 
