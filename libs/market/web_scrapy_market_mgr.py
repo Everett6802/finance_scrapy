@@ -55,7 +55,9 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def _write_new_csv_time_duration(self):
-        raise NotImplementedError
+        csv_data_folderpath = self.__get_finance_folderpath()
+        g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
+        CMN.DEF.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration)
 
 
     def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):

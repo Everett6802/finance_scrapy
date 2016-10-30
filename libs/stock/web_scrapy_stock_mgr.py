@@ -84,7 +84,13 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def _write_new_csv_time_duration(self):
-        raise NotImplementedError
+        folderpath_format = self.__get_finance_folderpath_format()
+        for company_group_number, company_code_number_list in self.company_group_set.items():
+            folderpath_in_group = folderpath_format % (company_group_number)
+            for company_code_number in company_code_number_list:
+                csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
+                g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
+                CMN.DEF.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration_dict[company_number])
 
 
     def __transform_company_list_to_group_set(self, company_number_list):

@@ -194,7 +194,7 @@ def get_config_filepath(conf_filename):
 
 
 def get_finance_analysis_mode():
-    config_line_list = get_config_file_lines(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+    config_line_list = read_config_file_lines(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
     if len(config_line_list) != 1:
         raise ValueError("Incorrect setting in %s" % CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
     mode = int(config_line_list[0])
@@ -230,7 +230,7 @@ def get_finance_mode_description():
     return CMN_DEF.FINANCE_MODE_DESCRIPTION[CMN_DEF.FINANCE_MODE]
 
 
-def get_config_file_lines(conf_filename, conf_folderpath=None):
+def read_config_file_lines_ex(conf_filename, conf_file_read_attribute, conf_folderpath=None):
     conf_filepath = None
     if conf_folderpath is None:
         conf_filepath = get_config_filepath(conf_filename)
@@ -238,7 +238,7 @@ def get_config_file_lines(conf_filename, conf_folderpath=None):
         conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
     config_line_list = []
     try:
-        with open(conf_filepath, 'r') as fp:
+        with open(conf_filepath, conf_file_read_attribute) as fp:
             for line in fp:
                 if line.startswith('#'):
                     continue
@@ -247,15 +247,41 @@ def get_config_file_lines(conf_filename, conf_folderpath=None):
                     continue
                 config_line_list.append(line_strip)
     except Exception as e:
-        errmsg = "Error occur while parsing config file[%s], due to %s" % (conf_filename, str(e))
+        errmsg = "Error occur while reading config file[%s], due to %s" % (conf_filename, str(e))
         g_logger.error(errmsg)
         raise ValueError(errmsg)
     return config_line_list
 
 
+def read_config_file_lines_ex(conf_filename, conf_folderpath=None):
+    return read_config_file_lines_ex(conf_filename, 'r', conf_folderpath)
+
+
+def write_config_file_lines_ex(config_line_list, conf_filename, conf_file_write_attribute, conf_folderpath=None):
+    conf_filepath = None
+    if conf_folderpath is None:
+        conf_filepath = get_config_filepath(conf_filename)
+    else:
+        conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
+    try:
+        with open(conf_filepath, conf_file_write_attribute) as fp:
+            for line in config_line_list:
+                if not line.endswith("\n"):
+                    line += "\n"
+                fp.write(line)
+    except Exception as e:
+        errmsg = "Error occur while writing config file[%s], due to %s" % (conf_filename, str(e))
+        g_logger.error(errmsg)
+        raise ValueError(errmsg)
+
+
+def write_config_file_lines(config_line_list, conf_filename, conf_folderpath=None):
+    return write_config_file_lines_ex(config_line_list, conf_filename, 'w', conf_folderpath)
+
+
 def parse_source_type_time_duration_config_file(conf_filename, time_duration_type):
     # import pdb; pdb.set_trace()
-    config_line_list = get_config_file_lines(conf_filename)
+    config_line_list = read_config_file_lines(conf_filename)
     source_type_time_duration_config_list = []
     for line in config_line_list:
         param_list = line.split(' ')
@@ -280,7 +306,7 @@ def parse_csv_time_duration_config_file(conf_filename, conf_folderpath):
     # import pdb; pdb.set_trace()
     csv_time_duration_dict = {}
     try:
-        config_line_list = get_config_file_lines(conf_filename, conf_folderpath)
+        config_line_list = read_config_file_lines(conf_filename, conf_folderpath)
         for line in config_line_list:
             param_list = line.split(' ')
             param_list_len = len(param_list)
@@ -296,17 +322,22 @@ def parse_csv_time_duration_config_file(conf_filename, conf_folderpath):
     return csv_time_duration_dict
 
 
-def write_csv_time_duration_config_file(conf_filename, csv_time_duration_dict):
+def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict):
     # import pdb; pdb.set_trace()
-    with open(conf_filename, "wb") as fp:
-        for soruce_type_index, time_duration_dict in csv_time_duration_dict.items():
-            csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING[soruce_type_index], time_duration_dict.time_duration_start, time_duration_dict.time_duration_end)
-            fp.write(csv_time_duration_entry_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n")
+    config_line_list = []
+    source_type_start_index, source_type_end_index = get_source_type_index_range()
+    for source_type_index in range(source_type_start_index, source_type_end_index):
+        time_duration_tuple = csv_time_duration_dict.get(source_type_index, None)
+        if time_duration_tuple is None:
+            continue
+        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING[soruce_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
+        config_line_list.append(csv_time_duration_entry_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n")
+    write_config_file_lines_ex(config_line_list, conf_filename, "wb", conf_folderpath)
 
 
 def parse_company_config_file(conf_filename):
     # import pdb; pdb.set_trace()
-    config_line_list = get_config_file_lines(conf_filename)
+    config_line_list = read_config_file_lines(conf_filename)
     company_config_list = []
     for line in config_line_list:
         param_list = line.split(' ')
