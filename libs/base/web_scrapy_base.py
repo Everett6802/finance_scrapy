@@ -24,13 +24,36 @@ class WebScrapyBase(object):
         WEB2CSV_APPEND_FRONT = 1 #  new web data will be appended in front of the old csv data
         WEB2CSV_APPEND_BACK = 2 #  new web data will be appended in back of the old csv data
         def __init__(self):
-            self.append_direction = WEB2CSV_APPEND_NONE
+            self.append_direction = self.WEB2CSV_APPEND_NONE
             self.old_csv_start = None
             self.old_csv_end = None
             self.new_web_start = None
             self.new_web_end = None
             self.new_csv_start = None
             self.new_csv_end = None
+            self.description = None
+
+        def __str__(self):
+            if self.description is None:
+                self.description = ""
+                if self.old_csv_start is not None:
+                    self.description += "OCS: %s; " % self.old_csv_start
+                if self.old_csv_end is not None:
+                    self.description += "OCE: %s; " % self.old_csv_end
+                if self.new_web_start is not None:
+                    self.description += "NWS: %s; " % self.new_web_start
+                if self.new_web_end is not None:
+                    self.description += "NWE: %s; " % self.new_web_end
+                if self.new_csv_start is not None:
+                    self.description += "NCS: %s; " % self.new_csv_start
+                if self.new_csv_end is not None:
+                    self.description += "NCE: %s; " % self.new_csv_end
+            return self.description
+
+
+        def __repr__(self):
+            return self.__str__()
+
 
         @property
         def NeedUpdate(self):
@@ -41,49 +64,49 @@ class WebScrapyBase(object):
             return self.append_direction
         @AppendDirection.setter
         def AppendDirection(self, append_direction):
-            self.append_direction
+            self.append_direction = append_direction
 
         @property
         def OldCSVStart(self):
             return self.old_csv_start
         @OldCSVStart.setter
         def OldCSVStart(self, old_csv_start):
-            self.old_csv_start
+            self.old_csv_start = old_csv_start
 
         @property
         def OldCSVEnd(self):
             return self.old_csv_end
         @OldCSVEnd.setter
         def OldCSVEnd(self, old_csv_end):
-            self.old_csv_end
+            self.old_csv_end = old_csv_end
 
         @property
         def NewWebStart(self):
             return self.new_web_start
         @NewWebStart.setter
         def NewWebStart(self, new_web_start):
-            self.new_web_start
+            self.new_web_start = new_web_start
 
         @property
         def NewWebEnd(self):
             return self.new_web_end
         @NewWebEnd.setter
         def NewWebEnd(self, new_web_end):
-            self.new_web_end
+            self.new_web_end = new_web_end
 
         @property
         def NewCSVStart(self):
             return self.new_csv_start
         @NewCSVStart.setter
         def NewCSVStart(self, new_csv_start):
-            self.new_csv_start
+            self.new_csv_start = new_csv_start
 
         @property
         def NewCSVEnd(self):
             return self.new_csv_end
         @NewCSVEnd.setter
         def NewCSVEnd(self, new_csv_end):
-            self.new_csv_end
+            self.new_csv_end = new_csv_end
 
     PARSE_URL_DATA_FUNC_PTR = None
     GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
@@ -197,44 +220,26 @@ class WebScrapyBase(object):
 
 
     def _get_web_data(self, url):
-        # try:
-        #     # res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-        #     res = self._try_to_get_request_obj(url)
-        # except requests.exceptions.Timeout as e:
-        #     # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
-        #     fail_to_scrap = False
-        #     for index in range(CMN.DEF.DEF_SCRAPY_RETRY_TIMES):
-        #         time.sleep(randint(3,9))
-        #         try:
-        #             # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
-        #             res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-        #         except requests.exceptions.Timeout as ex:
-        #             # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
-        #             fail_to_scrap = True
-        #         if not fail_to_scrap:
-        #             break
-        #     if fail_to_scrap:
-        #         g_logger.error("Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, self.SCRAPY_RETRY_TIMES))
-        #         raise e
         req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
         # parse_url_data_type = self.parse_url_data_type_obj.get_type()
         # return (self.PARSE_URL_DATA_FUNC_PTR[parse_url_data_type])(res)
         # import pdb; pdb.set_trace()
-        return (self.get_parse_url_data_func_ptr()[self.url_parsing_method])(res, self.source_url_parsing_cfg)
+        return (self.get_parse_url_data_func_ptr()[self.url_parsing_method])(req, self.source_url_parsing_cfg)
 
 
     def _get_overlapped_web2csv_time_duration_update_cfg(self, csv_old_time_duration_tuple, time_duration_start, time_duration_end):
+        # import pdb; pdb.set_trace()
         is_overlap = False
-        web2csv_time_duration_update = Web2CSVTimeRangeUpdate()
+        web2csv_time_duration_update = WebScrapyBase.Web2CSVTimeRangeUpdate()
 # Adjust the time duration, ignore the data which already exist in the finance data folder
 # I assume that the time duration between the csv data and new data should be consecutive
         if csv_old_time_duration_tuple.source_type_index != self.source_type_index:
             raise ValueError("The source type index is NOT identical: %d %d", (csv_old_time_duration_tuple.source_type_index, self.source_type_index))
-        is_overlap = CMN.FUNC.is_time_range_overlap(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end):
+        is_overlap = CMN.FUNC.is_time_range_overlap(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end)
         if is_overlap:
             is_time_duration_start_in_range = CMN.FUNC.is_time_in_range(csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start) 
             is_time_duration_end_in_range = CMN.FUNC.is_time_in_range(csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_end) 
-            if is_time_duration_start_in_range && is_time_duration_end_in_range:
+            if is_time_duration_start_in_range and is_time_duration_end_in_range:
 # All csv data already exists, no need to update the new data
                 g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.FUNC.get_source_type_index_from_description(self.source_type_index)))
                 return web2csv_time_duration_update
@@ -275,13 +280,13 @@ class WebScrapyBase(object):
             web2csv_time_duration_update.NewWebEnd = time_duration_end
             if web2csv_time_duration_update.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
 # Check if the new CSV time range is continous
-                if web2csv_time_duration_update.OldCSVStart - web2csv_time_duration_update.NewWebEnd != 1
+                if web2csv_time_duration_update.OldCSVStart - web2csv_time_duration_update.NewWebEnd != 1:
                     raise ValueError("Incorrect time range for update front; OldCSV[%s:%s], NewWeb[%s:%s]" % (web2csv_time_duration_update.OldCSVStart, web2csv_time_duration_update.OldCSVEnd, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd))
                 web2csv_time_duration_update.NewCSVStart = web2csv_time_duration_update.NewWebStart
                 web2csv_time_duration_update.NewCSVEnd = web2csv_time_duration_update.OldCSVEnd
             elif web2csv_time_duration_update.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK:
 # Check if the new CSV time range is continous
-                if web2csv_time_duration_update.NewWebStart - web2csv_time_duration_update.OldCSVEnd != 1
+                if web2csv_time_duration_update.NewWebStart - web2csv_time_duration_update.OldCSVEnd != 1:
                     raise ValueError("Incorrect time range for update back; OldCSV[%s:%s], NewWeb[%s:%s]" % (web2csv_time_duration_update.OldCSVStart, web2csv_time_duration_update.OldCSVEnd, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd))
                 web2csv_time_duration_update.NewCSVStart = web2csv_time_duration_update.OldCSVStart
                 web2csv_time_duration_update.NewCSVEnd = web2csv_time_duration_update.NewWebEnd 
@@ -289,11 +294,12 @@ class WebScrapyBase(object):
 
 
     def _get_non_overlapped_web2csv_time_duration_update_cfg(self, time_duration_start, time_duration_end):
-#If it's time first time to write the data from web to CSV ......
-        web2csv_time_duration_update = Web2CSVTimeRangeUpdate()
+        # import pdb; pdb.set_trace()
+# If it's time first time to write the data from web to CSV ......
+        web2csv_time_duration_update = WebScrapyBase.Web2CSVTimeRangeUpdate()
         web2csv_time_duration_update.NewCSVStart = web2csv_time_duration_update.NewWebStart = time_duration_start
         web2csv_time_duration_update.NewCSVEnd = web2csv_time_duration_update.NewWebEnd = time_duration_end
-        web2csv_time_duration_update.AppendDirection = Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK
+        web2csv_time_duration_update.AppendDirection = WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BACK
         return web2csv_time_duration_update
 
 
@@ -305,14 +311,14 @@ class WebScrapyBase(object):
 
     def _adjust_time_today_start_and_end_time(self, *args):
         time_duration_start = time_duration_end = CMN.CLS.FinanceDate.get_today_finance_date()
-        return (CMN_CLS.TimeDurationTuple(time_duration_start, time_duration_end)
+        return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
 
 
     def _adjust_time_last_start_and_end_time(self, *args):
         today_data_exist_hour = CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
         today_data_exist_minute = CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
         time_duration_start = time_duration_end = CMN.FUNC.get_last_url_data_date(today_data_exist_hour, today_data_exist_minute) 
-        return (CMN_CLS.TimeDurationTuple(time_duration_start, time_duration_end)
+        return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
 
 
     def _adjust_time_range_start_and_end_time(self, *args):
@@ -328,13 +334,17 @@ class WebScrapyBase(object):
             time_duration_start = time_duration_start_from_lookup_table
         else:
             if self.xcfg["time_duration_start"] < time_duration_start_from_lookup_table:
-                time_duration_start = time_duration_start_from_lookup_table    
+                time_duration_start = time_duration_start_from_lookup_table
+            else:
+                time_duration_start = self.xcfg["time_duration_start"]
         if self.xcfg["time_duration_end"] is None:
             time_duration_end = time_duration_end_from_lookup_table
         else:
             if self.xcfg["time_duration_end"] > time_duration_end_from_lookup_table:
-                time_duration_end = time_duration_end_from_lookup_table    
-        return (CMN_CLS.TimeDurationTuple(time_duration_start, time_duration_end)
+                time_duration_end = time_duration_end_from_lookup_table
+            else:
+                time_duration_end = self.xcfg["time_duration_end"]
+        return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
 
 
     @abstractmethod

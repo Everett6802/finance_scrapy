@@ -253,7 +253,7 @@ def read_config_file_lines_ex(conf_filename, conf_file_read_attribute, conf_fold
     return config_line_list
 
 
-def read_config_file_lines_ex(conf_filename, conf_folderpath=None):
+def read_config_file_lines(conf_filename, conf_folderpath=None):
     return read_config_file_lines_ex(conf_filename, 'r', conf_folderpath)
 
 

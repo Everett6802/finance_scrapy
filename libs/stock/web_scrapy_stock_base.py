@@ -90,7 +90,8 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 time_duration_after_lookup_time.time_duration_end
             )
         if web2csv_time_duration_update.NeedUpdate:
-            self.new_csv_time_duration_dict[company_code_number] = CMN_CLS.TimeDurationTuple(web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd)
+            self.new_csv_time_duration_dict[company_code_number] = CMN.CLS.TimeDurationTuple(web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd)
+        return web2csv_time_duration_update
 
 
     def scrap_web_to_csv(self):
@@ -102,7 +103,6 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 csv_group_folderpath = self.assemble_csv_company_folderpath(company_code_number, company_group_number)
                 CMN.FUNC.create_folder_if_not_exist(csv_group_folderpath)
                 # import pdb; pdb.set_trace()
-                self.time_slice_kwargs["company_code_number"] = company_code_number
 # Find the file path for writing data into csv
                 csv_filepath = self.assemble_csv_filepath(self.source_type_index, company_code_number, company_group_number)
 # Determine the actual time range
@@ -122,6 +122,11 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
 # Create the time slice iterator due to correct time range
                 # import pdb; pdb.set_trace()
+                self.time_slice_kwargs["company_code_number"] = company_code_number
+# Update the time range of time slice
+                self.time_slice_kwargs["time_duration_start"] = web2csv_time_duration_update.NewWebStart
+                self.time_slice_kwargs["time_duration_end"] = web2csv_time_duration_update.NewWebEnd
+# Generate the time slice
                 timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
                 csv_data_list_each_year = []
                 cur_year = None
@@ -158,7 +163,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 # No matter the csv time range would be updated, the new time duration is required to re-write into the config file
         # if self.web2csv_time_duration_update_cfg is None:
         #     raise RuntimeError("self.web2csv_time_duration_update_cfg should NOT be None")
-        # return (CMN_CLS.TimeDurationTuple(self.web2csv_time_duration_update_cfg.NewCSVStart, self.web2csv_time_duration_update_cfg.NewCSVEnd) if self.web2csv_time_duration_update_cfg.NeedUpdate else None)
+        # return (CMN.CLS.TimeDurationTuple(self.web2csv_time_duration_update_cfg.NewCSVStart, self.web2csv_time_duration_update_cfg.NewCSVEnd) if self.web2csv_time_duration_update_cfg.NeedUpdate else None)
         assert self.new_csv_time_duration_dict is not None, "self.new_csv_time_duration_dict should NOT be None"
         return self.new_csv_time_duration_dict
 

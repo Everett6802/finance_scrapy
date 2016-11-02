@@ -84,6 +84,7 @@ class WebSracpyMgrBase(object):
 
 
     def _scrap_data(self):
+        # import pdb; pdb.set_trace()
         if not self.xcfg["old_finance_folder_reservation"]:
             self._remove_old_finance_folder()
         else:

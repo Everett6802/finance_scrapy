@@ -36,6 +36,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def _read_old_csv_time_duration(self):
+        import pdb; pdb.set_trace()
         csv_data_folderpath = self.__get_finance_folderpath()
         g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
         csv_time_duration_dict = CMN.DEF.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
@@ -49,15 +50,17 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def _update_new_csv_time_duration(self, web_scrapy_obj):
+        import pdb; pdb.set_trace()
         new_csv_time_duration = web_scrapy_obj.get_new_csv_time_duration()
         assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
         self.source_type_csv_time_duration[web_scrapy_obj.SourceTypeIndex] = new_csv_time_duration
 
 
     def _write_new_csv_time_duration(self):
+        import pdb; pdb.set_trace()
         csv_data_folderpath = self.__get_finance_folderpath()
         g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
-        CMN.DEF.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration)
+        CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration)
 
 
     def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):

@@ -90,10 +90,10 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             for company_code_number in company_code_number_list:
                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
                 g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
-                CMN.DEF.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration_dict[company_number])
+                CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration_dict[company_number])
 
 
-    def __transform_company_list_to_group_set(self, company_number_list):
+    def __transform_company_word_list_to_group_set(self, company_word_list):
         """
         The argument type:
         Company code number: 2347
@@ -102,7 +102,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         Company code number/number range hybrid: 2347,2100-2200,2362,g2,1500-1510
         """
         self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
-        for company_number in company_number_list:
+        for company_number in company_word_list:
             mobj = re.match("([\d]{4})-([\d]{4})", company_number)
             if mobj is None:
 # Check if data is company code/group number
@@ -123,23 +123,23 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 number_list = []
                 for number in range(start_company_number_int, end_company_number_int + 1):
                     number_list.append("%04d" % number)
-                self.company_group_set.add_company_list(number_list)
+                self.company_group_set.add_company_word_list(number_list)
 
 
     def set_company_from_file(self, filename):
-        company_list = CMN.FUNC.parse_source_type_time_range_config_file(filename)
-        self.__transform_company_list_to_group_set(company_list)
+        company_word_list = CMN.FUNC.parse_source_type_time_range_config_file(filename)
+        self.__transform_company_word_list_to_group_set(company_word_list)
 
 
-    def set_company(self, company_list):
-        self.__transform_company_list_to_group_set(company_list)
+    def set_company(self, company_word_list):
+        self.__transform_company_word_list_to_group_set(company_word_list)
 
 
     # def initialize(**kwargs):
     #     super(WebSracpyStockMgr, self).initialize(**kwargs)
-    #     if kwargs.get("company_number_list", None) is not None:
+    #     if kwargs.get("company_word_list", None) is not None:
     #         company_group_set = WebScrapyCompanyGroupSet()
-    #         for company_number in kwargs["company_number_list"]:
+    #         for company_number in kwargs["company_word_list"]:
     #             company_group_set.add_company(company_number)
     #         company_group_set.add_done();
     #         if kwargs.get("company_group_set", None) is not None:
