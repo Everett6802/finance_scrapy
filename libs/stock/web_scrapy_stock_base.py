@@ -68,7 +68,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         company_csv_time_duration_table = self.xcfg["csv_time_duration_table"].get(args[0], None)
         if company_csv_time_duration_table is None:
             return False
-        if company_csv_time_duration_table[self.source_type_index] is None:
+        if company_csv_time_duration_table.get(self.source_type_index, None) is None:
             return False
         return True
 

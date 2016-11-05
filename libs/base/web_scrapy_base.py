@@ -193,6 +193,7 @@ class WebScrapyBase(object):
         raise NotImplementedError
 
 
+    @property
     def SourceTypeIndex(self):
         return self.source_type_index
 

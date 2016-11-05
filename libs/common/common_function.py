@@ -302,7 +302,7 @@ def parse_source_type_time_duration_config_file(conf_filename, time_duration_typ
     return source_type_time_duration_config_list
 
 
-def parse_csv_time_duration_config_file(conf_filename, conf_folderpath):
+def parse_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as_list=False):
     # import pdb; pdb.set_trace()
     csv_time_duration_dict = {}
     try:
@@ -330,8 +330,8 @@ def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time
         time_duration_tuple = csv_time_duration_dict.get(source_type_index, None)
         if time_duration_tuple is None:
             continue
-        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING[soruce_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
-        config_line_list.append(csv_time_duration_entry_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n")
+        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
+        config_line_list.append(csv_time_duration_entry_unicode.encode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE) + "\n")
     write_config_file_lines_ex(config_line_list, conf_filename, "wb", conf_folderpath)
 
 

@@ -42,7 +42,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
     def _check_old_csv_time_duration_exist(self, *args):
         if self.xcfg["csv_time_duration_table"] is None:
             return False 
-        if self.xcfg["csv_time_duration_table"][self.source_type_index] is None:
+        if self.xcfg["csv_time_duration_table"].get(self.source_type_index, None) is None:
             return False 
         return True
 
@@ -89,7 +89,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
             g_logger.debug("Need add the new data in front of the old CSV data, rename the file: %s" % (csv_filepath + ".old"))
             CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
 # Create the time slice iterator due to correct time range
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 # Update the time range of time slice
         self.time_slice_kwargs["time_duration_start"] = web2csv_time_duration_update.NewWebStart
         self.time_slice_kwargs["time_duration_end"] = web2csv_time_duration_update.NewWebEnd

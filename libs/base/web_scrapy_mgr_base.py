@@ -85,6 +85,7 @@ class WebSracpyMgrBase(object):
 
     def _scrap_data(self):
         # import pdb; pdb.set_trace()
+        self._init_csv_time_duration()
         if not self.xcfg["old_finance_folder_reservation"]:
             self._remove_old_finance_folder()
         else:
@@ -247,6 +248,11 @@ class WebSracpyMgrBase(object):
 
     @abstractmethod
     def _remove_old_finance_folder(self):
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def _init_csv_time_duration(self):
         raise NotImplementedError
 
 

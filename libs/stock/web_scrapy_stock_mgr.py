@@ -51,10 +51,19 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             shutil.rmtree(folderpath, ignore_errors=True)
 
 
+    def _init_csv_time_duration(self):
+        assert self.source_type_csv_time_duration_dict is None, "self.source_type_csv_time_duration_dict should be None"
+        for company_group_number, company_code_number_list in self.company_group_set.items():
+            for company_code_number in company_code_number_list:
+                # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
+                self.source_type_csv_time_duration_dict[company_code_number] = {}
+
+
     def _read_old_csv_time_duration(self):
+        assert self.source_type_csv_time_duration_dict is not None, "self.source_type_csv_time_duration_dict should NOT be None"
         # whole_company_number_in_group_dict = CompanyGroupSet.get_whole_company_number_in_group_dict()
         folderpath_format = self.__get_finance_folderpath_format()
-        self.source_type_csv_time_duration_dict = {}
+        # self.source_type_csv_time_duration_dict = {}
         # for company_group_number, company_code_number_list in whole_company_number_in_group_dict:
         for company_group_number, company_code_number_list in self.company_group_set.items():
             folderpath_in_group = folderpath_format % (company_group_number)
@@ -69,18 +78,18 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
                     continue
 # update the time range of each source type of comapny from config files
-                csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
-                for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
-                    csv_time_duration_list[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START] = time_duration_tuple
-                self.source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_list
+                # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
+                # for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
+                #     csv_time_duration_list[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START] = time_duration_tuple
+                self.source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_dict
 
 
     def _update_new_csv_time_duration(self, web_scrapy_obj):
+        assert self.source_type_csv_time_duration_dict is not None, "self.source_type_csv_time_duration_dict should NOT be None"
         new_csv_time_duration_dict = web_scrapy_obj.get_new_csv_time_duration()
-        assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
-        source_type_index_offset = web_scrapy_obj.SourceTypeIndex - CMN.DEF.DEF_DATA_SOURCE_STOCK_START
+        # source_type_index_offset = web_scrapy_obj.SourceTypeIndex - CMN.DEF.DEF_DATA_SOURCE_STOCK_START
         for company_number, time_duration_tuple in new_csv_time_duration_dict:
-            self.source_type_csv_time_duration_dict[company_number][source_type_index_offset] = time_duration_tuple
+            self.source_type_csv_time_duration_dict[company_number][web_scrapy_obj.SourceTypeIndex] = time_duration_tuple
 
 
     def _write_new_csv_time_duration(self):
