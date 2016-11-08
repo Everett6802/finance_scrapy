@@ -25,6 +25,7 @@ param_cfg = {}
 def show_usage():
     print "=========================== Usage ==========================="
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
+    print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
@@ -103,6 +104,16 @@ def snapshot_result(run_result_str):
     subprocess.call(["rm", CMN.RUN_RESULT_FILENAME])
 
 
+def show_command_example():
+    project_folderpath = CMN.FUNC.get_project_folderpath()
+    print project_folderpath
+    project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.DEF_CONF_FOLDER)
+    os.chdir(project_config_folderpath)
+    cmd = "cat %s" % CMN.DEF.DEF_COMMAND_EXAMPLE_FILENAME
+    p = subprocess.Popen(cmd, shell=True)
+    os.waitpid(p.pid, 0)
+
+
 def init_param():
     # import pdb; pdb.set_trace()
     param_cfg["silent"] = False
@@ -128,6 +139,9 @@ def parse_param():
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
         if re.match("(-h|--help)", sys.argv[index]):
             show_usage()
+            sys.exit(0)
+        elif re.match("--show_command_example", sys.argv[index]):
+            show_command_example()
             sys.exit(0)
         elif re.match("--update_workday_calendar", sys.argv[index]):
             workday_calendar = BASE.WC.WebScrapyWorkdayCanlendar.Instance()

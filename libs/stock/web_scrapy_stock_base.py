@@ -51,14 +51,14 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     def assemble_csv_company_folderpath(cls, company_code_number, company_group_number=-1):
         if company_group_number == -1:
             company_group_number = cls.__get_company_profile().lookup_company_group_number(company_code_number)
-        csv_company_folderpath = "%s/%s%02d/%s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_STOCK_FOLDERNAME, company_group_number, company_code_number) 
+        csv_company_folderpath = "%s/%s%02d/%s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number) 
         return csv_company_folderpath
 
 
     def assemble_csv_filepath(self, source_type_index, company_code_number, company_group_number=-1):
         if company_group_number == -1:
             company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
-        csv_filepath = "%s/%s%02d/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_CSV_STOCK_FOLDERNAME, company_group_number, company_code_number, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+        csv_filepath = "%s/%s%02d/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
         return csv_filepath
 
 

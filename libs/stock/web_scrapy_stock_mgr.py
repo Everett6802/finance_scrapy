@@ -35,8 +35,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def _create_finance_folder_if_not_exist(self):
+        self._create_finance_root_folder_if_not_exist()
         folderpath_format = self.__get_finance_folderpath_format()
-        for index in range(self.__get_company_profile().company_group_size):
+        for index in range(self.__get_company_profile().CompanyGroupSize):
             folderpath = folderpath_format % index
             g_logger.debug("Try to create new folder: %s" % folderpath)
             CMN.FUNC.create_folder_if_not_exist(folderpath)
@@ -45,14 +46,16 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def _remove_old_finance_folder(self):
 # Remove the old data if necessary
         folderpath_format = self.__get_finance_folderpath_format()
-        for index in range(self.__get_company_profile().company_group_size):
+        for index in range(self.__get_company_profile().CompanyGroupSize):
             folderpath = folderpath_format % index
             g_logger.debug("Remove old folder: %s" % folderpath)
             shutil.rmtree(folderpath, ignore_errors=True)
 
 
     def _init_csv_time_duration(self):
+        # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration_dict is None, "self.source_type_csv_time_duration_dict should be None"
+        self.source_type_csv_time_duration_dict = {}
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
                 # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
@@ -85,21 +88,23 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def _update_new_csv_time_duration(self, web_scrapy_obj):
+        # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration_dict is not None, "self.source_type_csv_time_duration_dict should NOT be None"
-        new_csv_time_duration_dict = web_scrapy_obj.get_new_csv_time_duration()
+        new_csv_time_duration_dict = web_scrapy_obj.get_new_csv_time_duration_dict()
         # source_type_index_offset = web_scrapy_obj.SourceTypeIndex - CMN.DEF.DEF_DATA_SOURCE_STOCK_START
-        for company_number, time_duration_tuple in new_csv_time_duration_dict:
+        for company_number, time_duration_tuple in new_csv_time_duration_dict.items():
             self.source_type_csv_time_duration_dict[company_number][web_scrapy_obj.SourceTypeIndex] = time_duration_tuple
 
 
     def _write_new_csv_time_duration(self):
+        # import pdb; pdb.set_trace()
         folderpath_format = self.__get_finance_folderpath_format()
         for company_group_number, company_code_number_list in self.company_group_set.items():
-            folderpath_in_group = folderpath_format % (company_group_number)
+            folderpath_in_group = folderpath_format % int(company_group_number)
             for company_code_number in company_code_number_list:
                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
                 g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
-                CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration_dict[company_number])
+                CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration_dict[company_code_number])
 
 
     def __transform_company_word_list_to_group_set(self, company_word_list):
@@ -133,6 +138,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 for number in range(start_company_number_int, end_company_number_int + 1):
                     number_list.append("%04d" % number)
                 self.company_group_set.add_company_word_list(number_list)
+        self.company_group_set.add_done()
 
 
     def set_company_from_file(self, filename):

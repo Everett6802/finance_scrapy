@@ -240,6 +240,12 @@ class WebSracpyMgrBase(object):
 #             )
 
 
+    def _create_finance_root_folder_if_not_exist(self):
+        root_folderpath = self.xcfg["finance_root_folderpath"]
+        g_logger.debug("Try to create new root folder: %s" % root_folderpath)
+        CMN.FUNC.create_folder_if_not_exist(root_folderpath)
+
+
     @abstractmethod
     def _create_finance_folder_if_not_exist(self):
         # """IMPORTANT: This is a class method, override it with @classmethod !"""

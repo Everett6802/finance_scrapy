@@ -117,15 +117,12 @@ class WebScrapyCompanyGroupSet(object):
             self.add_company_in_group_list(company_group_number, company_code_number_in_group_list)
 
 
-    def add_company(self, company_group_number, company_code_number):
+    def add_company(self, company_code_number, company_group_number=None):
+        if company_group_number is None:
+            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
         company_code_number_in_group_array = []
         company_code_number_in_group_array.append(company_code_number)
         self.add_company_in_group_list(company_group_number, company_code_number_in_group_array)
-
-
-    def add_company(self, company_code_number):
-        company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
-        self.add_company(company_group_number, company_code_number)
 
 
     def add_company_group(self, company_group_number):

@@ -23,6 +23,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def _create_finance_folder_if_not_exist(self):
+        self._create_finance_root_folder_if_not_exist()
         folderpath = self.__get_finance_folderpath()
         g_logger.debug("Try to create new folder: %s" % folderpath)
         CMN.FUNC.create_folder_if_not_exist(folderpath)

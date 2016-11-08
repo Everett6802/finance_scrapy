@@ -568,22 +568,3 @@ def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_t
         return (True if (finance_time_start <= finance_time <= finance_time_range_end) else False)
     else:
         return (True if (finance_time_start >= finance_time >= finance_time_range_end) else False)
-
-
-# DEF_DATA_SOURCE_START_DATE_CFG = [
-#     transform_string2datetime("2001-01-01"),
-#     transform_string2datetime("2004-04-07"),
-#     transform_string2datetime("2001-01-01"),
-#     get_year_offset_datetime_cfg(datetime.today(), -3),
-#     get_year_offset_datetime_cfg(datetime.today(), -3),
-#     get_year_offset_datetime_cfg(datetime.today(), -3),
-#     transform_string2datetime("2002-01-01"),
-#     transform_string2datetime("2004-07-01"),
-#     transform_string2datetime("2012-05-02"),
-#     transform_string2datetime("2012-05-02"),
-#     transform_string2datetime("2015-04-30"),
-#     # transform_string2datetime("2010-01-04"),
-#     # transform_string2datetime("2004-12-17"),
-#     # transform_string2datetime("2004-12-17"),
-#     # transform_string2datetime("2004-12-17"),
-# ]
