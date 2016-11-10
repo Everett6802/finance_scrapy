@@ -286,8 +286,8 @@ def parse_source_type_time_duration_config_file(conf_filename, time_duration_typ
     for line in config_line_list:
         param_list = line.split(' ')
         param_list_len = len(param_list)
-        # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
-        source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
+        # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
+        source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
         time_duration_start = None
         if param_list_len >= 2:
             # time_duration_start = transform_string2datetime(param_list[1])
@@ -310,10 +310,10 @@ def parse_csv_time_duration_config_file(conf_filename, conf_folderpath, return_a
         for line in config_line_list:
             param_list = line.split(' ')
             param_list_len = len(param_list)
-            # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
+            # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
             if param_list_len != 3:
                 raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
-            source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE))
+            source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
             time_range_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
             time_range_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
             csv_time_duration_dict[source_type_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
@@ -556,15 +556,15 @@ def try_to_request_from_url_and_check_return(url, timeout=None):
 def is_time_range_overlap(finance_time1_start, finance_time1_end, finance_time2_start, finance_time2_end):
     check_overlap1 = True
     if finance_time1_start is not None and finance_time2_end is not None:
-        check_overlap1 = finance_date1_start <= finance_date2_end
+        check_overlap1 = (finance_time1_start <= finance_time2_end)
     check_overlap2 = True
-    if finance_time2start is not None and finance_time1_end is not None:
-        check_overlap2 = finance_date2_start <= finance_date1_end    
+    if finance_time2_start is not None and finance_time1_end is not None:
+        check_overlap2 = (finance_time2_start <= finance_time1_end)  
     return (check_overlap1 and check_overlap2)
 
 
 def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_time):
     if finance_time_range_start <= finance_time_range_end:
-        return (True if (finance_time_start <= finance_time <= finance_time_range_end) else False)
+        return (True if (finance_time_range_start <= finance_time <= finance_time_range_end) else False)
     else:
-        return (True if (finance_time_start >= finance_time >= finance_time_range_end) else False)
+        return (True if (finance_time_range_start >= finance_time >= finance_time_range_end) else False)

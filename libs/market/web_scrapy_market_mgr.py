@@ -43,11 +43,11 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def _read_old_csv_time_duration(self):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
         csv_data_folderpath = self.__get_finance_folderpath()
         g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
-        csv_time_duration_dict = CMN.DEF.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+        csv_time_duration_dict = CMN.FUNC.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
         if csv_time_duration_dict is None:
             g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
             return

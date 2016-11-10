@@ -9,14 +9,7 @@ import subprocess
 from datetime import datetime, timedelta
 from libs import common as CMN
 from libs import base as BASE
-CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()
-CMN.DEF.IS_FINANCE_STOCK_MODE = CMN.FUNC.is_stock_mode()
-if CMN.DEF.IS_FINANCE_MARKET_MODE:
-    from libs.market import web_scrapy_market_mgr as MGR
-    g_mgr = MGR.WebSracpyMarketMgr()
-else:
-    from libs.stock import web_scrapy_stock_mgr as MGR
-    g_mgr = MGR.WebSracpyStockMgr()
+g_mgr = None
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -27,6 +20,7 @@ def show_usage():
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
+    print "--market_mode --stock_mode\nDescription: Switch the market/stock mode\nCaution: Read parameters from %s when NOT set" % CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--silent\nDescription: Disable print log on console"
@@ -34,8 +28,8 @@ def show_usage():
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
     print "--reserve_old\nDescription: Reserve the old CSV file if exist\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
-    print "--set_finance_folderpath\nDescription: Set the finance root folder\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
-    print "--source_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
+    print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
+    print "--source_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/source_from_xxx_file/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
     print "--source_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
     print "--source_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
     print "--source_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
@@ -106,7 +100,7 @@ def snapshot_result(run_result_str):
 
 def show_command_example():
     project_folderpath = CMN.FUNC.get_project_folderpath()
-    print project_folderpath
+    # print project_folderpath
     project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.DEF_CONF_FOLDER)
     os.chdir(project_config_folderpath)
     cmd = "cat %s" % CMN.DEF.DEF_COMMAND_EXAMPLE_FILENAME
@@ -114,13 +108,59 @@ def show_command_example():
     os.waitpid(p.pid, 0)
 
 
+def check_url():
+    source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
+    error_found = False
+    errmsg = "**************** Check %s URL ****************\n" % CMN.FUNC.get_finance_mode_description()
+    for source_type_index in source_type_index_list:
+        try:
+            g_mgr.do_scrapy_debug(source_type_index, True)
+        except Exception as e:
+            error_found = True
+            errmsg += " %d: %s %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index], str(e))
+    if error_found:
+        show_error_and_exit(errmsg)
+    else:
+        sys.exit(0)
+
+
+def debug_source(source_type_index):
+    if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
+        errmsg = "Unsupported source type index: %d" % source_type_index
+        show_error_and_exit(errmsg)
+    g_mgr.do_scrapy_debug(source_type_index)
+    sys.exit(0)
+
+
+# def switch_mode(mode):
+# # MARKET: 0
+# # STOCK: 1
+#     project_folderpath = CMN.FUNC.get_project_folderpath()
+#     # print project_folderpath
+#     project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.DEF_CONF_FOLDER)
+#     os.chdir(project_config_folderpath)
+#     cmd = None
+#     if mode == CMN.DEF.FINANCE_ANALYSIS_MARKET:
+#         cmd = "sed s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+#     elif mode == CMN.DEF.FINANCE_ANALYSIS_STOCK:
+#         cmd = "sed s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+#     else:
+#         raise ValueError("Unknown mode: %d", mode)
+#     p = subprocess.Popen(cmd, shell=True)
+#     os.waitpid(p.pid, 0)
+
 def init_param():
     # import pdb; pdb.set_trace()
+    param_cfg["mode"] = None
+    param_cfg["check_url"] = False
+    param_cfg["debug_source"] = None
     param_cfg["silent"] = False
     param_cfg["check_result"] = False
     param_cfg["clone_result"] = False
     param_cfg["reserve_old"] = False
     param_cfg["dry_run"] = False
+    param_cfg["finance_folderpath"] = None
+    param_cfg['source_from_all_time_range_default_file'] = False
     param_cfg["source"] = None
     param_cfg["time_duration_type"] = None # Should be check in check_param()
     param_cfg["time_duration_range"] = None
@@ -146,28 +186,18 @@ def parse_param():
         elif re.match("--update_workday_calendar", sys.argv[index]):
             workday_calendar = BASE.WC.WebScrapyWorkdayCanlendar.Instance()
             sys.exit(0)
+        elif re.match("--market_mode", sys.argv[index]):
+            param_cfg["mode"] = CMN.DEF.FINANCE_ANALYSIS_MARKET
+            index_offset = 1
+        elif re.match("--stock_mode", sys.argv[index]):
+            param_cfg["mode"] = CMN.DEF.FINANCE_ANALYSIS_STOCK
+            index_offset = 1   
         elif re.match("--check_url", sys.argv[index]):
-            # import pdb; pdb.set_trace()
-            source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
-            error_found = False
-            errmsg = "**************** Check %s URL ****************\n" % CMN.FUNC.get_finance_mode_description()
-            for source_type_index in source_type_index_list:
-                try:
-                    g_mgr.do_scrapy_debug(source_type_index, True)
-                except Exception as e:
-                    error_found = True
-                    errmsg += " %d: %s %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[index], str(e))
-            if error_found:
-                show_error_and_exit(errmsg)
-            else:
-                sys.exit(0)
+            param_cfg["check_url"] = True
+            index_offset = 1 
         elif re.match("--debug_source", sys.argv[index]):
-            source_type_index = int(sys.argv[index + 1])
-            if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
-                errmsg = "Unsupported source type index: %d" % source_type_index
-                show_error_and_exit(errmsg)
-            g_mgr.do_scrapy_debug(source_type_index)
-            sys.exit(0)
+            param_cfg["debug_source"] = int(sys.argv[index + 1])
+            index_offset = 2 
         elif re.match("--silent", sys.argv[index]):
             param_cfg["silent"] = True
             index_offset = 1
@@ -192,14 +222,16 @@ def parse_param():
         #     remove_old = True
         #     check_result = True
         #     break
-        elif re.match("--set_finance_folderpath", sys.argv[index]):
-            g_mgr.set_finance_root_folderpath(sys.argv[index + 1])
+        elif re.match("--finance_folderpath", sys.argv[index]):
+            param_cfg["finance_folderpath"] = sys.argv[index + 1]
+            # g_mgr.set_finance_root_folderpath(sys.argv[index + 1])
             index_offset = 2
         elif re.match("--source_from_all_time_range_default_file", sys.argv[index]):
-            if CMN.DEF.IS_FINANCE_MARKET_MODE:
-                param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
-            elif CMN.DEF.IS_FINANCE_STOCK_MODE:
-                param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
+            # if CMN.DEF.IS_FINANCE_MARKET_MODE:
+            #     param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
+            # elif CMN.DEF.IS_FINANCE_STOCK_MODE:
+            #     param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
+            param_cfg["source_from_all_time_range_default_file"] = True
             param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 1
         elif re.match("--source_from_today_file", sys.argv[index]):
@@ -262,6 +294,13 @@ def parse_param():
 
 
 def check_param():
+    if param_cfg["source_from_all_time_range_default_file"]:
+        if param_cfg["source_from_file"] is not None:
+            show_warn("The 'source_from_file' argument is ignored since 'source_from_all_time_range_default_file' is set")
+        if CMN.DEF.IS_FINANCE_MARKET_MODE:
+            param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
+        elif CMN.DEF.IS_FINANCE_STOCK_MODE:
+            param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
     if param_cfg["source_from_file"] is not None:
         if param_cfg["source"] is not None:
             param_cfg["source"] = None
@@ -338,6 +377,30 @@ if __name__ == "__main__":
 # Parse the parameters and apply to manager class
     init_param()
     parse_param()
+# Determine the mode and initialize the manager class
+    if param_cfg["mode"] is None:
+        CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()
+        CMN.DEF.IS_FINANCE_STOCK_MODE = CMN.FUNC.is_stock_mode()
+    elif param_cfg["mode"] == CMN.DEF.FINANCE_ANALYSIS_MARKET:
+        CMN.DEF.IS_FINANCE_MARKET_MODE = True
+        CMN.DEF.IS_FINANCE_STOCK_MODE = False
+    elif param_cfg["mode"] == CMN.DEF.FINANCE_ANALYSIS_STOCK:
+        CMN.DEF.IS_FINANCE_MARKET_MODE = False
+        CMN.DEF.IS_FINANCE_STOCK_MODE = True
+    else:
+        raise ValueError("Unknown mode !!!")
+    if CMN.DEF.IS_FINANCE_MARKET_MODE:
+        from libs.market import web_scrapy_market_mgr as MGR
+        g_mgr = MGR.WebSracpyMarketMgr()
+    else:
+        from libs.stock import web_scrapy_stock_mgr as MGR
+        g_mgr = MGR.WebSracpyStockMgr()
+# RUN the argument that will return after the execution is done
+    if param_cfg["check_url"]:
+        check_url()
+    if param_cfg["debug_source"] is not None:
+        debug_source(param_cfg["debug_source"])
+# Check and setup the parameters for the manager
     check_param()
     setup_param()
 
