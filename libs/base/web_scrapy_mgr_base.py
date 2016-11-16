@@ -165,12 +165,12 @@ class WebSracpyMgrBase(object):
 
     def set_finance_root_folderpath(self, csv_root_folderpath):
         g_logger.debug("Set CSV root folder path: %s" % csv_root_folderpath)
-        self.xcfg["csv_root_folderpath"] = csv_root_folderpath
+        self.xcfg["finance_root_folderpath"] = csv_root_folderpath
 
 
     @property
     def FinanceRootFolderPath(self):
-        return self.xcfg["csv_root_folderpath"]
+        return self.xcfg["finance_root_folderpath"]
 
 
     def enable_old_finance_folder_reservation(self, enable):

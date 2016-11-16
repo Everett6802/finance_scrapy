@@ -64,14 +64,14 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def _read_old_csv_time_duration(self):
         assert self.source_type_csv_time_duration_dict is not None, "self.source_type_csv_time_duration_dict should NOT be None"
-        # whole_company_number_in_group_dict = CompanyGroupSet.get_whole_company_number_in_group_dict()
+        # whole_company_number_in_group_dict = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
         folderpath_format = self.__get_finance_folderpath_format()
         # self.source_type_csv_time_duration_dict = {}
         # for company_group_number, company_code_number_list in whole_company_number_in_group_dict:
         for company_group_number, company_code_number_list in self.company_group_set.items():
-            folderpath_in_group = folderpath_format % (company_group_number)
+            folderpath_in_group = folderpath_format % int(company_group_number)
 # If the company group folder does NOT exist, ignore it...
-            if not CMN.DEF.check_file_exist(folderpath_in_group):
+            if not CMN.FUNC.check_file_exist(folderpath_in_group):
                 continue
             for company_code_number in company_code_number_list:
                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
@@ -103,6 +103,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             folderpath_in_group = folderpath_format % int(company_group_number)
             for company_code_number in company_code_number_list:
                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
+# Create the folder for each company if not exist
+                CMN.FUNC.create_folder_if_not_exist(csv_data_folderpath)
                 g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
                 CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration_dict[company_code_number])
 
@@ -169,6 +171,28 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         super(WebSracpyStockMgr, self)._add_cfg_for_scrapy_obj(scrapy_obj_cfg)
         scrapy_obj_cfg["company_group_set"] = self.company_group_set
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
+
+
+    def show_company_list_in_finance_folder(self):
+        # import pdb; pdb.set_trace()
+        if not CMN.FUNC.check_file_exist(self.xcfg["finance_root_folderpath"]):
+            print "The root finance folder[%s] does NOT exist" % self.xcfg["finance_root_folderpath"]
+            return
+        company_group_folderpath_format = self.__get_finance_folderpath_format()
+        # for index in range(self.__get_company_profile().CompanyGroupSize):
+        whole_company_number_in_group_dict = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+        for company_group_number, company_code_number_list in whole_company_number_in_group_dict.items():
+            company_group_folderpath = company_group_folderpath_format % company_group_number
+            if not CMN.FUNC.check_file_exist(company_group_folderpath):
+                raise ValueError("The folder[%s] should exist !!!" % company_group_folderpath)
+            company_ode_number_in_group_list = []
+            for company_code_number in company_code_number_list:
+                company_folderpath = "%s/%s" % (company_group_folderpath, company_code_number)
+                if not CMN.FUNC.check_file_exist(company_folderpath):
+                    continue
+                company_ode_number_in_group_list.append(company_code_number)
+            if len(company_ode_number_in_group_list) != 0:
+                print "%s: %s" % (company_group_number, ",".join(company_ode_number_in_group_list))
 
 
     def do_scrapy(self):

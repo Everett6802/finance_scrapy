@@ -74,6 +74,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
 
     def _adjust_csv_time_duration(self, company_code_number):
+        # import pdb; pdb.set_trace()
 # Limit the time range from the web site
         time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index, company_code_number)
 # Determine the CSV/Web time duration
@@ -100,8 +101,8 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
 # Create a folder for a specific company
-                csv_group_folderpath = self.assemble_csv_company_folderpath(company_code_number, company_group_number)
-                CMN.FUNC.create_folder_if_not_exist(csv_group_folderpath)
+                csv_company_folderpath = self.assemble_csv_company_folderpath(company_code_number, company_group_number)
+                CMN.FUNC.create_folder_if_not_exist(csv_company_folderpath)
                 # import pdb; pdb.set_trace()
 # Find the file path for writing data into csv
                 csv_filepath = self.assemble_csv_filepath(self.source_type_index, company_code_number, company_group_number)
@@ -109,7 +110,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 web2csv_time_duration_update = self._adjust_csv_time_duration(company_code_number)
                 if not web2csv_time_duration_update.NeedUpdate:
                     g_logger.debug("[%s:%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd))
-                    return
+                    continue
                 scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
                 g_logger.debug(scrapy_msg)
 # Check if only dry-run

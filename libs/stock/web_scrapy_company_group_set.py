@@ -45,9 +45,9 @@ class WebScrapyCompanyGroupSet(object):
     def __init_whole_company_number_list(cls):
         assert (cls.whole_company_number_list == None), "whole_company_number_list is NOT None"
 
-        whole_company_number_list = [];
+        cls.whole_company_number_list = [];
         for entry in cls.__get_company_profile().iterator():
-            cls.company_number_list.append(entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            cls.whole_company_number_list.append(entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
 
 
     @classmethod
