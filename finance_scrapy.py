@@ -33,7 +33,6 @@ def show_usage_and_exit():
     print "--source_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
     print "--source_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
     print "--source_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
-    # print "--source_from_file\nDescription: The last finance data source from file: %s\nCaution: source/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_LAST_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_LAST_CONFIG_FILENAME)
     print "-s --source\nDescription: The list of the finance data sources\nDefault: All finance data sources\nCaution: Only work when source_from_file is NOT set"
     source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
     for source_type_index in source_type_index_list:
@@ -47,11 +46,6 @@ def show_usage_and_exit():
     print "  Format 2 (,end_time): ,2015-01-01"
     print "  Format 3 (start_time,end_time): 2015-01-01,2015-09-04"
     print "--time_today --time_last --time_duration_range --time_duration_range_all\nCaution: Shuold NOT be set simultaneously. Will select the first one"
-    # print "-m --method\nDescription: The method of setting the parameters\nDefault: TODAY"
-    # print "  TODAY: Read the today.conf file and only scrap today's data"
-    # print "  HISTORY: Read the history.conf file and scrap data in the specific time interval"
-    # print "  USER_DEFINED: User define the data source (1,2,3) and time interval (None for Today)"
-    # print "--multi_thread\nDescription: Scrap Web data by using multiple threads\nCaution: Deprecated"
     if CMN.DEF.IS_FINANCE_STOCK_MODE:
         print "--company_list_in_default_folderpath\nDescription: Show the company number list in the default finance folder"
         print "--company_list_in_folderpath\nDescription: Show the company number list in the finance folder" 
@@ -61,7 +55,7 @@ def show_usage_and_exit():
         print "  Format 2 Company code number range: 2100-2200"
         print "  Format 3 Company group number: [Gg]12"
         print "  Format 4 Company code number/number range/group hybrid: 2347,2100-2200,G12,2362,g2,1500-1510"
-    print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
+    # print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
     print "============================================================="
     sys.exit(0)
 
@@ -141,6 +135,8 @@ def debug_source_and_exit(source_type_index):
 
 
 def show_company_list_in_folerpath_and_exit():
+    if CMN.DEF.IS_FINANCE_MARKET_MODE:
+        raise ValueError("Not Support in Market mode")
     g_mgr.set_finance_root_folderpath(param_cfg["company_list_in_folderpath"])
     g_mgr.show_company_list_in_finance_folder()
     sys.exit(0)
@@ -220,9 +216,6 @@ def parse_param():
         elif re.match("--silent", sys.argv[index]):
             param_cfg["silent"] = True
             index_offset = 1
-        # elif re.match("--multi_thread", sys.argv[index]):
-        #     multi_thread = True
-        #     index_offset = 1
         elif re.match("--check_result", sys.argv[index]):
             param_cfg["check_result"] = True
             index_offset = 1
@@ -245,10 +238,6 @@ def parse_param():
             param_cfg["finance_folderpath"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--source_from_all_time_range_default_file", sys.argv[index]):
-            # if CMN.DEF.IS_FINANCE_MARKET_MODE:
-            #     param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
-            # elif CMN.DEF.IS_FINANCE_STOCK_MODE:
-            #     param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
             param_cfg["source_from_all_time_range_default_file"] = True
             param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 1
@@ -491,6 +480,8 @@ if __name__ == "__main__":
     if param_cfg["clone_result"]:
         if not error_found:
             datetime_now = datetime.today()
-            clone_foldername = g_mgr.FinanceRootFolderPath + "_ok" + CMN.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
+            clone_foldername = g_mgr.FinanceRootFolderPath + "_ok" + CMN.DEF.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
             show_debug("Clone the CSV folder to %s" % clone_foldername)
             subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
+        else:
+            show_error("Find errors while checking... Stop the Clone action")

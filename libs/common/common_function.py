@@ -537,6 +537,20 @@ def request_from_url_and_check_return(url, timeout=None):
     return res
 
 
+def get_filename_from_filepath(filepath):
+    return filepath.rsplit("/", 1)[-1]
+
+
+def assemble_market_csv_filepath(finance_root_folderpath, source_type_index):
+    csv_filepath = "%s/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.DEF_CSV_MARKET_FOLDERNAME, CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+    return csv_filepath
+
+
+def assemble_stock_csv_filepath(finance_root_folderpath, source_type_index, company_code_number, company_group_number):
+    csv_filepath = "%s/%s%02d/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.DEF_CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+    return csv_filepath
+
+
 def try_to_request_from_url_and_check_return(url, timeout=None):
     req = None
     for index in range(CMN_DEF.DEF_SCRAPY_RETRY_TIMES):

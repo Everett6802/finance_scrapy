@@ -121,11 +121,6 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def _get_csv_filename_from_filepath(cls, csv_filepath):
-        return csv_filepath.rsplit("/", 1)[-1]
-
-
-    @classmethod
     def do_scrapy_debug(cls, source_type_index, silent_mode=False):
         # import pdb; pdb.set_trace()
         web_scrapy_obj = WebSracpyMgrBase.__instantiate_web_scrapy_object(source_type_index)

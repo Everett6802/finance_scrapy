@@ -144,7 +144,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def set_company_from_file(self, filename):
-        company_word_list = CMN.FUNC.parse_source_type_time_range_config_file(filename)
+        company_word_list = CMN.FUNC.parse_source_type_time_duration_config_file(filename)
         self.__transform_company_word_list_to_group_set(company_word_list)
 
 
@@ -202,23 +202,23 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def check_scrapy(self):
         file_not_found_list = []
         file_is_empty_list = []
-        for source_type_time_range in self.source_type_time_range_list:
+        for source_type_time_duration in self.source_type_time_duration_list:
             for company_group_number, company_code_number_list in self.company_group_set.items():
                 for company_code_number in company_code_number_list:
-                    csv_filepath = WebScrapyStockBase.assemble_csv_filepath(source_type_time_range.source_type_index, company_code_number, company_group_index)
+                    csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_time_duration.source_type_index, company_code_number, company_group_number)
 # Check if the file exists
                     if not os.path.exists(csv_filepath):
                         file_not_found_list.append(
                             {
-                                "index": source_type_time_range.source_type_index,
-                                "filename" : WebSracpyMgrBase._get_csv_filename_from_filepath(csv_filepath),
+                                "index": source_type_time_duration.source_type_index,
+                                "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
                             }
                         )
                     elif os.path.getsize(csv_filepath) == 0:
                         file_is_empty_list.append(
                             {
-                                "index": source_type_time_range.source_type_index,
-                                "filename" : WebSracpyMgrBase._get_csv_filename_from_filepath(csv_filepath),
+                                "index": source_type_time_duration.source_type_index,
+                                "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
                             }
                         )
         return (file_not_found_list, file_is_empty_list)

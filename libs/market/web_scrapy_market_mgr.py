@@ -8,6 +8,7 @@ import shutil
 from datetime import datetime
 import libs.common as CMN
 import libs.base as BASE
+import web_scrapy_market_base as MarketBase
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -82,24 +83,24 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def check_scrapy(self):
-       # import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         file_not_found_list = []
         file_is_empty_list = []
-        for source_type_time_range in self.source_type_time_range_list:
-            csv_filepath = WebScrapyMarketBase.assemble_csv_filepath(source_type_time_range.source_type_index)
+        for source_type_time_duration in self.source_type_time_duration_list:
+            csv_filepath = CMN.FUNC.assemble_market_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_time_duration.source_type_index)
 # Check if the file exists
             if not os.path.exists(csv_filepath):
                 file_not_found_list.append(
                     {
-                        "index": source_type_time_range.source_type_index,
-                        "filename" : WebSracpyMgrBase._get_csv_filename_from_filepath(csv_filepath)
+                        "index": source_type_time_duration.source_type_index,
+                        "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
                     }
                 )
             elif os.path.getsize(csv_filepath) == 0:
                 file_is_empty_list.append(
                     {
-                        "index": source_type_time_range.source_type_index,
-                        "filename" : WebSracpyMgrBase._get_csv_filename_from_filepath(csv_filepath)
+                        "index": source_type_time_duration.source_type_index,
+                        "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
                     }
                 )
         return (file_not_found_list, file_is_empty_list)
