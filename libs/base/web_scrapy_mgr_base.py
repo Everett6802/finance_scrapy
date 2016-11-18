@@ -242,6 +242,12 @@ class WebSracpyMgrBase(object):
 
 
     @abstractmethod
+    def merge_finance_folder(self, merge_finance_folderpath_src_list, merge_finance_folderpath_dst):
+        # """IMPORTANT: This is a class method, override it with @classmethod !"""
+        raise NotImplementedError
+
+
+    @abstractmethod
     def _create_finance_folder_if_not_exist(self):
         # """IMPORTANT: This is a class method, override it with @classmethod !"""
         raise NotImplementedError

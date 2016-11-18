@@ -55,6 +55,10 @@ def show_usage_and_exit():
         print "  Format 2 Company code number range: 2100-2200"
         print "  Format 3 Company group number: [Gg]12"
         print "  Format 4 Company code number/number range/group hybrid: 2347,2100-2200,G12,2362,g2,1500-1510"
+    print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged"
+    print "  Format 1 (folderpath): /var/tmp/finance"
+    print "  Format 2 (folderpath1,folderpath2,folderpath3): /var/tmp/finance1,/var/tmp/finance2,/var/tmp/finance3"
+    print "--merge_finance_folderpath_dst\nDescription: The destination folderpath after merging\nDefault: %s" % CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH
     # print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
     print "============================================================="
     sys.exit(0)
@@ -182,6 +186,8 @@ def init_param():
     param_cfg["company_list_in_folderpath"] = None
     param_cfg["company"] = None
     param_cfg["company_from_file"] = None
+    param_cfg["merge_finance_folderpath_src_list"] = None
+    param_cfg["merge_finance_folderpath_dst"] = None
 
 
 def parse_param():
@@ -301,6 +307,12 @@ def parse_param():
             else:
                 param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
+        elif re.match("--merge_finance_folderpath_src_list", sys.argv[index]):
+            param_cfg["merge_finance_folderpath_src_list"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--merge_finance_folderpath_dst", sys.argv[index]):
+            param_cfg["merge_finance_folderpath_dst"] = sys.argv[index + 1]
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -347,6 +359,9 @@ def check_param():
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
                 show_warn("The 'company' argument is ignored since 'company_from_file' is set")
+    if param_cfg["merge_finance_folderpath_src_list"] is not None and param_cfg["merge_finance_folderpath_dst"] is None:
+        param_cfg["merge_finance_folderpath_dst"] = CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH
+        show_warn("Set the 'merge_finance_folderpath_dst' argument to default destination folderpath: %s" % CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
 
 
 def setup_param():
@@ -485,3 +500,8 @@ if __name__ == "__main__":
             subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
         else:
             show_error("Find errors while checking... Stop the Clone action")
+
+# Merge the folers...
+    if param_cfg["merge_finance_folderpath_src_list"] is not None:
+        merge_finance_folderpath_src_list = param_cfg["merge_finance_folderpath_src_list"].split(",")
+        g_mgr.merge_finance_folder(merge_finance_folderpath_src_list, merge_finance_folderpath_dst)
