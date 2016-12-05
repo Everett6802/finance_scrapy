@@ -413,7 +413,8 @@ def check_file_exist(filepath):
 
 
 def create_folder(folderpath):
-    os.mkdir(folderpath)
+    # os.mkdir(folderpath)
+    os.makedirs(folderpath)
 
 
 def create_folder_if_not_exist(folderpath):
@@ -442,6 +443,17 @@ def remove_file_if_exist(filepath):
     can_remove = check_file_exist(filepath)
     if can_remove:
         remove_file(filepath)
+    return can_remove
+
+
+def remove_folder(folderpath):
+    shutil.rmtree(folderpath)
+
+
+def remove_folder_if_exist(folderpath):
+    can_remove = check_file_exist(folderpath)
+    if can_remove:
+        remove_folder(folderpath)
     return can_remove
 
 
@@ -541,8 +553,23 @@ def get_filename_from_filepath(filepath):
     return filepath.rsplit("/", 1)[-1]
 
 
+def assemble_market_csv_folderpath(finance_root_folderpath):
+    csv_filepath = "%s/%s" % (finance_root_folderpath, CMN_DEF.DEF_CSV_MARKET_FOLDERNAME) 
+    return csv_filepath
+
+
 def assemble_market_csv_filepath(finance_root_folderpath, source_type_index):
     csv_filepath = "%s/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.DEF_CSV_MARKET_FOLDERNAME, CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+    return csv_filepath
+
+
+def assemble_stock_csv_group_filepath(finance_root_folderpath, company_group_number):
+    csv_filepath = "%s/%s%02d" % (finance_root_folderpath, CMN_DEF.DEF_CSV_STOCK_FOLDERNAME, int(company_group_number)) 
+    return csv_filepath
+
+
+def assemble_stock_csv_folderpath(finance_root_folderpath, company_code_number, company_group_number):
+    csv_filepath = "%s/%s%02d/%s" % (finance_root_folderpath, CMN_DEF.DEF_CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number) 
     return csv_filepath
 
 

@@ -17,16 +17,16 @@ param_cfg = {}
 
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
-    print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
     print "--market_mode --stock_mode\nDescription: Switch the market/stock mode\nCaution: Read parameters from %s when NOT set" % CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME
+    print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--silent\nDescription: Disable print log on console"
     print "--check_result\nDescription: Check the CSV files after scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
-    print "--reserve_old\nDescription: Reserve the old CSV file if exist\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
+    print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
     print "--source_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/source_from_xxx_file/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
@@ -55,7 +55,7 @@ def show_usage_and_exit():
         print "  Format 2 Company code number range: 2100-2200"
         print "  Format 3 Company group number: [Gg]12"
         print "  Format 4 Company code number/number range/group hybrid: 2347,2100-2200,G12,2362,g2,1500-1510"
-    print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged"
+    print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder cant NOT be duplicate. If so, the merge progress aborts"
     print "  Format 1 (folderpath): /var/tmp/finance"
     print "  Format 2 (folderpath1,folderpath2,folderpath3): /var/tmp/finance1,/var/tmp/finance2,/var/tmp/finance3"
     print "--merge_finance_folderpath_dst\nDescription: The destination folderpath after merging\nDefault: %s" % CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH
@@ -146,6 +146,12 @@ def show_company_list_in_folerpath_and_exit():
     sys.exit(0)
 
 
+def merge_finance_folder_and_exit(merge_finance_folderpath_src_list, merge_finance_folderpath_dst):
+    show_info("Merge several finance folders to: %s" % merge_finance_folderpath_dst)
+    merge_finance_folderpath_src_list = param_cfg["merge_finance_folderpath_src_list"].split(",")
+    g_mgr.merge_finance_folder(merge_finance_folderpath_src_list, merge_finance_folderpath_dst)
+    sys.exit(0)
+
 # def switch_mode(mode):
 # # MARKET: 0
 # # STOCK: 1
@@ -167,7 +173,7 @@ def init_param():
     # import pdb; pdb.set_trace()
     param_cfg["update_workday_calendar"] = False
     param_cfg["show_command_example"] = False
-    param_cfg["mode"] = None
+    param_cfg["finance_mode"] = None
     param_cfg["help"] = False
     param_cfg["check_url"] = False
     param_cfg["debug_source"] = None
@@ -204,15 +210,15 @@ def parse_param():
         elif re.match("--update_workday_calendar", sys.argv[index]):
             param_cfg["update_workday_calendar"] = True
             index_offset = 1
+        elif re.match("--market_mode", sys.argv[index]):
+            param_cfg["finance_mode"] = CMN.DEF.FINANCE_ANALYSIS_MARKET
+            index_offset = 1
+        elif re.match("--stock_mode", sys.argv[index]):
+            param_cfg["finance_mode"] = CMN.DEF.FINANCE_ANALYSIS_STOCK
+            index_offset = 1
         elif re.match("(-h|--help)", sys.argv[index]):
             param_cfg["help"] = True
             index_offset = 1
-        elif re.match("--market_mode", sys.argv[index]):
-            param_cfg["mode"] = CMN.DEF.FINANCE_ANALYSIS_MARKET
-            index_offset = 1
-        elif re.match("--stock_mode", sys.argv[index]):
-            param_cfg["mode"] = CMN.DEF.FINANCE_ANALYSIS_STOCK
-            index_offset = 1   
         elif re.match("--check_url", sys.argv[index]):
             param_cfg["check_url"] = True
             index_offset = 1 
@@ -412,6 +418,7 @@ def setup_param():
     if param_cfg["finance_folderpath"] is not None:
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
+
 if __name__ == "__main__":
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
@@ -420,17 +427,17 @@ if __name__ == "__main__":
 
     if param_cfg["update_workday_calendar"]:
         update_workday_calendar_and_exit()
-    elif param_cfg["show_command_example"]:
+    if param_cfg["show_command_example"]:
         show_command_example_and_exit()
 
 # Determine the mode and initialize the manager class
-    if param_cfg["mode"] is None:
+    if param_cfg["finance_mode"] is None:
         CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()
         CMN.DEF.IS_FINANCE_STOCK_MODE = CMN.FUNC.is_stock_mode()
-    elif param_cfg["mode"] == CMN.DEF.FINANCE_ANALYSIS_MARKET:
+    elif param_cfg["finance_mode"] == CMN.DEF.FINANCE_ANALYSIS_MARKET:
         CMN.DEF.IS_FINANCE_MARKET_MODE = True
         CMN.DEF.IS_FINANCE_STOCK_MODE = False
-    elif param_cfg["mode"] == CMN.DEF.FINANCE_ANALYSIS_STOCK:
+    elif param_cfg["finance_mode"] == CMN.DEF.FINANCE_ANALYSIS_STOCK:
         CMN.DEF.IS_FINANCE_MARKET_MODE = False
         CMN.DEF.IS_FINANCE_STOCK_MODE = True
     else:
@@ -450,31 +457,37 @@ if __name__ == "__main__":
         check_url_and_exit()
     elif param_cfg["debug_source"] is not None:
         debug_source_and_exit(param_cfg["debug_source"])
-# Check and setup the parameters for the manager
+# Check the parameters for the manager
     check_param()
     # import pdb; pdb.set_trace()
     if param_cfg["company_list_in_folderpath"] is not None:
         show_company_list_in_folerpath_and_exit()
+# Setup the parameters for the manager
     setup_param()
+# Merge the finance folders...
+    if param_cfg["merge_finance_folderpath_src_list"] is not None:
+        merge_finance_folder_and_exit(param_cfg["merge_finance_folderpath_src_list"], param_cfg["merge_finance_folderpath_dst"])
 
+# Start to do something about scrapy......
 # Reset the file positon of the log file to 0
     if param_cfg["check_result"]:
         CMN.WSL.reset_web_scrapy_logger_content()
 
+# Start to do something.......
 # Try to scrap the web data
-    show_info("Scrap the data from the website......")
+    show_info("* Scrap the data from the website......")
     time_range_start_second = int(time.time())
     # import pdb; pdb.set_trace()
     g_mgr.do_scrapy()
     time_range_end_second = int(time.time())
-    show_info("Scrap the data from the website...... DONE!!!")
+    show_info("* Scrap the data from the website...... DONE!!!")
     time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_range_end_second - time_range_start_second)
     show_info(time_lapse_msg)
 
     error_found = False
 # Check if all the csv files are created
     if param_cfg["check_result"]:
-        show_info("Let's check error......")
+        show_info("* Check errors in finance folder: %s" % g_mgr.FinanceRootFolderPath)
         (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy()
         error_msg_list = []
         for file_not_found in file_not_found_list:
@@ -493,15 +506,11 @@ if __name__ == "__main__":
 
 # Clone the csv files if necessary
     if param_cfg["clone_result"]:
+        show_info("* Clone the finance folder: %s" % g_mgr.FinanceRootFolderPath)
         if not error_found:
             datetime_now = datetime.today()
             clone_foldername = g_mgr.FinanceRootFolderPath + "_ok" + CMN.DEF.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
-            show_debug("Clone the CSV folder to %s" % clone_foldername)
+            show_debug("Clone the finance folder to %s" % clone_foldername)
             subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
         else:
             show_error("Find errors while checking... Stop the Clone action")
-
-# Merge the folers...
-    if param_cfg["merge_finance_folderpath_src_list"] is not None:
-        merge_finance_folderpath_src_list = param_cfg["merge_finance_folderpath_src_list"].split(",")
-        g_mgr.merge_finance_folder(merge_finance_folderpath_src_list, merge_finance_folderpath_dst)

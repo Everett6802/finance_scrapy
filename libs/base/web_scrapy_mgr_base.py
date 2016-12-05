@@ -235,26 +235,43 @@ class WebSracpyMgrBase(object):
 #             )
 
 
-    def _create_finance_root_folder_if_not_exist(self):
-        root_folderpath = self.xcfg["finance_root_folderpath"]
+    def _create_finance_root_folder_if_not_exist(self, root_folderpath=None):
+        if root_folderpath is None:
+            root_folderpath = self.xcfg["finance_root_folderpath"]
         g_logger.debug("Try to create new root folder: %s" % root_folderpath)
         CMN.FUNC.create_folder_if_not_exist(root_folderpath)
 
 
+    def _check_merge_finance_folder_exist(self, finance_folderpath_src_list, finance_folderpath_dst):
+        for finance_folderpath_src in finance_folderpath_src_list:
+            if not CMN.FUNC.check_file_exist(finance_folderpath_src):
+                errmsg = "The source folderpath[%s] to be merged does NOT exist" % finance_folderpath_src
+                g_logger.error(errmsg)
+                raise ValueError(errmsg)
+        # import pdb; pdb.set_trace()
+        if self.xcfg["old_finance_folder_reservation"]:
+            if CMN.FUNC.check_file_exist(finance_folderpath_dst):
+                errmsg = "The destination folderpath[%s] after merging already exist" % finance_folderpath_dst
+                g_logger.error(errmsg)
+                raise ValueError(errmsg)
+        else:
+            CMN.FUNC.remove_folder_if_exist(finance_folderpath_dst)
+
+
     @abstractmethod
-    def merge_finance_folder(self, merge_finance_folderpath_src_list, merge_finance_folderpath_dst):
+    def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
         # """IMPORTANT: This is a class method, override it with @classmethod !"""
         raise NotImplementedError
 
 
     @abstractmethod
-    def _create_finance_folder_if_not_exist(self):
+    def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
         # """IMPORTANT: This is a class method, override it with @classmethod !"""
         raise NotImplementedError
 
 
     @abstractmethod
-    def _remove_old_finance_folder(self):
+    def _remove_old_finance_folder(self, finance_root_folderpath=None):
         raise NotImplementedError
 
 
@@ -285,8 +302,4 @@ class WebSracpyMgrBase(object):
 
     @abstractmethod
     def check_scrapy(self):
-        raise NotImplementedError
-
-
-    def _write_new_csv_time_duration(self):
         raise NotImplementedError

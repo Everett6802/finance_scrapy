@@ -30,22 +30,26 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         return cls.company_profile
 
 
-    def __get_finance_folderpath_format(self):
-        return ("%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_CSV_STOCK_FOLDERNAME)) + "%02d"
+    def __get_finance_folderpath_format(self, finance_root_folderpath=None):
+        if finance_root_folderpath is None:
+            finance_root_folderpath = self.xcfg["finance_root_folderpath"]
+        if finance_root_folderpath is None:
+            finance_root_folderpath = CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
+        return ("%s/%s" % (finance_root_folderpath, CMN.DEF.DEF_CSV_STOCK_FOLDERNAME)) + "%02d"
 
 
-    def _create_finance_folder_if_not_exist(self):
-        self._create_finance_root_folder_if_not_exist()
-        folderpath_format = self.__get_finance_folderpath_format()
+    def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
+        self._create_finance_root_folder_if_not_exist(finance_root_folderpath)
+        folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
         for index in range(self.__get_company_profile().CompanyGroupSize):
             folderpath = folderpath_format % index
             g_logger.debug("Try to create new folder: %s" % folderpath)
             CMN.FUNC.create_folder_if_not_exist(folderpath)
 
 
-    def _remove_old_finance_folder(self):
+    def _remove_old_finance_folder(self, finance_root_folderpath=None):
 # Remove the old data if necessary
-        folderpath_format = self.__get_finance_folderpath_format()
+        folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
         for index in range(self.__get_company_profile().CompanyGroupSize):
             folderpath = folderpath_format % index
             g_logger.debug("Remove old folder: %s" % folderpath)
@@ -62,13 +66,16 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 self.source_type_csv_time_duration_dict[company_code_number] = {}
 
 
-    def _read_old_csv_time_duration(self):
-        assert self.source_type_csv_time_duration_dict is not None, "self.source_type_csv_time_duration_dict should NOT be None"
+    def __parse_csv_time_duration_cfg(self, finance_root_folderpath=None, company_group_set=None):
         # whole_company_number_in_group_dict = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
-        folderpath_format = self.__get_finance_folderpath_format()
-        # self.source_type_csv_time_duration_dict = {}
+        folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
+        if company_group_set is None:
+            company_group_set = self.company_group_set
+        if company_group_set is None:
+            company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+        source_type_csv_time_duration_dict = {}
         # for company_group_number, company_code_number_list in whole_company_number_in_group_dict:
-        for company_group_number, company_code_number_list in self.company_group_set.items():
+        for company_group_number, company_code_number_list in company_group_set.items():
             folderpath_in_group = folderpath_format % int(company_group_number)
 # If the company group folder does NOT exist, ignore it...
             if not CMN.FUNC.check_file_exist(folderpath_in_group):
@@ -84,7 +91,34 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
                 # for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
                 #     csv_time_duration_list[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START] = time_duration_tuple
-                self.source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_dict
+                source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_dict
+        return source_type_csv_time_duration_dict if source_type_csv_time_duration_dict else None
+
+
+    def _read_old_csv_time_duration(self):
+        assert self.source_type_csv_time_duration_dict is not None, "self.source_type_csv_time_duration_dict should NOT be None"
+#         # whole_company_number_in_group_dict = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+#         folderpath_format = self.__get_finance_folderpath_format()
+#         # self.source_type_csv_time_duration_dict = {}
+#         # for company_group_number, company_code_number_list in whole_company_number_in_group_dict:
+#         for company_group_number, company_code_number_list in self.company_group_set.items():
+#             folderpath_in_group = folderpath_format % int(company_group_number)
+# # If the company group folder does NOT exist, ignore it...
+#             if not CMN.FUNC.check_file_exist(folderpath_in_group):
+#                 continue
+#             for company_code_number in company_code_number_list:
+#                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
+#                 g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
+#                 csv_time_duration_dict = CMN.FUNC.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+#                 if csv_time_duration_dict is None:
+#                     g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
+#                     continue
+# # update the time range of each source type of comapny from config files
+#                 # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
+#                 # for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
+#                 #     csv_time_duration_list[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START] = time_duration_tuple
+#                 self.source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_dict
+        self.source_type_csv_time_duration_dict = self.__parse_csv_time_duration_cfg()
 
 
     def _update_new_csv_time_duration(self, web_scrapy_obj):
@@ -96,17 +130,25 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             self.source_type_csv_time_duration_dict[company_number][web_scrapy_obj.SourceTypeIndex] = time_duration_tuple
 
 
-    def _write_new_csv_time_duration(self):
+    def __write_new_csv_time_duration_to_cfg(self, finance_root_folderpath=None, source_type_csv_time_duration_dict=None, company_group_set=None):
         # import pdb; pdb.set_trace()
-        folderpath_format = self.__get_finance_folderpath_format()
-        for company_group_number, company_code_number_list in self.company_group_set.items():
+        folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
+        if source_type_csv_time_duration_dict is None:
+            source_type_csv_time_duration_dict = self.source_type_csv_time_duration_dict
+        if company_group_set is None:
+            company_group_set = self.company_group_set
+        for company_group_number, company_code_number_list in company_group_set.items():
             folderpath_in_group = folderpath_format % int(company_group_number)
             for company_code_number in company_code_number_list:
                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
 # Create the folder for each company if not exist
                 CMN.FUNC.create_folder_if_not_exist(csv_data_folderpath)
                 g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
-                CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, self.source_type_csv_time_duration_dict[company_code_number])
+                CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration_dict[company_code_number])
+
+
+    def _write_new_csv_time_duration(self):
+        self.__write_new_csv_time_duration_to_cfg()
 
 
     def __transform_company_word_list_to_group_set(self, company_word_list):
@@ -173,7 +215,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
 
 
-    def show_company_list_in_finance_folder(self):
+    def show_company_list_in_finance_folder(self, finance_root_folderpath=None):
         # import pdb; pdb.set_trace()
         if not CMN.FUNC.check_file_exist(self.xcfg["finance_root_folderpath"]):
             print "The root finance folder[%s] does NOT exist" % self.xcfg["finance_root_folderpath"]
@@ -222,3 +264,59 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                             }
                         )
         return (file_not_found_list, file_is_empty_list)
+
+
+    def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, source_type_index, company_code_number):
+# Search for the index of the finance folder which the specific source type index exists
+# -1 if not found
+# Exception occur if the source type is found in more than one finance folder
+        finance_folder_index = -1
+        for index, csv_time_duration_cfg in enumerate(csv_time_duration_cfg_list):
+            if not csv_time_duration_cfg.has_key(company_code_number):
+                continue
+            # import pdb; pdb.set_trace()
+            if csv_time_duration_cfg[company_code_number].has_key(source_type_index):
+                if finance_folder_index != -1:
+                    raise ValueError("The source type index[%d] in %s is duplicate" % (source_type_index, company_code_number))
+                else:
+                    finance_folder_index = index
+        return finance_folder_index
+
+
+    def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
+        self._check_merge_finance_folder_exist(finance_folderpath_src_list, finance_folderpath_dst)
+        if CMN.FUNC.check_file_exist(finance_folderpath_dst):
+            raise ValueError("The destination folder[%s] after mering has already exist" % finance_folderpath_dst)
+        self._create_finance_folder_if_not_exist(finance_folderpath_dst)
+# Find source type list in each source finance folder
+        csv_time_duration_cfg_list = []
+        for finance_folderpath_src in finance_folderpath_src_list:
+            csv_time_duration_cfg_list.append(self.__parse_csv_time_duration_cfg(finance_folderpath_src))
+# Merge the finance folder
+# Copy the CSV files from source folder to destiantion one
+        (source_type_index_start, source_type_index_end) = CMN.FUNC.get_source_type_index_range()
+        new_source_type_csv_time_duration = {}
+        # import pdb; pdb.set_trace()
+        company_group_set_dst = {}
+        whole_company_number_in_group_dict = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+        for company_group_number, company_code_number_list in whole_company_number_in_group_dict.items():
+            for company_code_number in company_code_number_list:
+                new_source_type_csv_time_duration_for_one_company = {}           
+                for source_type_index in range(source_type_index_start, source_type_index_end):
+                    finance_folder_index = self._find_existing_source_type_finance_folder_index(csv_time_duration_cfg_list, source_type_index, company_code_number)
+                    if finance_folder_index == -1:
+                        continue
+                    src_csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(finance_folderpath_src_list[finance_folder_index], source_type_index, company_code_number, company_group_number)
+                    CMN.FUNC.create_folder_if_not_exist(CMN.FUNC.assemble_stock_csv_folderpath(finance_folderpath_dst, company_code_number, company_group_number))
+                    dst_csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(finance_folderpath_dst, source_type_index, company_code_number, company_group_number)
+                    CMN.FUNC.copy_file(src_csv_filepath, dst_csv_filepath)
+# Keep track of the company code number of exsiting data
+                    if not company_group_set_dst.has_key(company_group_number):
+                        company_group_set_dst[company_group_number] = set()
+                    company_group_set_dst[company_group_number].add(company_code_number)
+# Update the new time duration config
+                    # import pdb; pdb.set_trace()
+                    new_source_type_csv_time_duration_for_one_company[source_type_index] = csv_time_duration_cfg_list[finance_folder_index][company_code_number][source_type_index]
+                new_source_type_csv_time_duration[company_code_number] = new_source_type_csv_time_duration_for_one_company
+        # import pdb; pdb.set_trace()
+        self.__write_new_csv_time_duration_to_cfg(finance_folderpath_dst, new_source_type_csv_time_duration, company_group_set_dst)
