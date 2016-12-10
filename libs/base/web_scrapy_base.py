@@ -138,7 +138,7 @@ class WebScrapyBase(object):
         self.url_time_unit = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
         # self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file if url_time_unit == csv_time_unit self.__scrap_single_web_data_to_single_csv_file
         # self.timeslice_iterable = timeslice_generator_obj.generate_time_slice(self.timeslice_generate_method, **kwargs)
-        self.time_slice_kwargs = {"time_duration_start": None, "time_duration_end": None}
+        # self.time_slice_kwargs = {"time_duration_start": None, "time_duration_end": None}
         self.description = None
 
 
@@ -348,6 +348,22 @@ class WebScrapyBase(object):
         return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
 
 
+    def _get_timeslice_iterable(self, **kwargs):
+        assert kwargs["time_duration_start"].get_time_unit_type() == kwargs["time_duration_end"].get_time_unit_type(), "The time unit of start and end time is NOT identical; Start: %s, End: %s" % (type(kwargs["time_duration_start"]), type(kwargs["time_duration_end"]))
+        if self.url_time_unit != kwargs["time_duration_start"].get_time_unit_type():
+            (new_finance_time_start, new_finance_time_end) = self._modify_to_correct_time_unit_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
+            kwargs["time_duration_start"] = new_finance_time_start
+            kwargs["time_duration_end"] = new_finance_time_end
+# Generate the time slice
+        timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **kwargs)
+        return timeslice_iterable
+
+
+    def _modify_to_correct_time_unit_for_timeslice_generator(self, finance_time_start, finance_time_end):
+        # """IMPORTANT: This function should NOT be implemented and called unless the time unit is NOT date !"""
+        raise RuntimeError("This function should NOT be called !!!")
+
+
     @abstractmethod
     def _check_old_csv_time_duration_exist(self, *args):
         raise NotImplementedError
@@ -366,3 +382,4 @@ class WebScrapyBase(object):
     @abstractmethod
     def scrap_web_to_csv(self):
         raise NotImplementedError
+

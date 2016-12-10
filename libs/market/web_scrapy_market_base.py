@@ -88,14 +88,11 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
         if web2csv_time_duration_update.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
             g_logger.debug("Need add the new data in front of the old CSV data, rename the file: %s" % (csv_filepath + ".old"))
-            CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
-# Create the time slice iterator due to correct time range
-        # import pdb; pdb.set_trace()
+            CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old")
 # Update the time range of time slice
-        self.time_slice_kwargs["time_duration_start"] = web2csv_time_duration_update.NewWebStart
-        self.time_slice_kwargs["time_duration_end"] = web2csv_time_duration_update.NewWebEnd
+        time_slice_generator_cfg = {"time_duration_start": web2csv_time_duration_update.NewWebStart, "time_duration_end": web2csv_time_duration_update.NewWebEnd,}
 # Generate the time slice
-        timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **self.time_slice_kwargs)
+        timeslice_iterable = self._get_timeslice_iterable(**time_slice_generator_cfg)
         csv_data_list_each_year = []
         cur_year = None
 # Generate the time slice list

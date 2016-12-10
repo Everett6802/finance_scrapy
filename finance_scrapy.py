@@ -419,7 +419,23 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
+# class TestClass(object):
+#     def __init__(self):
+#         self.test1 = 1
+
+#     def __getattr__(self, name):
+#         value = "%s added" % name
+#         setattr(self, name, value)
+#         return name
+
+
 if __name__ == "__main__":
+    # test_object = TestClass()
+    # print test_object.__dict__
+    # print test_object.test2
+    # print test_object.__dict__
+    # sys.exit(0)
+
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()

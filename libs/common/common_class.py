@@ -73,11 +73,6 @@ class FinanceTimeBase(object):
         raise NotImplementedError
 
 
-    @classmethod
-    def from_string(cls, time_string):
-        raise NotImplementedError
-
-
     def get_year(self):
         assert (self.year is not None), "year value should NOT be None"
         return self.year
@@ -95,6 +90,18 @@ class FinanceTimeBase(object):
         else:
             self.year = int(year_value)
             self.republic_era_year = self.year - CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET
+
+
+    @staticmethod
+    def get_time_unit_type():
+        # """IMPORTANT: This is a static method, override it with @staticmethod !"""
+        raise NotImplementedError
+
+
+    @classmethod
+    def from_string(cls, time_string):
+        # """IMPORTANT: This is a class method, override it with @classmethod !"""
+        raise NotImplementedError
 
 
     @staticmethod
@@ -188,6 +195,11 @@ class FinanceDate(FinanceTimeBase):
         CMN_FUNC.check_day_range(day, year, month)
 
 
+    @staticmethod
+    def get_time_unit_type():
+        return CMN_DEF.DATA_TIME_UNIT_DAY
+
+
     @classmethod
     def from_string(cls, time_string):
         return cls(time_string)
@@ -236,6 +248,10 @@ class FinanceDate(FinanceTimeBase):
         return self.datetime_cfg
 
 
+    def get_finance_month_object(self):
+        return FinanceMonth(self.year, self.month)
+
+
     @staticmethod
     def is_same_month(finance_date1, finance_date2):
         return (True if FinanceMonth(finance_date1.year, finance_date1.month) == FinanceMonth(finance_date2.year, finance_date2.month) else False)
@@ -282,6 +298,11 @@ class FinanceMonth(FinanceTimeBase):
         CMN_FUNC.check_year_range(year)
 # Check Month Range
         CMN_FUNC.check_month_range(month)
+
+
+    @staticmethod
+    def get_time_unit_type():
+        return CMN_DEF.DATA_TIME_UNIT_MONTH
 
 
     @classmethod
@@ -371,6 +392,11 @@ class FinanceQuarter(FinanceTimeBase):
         CMN_FUNC.check_year_range(year)
 # Check Quarter Range
         CMN_FUNC.check_quarter_range(quarter)
+
+
+    @staticmethod
+    def get_time_unit_type():
+        return CMN_DEF.DATA_TIME_UNIT_YEAR
 
 
     @classmethod
