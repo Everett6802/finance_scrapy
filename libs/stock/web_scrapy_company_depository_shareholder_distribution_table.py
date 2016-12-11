@@ -34,14 +34,25 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 
 
     @classmethod
-    def _get_time_last_start_and_end_time(cls, *args):
+    def __get_last_finance_date(cls):
         # import pdb; pdb.set_trace()
-        if cls.last_finance_date is None:
-            timeslice_generator = BASE.TSG.WebScrapyTimeSliceGenerator.Instance()
-            last_friday_date_str_for_financial_statement = timeslice_generator.get_last_friday_date_str_for_financial_statement()
-            last_finance_date_str = "%s-%s-%s" % (last_friday_date_str_for_financial_statement[0:4], last_friday_date_str_for_financial_statement[4:6], last_friday_date_str_for_financial_statement[6:8])
-            cls.last_finance_date = CMN.CLS.FinanceDate(last_finance_date_str) 
-        return (cls.last_finance_date, cls.last_finance_date)
+        timeslice_generator = BASE.TSG.WebScrapyTimeSliceGenerator.Instance()
+        last_friday_date_str_for_financial_statement = timeslice_generator.get_last_friday_date_str_for_financial_statement()
+        last_finance_date_str = "%s-%s-%s" % (last_friday_date_str_for_financial_statement[0:4], last_friday_date_str_for_financial_statement[4:6], last_friday_date_str_for_financial_statement[6:8])
+        last_finance_date = CMN.CLS.FinanceDate(last_finance_date_str) 
+        return last_finance_date
+
+
+    def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
+        assert finance_time_start.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input start time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_start.get_time_unit_type())
+        assert finance_time_end.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input end time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_end.get_time_unit_type())
+        if self.last_finance_date is None:
+            self.last_finance_date = self.__get_last_finance_date()
+        if finance_time_start > self.last_finance_date:
+            finance_time_start = self.last_finance_date
+        if finance_time_end > self.last_finance_date:
+            finance_time_end = self.last_finance_date
+        return (finance_time_start, finance_time_end)
 
 
     def assemble_web_url(self, timeslice, company_code_number):

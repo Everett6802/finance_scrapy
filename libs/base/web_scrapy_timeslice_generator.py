@@ -166,7 +166,8 @@ class WebScrapyTimeSliceGenerator(object):
     def __generate_time_slice_by_company_foreign_investors_shareholder(self, date_start, date_end, **kwargs):
 # The data type in the list is datetime
         # if time_slice_cfg is None:
-        #     raise ValueError("The config should NOT be NULL") 
+        #     raise ValueError("The config should NOT be NULL")
+        # import pdb; pdb.set_trace()
         company_code_number = kwargs.pop("company_code_number", None)
         if company_code_number is None:
             raise ValueError("Fail to find the 'company_code_number' in the config") 

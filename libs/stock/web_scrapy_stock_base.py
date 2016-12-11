@@ -28,7 +28,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
         else:
             self.company_group_set = kwargs["company_group_set"]
-        self.time_slice_kwargs["company_code_number"] = None
+        # self.time_slice_kwargs["company_code_number"] = None
         self.new_csv_time_duration_dict = None
 
 
@@ -125,7 +125,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 # Create the time slice iterator due to correct time range
                 # import pdb; pdb.set_trace()
 # Update the time range of time slice
-                time_slice_kwargs = {"company_code_number": company_code_number, "time_duration_start": web2csv_time_duration_update.NewWebStart, "time_duration_end": web2csv_time_duration_update.NewWebEnd,}
+                time_slice_generator_cfg = {"company_code_number": company_code_number, "time_duration_start": web2csv_time_duration_update.NewWebStart, "time_duration_end": web2csv_time_duration_update.NewWebEnd,}
 # Generate the time slice
                 timeslice_iterable = self._get_timeslice_iterable(**time_slice_generator_cfg)
                 csv_data_list_each_year = []

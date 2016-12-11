@@ -56,11 +56,15 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             shutil.rmtree(folderpath, ignore_errors=True)
 
 
-    def _init_csv_time_duration(self):
+    def _init_csv_time_duration(self, company_group_set=None):
         # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration_dict is None, "self.source_type_csv_time_duration_dict should be None"
+        if company_group_set is None:
+            company_group_set = self.company_group_set
+        if company_group_set is None:
+            company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
         self.source_type_csv_time_duration_dict = {}
-        for company_group_number, company_code_number_list in self.company_group_set.items():
+        for company_group_number, company_code_number_list in company_group_set.items():
             for company_code_number in company_code_number_list:
                 # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
                 self.source_type_csv_time_duration_dict[company_code_number] = {}
@@ -137,6 +141,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             source_type_csv_time_duration_dict = self.source_type_csv_time_duration_dict
         if company_group_set is None:
             company_group_set = self.company_group_set
+        if company_group_set is None:
+            company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
         for company_group_number, company_code_number_list in company_group_set.items():
             folderpath_in_group = folderpath_format % int(company_group_number)
             for company_code_number in company_code_number_list:

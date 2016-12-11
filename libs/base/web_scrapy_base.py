@@ -7,6 +7,7 @@ import requests
 import csv
 import time
 import collections
+import sys
 from abc import ABCMeta, abstractmethod
 from random import randint
 from bs4 import BeautifulSoup
@@ -351,7 +352,7 @@ class WebScrapyBase(object):
     def _get_timeslice_iterable(self, **kwargs):
         assert kwargs["time_duration_start"].get_time_unit_type() == kwargs["time_duration_end"].get_time_unit_type(), "The time unit of start and end time is NOT identical; Start: %s, End: %s" % (type(kwargs["time_duration_start"]), type(kwargs["time_duration_end"]))
         if self.url_time_unit != kwargs["time_duration_start"].get_time_unit_type():
-            (new_finance_time_start, new_finance_time_end) = self._modify_to_correct_time_unit_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
+            (new_finance_time_start, new_finance_time_end) = self._modify_time_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
             kwargs["time_duration_start"] = new_finance_time_start
             kwargs["time_duration_end"] = new_finance_time_end
 # Generate the time slice
@@ -359,9 +360,9 @@ class WebScrapyBase(object):
         return timeslice_iterable
 
 
-    def _modify_to_correct_time_unit_for_timeslice_generator(self, finance_time_start, finance_time_end):
+    def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
         # """IMPORTANT: This function should NOT be implemented and called unless the time unit is NOT date !"""
-        raise RuntimeError("This function should NOT be called !!!")
+        raise RuntimeError("This %s function should NOT be called !!!" % sys._getframe(0).f_code.co_name)
 
 
     @abstractmethod

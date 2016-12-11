@@ -160,8 +160,8 @@ class WebScrapyCompanyGroupSet(object):
 
     def __setup_for_traverse(self):
         if self.company_number_in_group_dict is None:
-            self.altered_company_number_in_group_dict = self.__get_whole_company_number_in_group_dict()
+            self.altered_company_number_in_group_dict = self.get_whole_company_number_in_group_dict()
         else:
             self.altered_company_number_in_group_dict = {}
             for key, value in self.company_number_in_group_dict.items():
-                self.altered_company_number_in_group_dict[key] = value if (value is not None) else (self.__get_whole_company_number_in_group_dict())[key]
+                self.altered_company_number_in_group_dict[key] = value if (value is not None) else (self.get_whole_company_number_in_group_dict())[key]
