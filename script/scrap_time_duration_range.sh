@@ -1,11 +1,14 @@
 # !/bash/sh
 
-usage() { echo "Usage: $0 [-s <start_date_string> (Ex: 2016-01-01)] [-m <finance_mode> (Ex: 1; 0: market_mode, 1: stock_mode)]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-s <start_date_string> (Ex: 2016-01-01)] [-e <end_date_string> (Ex: 2016-01-01)] [-m <finance_mode> (Ex: 1; 0: market_mode, 1: stock_mode)]" 1>&2; exit 1; }
 
 while getopts ":s:e:" o; do
     case "${o}" in
         s)
             s=${OPTARG}
+            ;;
+        e)
+            e=${OPTARG}
             ;;
         m)
             m=${OPTARG}
@@ -17,11 +20,12 @@ while getopts ":s:e:" o; do
 done
 shift $((OPTIND-1))
 
-if [ -z "${s}" ]; then
+if [ -z "${s}" ] || [ -z "${e}" ]; then
     usage
 fi
 
 #echo "s = ${s}"
+#echo "e = ${e}"
 
 if [ -z "${m}" ]; then
     echo "Get the finance mode from market_stock_switch.conf"
@@ -37,27 +41,7 @@ else
 fi
 
 cd ~/Projects/finance_scrapy_python
-python ./finance_scrapy.py --time_duration_range ${s} ${finance_mode_attribute}
-
-# usage() { echo "Usage: $0 [-d <date_string> (Ex: 2016-01-01)]" 1>&2; exit 1; }
-
-# while getopts ":d:" o; do
-#     case "${o}" in
-#         d)
-#             d=${OPTARG}
-#             ;;
-#         *)
-#             usage
-#             ;;
-#     esac
-# done
-# shift $((OPTIND-1))
-
-# if [ -z "${d}" ]; then
-#     usage
-# fi
-
-# #echo "d = ${d}"
+python ./finance_scrapy.py --time_duration_range ${s},${e} ${finance_mode_attribute}
 
 # cd ~/Projects/finance_scrapy_python
-# python ./finance_scrapy.py -m USER_DEFINED -t ${d} --remove_old --check_result
+# python ./finance_scrapy.py -m USER_DEFINED -t ${s},${e} --remove_old --check_result

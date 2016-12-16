@@ -37,7 +37,9 @@ def show_usage_and_exit():
     source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
     for source_type_index in source_type_index_list:
         print "  %d: %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index])
-    print "  Format: 1,3,5"
+    print "  Format 1: 1,3,5"
+    print "  Format 2: 2-6"
+    print "  Format 3: 1,3-4,6"
     print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
     print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
     print "--time_duration_range_all\nDescription: The data in the all time range of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
@@ -381,11 +383,24 @@ def setup_param():
             source_type_index_str_list = param_cfg["source"].split(",")
             source_type_index_list = []
             for source_type_index_str in source_type_index_str_list:
-                source_type_index = int(source_type_index_str)
-                if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
-                    errmsg = "Unsupported source type index: %d" % source_type_index
-                    show_error_and_exit(errmsg)
-                source_type_index_list.append(source_type_index)
+                mobj = re.match("([\d]+)-([\d]+)", source_type_index_str)
+                if mobj is not None:
+                    source_type_start_index = int(mobj.group(1))
+                    if not CMN.FUNC.check_source_type_index_in_range(source_type_start_index):
+                        errmsg = "Unsupported source type index: %d" % source_type_start_index
+                        show_error_and_exit(errmsg)
+                    source_type_end_index = int(mobj.group(2))
+                    if not CMN.FUNC.check_source_type_index_in_range(source_type_end_index):
+                        errmsg = "Unsupported source type index: %d" % source_type_end_index
+                        show_error_and_exit(errmsg)
+                    for source_type_index in range(source_type_start_index, source_type_end_index + 1):
+                        source_type_index_list.append(source_type_index)
+                else:
+                    source_type_index = int(source_type_index_str)
+                    if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
+                        errmsg = "Unsupported source type index: %d" % source_type_index
+                        show_error_and_exit(errmsg)
+                    source_type_index_list.append(source_type_index)
 # Set time range
         time_range_start = None
         time_range_end = None
@@ -419,21 +434,27 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
-# class TestClass(object):
-#     def __init__(self):
-#         self.test1 = 1
+class TestClass(object):
+    @classmethod
+    def get_instance(cls):
+        print "Fuck first"
+        return cls()
 
-#     def __getattr__(self, name):
-#         value = "%s added" % name
-#         setattr(self, name, value)
-#         return name
+    def __init__(self):
+        self.test1 = 1
+        print "fuck"
 
+    def __getattr__(self, name):
+        value = "%s added" % name
+        setattr(self, name, value)
+        return name
 
 if __name__ == "__main__":
     # test_object = TestClass()
     # print test_object.__dict__
     # print test_object.test2
     # print test_object.__dict__
+    # test = TestClass.get_instance()
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()

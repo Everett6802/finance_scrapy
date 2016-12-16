@@ -28,4 +28,7 @@ else
 fi
 
 cd ~/Projects/finance_scrapy_python
-python ./finance_scrapy.py --help ${finance_mode_attribute}
+python ./finance_scrapy.py --time_last ${finance_mode_attribute}
+
+# cd ~/Projects/finance_scrapy_python
+# python ./finance_scrapy.py -m TODAY --remove_old --check_result --run_daily
