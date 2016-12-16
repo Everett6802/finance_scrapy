@@ -7,17 +7,20 @@ import sys
 import time
 import libs.common as CMN
 import libs.stock.web_scrapy_company_profile as CompanyProfile
+import libs.stock.web_scrapy_company_group_set as CompanyGroupSet
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 def show_usage():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
-    print "-g --group\nDescription: Define and show the group of the company\nCaution: Ignore other parameters when set"
-    print "--group_detail\nDescription: Define and show the group of the company in detail\nCaution: Ignore other parameters when set"
+    print "--show_group_division_test_result\nDescription: Show the test result about how to divide companies into groups\nCaution: Ignore other parameters when set"
+    print "--show_group_division_test_result_detail\nDescription: Show the test result about how to divide companies into groups in detail\nCaution: Ignore other parameters when set"
     for index, source in enumerate(CompanyProfile.COMPANY_GROUP_METHOD_DESCRIPTION_LIST):
         print "  %d: %s" % (index, CompanyProfile.COMPANY_GROUP_METHOD_DESCRIPTION_LIST[index])
     print "--renew_table\nDescription: Acquire the latest data from the web"
+    print "--show_group_statistics\nDescription: Show the statistics of each group\nCaution: Ignore other parameters except --renew when set"
+    print "--show_group_statistics_detail\nDescription: Show the statistics of each group in detail\nCaution: Ignore other parameters except --renew when set"
     print "--lookup_company\nDescription: Lookup company info by company code number"
     print "--lookup_company_group\nDescription: Lookup company group name/number by company code number"
     print "  Format 1 (company_code_number): 2347"
@@ -46,10 +49,14 @@ def parse_param():
         if re.match("(-h|--help)", sys.argv[index]):
             show_usage()
             sys.exit(0)
-        elif re.match("(-g|--group)", sys.argv[index]):
+        elif re.match("--show_group_division_test_result", sys.argv[index]):
             group_method_number = int(sys.argv[index + 1])
-            param_dict["group"] = group_method_number
-            param_dict["group_detail"] = True if re.match("--group_detail", sys.argv[index]) else False
+            param_dict["show_group_division_test_result"] = group_method_number
+            param_dict["show_group_division_test_result_detail"] = True if re.match("--show_group_division_test_result_detail", sys.argv[index]) else False
+            index_offset = 2
+        elif re.match("--show_group_statistics", sys.argv[index]):
+            param_dict["show_group_statistics"] = True
+            param_dict["show_group_statistics_detail"] = True if re.match("--show_group_statistics_detail", sys.argv[index]) else False
             index_offset = 2
         elif re.match("--renew_table", sys.argv[index]):
             renew_table = True
@@ -71,38 +78,40 @@ def parse_param():
         index += index_offset
     return param_dict
 
-from datetime import datetime, timedelta
-# from libs import common_class as CMN.CLS
+
+def show_group_statistics(self, show_detail):
+    company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
+    whole_company_number_in_group_dict = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+
+    # import pdb; pdb.set_trace()
+    for company_group_index in range(company_profile.CompanyGroupSize):
+        statistics_in_group_message = "Group%02d: %s, Len: %d" % (company_group_index, company_profile.get_company_group_description(company_group_index), len(whole_company_number_in_group_dict[company_group_index]))
+        if show_detail:
+            statistics_in_group_message = statistics_in_group_message + "; " + ",".join(whole_company_number_in_group_dict[company_group_index])
+        print statistics_in_group_message
+    print "There are totally %d groups" % company_profile.CompanyGroupSize
+
 
 if __name__ == "__main__":
-    # finance_time1 = CMN.CLS.FinanceDate(datetime(2016, 9, 3)) - 1
-    # finance_time2 = CMN.CLS.FinanceDate(datetime(2016, 9, 2))
-
-    # # finance_time1 = CMN.CLS.FinanceQuarter(2016, 4)
-    # # finance_time2 = CMN.CLS.FinanceQuarter(2016, 3)
-    # print finance_time1.to_string()
-    # print finance_time2.to_string()
-    # if finance_time1 == finance_time2:
-    #     print "Eqaul"
-    # elif finance_time1 > finance_time2:
-    #     print "Greater"
-    # elif finance_time1 < finance_time2:
-    #     print "Less"
-
-
-    # sys.exit(0);
     # import pdb; pdb.set_trace()
 # Parse the parameters
     param_dict = parse_param()
 # Initialize the instance
     g_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
 # Run by argument
-    if param_dict.get("group", None) is not None:
-        g_lookup.group_company(param_dict["group"], param_dict["group_detail"])
+# Show the test result in different division method
+    if param_dict.get("show_group_division_test_result", None) is not None:
+        g_lookup.group_company(param_dict["show_group_division_test_result"], param_dict["show_group_division_test_result_detail"])
         sys.exit(0)
 
     if param_dict.get("renew_table", None) is not None:
         g_lookup.renew_table()
+        if param_dict.get("show_group_division_test_result", None) is None:
+            sys.exit(0)
+
+# Show the group statistics
+    if param_dict.get("show_group_statistics", None) is not None:
+        show_group_statistics(param_dict["show_group_statistics"], param_dict["show_group_statistics_detail"])
         sys.exit(0)
 
     if param_dict.get("lookup_company", None) is not None:
