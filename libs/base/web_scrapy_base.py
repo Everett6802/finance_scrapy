@@ -122,6 +122,7 @@ class WebScrapyBase(object):
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH,
             "csv_time_duration_table": None,
+            # "multi_thread": False,
         }
         # import pdb; pdb.set_trace()
         self.xcfg.update(kwargs)
@@ -383,4 +384,3 @@ class WebScrapyBase(object):
     @abstractmethod
     def scrap_web_to_csv(self):
         raise NotImplementedError
-

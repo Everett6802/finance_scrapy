@@ -6,6 +6,7 @@ import sys
 import time
 import requests
 import shutil
+import copy
 from datetime import datetime
 import libs.common as CMN
 import libs.base as BASE
@@ -215,10 +216,34 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #         self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
 
 
-    def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):
-        super(WebSracpyStockMgr, self)._add_cfg_for_scrapy_obj(scrapy_obj_cfg)
-        scrapy_obj_cfg["company_group_set"] = self.company_group_set
+    # def _add_cfg_for_scrapy_obj(self, source_type_time_duration):
+    #     scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
+    #     if not scrapy_obj_cfg.has_key("company_group_set") # for sub group company set in multi-thread
+    #         scrapy_obj_cfg["company_group_set"] = self.company_group_set
+    #     scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
+    def _scrap_single_source_data(self, source_type_time_duration):
+        # import pdb;pdb.set_trace()
+        if self.company_group_set is None:
+            self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
+# Setup the time duration configuration for the scrapy object
+        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
+# Create the scrapy object to transform the data from Web to CSV
+        if self.multi_thread_amount is not None:
+            g_logger.debug("Scrap %s in %d threads" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], self.multi_thread_amount))
+# Run in multi-threads
+            sub_scrapy_obj_cfg_list = []
+            sub_company_group_list = self.company_group_set.get_sub_company_group_set_list(self.multi_thread_amount)
+# Perpare the config for each thread
+            for sub_company_group in sub_company_group_list:
+                sub_scrapy_obj_cfg = copy.deepcopy(scrapy_obj_cfg)
+                sub_scrapy_obj_cfg["company_group_set"] = sub_company_group
+                sub_scrapy_obj_cfg_list.append(sub_scrapy_obj_cfg)
+# Start the thread to scrap data
+            self._multi_thread_scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, sub_scrapy_obj_cfg_list)
+        else:
+            scrapy_obj_cfg["company_group_set"] = self.company_group_set
+            self._scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
 
 
     def show_company_list_in_finance_folder(self, finance_root_folderpath=None):
@@ -243,8 +268,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 print "%s: %s" % (company_group_number, ",".join(company_ode_number_in_group_list))
 
 
-    def do_scrapy(self):
-        self._scrap_data()
+    # def do_scrapy(self):
+    #     self._scrap_data()
 
 
     def check_scrapy(self):
@@ -326,3 +351,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 new_source_type_csv_time_duration[company_code_number] = new_source_type_csv_time_duration_for_one_company
         # import pdb; pdb.set_trace()
         self.__write_new_csv_time_duration_to_cfg(finance_folderpath_dst, new_source_type_csv_time_duration, company_group_set_dst)
+
+
+    def enable_multithread(self, thread_amount):
+        self.multi_thread_amount = thread_amount
+
+

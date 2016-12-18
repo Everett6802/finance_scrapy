@@ -5,6 +5,7 @@ import sys
 import re
 import requests
 import time
+import threading
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from requests.exceptions import ConnectionError
@@ -12,6 +13,9 @@ import libs.common as CMN
 # from libs import web_scrapy_url_date_range as URLTimeRange
 import web_scrapy_workday_canlendar as WorkdayCanlendar
 g_logger = CMN.WSL.get_web_scrapy_logger()
+
+
+thread_lock = threading.Lock()
 
 @CMN.CLS.Singleton
 class WebScrapyTimeSliceGenerator(object):
@@ -324,55 +328,38 @@ class WebScrapyTimeSliceGenerator(object):
         return (date_start, date_end)
 
 
+# Need Thread-safe
     def generate_time_slice(self, time_slice_type, time_duration_start, time_duration_end, **kwargs):
+        thread_lock.acquire()
         self.__check_time_range(time_duration_start, time_duration_end)
         self.__init_today_time_cfg()
-# Check input argument
-        # data_source_index = kwargs.get("data_source_index", None)
-        # if data_source_index is None:
-        #     raise TypeError("The data_source_index field is NOT found in kwargs")
-        # data_source_id = kwargs.get("data_source_id", None)
-        # company_code_number = kwargs.get("company_code_number", None)
-        # if CMN.IS_FINANCE_STOCK_MODE and company_code_number is None:
-        #     raise TypeError("The company_code_number field is NOT found in kwargs")
-        # if kwargs:
-        #     raise TypeError("Unexpected **kwargs: %s" % kwargs)
-# Restrict the max time range
-        # (restricted_date_start, restricted_date_end) = self.__restrict_date_range(
-        #     date_start, 
-        #     date_end, 
-        #     data_source_index if CMN.IS_FINANCE_MARKET_MODE else company_code_number
-        # )
-        # time_slice_kwargs = {}
-        # if CMN.IS_FINANCE_STOCK_MODE:
-        #     time_slice_kwargs["company_code_number"] = company_code_number
-        return (self.generate_time_slice_func_ptr[time_slice_type])(time_duration_start, time_duration_end, **kwargs)
+        ret = (self.generate_time_slice_func_ptr[time_slice_type])(time_duration_start, time_duration_end, **kwargs)
+        thread_lock.release()
+        return ret
 
 
-    def generate_source_time_slice(self, data_source_type, time_start, time_end, **kwargs):
-        if self.date_today is None:
-           self.date_today = CMN.CLS.FinanceDate(datetime.today())
-        if self.month_today is None:
-           self.month_today = CMN.CLS.FinanceMonth(datetime.today())
-# Check input argument
-        data_source_index = kwargs.get("data_source_index", None)
-        if data_source_index is None:
-            raise TypeError("The data_source_index field is NOT found in kwargs")
-        date_start = kwargs.get("date_start", None)
-        date_end = kwargs.get("date_end", None)
-        data_source_id = kwargs.get("data_source_id", None)
-        company_code_number = kwargs.get("company_code_number", None)
-        if CMN.IS_FINANCE_STOCK_MODE and company_code_number is None:
-            raise TypeError("The company_code_number field is NOT found in kwargs")
-        # if kwargs:
-        #     raise TypeError("Unexpected **kwargs: %s" % kwargs)
-# Restrict the max time range
-        (restricted_date_start, restricted_date_end) = self.__restrict_date_range(
-            date_start, 
-            date_end, 
-            data_source_index if CMN.IS_FINANCE_MARKET_MODE else company_code_number
-        )
-        time_slice_kwargs = {}
-        if CMN.IS_FINANCE_STOCK_MODE:
-            time_slice_kwargs["company_code_number"] = company_code_number
-        return (self.generate_time_slice_func_ptr[time_slice_type])(restricted_date_start, restricted_date_end, **time_slice_kwargs)
+#     def generate_source_time_slice(self, data_source_type, time_start, time_end, **kwargs):
+#         if self.date_today is None:
+#            self.date_today = CMN.CLS.FinanceDate(datetime.today())
+#         if self.month_today is None:
+#            self.month_today = CMN.CLS.FinanceMonth(datetime.today())
+# # Check input argument
+#         data_source_index = kwargs.get("data_source_index", None)
+#         if data_source_index is None:
+#             raise TypeError("The data_source_index field is NOT found in kwargs")
+#         date_start = kwargs.get("date_start", None)
+#         date_end = kwargs.get("date_end", None)
+#         data_source_id = kwargs.get("data_source_id", None)
+#         company_code_number = kwargs.get("company_code_number", None)
+#         if CMN.IS_FINANCE_STOCK_MODE and company_code_number is None:
+#             raise TypeError("The company_code_number field is NOT found in kwargs")
+# # Restrict the max time range
+#         (restricted_date_start, restricted_date_end) = self.__restrict_date_range(
+#             date_start, 
+#             date_end, 
+#             data_source_index if CMN.IS_FINANCE_MARKET_MODE else company_code_number
+#         )
+#         time_slice_kwargs = {}
+#         if CMN.IS_FINANCE_STOCK_MODE:
+#             time_slice_kwargs["company_code_number"] = company_code_number
+#         return (self.generate_time_slice_func_ptr[time_slice_type])(restricted_date_start, restricted_date_end, **time_slice_kwargs)

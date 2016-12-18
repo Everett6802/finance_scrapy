@@ -57,7 +57,7 @@ def parse_param():
         elif re.match("--show_group_statistics", sys.argv[index]):
             param_dict["show_group_statistics"] = True
             param_dict["show_group_statistics_detail"] = True if re.match("--show_group_statistics_detail", sys.argv[index]) else False
-            index_offset = 2
+            index_offset = 1
         elif re.match("--renew_table", sys.argv[index]):
             renew_table = True
             param_dict["renew_table"] = renew_table

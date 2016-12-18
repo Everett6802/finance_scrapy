@@ -7,6 +7,7 @@ import requests
 from datetime import datetime
 from abc import ABCMeta, abstractmethod
 import libs.common as CMN
+import web_scrapy_thread_pool as ThreadPool
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -23,6 +24,7 @@ class WebSracpyMgrBase(object):
         }
         # self.xcfg.update(kwargs)
         self.source_type_time_duration_list = None
+        self.multi_thread_amount = None
 
 
     @classmethod
@@ -67,7 +69,7 @@ class WebSracpyMgrBase(object):
         return web_scrapy_obj
 
 
-    def __scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
+    def _scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
         # import pdb; pdb.set_trace()
         web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **kwargs)
         if web_scrapy_obj is None:
@@ -78,12 +80,34 @@ class WebSracpyMgrBase(object):
         self._update_new_csv_time_duration(web_scrapy_obj)
 
 
-    def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):
-        scrapy_obj_cfg["dry_run_only"] = self.xcfg["dry_run_only"]
-        scrapy_obj_cfg["finance_root_folderpath"] = self.xcfg["finance_root_folderpath"]
+    def _multi_thread_scrap_web_data_to_csv_file(self, source_type_index, scrapy_obj_cfg_list):
+        # import pdb; pdb.set_trace()
+# Start the thread to scrap data
+        thread_pool = ThreadPool.WebScrapyThreadPool(self.multi_thread_amount)
+        web_scrapy_obj_list = []
+        for index in range(len(scrapy_obj_cfg_list)):
+            web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
+            web_scrapy_obj_list.append(web_scrapy_obj)
+            g_logger.debug("Start to scrap %s...... %d" % (web_scrapy_obj.get_description(), index))
+            thread_pool.add_scrap_web_to_csv_task(web_scrapy_obj)
+        thread_pool.wait_completion()
+        for web_scrapy_obj in web_scrapy_obj_list:
+# Update the new CSV time duration
+            self._update_new_csv_time_duration(web_scrapy_obj)
 
 
-    def _scrap_data(self):
+    def _init_cfg_for_scrapy_obj(self, source_type_time_duration):
+        scrapy_obj_cfg = {
+            "time_duration_type": source_type_time_duration.time_duration_type,  
+            "time_duration_start": source_type_time_duration.time_duration_start, 
+            "time_duration_end": source_type_time_duration.time_duration_end,
+            "dry_run_only": self.xcfg["dry_run_only"],
+            "finance_root_folderpath": self.xcfg["finance_root_folderpath"]
+            }
+        return scrapy_obj_cfg
+
+
+    def do_scrapy(self):
         # import pdb; pdb.set_trace()
         self._init_csv_time_duration()
         if not self.xcfg["old_finance_folder_reservation"]:
@@ -95,23 +119,13 @@ class WebSracpyMgrBase(object):
         # import pdb; pdb.set_trace()
         for source_type_time_duration in self.source_type_time_duration_list:
             try:
-# Setup the time duration configuration for the scrapy object
-                scrapy_obj_cfg = {
-                    "time_duration_type": source_type_time_duration.time_duration_type,  
-                    "time_duration_start": source_type_time_duration.time_duration_start, 
-                    "time_duration_end": source_type_time_duration.time_duration_end,
-                    # "dry_run_only": self.xcfg["dry_run_only"],
-                    # "finance_root_folderpath": self.xcfg["finance_root_folderpath"]
-                }
-# Setup other required configuration for the scrapy object
-                self._add_cfg_for_scrapy_obj(scrapy_obj_cfg)
-# Create the scrapy object to transform the data from Web to CSV
-                self.__scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
+                self._scrap_single_source_data(source_type_time_duration)
             except Exception as e:
                 errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], str(e))
+                CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
                 g_logger.error(errmsg)
                 total_errmsg += errmsg
-                print total_errmsg
+                # print total_errmsg
                 if not self.xcfg["try_to_scrap_all"]:
                     break
         if total_errmsg:
@@ -296,10 +310,15 @@ class WebSracpyMgrBase(object):
 
 
     @abstractmethod
-    def do_scrapy(self):
-       raise NotImplementedError
+    def _scrap_single_source_data(self, source_type_time_duration):
+        raise NotImplementedError
 
 
     @abstractmethod
     def check_scrapy(self):
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def enable_multithread(self, thread_amount):
         raise NotImplementedError

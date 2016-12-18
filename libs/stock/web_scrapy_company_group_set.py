@@ -17,6 +17,7 @@ class WebScrapyCompanyGroupSet(object):
         self.altered_company_number_in_group_dict = None
         self.is_add_done = False
         self.check_company_exist = True
+        self.company_amount = None
 
 
     @classmethod
@@ -66,11 +67,11 @@ class WebScrapyCompanyGroupSet(object):
         return cls.whole_company_number_list
 
 
-    @staticmethod
-    def get_whole_company_group_set():
-        company_group_set = WebScrapyCompanyGroupSet()
+    @classmethod
+    def get_whole_company_group_set(cls):
+        company_group_set = cls()
         company_group_set.add_done();
-        return company_group_set;
+        return company_group_set
 
 
     def items(self):
@@ -165,3 +166,72 @@ class WebScrapyCompanyGroupSet(object):
             self.altered_company_number_in_group_dict = {}
             for key, value in self.company_number_in_group_dict.items():
                 self.altered_company_number_in_group_dict[key] = value if (value is not None) else (self.get_whole_company_number_in_group_dict())[key]
+
+
+    @property
+    def CompanyAmount(self):
+        # import pdb; pdb.set_trace()
+        if not self.is_add_done:
+            g_logger.error("The add_done flag is NOT set to True");
+            raise RuntimeError("The add_done flag is NOT set to True")
+        if self.company_amount is None:
+            self.company_amount = 0;
+            for company_group_number, company_number_list in self.altered_company_number_in_group_dict.items():
+                for company_number in company_number_list:
+                    self.company_amount += 1
+        return self.company_amount
+
+
+    @property
+    def CurrentCompanyAmount(self):
+        company_amount = 0
+        if self.altered_company_number_in_group_dict is not None:
+            for company_group_number, company_number_list in self.altered_company_number_in_group_dict.items():
+                for company_number in company_number_list:
+                    company_amount += 1
+        return company_amount
+
+
+    def get_sub_company_group_set_list(self, sub_company_group_set_amount):
+        # import pdb; pdb.set_trace()
+        if not self.is_add_done:
+            g_logger.error("The add_done flag is NOT set to True");
+            raise RuntimeError("The add_done flag is NOT set to True")
+        if sub_company_group_set_amount <= 0:
+            raise ValueError("sub_company_group_set_amount should be larger than 0")
+        sub_company_group_set_list = []
+        sub_company_group_set_amount_list = []
+        sub_company_amount = None
+        rest_company_amount = None
+        if self.CompanyAmount <= sub_company_group_set_amount:
+            sub_company_amount = 1
+            rest_company_amount = 0
+            sub_company_group_set_amount = self.CompanyAmount
+            g_logger.debug("The company amount is less than sub company group set amount. Set the sub company group set amount to %d" % self.CompanyAmount)
+        else:            
+            sub_company_amount = self.CompanyAmount / sub_company_group_set_amount
+            rest_company_amount = self.CompanyAmount % sub_company_group_set_amount
+        # self.__setup_for_traverse()
+        sub_company_group_set = None
+        sub_company_group_cnt = 0
+        sub_company_amount_in_group_threshold = 0
+        sub_company_cnt = 0
+        # import pdb; pdb.set_trace()
+        for company_group_number, company_code_number_list in self.altered_company_number_in_group_dict.items():
+            for company_code_number in company_code_number_list:
+                if sub_company_cnt == 0:
+                    sub_company_group_set = WebScrapyCompanyGroupSet()
+                    sub_company_group_set_list.append(sub_company_group_set)
+                    sub_company_amount_in_group_threshold = ((sub_company_amount + 1) if sub_company_group_cnt < rest_company_amount else sub_company_amount)
+                    sub_company_group_cnt += 1
+                sub_company_group_set.add_company(company_code_number, company_group_number)
+                sub_company_cnt += 1
+# Add to another group
+                if sub_company_cnt == sub_company_amount_in_group_threshold:
+                    sub_company_cnt = 0
+        for group_index in range(sub_company_group_set_amount):
+            sub_company_group_set_list[group_index].add_done()
+            sub_company_group_set_amount_list.append(sub_company_group_set_list[group_index].CompanyAmount)
+        g_logger.debug("Company Amount list for each sub group: %s" % (",".join([str(i) for i in sub_company_group_set_amount_list])))
+        # import pdb; pdb.set_trace()
+        return sub_company_group_set_list

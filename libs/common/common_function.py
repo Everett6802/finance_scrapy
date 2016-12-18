@@ -2,11 +2,13 @@
 
 import os
 import re
+import sys
 import errno
 import logging
 import calendar
 import requests
 import shutil
+import inspect
 from datetime import datetime, timedelta
 import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
@@ -15,6 +17,24 @@ import common_class as CMN_CLS
 
 
 ########################################################################################
+
+def try_print(msg):
+    if CMN_DEF.CAN_PRINT_CONSOLE: 
+        print msg
+
+def get_full_stack_traceback():
+    tb = sys.exc_info()[2]
+    errmsg = 'Traceback (most recent call last):'
+    for item in reversed(inspect.getouterframes(tb.tb_frame)[1:]):
+        errmsg += ' File "{1}", line {2}, in {3}\n'.format(*item)
+        for line in item[4]:
+            errmsg += ' ' + line.lstrip()
+        for item in inspect.getinnerframes(tb):
+            errmsg += ' File "{1}", line {2}, in {3}\n'.format(*item)
+        for line in item[4]:
+            errmsg += ' ' + line.lstrip()
+    return errmsg
+
 
 def check_source_type_index_in_range(source_type_index):
     if CMN_DEF.IS_FINANCE_MARKET_MODE:

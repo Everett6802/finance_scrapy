@@ -20,10 +20,10 @@ def show_usage_and_exit():
     print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
     print "--market_mode --stock_mode\nDescription: Switch the market/stock mode\nCaution: Read parameters from %s when NOT set" % CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME
+    print "--silent\nDescription: Disable print log on console"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
-    print "--silent\nDescription: Disable print log on console"
     print "--check_result\nDescription: Check the CSV files after scraping Web data"
     print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
@@ -53,10 +53,12 @@ def show_usage_and_exit():
         print "--company_list_in_folderpath\nDescription: Show the company number list in the finance folder" 
         print "--company_from_file\nDescription: The company code number from file\nDefault: All company code nubmers\nCaution: company is ignored when set"
         print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only work when company_from_file is NOT set"
-        print "  Format 1 Company code number: 2347"
-        print "  Format 2 Company code number range: 2100-2200"
-        print "  Format 3 Company group number: [Gg]12"
-        print "  Format 4 Company code number/number range/group hybrid: 2347,2100-2200,G12,2362,g2,1500-1510"
+        print "  Format1: Company code number (ex. 2347)"
+        print "  Format2: Company code number range (ex. 2100-2200)"
+        print "  Format3: Company group number (ex. [Gg]12)"
+        print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
+        print "--multi_thread\nDescription: Scrape web data in multi-thread"
+        print "  Format: multi-thread number (ex. 4)"
     print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder cant NOT be duplicate. If so, the merge progress aborts"
     print "  Format 1 (folderpath): /var/tmp/finance"
     print "  Format 2 (folderpath1,folderpath2,folderpath3): /var/tmp/finance1,/var/tmp/finance2,/var/tmp/finance3"
@@ -194,6 +196,7 @@ def init_param():
     param_cfg["company_list_in_folderpath"] = None
     param_cfg["company"] = None
     param_cfg["company_from_file"] = None
+    param_cfg["multi_thread"] = None
     param_cfg["merge_finance_folderpath_src_list"] = None
     param_cfg["merge_finance_folderpath_dst"] = None
 
@@ -229,6 +232,7 @@ def parse_param():
             index_offset = 2 
         elif re.match("--silent", sys.argv[index]):
             param_cfg["silent"] = True
+            CMN.DEF.CAN_PRINT_CONSOLE = not param_cfg["silent"]
             index_offset = 1
         elif re.match("--check_result", sys.argv[index]):
             param_cfg["check_result"] = True
@@ -242,12 +246,6 @@ def parse_param():
         elif re.match("--dry_run", sys.argv[index]):
             param_cfg["dry_run"] = True
             index_offset = 1
-        # elif re.match("--run_daily", sys.argv[index]):
-        #     # method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
-        #     show_console = False
-        #     remove_old = True
-        #     check_result = True
-        #     break
         elif re.match("--finance_folderpath", sys.argv[index]):
             param_cfg["finance_folderpath"] = sys.argv[index + 1]
             index_offset = 2
@@ -315,6 +313,9 @@ def parse_param():
             else:
                 param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
+        elif re.match("--multi_thread", sys.argv[index]):
+            param_cfg["multi_thread"] = int(sys.argv[index + 1])
+            index_offset = 2
         elif re.match("--merge_finance_folderpath_src_list", sys.argv[index]):
             param_cfg["merge_finance_folderpath_src_list"] = sys.argv[index + 1]
             index_offset = 2
@@ -357,6 +358,9 @@ def check_param():
         if param_cfg["company_from_file"] is not None:
             param_cfg["company_from_file"] = None
             show_warn("The 'company_from_file' argument is ignored since it's 'Market' mode")
+        if param_cfg["multi_thread"] is not None:
+            param_cfg["multi_thread"] = None
+            show_warn("The 'multi_thread' argument is invalid since it's 'Market' mode")
     else:
         if param_cfg["company_list_in_default_folderpath"]:
             if param_cfg["company_list_in_folderpath"] is not None:
@@ -420,13 +424,17 @@ def setup_param():
                     show_error_and_exit(errmsg)
         # import pdb; pdb.set_trace()
         g_mgr.set_source_type_time_duration(source_type_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
-# Set company list. For stock mode only
+
     if CMN.DEF.IS_FINANCE_STOCK_MODE:
+# Set company list. For stock mode only
         if param_cfg["company_from_file"] is not None:
             g_mgr.set_company_from_file(param_cfg["company_from_file"])
         elif param_cfg["company"] is not None:
             company_word_list = param_cfg["company"].split(",")
             g_mgr.set_company(company_word_list)
+# Swith to mode thread mode. For stock mode only
+        if param_cfg["multi_thread"] is not None:
+            g_mgr.enable_multithread(param_cfg["multi_thread"])
 
     g_mgr.enable_old_finance_folder_reservation(param_cfg["reserve_old"])
     g_mgr.enable_dry_run(param_cfg["dry_run"])
@@ -437,24 +445,45 @@ def setup_param():
 class TestClass(object):
     @classmethod
     def get_instance(cls):
-        print "Fuck first"
-        return cls()
+        obj = cls()
+        print type(obj)
+        return obj
 
-    def __init__(self):
-        self.test1 = 1
-        print "fuck"
+    # def __init__(self):
+    #     self.test1 = 1
+    #     print "fuck"
 
     def __getattr__(self, name):
         value = "%s added" % name
         setattr(self, name, value)
-        return name
+        return value
+
+
+class TestClass1(TestClass):
+    def __getattr__(self, name):
+        return super(TestClass1, self).__getattr__(name)
+
+    def test1(self):
+        print "fuck1"
 
 if __name__ == "__main__":
-    # test_object = TestClass()
+    # TestClass1.get_instance()
+    # import pdb; pdb.set_trace()
+    # company_group_set = web_scrapy_company_group_set.WebScrapyCompanyGroupSet()
+    # company_list = ["1101", "1102", "1103", "1104", "1108", "1109", "1110"]
+    # company_group_set.add_company_list(company_list)
+    # sub_company_group_list = company_group_set.get_sub_company_group_set_list(3)
+    # for company_group, company_number_list in sub_company_group_list[2].items():
+    #     print "group: %s, number_list: %s" % (company_group, company_number_list)
+    # test_object = TestClass1()
     # print test_object.__dict__
     # print test_object.test2
     # print test_object.__dict__
-    # test = TestClass.get_instance()
+    # # test = TestClass.get_instance()
+    # test_class = TestClass1()
+    # getattr(test_class, "test1")()
+    # print "True" if isinstance(test_class, TestClass1) else "False"
+    # print "True" if isinstance(test_class, TestClass) else "False"
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()

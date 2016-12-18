@@ -95,14 +95,15 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self.__write_new_csv_time_duration_to_cfg()
 
 
-    def _add_cfg_for_scrapy_obj(self, scrapy_obj_cfg):
-        super(WebSracpyMarketMgr, self)._add_cfg_for_scrapy_obj(scrapy_obj_cfg)
+    # def _add_cfg_for_scrapy_obj(self, source_type_time_duration):
+    #     scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
+    #     scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration
+    def _scrap_single_source_data(self, source_type_time_duration):
+# Setup the time duration configuration for the scrapy object
+        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration
-
-
-    def do_scrapy(self):
-       # import pdb; pdb.set_trace()
-        self._scrap_data()
+# Create the scrapy object to transform the data from Web to CSV
+        self._scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
 
 
     def check_scrapy(self):
@@ -169,3 +170,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             new_source_type_csv_time_duration[source_type_index] = csv_time_duration_cfg_list[finance_folder_index][source_type_index]
         # import pdb; pdb.set_trace()
         self.__write_new_csv_time_duration_to_cfg(finance_folderpath_dst, new_source_type_csv_time_duration)
+
+
+    def enable_multithread(self, thread_amount):
+        raise ValueError("Multi-Thread is NOT supported in market mode")

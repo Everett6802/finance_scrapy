@@ -57,6 +57,7 @@ class WebScrapyCompanyProfile(object):
         self.company_group_name2num_dict = None
         self.update_from_web = False
         self.__company_group_size = 0
+        self.__company_amount = 0
 
         self.ETF_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
         self.TDR_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
@@ -83,6 +84,8 @@ class WebScrapyCompanyProfile(object):
         self.company_group_profile_list = []
         self.company_profile_list = []
         self.company_profile_dict = {}
+        self.__company_amount = 0
+        self.__company_group_size = 0
 
 
     def renew_table(self, need_check_company_diff=True):
@@ -121,6 +124,7 @@ class WebScrapyCompanyProfile(object):
 # Copy the config file to the finance_analyzer/finance_recorder_java project
             self.__copy_company_profile_config_file()
             self.update_from_web = True
+
 
 
     def __copy_company_profile_config_file(self):
@@ -168,6 +172,7 @@ class WebScrapyCompanyProfile(object):
                 raise e
             else:
                 self.__company_group_size = len(self.company_group_num2name_list)
+                self.__company_amount = len(self.company_profile_list)
                 self.__generate_company_group_profile_list()
 
         return need_update_from_web
@@ -182,6 +187,8 @@ class WebScrapyCompanyProfile(object):
         self.__scrap_company_profile_from_web(CMN.MARKET_TYPE_STOCK_EXCHANGE)
         g_logger.debug("###### Get the Code Number of the Over-the-Counter Company ######")
         self.__scrap_company_profile_from_web(CMN.MARKET_TYPE_OVER_THE_COUNTER)
+        self.__company_group_size = len(self.company_group_num2name_list)
+        self.__company_amount = len(self.company_profile_list)
         self.__generate_company_group_profile_list()
         time_end_second = int(time.time())
         g_logger.info("######### Time Lapse: %d second(s) #########" % (time_end_second - time_start_second))
@@ -359,7 +366,6 @@ class WebScrapyCompanyProfile(object):
             #     element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] = COMPANY_GROUP_EXCEPTION_DICT[COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT]
 
             self.company_profile_list.append(element_list)
-        self.__company_group_size = len(self.company_group_num2name_list)
 # 有價證券代號及名稱
 # 國際證券辨識號碼(ISIN Code) 
 # 上市日 
@@ -539,6 +545,11 @@ class WebScrapyCompanyProfile(object):
     @property
     def CompanyGroupSize(self):
         return self.__company_group_size
+
+
+    @property
+    def CompanyAmount(self):
+        return self.__company_amount
 
 
     def get_company_group_description(self, index):

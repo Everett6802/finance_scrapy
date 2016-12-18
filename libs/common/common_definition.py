@@ -37,6 +37,8 @@ RET_FAILURE_TIMEOUT = RET_FAILURE_BASE + 2
 
 #################################################################################
 
+CAN_PRINT_CONSOLE = True
+
 RUN_RESULT_FILENAME = "run_result"
 TIME_FILENAME_FORMAT = "%04d%02d%02d%02d%02d"
 DATE_STRING_FORMAT = "%04d-%02d-%02d"

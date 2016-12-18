@@ -2,38 +2,92 @@
 
 import re
 import requests
-import threading
+import sys
+import inspect
+from threading import Thread
 from datetime import datetime, timedelta
 import libs.common as CMN
-# import web_scrapy_logging as WSL
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-class WebScrapyThread(threading.Thread):
-
-    def __init__(self, delegation_obj):
+class WebScrapyThread(Thread):
+    """Thread executing tasks from a given tasks queue"""
+    def __init__(self, tasks):
     	super(WebScrapyThread, self).__init__()
-        self.delegation_obj = delegation_obj
-        self.ret = CMN.RET_SUCCESS
+        self.tasks = tasks
+        self.daemon = True
+        self.start()
+        self.web_scrapy_obj = None
+        self.thread_index = None
+        # self.ret_code = CMN.RET_SUCCESS
+        self.errmsg = None
+        self.errmsg_traceback = None
+        self.task_done_success = False
 
 
     def __str__(self):
-        return self.delegation_obj.get_description()
+        return "Thread for %s" % self.web_scrapy_obj.get_description()
 
 
-    def get_obj(self):
-    	return self.delegation_obj
+    def __record_full_stack_traceback(self):
+       # tb = sys.exc_info()[2]
+       # errmsg = ""
+       # errmsg += 'Traceback (most recent call last):'
+       # for item in reversed(inspect.getouterframes(tb.tb_frame)[1:]):
+       #    errmsg += ' File "{1}", line {2}, in {3}\n'.format(*item)
+       #    for line in item[4]:
+       #       errmsg += ' ' + line.lstrip()
+       #    for item in inspect.getinnerframes(tb):
+       #       errmsg += ' File "{1}", line {2}, in {3}\n'.format(*item)
+       #    for line in item[4]:
+       #       errmsg += ' ' + line.lstrip()
+       self.errmsg_traceback = CMN.FUNC.get_full_stack_traceback()
 
 
-    def get_result(self):
+    @property
+    def Instance(self):
+        if self.web_scrapy_obj is None:
+            raise ValueError
+    	return self.web_scrapy_obj
+
+
+    @property
+    def Return(self):
     	return self.ret
 
 
+    @property
+    def ErrMsg(self):
+        return self.errmsg
+
+
+    @property
+    def ErrMsgTrackback(self):
+        return self.errmsg_traceback
+
+
+    @property
+    def IsTaskDone(self):
+        return self.task_done_success
+
+
+    @property
+    def ThreadIndex(self):
+        return self.thread_index
+
+
     def run(self):
+        self.thread_index, self.web_scrapy_obj, func_name, args, kargs = self.tasks.get()
     	# import pdb; pdb.set_trace()
-    	# g_logger.debug("The thread for[%s] start !!!", self.delegation_obj.get_description())
+    	g_logger.debug("The thread for[%s::%s()] start...... %d" % (self.web_scrapy_obj.get_description(), func_name, self.thread_index))
         try:
-            self.delegation_obj.scrap_web_to_csv()
-        except requests.exceptions.Timeout as e:
-            self.ret = CMN.RET_FAILURE_TIMEOUT
-        # g_logger.debug("The thread for[%s] stop !!!", self.delegation_obj.get_description())
+            self.ret = getattr(self.web_scrapy_obj, func_name)(*args, **kargs)
+            # print "Thread%d Return: %s, Error: %s" % (thread_index, self.thread_return, self.thread_errmsg)
+            self.task_done_success = True
+        except AttributeError:
+            self.errmsg = "Class %s does not implement %s" % (my_cls.__class__.__name__, method_name)
+        except Exception, e:
+            self.__record_full_stack_traceback()
+            self.errmsg = "The thread for[%s] stop !!!, due to: %s" % (self.web_scrapy_obj.get_description(), str(e))
+        finally:
+            self.tasks.task_done()
