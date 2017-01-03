@@ -72,7 +72,9 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 # #         for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
 # #             self.source_type_csv_time_duration[source_type_index] = time_duration_tuple
 #         self.source_type_csv_time_duration = csv_time_duration_dict
-        self.source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
+        source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
+        if source_type_csv_time_duration is not None:
+            self.source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
 
 
     def _update_new_csv_time_duration(self, web_scrapy_obj):

@@ -123,7 +123,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #                 # for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
 #                 #     csv_time_duration_list[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START] = time_duration_tuple
 #                 self.source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_dict
-        self.source_type_csv_time_duration_dict = self.__parse_csv_time_duration_cfg()
+        source_type_csv_time_duration_dict = self.__parse_csv_time_duration_cfg()
+        if source_type_csv_time_duration_dict is not None:
+            self.source_type_csv_time_duration_dict = source_type_csv_time_duration_dict
 
 
     def _update_new_csv_time_duration(self, web_scrapy_obj):
