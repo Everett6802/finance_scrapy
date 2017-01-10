@@ -152,6 +152,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
         #     print tr.text
             td = tr.select('td')
             if not silent_mode: print td[0].text, td[1].text, td[2].text, td[3].text, td[4].text
+# 序 持股／單位數分級 人數 股數 佔集保庫存比例
 # ==== result: ====
 # 1 1-999 10,306 2,826,860 0.17
 # 2 1,000-5,000 25,902 58,118,814 3.65

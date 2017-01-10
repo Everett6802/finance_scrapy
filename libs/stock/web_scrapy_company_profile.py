@@ -66,6 +66,10 @@ class WebScrapyCompanyProfile(object):
         self.failed_company_name_lookup = {
             "8349": u"恒耀",
         }
+# A lookup table used when the comapny does NOT exist actually
+        self.failed_company_name_lookup = {
+            "8349": u"恒耀",
+        }
         self.group_company_func_ptr = [
             self.__group_company_by_company_code_number_first_2_digit,
             self.__group_company_by_industry,
@@ -128,13 +132,13 @@ class WebScrapyCompanyProfile(object):
 
 
     def __copy_company_profile_config_file(self):
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
+        # current_path = os.path.dirname(os.path.realpath(__file__))
+        # [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.DEF_CONF_FOLDER),
-            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.DEF_CONF_FOLDER),
         ]
-        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        src_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             if os.path.exists(dst_folderpath):
                 g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
@@ -184,9 +188,9 @@ class WebScrapyCompanyProfile(object):
         g_logger.debug("Try to Acquire the Company Code Number info from the web......")
         time_start_second = int(time.time())
         g_logger.debug("###### Get the Code Number of the Stock Exchange Company ######")
-        self.__scrap_company_profile_from_web(CMN.MARKET_TYPE_STOCK_EXCHANGE)
+        self.__scrap_company_profile_from_web(CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE)
         g_logger.debug("###### Get the Code Number of the Over-the-Counter Company ######")
-        self.__scrap_company_profile_from_web(CMN.MARKET_TYPE_OVER_THE_COUNTER)
+        self.__scrap_company_profile_from_web(CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER)
         self.__company_group_size = len(self.company_group_num2name_list)
         self.__company_amount = len(self.company_profile_list)
         self.__generate_company_group_profile_list()
@@ -252,9 +256,9 @@ class WebScrapyCompanyProfile(object):
             return company_group_name
 
         str_mode = None
-        if market_type == CMN.MARKET_TYPE_STOCK_EXCHANGE:
+        if market_type == CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE:
             str_mode = 2
-        elif market_type == CMN.MARKET_TYPE_OVER_THE_COUNTER:
+        elif market_type == CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER:
             str_mode = 4
         else:
             raise ValueError("Unknown Market Type: %d", self.market_type)
@@ -280,9 +284,9 @@ class WebScrapyCompanyProfile(object):
         #         raise e
         req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
 # Select the section we are interested in
-        res.encoding = self.encoding
+        req.encoding = self.encoding
         # print res.text
-        soup = BeautifulSoup(res.text)
+        soup = BeautifulSoup(req.text)
         web_data = soup.select(self.select_flag)
         if len(web_data) == 0:
             raise RuntimeError("Fail to find the compay code number info")
@@ -391,10 +395,10 @@ class WebScrapyCompanyProfile(object):
 
     def __write_company_profile_to_file(self):
         # import pdb; pdb.set_trace()
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        [project_folder, lib_folder] = current_path.rsplit('/', 1)
+        # current_path = os.path.dirname(os.path.realpath(__file__))
+        # [project_folder, lib_folder] = current_path.rsplit('/', 1)
 # File for keeping track of the company code number info
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
@@ -410,7 +414,7 @@ class WebScrapyCompanyProfile(object):
                 # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
                 raise e
 # File for keeping track of the company group info
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
         g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:
@@ -427,9 +431,9 @@ class WebScrapyCompanyProfile(object):
 
     def __write_company_group_to_file(self):
         # import pdb; pdb.set_trace()
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (project_folder, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        # current_path = os.path.dirname(os.path.realpath(__file__))
+        # [project_folder, lib_folder] = current_path.rsplit('/', 1)
+        conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
         with open(conf_filepath, 'wb') as fp:
             try:

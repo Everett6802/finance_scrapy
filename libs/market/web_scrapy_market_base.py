@@ -49,7 +49,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     def _adjust_csv_time_duration(self):
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
 # Limit the time range from the web site
         time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index)
 # Determine the CSV/Web time duration
@@ -125,9 +125,6 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
     def get_new_csv_time_duration(self):
 # No matter the csv time range would be updated, the new time duration is required to re-write into the config file
-        # if web2csv_time_duration_update is None:
-        #     raise RuntimeError("web2csv_time_duration_update should NOT be None")
-        # return (CMN.CLS.TimeDurationTuple(web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd) if web2csv_time_duration_update.NeedUpdate else None)
         assert self.new_csv_time_duration is not None, "self.new_csv_time_duration should NOT be None"
         return self.new_csv_time_duration
 

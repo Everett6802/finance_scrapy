@@ -160,9 +160,6 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
     def get_new_csv_time_duration_dict(self):
 # No matter the csv time range would be updated, the new time duration is required to re-write into the config file
-        # if self.web2csv_time_duration_update_cfg is None:
-        #     raise RuntimeError("self.web2csv_time_duration_update_cfg should NOT be None")
-        # return (CMN.CLS.TimeDurationTuple(self.web2csv_time_duration_update_cfg.NewCSVStart, self.web2csv_time_duration_update_cfg.NewCSVEnd) if self.web2csv_time_duration_update_cfg.NeedUpdate else None)
         assert self.new_csv_time_duration_dict is not None, "self.new_csv_time_duration_dict should NOT be None"
         return self.new_csv_time_duration_dict
 

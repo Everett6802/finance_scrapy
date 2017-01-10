@@ -165,9 +165,9 @@ def merge_finance_folder_and_exit(merge_finance_folderpath_src_list, merge_finan
 #     os.chdir(project_config_folderpath)
 #     cmd = None
 #     if mode == CMN.DEF.FINANCE_ANALYSIS_MARKET:
-#         cmd = "sed s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+#         cmd = "sed -i s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
 #     elif mode == CMN.DEF.FINANCE_ANALYSIS_STOCK:
-#         cmd = "sed s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+#         cmd = "sed -i s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
 #     else:
 #         raise ValueError("Unknown mode: %d", mode)
 #     p = subprocess.Popen(cmd, shell=True)
@@ -441,30 +441,6 @@ def setup_param():
     if param_cfg["finance_folderpath"] is not None:
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
-
-class TestClass(object):
-    @classmethod
-    def get_instance(cls):
-        obj = cls()
-        print type(obj)
-        return obj
-
-    # def __init__(self):
-    #     self.test1 = 1
-    #     print "fuck"
-
-    def __getattr__(self, name):
-        value = "%s added" % name
-        setattr(self, name, value)
-        return value
-
-
-class TestClass1(TestClass):
-    def __getattr__(self, name):
-        return super(TestClass1, self).__getattr__(name)
-
-    def test1(self):
-        print "fuck1"
 
 if __name__ == "__main__":
     # TestClass1.get_instance()
