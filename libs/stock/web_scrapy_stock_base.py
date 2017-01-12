@@ -129,6 +129,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 timeslice_iterable = self._get_timeslice_iterable(**time_slice_generator_cfg)
                 csv_data_list_each_year = []
                 cur_year = None
+                # import pdb; pdb.set_trace()
 # Generate the time slice list                
                 for timeslice in timeslice_iterable:
 # Write the data into csv year by year

@@ -26,6 +26,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     #         datetime_range_end
     #     )
     #     self.generate_day_time_list_rule = self.__generate_day_time_list_rule_select_friday
+    TABLE_SUM_FLAG = u'\u5408\u3000\u8a08' # "合　計"
     last_finance_date = None
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
@@ -75,12 +76,26 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
         # import pdb; pdb.set_trace()
         data_list = []
         data_list.append(self.date_cur_string)
-        for tr in web_data[9:25]:
+# Scrape the data of each stock interval
+        for tr in web_data[9:24]:
             td = tr.select('td')
             data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
             data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
             data_list.append(td[4].text)
-
+# Ignore the data which is NOT interesting... Scrape the data of sum
+        sum_found = False
+        # import pdb; pdb.set_trace()
+        for tr in web_data[24:]:
+            td = tr.select('td')
+            if not re.match(self.TABLE_SUM_FLAG, td[1].text, re.U):
+                continue
+            data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
+            data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
+            data_list.append(td[4].text)
+            sum_found = True
+            break
+        if not sum_found:
+            raise ValueError("Fail to find the sum flag in the table");
         return data_list
 # 持股1-999人數
 # 持股1-999股數
