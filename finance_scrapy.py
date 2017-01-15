@@ -442,6 +442,7 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
+import time
 if __name__ == "__main__":
     # TestClass1.get_instance()
     # import pdb; pdb.set_trace()
@@ -460,6 +461,17 @@ if __name__ == "__main__":
     # getattr(test_class, "test1")()
     # print "True" if isinstance(test_class, TestClass1) else "False"
     # print "True" if isinstance(test_class, TestClass) else "False"
+    # g_logger.debug("fuck you1, go to hell")
+    # time.sleep(1)
+    # g_logger.debug("fuck you2, go to hell")
+    # time.sleep(1)
+    # g_logger.debug("fuck you3, go to hell")
+    # time.sleep(1)
+    # g_logger.debug("fuck you4, go to hell")
+    # time.sleep(1)
+    # g_logger.debug("fuck you5, go to hell")
+    # time.sleep(1)
+    # g_logger.debug("fuck you6, go to hell")
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()

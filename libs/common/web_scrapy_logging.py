@@ -1,36 +1,34 @@
 # -*- coding: utf8 -*-
 
 import os
-import logging
+# import logging
+import logrotate as LR
+import common_class as CMN_CLS
+# import common_definition as CMN_DEF
 
 
-LOG_FILE_FOLDER = "log"
-LOG_FILE_NAME = "web_scrapy.log"
-LOG_FILE_PATH = "%s/%s" % (LOG_FILE_FOLDER, LOG_FILE_NAME)
+LOG_WORKING_FOLDER = os.path.dirname(os.path.realpath(__file__)).rsplit('/', 2)[0]
+web_scrapy_logger_cfg = {
+    "log_working_folder": LOG_WORKING_FOLDER,
+}
+
+@CMN_CLS.Singleton
+class WebScrapyLogger(object):
+
+    def __init__(self):
+        self.logger = None
 
 
-def reset_web_scrapy_logger_content(filename=LOG_FILE_PATH):
-    if os.path.exists(filename):
-        with open(filename, "w") as fp:
-            fp.seek(0, 0)
+    def initialize(self, **cfg): 
+        self.logger = LR.LogRotate(**cfg)
 
 
-def get_web_scrapy_logger(level=logging.DEBUG, filename=LOG_FILE_PATH):
-# Create the folder for log file if it does NOT exist
-    if not os.path.exists(LOG_FILE_FOLDER):
-        os.makedirs(LOG_FILE_FOLDER)
+    @property
+    def LoggerInstance(self):
+        if self.logger is None:
+            raise ValueError("Logger instance is NOT initialized")
+        return self.logger
 
-    logging.basicConfig(filename=filename, level=level, format='%(asctime)-15s %(filename)s:%(lineno)d [%(levelname)s]: %(message)s')
-# Log to console
-    # console = logging.StreamHandler()
-    # console.setLevel(logging.WARN)
-    # console.setFormatter(logging.Formatter('%(asctime)-15s %(filename)s:%(lineno)d -- %(message)s'))
-    # logging.getLogger().addHandler(console)
-# Log to syslog
-    from logging.handlers import SysLogHandler
-    syslog = SysLogHandler(address='/dev/log')
-    # syslog.setLevel(logging.INFO)
-    syslog.setFormatter(logging.Formatter('%(filename)s:%(lineno)d [%(levelname)s]: %(message)s'))
-    logging.getLogger().addHandler(syslog)
 
-    return logging.getLogger();
+def get_web_scrapy_logger():
+    return WebScrapyLogger.Instance(web_scrapy_logger_cfg).LoggerInstance

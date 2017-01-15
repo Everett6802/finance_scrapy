@@ -27,7 +27,7 @@ class Singleton:
         self._decorated = decorated
 
 
-    def Instance(self):
+    def Instance(self, cfg=None):
         """
         Returns the singleton instance. Upon its first call, it creates a
         new instance of the decorated class and calls its `__init__` method.
@@ -40,7 +40,10 @@ class Singleton:
         except AttributeError:
             self._instance = self._decorated()
             if hasattr(self._instance, "initialize"):
-                self._instance.initialize()
+                if cfg is None:
+                    self._instance.initialize()
+                else:
+                    self._instance.initialize(**cfg)
             return self._instance
 
 

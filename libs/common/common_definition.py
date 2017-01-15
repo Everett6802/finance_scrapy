@@ -6,9 +6,9 @@ import errno
 import logging
 import calendar
 from datetime import datetime, timedelta
-import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
 import common_function as CMN_FUNC
+# import web_scrapy_logging as WSL
+# g_logger = WSL.get_web_scrapy_logger()
 
 
 FINANCE_ANALYSIS_UNKNOWN = -1

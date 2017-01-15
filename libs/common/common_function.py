@@ -10,10 +10,10 @@ import requests
 import shutil
 import inspect
 from datetime import datetime, timedelta
-import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
 import common_definition as CMN_DEF
 import common_class as CMN_CLS
+import web_scrapy_logging as WSL
+g_logger = WSL.get_web_scrapy_logger()
 
 
 ########################################################################################
@@ -21,6 +21,7 @@ import common_class as CMN_CLS
 def try_print(msg):
     if CMN_DEF.CAN_PRINT_CONSOLE: 
         print msg
+
 
 def get_full_stack_traceback():
     tb = sys.exc_info()[2]
