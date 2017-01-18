@@ -24,8 +24,9 @@ def show_usage_and_exit():
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
-    print "--check_result\nDescription: Check the CSV files after scraping Web data"
-    print "--clone_result\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check_result is set"
+    print "--no_scrap\nDescription: Don't scrap Web data"
+    print "--check\nDescription: Check the CSV files after scraping Web data"
+    print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check is set"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
@@ -182,8 +183,9 @@ def init_param():
     param_cfg["check_url"] = False
     param_cfg["debug_source"] = None
     param_cfg["silent"] = False
-    param_cfg["check_result"] = False
-    param_cfg["clone_result"] = False
+    param_cfg["no_scrap"] = False
+    param_cfg["check"] = False
+    param_cfg["clone"] = False
     param_cfg["reserve_old"] = False
     param_cfg["dry_run"] = False
     param_cfg["finance_folderpath"] = None
@@ -234,11 +236,14 @@ def parse_param():
             param_cfg["silent"] = True
             CMN.DEF.CAN_PRINT_CONSOLE = not param_cfg["silent"]
             index_offset = 1
-        elif re.match("--check_result", sys.argv[index]):
-            param_cfg["check_result"] = True
+        elif re.match("--no_scrap", sys.argv[index]):
+            param_cfg["no_scrap"] = True
             index_offset = 1
-        elif re.match("--clone_result", sys.argv[index]):
-            param_cfg["clone_result"] = True
+        elif re.match("--check", sys.argv[index]):
+            param_cfg["check"] = True
+            index_offset = 1
+        elif re.match("--clone", sys.argv[index]):
+            param_cfg["clone"] = True
             index_offset = 1
         elif re.match("--reserve_old", sys.argv[index]):
             param_cfg["reserve_old"] = True
@@ -442,6 +447,11 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
+def my_coroutine():
+    while True:
+        received = yield
+        print("Received:", received)
+
 import time
 if __name__ == "__main__":
     # TestClass1.get_instance()
@@ -471,6 +481,10 @@ if __name__ == "__main__":
     # time.sleep(1)
     # g_logger.debug("fuck you5, go to hell")
     # time.sleep(1)
+    # it = my_coroutine()
+    # next(it)
+    # it.send("fuck")
+    # it.send("shit")
     # g_logger.debug("fuck you6, go to hell")
     # sys.exit(0)
 
@@ -524,23 +538,24 @@ if __name__ == "__main__":
 
 # Start to do something about scrapy......
 # Reset the file positon of the log file to 0
-    if param_cfg["check_result"]:
-        CMN.WSL.reset_web_scrapy_logger_content()
+    # if param_cfg["check"]:
+    #     CMN.WSL.reset_web_scrapy_logger_content()
 
 # Start to do something.......
 # Try to scrap the web data
-    show_info("* Scrap the data from the website......")
-    time_range_start_second = int(time.time())
-    # import pdb; pdb.set_trace()
-    g_mgr.do_scrapy()
-    time_range_end_second = int(time.time())
-    show_info("* Scrap the data from the website...... DONE!!!")
-    time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_range_end_second - time_range_start_second)
-    show_info(time_lapse_msg)
+    if not param_cfg["no_scrap"]:
+        show_info("* Scrap the data from the website......")
+        time_range_start_second = int(time.time())
+        # import pdb; pdb.set_trace()
+        g_mgr.do_scrapy()
+        time_range_end_second = int(time.time())
+        show_info("* Scrap the data from the website...... DONE!!!")
+        time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_range_end_second - time_range_start_second)
+        show_info(time_lapse_msg)
 
     error_found = False
 # Check if all the csv files are created
-    if param_cfg["check_result"]:
+    if param_cfg["check"]:
         show_info("* Check errors in finance folder: %s" % g_mgr.FinanceRootFolderPath)
         (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy()
         error_msg_list = []
@@ -559,7 +574,7 @@ if __name__ == "__main__":
             error_found = True
 
 # Clone the csv files if necessary
-    if param_cfg["clone_result"]:
+    if param_cfg["clone"]:
         show_info("* Clone the finance folder: %s" % g_mgr.FinanceRootFolderPath)
         if not error_found:
             datetime_now = datetime.today()

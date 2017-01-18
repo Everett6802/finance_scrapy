@@ -4,6 +4,7 @@ import os
 import logging
 import time
 import tarfile
+import inspect
 from threading import Thread
 from threading import Lock
 
@@ -18,7 +19,10 @@ class LogRotate(Thread):
     LOG_FILE_ROTATE_AMOUNT = 10
     BYTES_TO_MEGABYTES_MULTIPLE = 1024 * 1024
     CHECK_TIME_INTERVAL = 300
-
+    LOG_LEVEL_DESCRITION_DEBUG = "DEBUG"
+    LOG_LEVEL_DESCRITION_INFO = "INFO"
+    LOG_LEVEL_DESCRITION_WARN = "WARN"
+    LOG_LEVEL_DESCRITION_ERROR = "ERROR"
 
     @classmethod
     def __get_rotate_filepath(cls, log_file_path, index):
@@ -69,7 +73,8 @@ class LogRotate(Thread):
     # # Create the folder for log file if it does NOT exist
     #     if not os.path.exists(LOG_FILE_FOLDER):
     #         os.makedirs(LOG_FILE_FOLDER)
-        logging.basicConfig(filename=log_file_relative_path, level=log_file_level, format='%(asctime)-15s %(filename)s:%(lineno)d [%(levelname)s]: %(message)s')
+        # logging.basicConfig(filename=log_file_relative_path, level=log_file_level, format='%(asctime)-15s %(filename)s:%(lineno)d [%(levelname)s]: %(message)s')
+        logging.basicConfig(filename=log_file_relative_path, level=log_file_level, format='%(asctime)-15s %(message)s')
 # Log to console
         # console = logging.StreamHandler()
         # console.setLevel(logging.WARN)
@@ -79,9 +84,21 @@ class LogRotate(Thread):
         from logging.handlers import SysLogHandler
         syslog = SysLogHandler(address='/dev/log')
         # syslog.setLevel(logging.INFO)
-        syslog.setFormatter(logging.Formatter('%(filename)s:%(lineno)d [%(levelname)s]: %(message)s'))
+        # syslog.setFormatter(logging.Formatter('%(filename)s:%(lineno)d [%(levelname)s]: %(message)s'))
         logging.getLogger().addHandler(syslog)
         return logging.getLogger();
+
+
+    @classmethod
+    def __format_log_string(cls, log_level_description, *args):
+        filename = inspect.stack()[2][1].rsplit("/", 1)[-1]
+        lineno = inspect.stack()[2][2]
+        log_string = "%s:%d [%s]: " % (filename, lineno, log_level_description)
+        if len(args) == 1:
+            log_string += args[0]
+        else:
+            log_string += args[0] % args[1:]
+        return log_string
 
 
     def __init__(self, **cfg):
@@ -149,20 +166,25 @@ class LogRotate(Thread):
 
 
     def debug(self, *args):
+        log_string = self.__format_log_string(self.LOG_LEVEL_DESCRITION_DEBUG, *args)
         with self.lock:
-            self.logger.debug(*args)
+            self.logger.debug(self.__format_log_string(self.LOG_LEVEL_DESCRITION_DEBUG, *args))
+            # self.logger.debug(log_string)
 
 
     def info(self, *args):
         with self.lock:
-            self.logger.info(*args)
+            self.logger.debug(self.__format_log_string(self.LOG_LEVEL_DESCRITION_INFO, *args))
+            # self.logger.info(*args)
 
 
     def warn(self, *args):
         with self.lock:
-            self.logger.warn(*args)
+            self.logger.debug(self.__format_log_string(self.LOG_LEVEL_DESCRITION_WARN, *args))
+            # self.logger.warn(*args)
 
 
     def error(self, *args):
         with self.lock:
-            self.logger.error(*args)
+            self.logger.debug(self.__format_log_string(self.LOG_LEVEL_DESCRITION_ERROR, *args))
+            # self.logger.error(*args)

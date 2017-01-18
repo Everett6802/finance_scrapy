@@ -7,6 +7,9 @@ import common_class as CMN_CLS
 # import common_definition as CMN_DEF
 
 
+LOG_FILE_FOLDER_FOR_RAW = "log"
+LOG_FILE_NAME_FOR_RAW = "web_scrapy.log"
+LOG_FILE_PATH_FOR_RAW = "%s/%s" % (LOG_FILE_FOLDER_FOR_RAW, LOG_FILE_NAME_FOR_RAW)
 LOG_WORKING_FOLDER = os.path.dirname(os.path.realpath(__file__)).rsplit('/', 2)[0]
 web_scrapy_logger_cfg = {
     "log_working_folder": LOG_WORKING_FOLDER,
@@ -30,5 +33,29 @@ class WebScrapyLogger(object):
         return self.logger
 
 
-def get_web_scrapy_logger():
-    return WebScrapyLogger.Instance(web_scrapy_logger_cfg).LoggerInstance
+# def reset_web_scrapy_logger_content(filename=LOG_FILE_PATH):
+#     if os.path.exists(filename):
+#         with open(filename, "w") as fp:
+#             fp.seek(0, 0)
+
+def get_raw_logger(log_file_name=LOG_FILE_PATH_FOR_RAW, log_file_level=logging.DEBUG):
+# Create the folder for log file if it does NOT exist
+    if not os.path.exists(LOG_FILE_FOLDER_FOR_RAW):
+        os.makedirs(LOG_FILE_FOLDER_FOR_RAW)
+    logging.basicConfig(filename=log_file_name, level=log_file_level, format='%(asctime)-15s %(filename)s:%(lineno)d [%(levelname)s]: %(message)s')
+# Log to console
+    # console = logging.StreamHandler()
+    # console.setLevel(logging.WARN)
+    # console.setFormatter(logging.Formatter('%(asctime)-15s %(filename)s:%(lineno)d -- %(message)s'))
+    # logging.getLogger().addHandler(console)
+# Log to syslog
+    from logging.handlers import SysLogHandler
+    syslog = SysLogHandler(address='/dev/log')
+    # syslog.setLevel(logging.INFO)
+    syslog.setFormatter(logging.Formatter('%(filename)s:%(lineno)d [%(levelname)s]: %(message)s'))
+    logging.getLogger().addHandler(syslog)
+    return logging.getLogger()
+
+
+def get_web_scrapy_logger(need_rotate=True):
+    return WebScrapyLogger.Instance(web_scrapy_logger_cfg).LoggerInstance if need_rotate else get_raw_logger()
