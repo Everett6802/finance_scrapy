@@ -18,8 +18,9 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     company_profile = None
-    def __init__(self):
-        super(WebSracpyStockMgr, self).__init__()
+
+    def __init__(self, **cfg):
+        super(WebSracpyStockMgr, self).__init__(**cfg)
         self.company_group_set = None
         self.source_type_csv_time_duration_dict = None
 
@@ -196,11 +197,14 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def set_company_from_file(self, filename):
         company_word_list = CMN.FUNC.parse_source_type_time_duration_config_file(filename)
-        self.__transform_company_word_list_to_group_set(company_word_list)
+        self.set_company(company_word_list)
 
 
-    def set_company(self, company_word_list):
-        self.__transform_company_word_list_to_group_set(company_word_list)
+    def set_company(self, company_word_list=None):
+        if company_word_list is not None:
+            self.__transform_company_word_list_to_group_set(company_word_list)
+        else:
+            self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
 
 
     # def initialize(**kwargs):
@@ -218,11 +222,6 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #         self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
 
 
-    # def _add_cfg_for_scrapy_obj(self, source_type_time_duration):
-    #     scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
-    #     if not scrapy_obj_cfg.has_key("company_group_set") # for sub group company set in multi-thread
-    #         scrapy_obj_cfg["company_group_set"] = self.company_group_set
-    #     scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
     def _scrap_single_source_data(self, source_type_time_duration):
         # import pdb;pdb.set_trace()
         if self.company_group_set is None:
@@ -231,11 +230,11 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
 # Create the scrapy object to transform the data from Web to CSV
-        if self.multi_thread_amount is not None:
-            g_logger.debug("Scrap %s in %d threads" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], self.multi_thread_amount))
+        if self.xcfg["multi_thread_amount"] is not None:
+            g_logger.debug("Scrap %s in %d threads" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], self.xcfg["multi_thread_amount"]))
 # Run in multi-threads
             sub_scrapy_obj_cfg_list = []
-            sub_company_group_list = self.company_group_set.get_sub_company_group_set_list(self.multi_thread_amount)
+            sub_company_group_list = self.company_group_set.get_sub_company_group_set_list(self.xcfg["multi_thread_amount"])
 # Perpare the config for each thread
             for sub_company_group in sub_company_group_list:
                 sub_scrapy_obj_cfg = copy.deepcopy(scrapy_obj_cfg)
@@ -268,10 +267,6 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 company_ode_number_in_group_list.append(company_code_number)
             if len(company_ode_number_in_group_list) != 0:
                 print "%s: %s" % (company_group_number, ",".join(company_ode_number_in_group_list))
-
-
-    # def do_scrapy(self):
-    #     self._scrap_data()
 
 
     def check_scrapy(self):
@@ -355,7 +350,34 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self.__write_new_csv_time_duration_to_cfg(finance_folderpath_dst, new_source_type_csv_time_duration, company_group_set_dst)
 
 
-    def enable_multithread(self, thread_amount):
-        self.multi_thread_amount = thread_amount
+    # def enable_multithread(self, thread_amount):
+    #     self.multi_thread_amount = thread_amount
 
 
+    def count_scrapy_amount(self):
+        if self.scrapy_amount is None:
+            self.scrapy_amount = len(self.source_type_time_duration_list) * self.company_group_set.CompanyAmount
+        g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
+        return self.scrapy_amount
+
+
+    def count_scrapy_progress(self):
+        if self.scrapy_amount is None:
+            raise ValueError("self.scrapy_amount shoudl NOT be None")
+        company_progress_count = 0
+        with self.web_scrapy_obj_list_thread_lock:
+            if self.web_scrapy_obj_list:
+                for web_scrapy_obj in self.web_scrapy_obj_list:
+                    company_progress_count += web_scrapy_obj.CompanyProgressCount
+        progress_count = self.scrapy_source_type_progress_count * self.company_group_set.CompanyAmount + company_progress_count
+        return (float(progress_count) / self.scrapy_amount * 100.0) 
+
+
+    @property
+    def ScrapyAmount(self):
+        return self.count_scrapy_amount()
+
+
+    @property
+    def ScrapyProgress(self):
+        return self.count_scrapy_progress()

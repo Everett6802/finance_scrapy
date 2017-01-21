@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 
 import os
-# import logging
+import logging
 import logrotate as LR
 import common_class as CMN_CLS
 # import common_definition as CMN_DEF

@@ -30,6 +30,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             self.company_group_set = kwargs["company_group_set"]
         # self.time_slice_kwargs["company_code_number"] = None
         self.new_csv_time_duration_dict = None
+        self.scrapy_company_progress_count = 0
 
 
     @classmethod
@@ -98,6 +99,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     def scrap_web_to_csv(self):
         # import pdb; pdb.set_trace()
         self.new_csv_time_duration_dict = {}
+        self.scrapy_company_progress_count = 0
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
 # Create a folder for a specific company
@@ -157,6 +159,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     g_logger.debug("Append the old CSV data to the file: %s" % csv_filepath)
                     CMN.FUNC.append_data_into_file(csv_filepath + ".old", csv_filepath)
                     CMN.FUNC.remove_file_if_exist(csv_filepath + ".old") 
+                self.scrapy_company_progress_count += 1
 
 
     def get_new_csv_time_duration_dict(self):
@@ -167,3 +170,8 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
     def assemble_web_url(self, timeslice, company_code_number):
         raise NotImplementedError
+
+
+    @property
+    def CompanyProgressCount(self):
+        return self.scrapy_company_progress_count

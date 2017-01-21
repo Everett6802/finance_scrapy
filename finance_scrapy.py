@@ -25,6 +25,7 @@ def show_usage_and_exit():
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--no_scrap\nDescription: Don't scrap Web data"
+    print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrap flag is NOT set"
     print "--check\nDescription: Check the CSV files after scraping Web data"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check is set"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
@@ -95,13 +96,13 @@ def show_error_and_exit(errmsg):
 def snapshot_result(run_result_str):
     if not os.path.exists(CMN.DEF.DEF_SNAPSHOT_FOLDER):
         os.makedirs(CMN.DEF.DEF_SNAPSHOT_FOLDER)
-    with open(CMN.RUN_RESULT_FILENAME, 'w') as fp:
+    with open(CMN.DEF.RUN_RESULT_FILENAME, 'w') as fp:
         fp.write(run_result_str.encode('utf8'))
     datetime_now = datetime.today()
     snapshot_filename = CMN.SNAPSHOT_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
-    subprocess.call(["tar", "cvzf", snapshot_filename, CMN.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, WSL.LOG_FILE_PATH])
+    subprocess.call(["tar", "cvzf", snapshot_filename, CMN.DEF.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, WSL.LOG_FILE_PATH])
     subprocess.call(["mv", snapshot_filename, CMN.DEF.DEF_SNAPSHOT_FOLDER])
-    subprocess.call(["rm", CMN.RUN_RESULT_FILENAME])
+    subprocess.call(["rm", CMN.DEF.RUN_RESULT_FILENAME])
 
 
 def update_workday_calendar_and_exit():
@@ -184,6 +185,7 @@ def init_param():
     param_cfg["debug_source"] = None
     param_cfg["silent"] = False
     param_cfg["no_scrap"] = False
+    param_cfg["show_progress"] = False
     param_cfg["check"] = False
     param_cfg["clone"] = False
     param_cfg["reserve_old"] = False
@@ -238,6 +240,9 @@ def parse_param():
             index_offset = 1
         elif re.match("--no_scrap", sys.argv[index]):
             param_cfg["no_scrap"] = True
+            index_offset = 1
+        elif re.match("--show_progress", sys.argv[index]):
+            param_cfg["show_progress"] = True
             index_offset = 1
         elif re.match("--check", sys.argv[index]):
             param_cfg["check"] = True
@@ -379,6 +384,9 @@ def check_param():
     if param_cfg["merge_finance_folderpath_src_list"] is not None and param_cfg["merge_finance_folderpath_dst"] is None:
         param_cfg["merge_finance_folderpath_dst"] = CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH
         show_warn("Set the 'merge_finance_folderpath_dst' argument to default destination folderpath: %s" % CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
+    if param_cfg["show_progress"] and param_cfg["no_scrap"]:
+        param_cfg["show_progress"] = False
+        show_warn("Set the 'show_progress' argument to False since 'no_scrap' is set")
 
 
 def setup_param():
@@ -434,12 +442,11 @@ def setup_param():
 # Set company list. For stock mode only
         if param_cfg["company_from_file"] is not None:
             g_mgr.set_company_from_file(param_cfg["company_from_file"])
-        elif param_cfg["company"] is not None:
-            company_word_list = param_cfg["company"].split(",")
+        else:
+            company_word_list = None
+            if param_cfg["company"] is not None:
+                company_word_list = param_cfg["company"].split(",")
             g_mgr.set_company(company_word_list)
-# Swith to mode thread mode. For stock mode only
-        if param_cfg["multi_thread"] is not None:
-            g_mgr.enable_multithread(param_cfg["multi_thread"])
 
     g_mgr.enable_old_finance_folder_reservation(param_cfg["reserve_old"])
     g_mgr.enable_dry_run(param_cfg["dry_run"])
@@ -447,12 +454,6 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
-def my_coroutine():
-    while True:
-        received = yield
-        print("Received:", received)
-
-import time
 if __name__ == "__main__":
     # TestClass1.get_instance()
     # import pdb; pdb.set_trace()
@@ -482,10 +483,20 @@ if __name__ == "__main__":
     # g_logger.debug("fuck you5, go to hell")
     # time.sleep(1)
     # it = my_coroutine()
-    # next(it)
-    # it.send("fuck")
-    # it.send("shit")
+    # print next(it)
+    # print it.send("fuck")
+    # print it.send("shit")
     # g_logger.debug("fuck you6, go to hell")
+    # timer_thread = CMN.CLS.FinanceTimerThread(interval=6)
+    # # timer_thread.start_timer(print_fuck, "fuck you")
+    # # time.sleep(15)
+    # # timer_thread.stop_timer()
+    # # time.sleep(8)
+    # def test_func(pair):
+    #     a, b = pair
+    #     return a+b
+    # numbers = [(1,2),]
+    # print map(test_func, numbers)
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()
@@ -514,12 +525,18 @@ if __name__ == "__main__":
     if param_cfg["help"]:
         show_usage_and_exit()
 
+    update_cfg = {}
+    if param_cfg["multi_thread"] is not None:
+        update_cfg["multi_thread_amount"] = param_cfg["multi_thread"]
+    if param_cfg["show_progress"]:
+        update_cfg["show_progress"] = param_cfg["show_progress"]
+
     if CMN.DEF.IS_FINANCE_MARKET_MODE:
         from libs.market import web_scrapy_market_mgr as MGR
-        g_mgr = MGR.WebSracpyMarketMgr()
+        g_mgr = MGR.WebSracpyMarketMgr(**update_cfg)
     else:
         from libs.stock import web_scrapy_stock_mgr as MGR
-        g_mgr = MGR.WebSracpyStockMgr()
+        g_mgr = MGR.WebSracpyStockMgr(**update_cfg)
 # RUN the argument that will return after the execution is done
     if param_cfg["check_url"]:
         check_url_and_exit()

@@ -2,9 +2,10 @@
 
 import os
 import sys
-import time
+# import time
 import requests
-from datetime import datetime
+import threading
+from datetime import datetime, timedelta
 from abc import ABCMeta, abstractmethod
 import libs.common as CMN
 import web_scrapy_thread_pool as ThreadPool
@@ -14,17 +15,27 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebSracpyMgrBase(object):
 
     __metaclass__ = ABCMeta
-    def __init__(self):
+    def __init__(self, **cfg):
         self.xcfg = {
             "old_finance_folder_reservation": False,
             "try_to_scrap_all": True,
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH,
+            "multi_thread_amount": None,
+            "show_progress": False,
+            "need_estimate_complete_time": True,
+            "start_estimate_complete_time_threshold": 2,
             # "csv_time_duration_table": None
         }
-        # self.xcfg.update(kwargs)
+        self.xcfg.update(cfg)
         self.source_type_time_duration_list = None
-        self.multi_thread_amount = None
+        # self.multi_thread_amount = None
+        # self.xcfg["show_progress"] = False
+        self.scrapy_amount = None
+        self.scrapy_source_type_progress_count = 0
+        self.web_scrapy_obj_list = None
+        self.web_scrapy_obj_list_thread_lock = threading.Lock()
+        self.web_scrapy_start_datetime = None
 
 
     @classmethod
@@ -70,30 +81,39 @@ class WebSracpyMgrBase(object):
 
 
     def _scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
-        # import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()            
         web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **kwargs)
         if web_scrapy_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
+        with self.web_scrapy_obj_list_thread_lock:
+            self.web_scrapy_obj_list = []
+            self.web_scrapy_obj_list.append(web_scrapy_obj)
         g_logger.debug("Start to scrap %s......", web_scrapy_obj.get_description())
         web_scrapy_obj.scrap_web_to_csv()
 # Update the new CSV time duration
         self._update_new_csv_time_duration(web_scrapy_obj)
+        with self.web_scrapy_obj_list_thread_lock:
+            self.web_scrapy_obj_list = None
 
 
     def _multi_thread_scrap_web_data_to_csv_file(self, source_type_index, scrapy_obj_cfg_list):
         # import pdb; pdb.set_trace()
 # Start the thread to scrap data
-        thread_pool = ThreadPool.WebScrapyThreadPool(self.multi_thread_amount)
-        web_scrapy_obj_list = []
+        thread_pool = ThreadPool.WebScrapyThreadPool(self.xcfg["multi_thread_amount"])
         for index in range(len(scrapy_obj_cfg_list)):
-            web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
-            web_scrapy_obj_list.append(web_scrapy_obj)
+            with self.web_scrapy_obj_list_thread_lock:
+                if self.web_scrapy_obj_list is None:
+                    self.web_scrapy_obj_list = []
+                web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
+            self.web_scrapy_obj_list.append(web_scrapy_obj)
             g_logger.debug("Start to scrap %s...... %d" % (web_scrapy_obj.get_description(), index))
             thread_pool.add_scrap_web_to_csv_task(web_scrapy_obj)
         thread_pool.wait_completion()
-        for web_scrapy_obj in web_scrapy_obj_list:
+        for web_scrapy_obj in self.web_scrapy_obj_list:
 # Update the new CSV time duration
             self._update_new_csv_time_duration(web_scrapy_obj)
+        with self.web_scrapy_obj_list_thread_lock:
+            self.web_scrapy_obj_list = None
 
 
     def _init_cfg_for_scrapy_obj(self, source_type_time_duration):
@@ -117,6 +137,17 @@ class WebSracpyMgrBase(object):
         self._create_finance_folder_if_not_exist()
         total_errmsg = ""
         # import pdb; pdb.set_trace()
+        self.scrapy_source_type_progress_count = 0
+        show_progress_timer_thread = None
+        if self.xcfg["show_progress"]:
+            self.web_scrapy_start_datetime = datetime.now()
+            self.count_scrapy_amount()
+            progress_string = "Total Scrapy Times: %d" % self.ScrapyAmount
+            g_logger.info(progress_string)
+            if CMN.DEF.CAN_PRINT_CONSOLE:
+                print progress_string
+            show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=6)
+            show_progress_timer_thread.start_timer(WebSracpyMgrBase.show_scrapy_progress, self)
         for source_type_time_duration in self.source_type_time_duration_list:
             try:
                 self._scrap_single_source_data(source_type_time_duration)
@@ -128,6 +159,9 @@ class WebSracpyMgrBase(object):
                 # print total_errmsg
                 if not self.xcfg["try_to_scrap_all"]:
                     break
+            self.scrapy_source_type_progress_count += 1
+        if self.xcfg["show_progress"]:
+            show_progress_timer_thread.stop_timer()
         if total_errmsg:
             RuntimeError(total_errmsg)
 # Write the new CSV data time range into file
@@ -272,6 +306,40 @@ class WebSracpyMgrBase(object):
             CMN.FUNC.remove_folder_if_exist(finance_folderpath_dst)
 
 
+    # def enable_show_progress(self, enable):
+    #     self.xcfg["show_progress"] = enable
+
+
+    def estimate_complete_time(self, cur_progress):
+        cur_datetime = datetime.now()
+        time_diff_in_seconds = (cur_datetime - self.web_scrapy_start_datetime).total_seconds()
+        rest_of_time_in_seconds = int(time_diff_in_seconds * float(100.0 - cur_progress) / cur_progress + 0.5)
+        return '{:%H:%M:%S}'.format(cur_datetime + timedelta(seconds=rest_of_time_in_seconds))
+
+
+    # @property
+    # def NeedEstimateCompleteTime(self):
+    #     return self.xcfg["need_estimate_complete_time"]
+
+
+    @property
+    def StartEstimateCompleteTimeThreshold(self):
+        return self.xcfg["start_estimate_complete_time_threshold"]
+
+
+    @staticmethod
+    def show_scrapy_progress(obj_handle):
+        if not isinstance(obj_handle, WebSracpyMgrBase):
+            raise AttributeError("obj_handle should be the WebSracpyMgrBase instance")
+        scrapy_progress = obj_handle.ScrapyProgress
+        progress_string = "[%s] Progress................... % 03.1f" % (datetime.strftime(datetime.now(), '%H:%M:%S'), scrapy_progress)
+        if obj_handle.ScrapyProgress >= obj_handle.StartEstimateCompleteTimeThreshold:
+            progress_string += "  *Estimated Complete Time: %s" % obj_handle.estimate_complete_time(scrapy_progress)
+        g_logger.info(progress_string)
+        if CMN.DEF.CAN_PRINT_CONSOLE:
+            print progress_string
+
+
     @abstractmethod
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
         # """IMPORTANT: This is a class method, override it with @classmethod !"""
@@ -319,6 +387,16 @@ class WebSracpyMgrBase(object):
         raise NotImplementedError
 
 
+    # @abstractmethod
+    # def enable_multithread(self, thread_amount):
+    #     raise NotImplementedError
+
+
     @abstractmethod
-    def enable_multithread(self, thread_amount):
+    def count_scrapy_amount(self):
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def count_scrapy_progress(self):
         raise NotImplementedError

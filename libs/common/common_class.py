@@ -1,3 +1,5 @@
+import time
+import threading
 from datetime import datetime, timedelta
 import math
 import collections
@@ -478,3 +480,45 @@ class FinanceQuarter(FinanceTimeBase):
 
 #     def get_type(self):
 #         return CMN.PARSE_URL_DATA_BY_JSON
+
+
+class FinanceTimerThread(threading.Thread):
+
+    def __init__(self, **cfg):
+        super(FinanceTimerThread, self).__init__()
+        self.daemon = True
+        self.xcfg = {
+            "func_ptr": None,
+            "interval": 30,
+        }
+        self.xcfg.update(cfg)
+        # self.exit = False
+        # if self.xcfg["func_ptr"] is None:
+        #     raise ValueError("func_ptr should NOT be None")
+        self.exit_event = threading.Event()
+        self.interval = self.xcfg["interval"]
+        self.func_ptr = None
+        self.func_args = None
+        self.func_kwargs = None
+        self.start_time = None
+
+
+    def start_timer(self, func_ptr, *args, **kwargs):
+        self.func_ptr = func_ptr
+        self.func_args = args
+        self.func_kwargs = kwargs
+        # self.start_time = time()
+        # self.exit = True
+        self.start()
+
+
+    def stop_timer(self, timeout=5):
+        # self.exit = True
+        self.exit_event.set( )
+        threading.Thread.join(self, timeout)
+
+
+    def run(self):
+        while not self.exit_event.isSet( ):
+            self.func_ptr(*self.func_args, **self.func_kwargs)
+            self.exit_event.wait(self.interval)

@@ -16,13 +16,13 @@ class WebScrapyThread(Thread):
     	super(WebScrapyThread, self).__init__()
         self.tasks = tasks
         self.daemon = True
-        self.start()
         self.web_scrapy_obj = None
         self.thread_index = None
         # self.ret_code = CMN.RET_SUCCESS
         self.errmsg = None
         self.errmsg_traceback = None
         self.task_done_success = False
+        self.start()
 
 
     def __str__(self):
@@ -30,17 +30,6 @@ class WebScrapyThread(Thread):
 
 
     def __record_full_stack_traceback(self):
-       # tb = sys.exc_info()[2]
-       # errmsg = ""
-       # errmsg += 'Traceback (most recent call last):'
-       # for item in reversed(inspect.getouterframes(tb.tb_frame)[1:]):
-       #    errmsg += ' File "{1}", line {2}, in {3}\n'.format(*item)
-       #    for line in item[4]:
-       #       errmsg += ' ' + line.lstrip()
-       #    for item in inspect.getinnerframes(tb):
-       #       errmsg += ' File "{1}", line {2}, in {3}\n'.format(*item)
-       #    for line in item[4]:
-       #       errmsg += ' ' + line.lstrip()
        self.errmsg_traceback = CMN.FUNC.get_full_stack_traceback()
 
 

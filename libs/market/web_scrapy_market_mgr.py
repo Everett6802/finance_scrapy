@@ -14,8 +14,8 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
-    def __init__(self):
-        super(WebSracpyMarketMgr, self).__init__()
+    def __init__(self, **cfg):
+        super(WebSracpyMarketMgr, self).__init__(**cfg)
         self.source_type_csv_time_duration = None
 
 
@@ -97,9 +97,6 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self.__write_new_csv_time_duration_to_cfg()
 
 
-    # def _add_cfg_for_scrapy_obj(self, source_type_time_duration):
-    #     scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
-    #     scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration
     def _scrap_single_source_data(self, source_type_time_duration):
 # Setup the time duration configuration for the scrapy object
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
@@ -176,3 +173,26 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def enable_multithread(self, thread_amount):
         raise ValueError("Multi-Thread is NOT supported in market mode")
+
+
+    def count_scrapy_amount(self):
+        if self.scrapy_amount is None:
+            self.scrapy_amount = len(self.source_type_time_duration_list)
+        g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
+        return self.scrapy_amount
+
+
+    def count_scrapy_progress(self):
+        if self.scrapy_amount is None:
+            raise ValueError("self.scrapy_amount shoudl NOT be None")
+        return ((float)self.scrapy_source_type_progress_count / self.scrapy_amount * 100.0)
+
+
+    @property
+    def ScrapyAmount(self):
+        return self.count_scrapy_amount()
+
+
+    @property
+    def ScrapyProgress(self):
+        return self.count_scrapy_progress()
