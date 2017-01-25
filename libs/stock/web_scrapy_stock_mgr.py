@@ -280,6 +280,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     if not os.path.exists(csv_filepath):
                         file_not_found_list.append(
                             {
+                                "company_code_number": company_code_number,
                                 "index": source_type_time_duration.source_type_index,
                                 "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
                             }
@@ -287,11 +288,27 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     elif os.path.getsize(csv_filepath) == 0:
                         file_is_empty_list.append(
                             {
+                                "company_code_number": company_code_number,
                                 "index": source_type_time_duration.source_type_index,
                                 "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
                             }
                         )
         return (file_not_found_list, file_is_empty_list)
+
+
+    def check_scrapy_to_string(self):
+        (file_not_found_list, file_is_empty_list) = self.check_scrapy()
+        error_msg = None
+        error_msg_list = []
+        for file_not_found in file_not_found_list:
+            error_msg = u"FileNotFound: %s, %s/%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['company_code_number'], file_not_found['filename'])
+            error_msg_list.append(error_msg)
+        for file_is_empty in file_is_empty_list:
+            error_msg = u"FileIsEmpty: %s, %s/%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_not_found['company_code_number'], file_is_empty['filename'])
+            error_msg_list.append(error_msg)
+        if len(error_msg_list) != 0:
+            error_msg = "\n".join(error_msg_list)
+        return error_msg
 
 
     def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, source_type_index, company_code_number):
@@ -368,6 +385,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         with self.web_scrapy_obj_list_thread_lock:
             if self.web_scrapy_obj_list:
                 for web_scrapy_obj in self.web_scrapy_obj_list:
+                    # import pdb; pdb.set_trace()
                     company_progress_count += web_scrapy_obj.CompanyProgressCount
         progress_count = self.scrapy_source_type_progress_count * self.company_group_set.CompanyAmount + company_progress_count
         return (float(progress_count) / self.scrapy_amount * 100.0) 

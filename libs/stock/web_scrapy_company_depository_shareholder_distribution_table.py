@@ -3,6 +3,7 @@
 import re
 import requests
 import csv
+import threading
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
@@ -27,28 +28,24 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     #     )
     #     self.generate_day_time_list_rule = self.__generate_day_time_list_rule_select_friday
     TABLE_SUM_FLAG = u'\u5408\u3000\u8a08' # "合　計"
-    last_finance_date = None
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(__file__, **kwargs)
         self.date_cur_string = None
+        self.last_finance_date = None
+        self.__update_last_finance_date()
 
 
-    @classmethod
-    def __get_last_finance_date(cls):
-        # import pdb; pdb.set_trace()
+    def __update_last_finance_date(self):
         timeslice_generator = BASE.TSG.WebScrapyTimeSliceGenerator.Instance()
         last_friday_date_str_for_financial_statement = timeslice_generator.get_last_friday_date_str_for_financial_statement()
         last_finance_date_str = "%s-%s-%s" % (last_friday_date_str_for_financial_statement[0:4], last_friday_date_str_for_financial_statement[4:6], last_friday_date_str_for_financial_statement[6:8])
-        last_finance_date = CMN.CLS.FinanceDate(last_finance_date_str) 
-        return last_finance_date
+        self.last_finance_date = CMN.CLS.FinanceDate(last_finance_date_str) 
 
 
     def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
         assert finance_time_start.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input start time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_start.get_time_unit_type())
         assert finance_time_end.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input end time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_end.get_time_unit_type())
-        if self.last_finance_date is None:
-            self.last_finance_date = self.__get_last_finance_date()
         if finance_time_start > self.last_finance_date:
             finance_time_start = self.last_finance_date
         if finance_time_end > self.last_finance_date:
@@ -145,11 +142,6 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 # 合計人數
 # 合計股數
 # 合計佔集保庫存數比例
-
-
-    # def __generate_day_time_list_rule_select_friday(self, datetime_cfg):
-    #     day_of_week = datetime_cfg.weekday()
-    #     return (True if day_of_week == 4 else False)
 
 
     def do_debug(self, silent_mode=False):

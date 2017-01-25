@@ -2,7 +2,7 @@
 
 import os
 import sys
-# import time
+import time
 import requests
 import threading
 from datetime import datetime, timedelta
@@ -105,7 +105,8 @@ class WebSracpyMgrBase(object):
                 if self.web_scrapy_obj_list is None:
                     self.web_scrapy_obj_list = []
                 web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
-            self.web_scrapy_obj_list.append(web_scrapy_obj)
+                self.web_scrapy_obj_list.append(web_scrapy_obj)
+                # time.sleep(3)
             g_logger.debug("Start to scrap %s...... %d" % (web_scrapy_obj.get_description(), index))
             thread_pool.add_scrap_web_to_csv_task(web_scrapy_obj)
         thread_pool.wait_completion()
@@ -146,7 +147,7 @@ class WebSracpyMgrBase(object):
             g_logger.info(progress_string)
             if CMN.DEF.CAN_PRINT_CONSOLE:
                 print progress_string
-            show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=6)
+            show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=30)
             show_progress_timer_thread.start_timer(WebSracpyMgrBase.show_scrapy_progress, self)
         for source_type_time_duration in self.source_type_time_duration_list:
             try:
@@ -332,7 +333,7 @@ class WebSracpyMgrBase(object):
         if not isinstance(obj_handle, WebSracpyMgrBase):
             raise AttributeError("obj_handle should be the WebSracpyMgrBase instance")
         scrapy_progress = obj_handle.ScrapyProgress
-        progress_string = "[%s] Progress................... % 03.1f" % (datetime.strftime(datetime.now(), '%H:%M:%S'), scrapy_progress)
+        progress_string = "[%s] Progress................... %03.1f" % (datetime.strftime(datetime.now(), '%H:%M:%S'), scrapy_progress)
         if obj_handle.ScrapyProgress >= obj_handle.StartEstimateCompleteTimeThreshold:
             progress_string += "  *Estimated Complete Time: %s" % obj_handle.estimate_complete_time(scrapy_progress)
         g_logger.info(progress_string)
@@ -384,6 +385,11 @@ class WebSracpyMgrBase(object):
 
     @abstractmethod
     def check_scrapy(self):
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def check_scrapy_to_string(self):
         raise NotImplementedError
 
 

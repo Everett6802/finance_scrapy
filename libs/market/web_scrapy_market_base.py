@@ -26,12 +26,11 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         self.new_csv_time_duration = None
 
 
-    @classmethod
-    def _get_url_time_range(cls):
+    def _get_url_time_range(self):
         # import pdb; pdb.set_trace()
-        if cls.url_time_range is None:
-            cls.url_time_range = URLTimeRange.WebScrapyURLTimeRange.Instance()
-        return cls.url_time_range
+        if self.url_time_range is None:
+            self.url_time_range = URLTimeRange.WebScrapyURLTimeRange.Instance()
+        return self.url_time_range
 
 
     def assemble_csv_filepath(self, source_type_index):

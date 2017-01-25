@@ -109,10 +109,9 @@ class WebScrapyBase(object):
         def NewCSVEnd(self, new_csv_end):
             self.new_csv_end = new_csv_end
 
-    PARSE_URL_DATA_FUNC_PTR = None
-    GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
-    timeslice_generator = None
-    url_time_range = None
+# Can't be declared in class due to thread-safe
+    # PARSE_URL_DATA_FUNC_PTR = None
+    # GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
 
     def __init__(self, cur_file_path, **kwargs):
         self.xcfg = {
@@ -133,6 +132,9 @@ class WebScrapyBase(object):
 # Find corresponding config of the module
         self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[self.source_type_index]
 
+        self.PARSE_URL_DATA_FUNC_PTR = None
+        self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
+
         self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]
         self.url_format = self.source_url_parsing_cfg["url_format"]
         self.url_parsing_method = self.source_url_parsing_cfg["url_parsing_method"]
@@ -142,20 +144,8 @@ class WebScrapyBase(object):
         # self.timeslice_iterable = timeslice_generator_obj.generate_time_slice(self.timeslice_generate_method, **kwargs)
         # self.time_slice_kwargs = {"time_duration_start": None, "time_duration_end": None}
         self.description = None
-
-
-    @classmethod
-    def _get_time_slice_generator(cls):
-        if cls.timeslice_generator is None:
-            cls.timeslice_generator = TimeSliceGenerator.WebScrapyTimeSliceGenerator.Instance()
-        return cls.timeslice_generator
-
-
-    @classmethod
-    def get_parse_url_data_func_ptr(cls):
-        if cls.PARSE_URL_DATA_FUNC_PTR is None:
-            cls.PARSE_URL_DATA_FUNC_PTR = [cls.__select_web_data_by_bs4, cls.__select_web_data_by_json]
-        return cls.PARSE_URL_DATA_FUNC_PTR
+        self.timeslice_generator = None
+        self.url_time_range = None
 
 
     @classmethod
@@ -222,12 +212,27 @@ class WebScrapyBase(object):
         return self.description
 
 
+    def _get_time_slice_generator(self):
+        if self.timeslice_generator is None:
+            self.timeslice_generator = TimeSliceGenerator.WebScrapyTimeSliceGenerator.Instance()
+        return self.timeslice_generator
+
+
+    def __get_parse_url_data_func_ptr(self):
+        if self.PARSE_URL_DATA_FUNC_PTR is None:
+            self.PARSE_URL_DATA_FUNC_PTR = [
+                self.__select_web_data_by_bs4, 
+                self.__select_web_data_by_json
+            ]
+        return self.PARSE_URL_DATA_FUNC_PTR
+
+
     def _get_web_data(self, url):
         req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
         # parse_url_data_type = self.parse_url_data_type_obj.get_type()
         # return (self.PARSE_URL_DATA_FUNC_PTR[parse_url_data_type])(res)
         # import pdb; pdb.set_trace()
-        return (self.get_parse_url_data_func_ptr()[self.url_parsing_method])(req, self.source_url_parsing_cfg)
+        return (self.__get_parse_url_data_func_ptr()[self.url_parsing_method])(req, self.source_url_parsing_cfg)
 
 
     def _get_overlapped_web2csv_time_duration_update_cfg(self, csv_old_time_duration_tuple, time_duration_start, time_duration_end):
@@ -308,7 +313,11 @@ class WebScrapyBase(object):
 
     def _adjust_time_duration_start_and_end_time_func_ptr(self, time_duration_type):
         if self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR is None:
-            self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = [self._adjust_time_today_start_and_end_time, self._adjust_time_last_start_and_end_time, self._adjust_time_range_start_and_end_time]
+            self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = [
+                self._adjust_time_today_start_and_end_time, 
+                self._adjust_time_last_start_and_end_time, 
+                self._adjust_time_range_start_and_end_time
+            ]
         return self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR[time_duration_type]
 
 

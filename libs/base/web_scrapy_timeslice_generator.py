@@ -20,12 +20,12 @@ thread_lock = threading.Lock()
 @CMN.CLS.Singleton
 class WebScrapyTimeSliceGenerator(object):
 
+    REVENUE_DAY = 10
+    COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT = "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}&SqlMethod=StockNo&StockNo={1}&StockName=&sub=%ACd%B8%DF"
+
     def __init__(self):
         # self.FINANCIAL_STATEMENT_DATE_LIST = [[3, 31], [5, 15], [8, 14], [11, 14],]
-        # self.FINANCIAL_STATEMENT_SEASON_OFFSET_LIST = [[-1, 3], [-1, 4], [0, 1], [0, 2], [0, 3]]
-        self.REVENUE_DAY = 10
-        self.COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT = "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}&SqlMethod=StockNo&StockNo={1}&StockName=&sub=%ACd%B8%DF"
-        
+        # self.FINANCIAL_STATEMENT_SEASON_OFFSET_LIST = [[-1, 3], [-1, 4], [0, 1], [0, 2], [0, 3]]        
         self.workday_canlendar = None
         self.generate_time_slice_func_ptr = [
             self.__generate_time_slice_by_workday,
@@ -42,9 +42,8 @@ class WebScrapyTimeSliceGenerator(object):
         self.url_date_range = None
 
 
-    def initialize(self):
-        pass
-        # import pdb; pdb.set_trace()
+    # def initialize(self):
+    #     pass
 
 
     # def __get_financial_statement_season(self, date_cur=None):
@@ -190,6 +189,7 @@ class WebScrapyTimeSliceGenerator(object):
         if date_end > company_foreign_investors_shareholder_date_list[-1]:
             g_logger.warn("The end day [%s] is later than the last one[%s]" % (date_end, company_foreign_investors_shareholder_date_list[-1]))
             date_end = company_foreign_investors_shareholder_date_list[-1]
+
 # Define the iterator
         class TimeSliceIterator(object):
             def __init__(self, date_start, date_end, date_list):

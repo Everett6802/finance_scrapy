@@ -99,8 +99,8 @@ def snapshot_result(run_result_str):
     with open(CMN.DEF.RUN_RESULT_FILENAME, 'w') as fp:
         fp.write(run_result_str.encode('utf8'))
     datetime_now = datetime.today()
-    snapshot_filename = CMN.SNAPSHOT_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
-    subprocess.call(["tar", "cvzf", snapshot_filename, CMN.DEF.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, WSL.LOG_FILE_PATH])
+    snapshot_filename = CMN.DEF.SNAPSHOT_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
+    subprocess.call(["tar", "cvzf", snapshot_filename, CMN.DEF.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, CMN.WSL.LOG_FILE_PATH])
     subprocess.call(["mv", snapshot_filename, CMN.DEF.DEF_SNAPSHOT_FOLDER])
     subprocess.call(["rm", CMN.DEF.RUN_RESULT_FILENAME])
 
@@ -574,21 +574,14 @@ if __name__ == "__main__":
 # Check if all the csv files are created
     if param_cfg["check"]:
         show_info("* Check errors in finance folder: %s" % g_mgr.FinanceRootFolderPath)
-        (file_not_found_list, file_is_empty_list) = g_mgr.check_scrapy()
-        error_msg_list = []
-        for file_not_found in file_not_found_list:
-            error_msg = u"FileNotFound: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
+        error_msg = g_mgr.check_scrapy_to_string()
+        if error_msg is not None:
             show_error(error_msg)
-            error_msg_list.append(error_msg)
-        for file_is_empty in file_is_empty_list:
-            error_msg = u"FileIsEmpty: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
-            show_error(error_msg)
-            error_msg_list.append(error_msg)
-        if len(error_msg_list) != 0:
-            run_result_str = time_lapse_msg
-            run_result_str += "".join(error_msg_list)
+            run_result_str = time_lapse_msg + error_msg
             snapshot_result(run_result_str)
             error_found = True
+        else:
+            show_debug("Not errors found")
 
 # Clone the csv files if necessary
     if param_cfg["clone"]:

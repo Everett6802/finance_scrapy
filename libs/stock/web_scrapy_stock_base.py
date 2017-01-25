@@ -19,7 +19,6 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
-    company_profile = None
     # url_time_range = None
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyStockBase, self).__init__(cur_file_path, **kwargs)
@@ -31,21 +30,20 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         # self.time_slice_kwargs["company_code_number"] = None
         self.new_csv_time_duration_dict = None
         self.scrapy_company_progress_count = 0
+        self.company_profile = None
 
 
-    @classmethod
-    def __get_company_profile(cls):
-        if cls.company_profile is None:
-            cls.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
-        return cls.company_profile
+    def __get_company_profile(self):
+        if self.company_profile is None:
+            self.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
+        return self.company_profile
 
 
-    @classmethod
-    def _get_url_time_range(cls):
+    def _get_url_time_range(self):
         # import pdb; pdb.set_trace()
-        if cls.url_time_range is None:
-            cls.url_time_range = URLTimeRange.WebScrapyURLTimeRange.Instance()
-        return cls.url_time_range
+        if self.url_time_range is None:
+            self.url_time_range = URLTimeRange.WebScrapyURLTimeRange.Instance()
+        return self.url_time_range
 
 
     def assemble_csv_company_folderpath(self, company_code_number, company_group_number=-1):

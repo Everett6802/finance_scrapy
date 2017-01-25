@@ -11,6 +11,8 @@ import common_definition as CMN_DEF
 import common_function as CMN_FUNC
 
 
+singleton_thread_lock = threading.Lock()
+
 class Singleton:
     """
     A non-thread-safe helper class to ease implementing singletons.
@@ -40,13 +42,17 @@ class Singleton:
         try:
             return self._instance
         except AttributeError:
-            self._instance = self._decorated()
-            if hasattr(self._instance, "initialize"):
-                if cfg is None:
-                    self._instance.initialize()
-                else:
-                    self._instance.initialize(**cfg)
-            return self._instance
+            with singleton_thread_lock:
+                try:
+                    return self._instance
+                except AttributeError:
+                    self._instance = self._decorated()
+                    if hasattr(self._instance, "initialize"):
+                        if cfg is None:
+                            self._instance.initialize()
+                        else:
+                            self._instance.initialize(**cfg)
+        return self._instance
 
 
     def __call__(self):

@@ -129,6 +129,21 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         return (file_not_found_list, file_is_empty_list)
 
 
+    def check_scrapy_to_string(self):
+        (file_not_found_list, file_is_empty_list) = self.check_scrapy()
+        error_msg = None
+        error_msg_list = []
+        for file_not_found in file_not_found_list:
+            error_msg = u"FileNotFound: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
+            error_msg_list.append(error_msg)
+        for file_is_empty in file_is_empty_list:
+            error_msg = u"FileIsEmpty: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
+            error_msg_list.append(error_msg)
+        if len(error_msg_list) != 0:
+            error_msg = "\n".join(error_msg_list)
+        return error_msg
+
+
     def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, source_type_index):
 # Search for the index of the finance folder which the specific source type index exists
 # -1 if not found

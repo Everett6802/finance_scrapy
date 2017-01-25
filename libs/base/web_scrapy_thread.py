@@ -74,9 +74,10 @@ class WebScrapyThread(Thread):
             # print "Thread%d Return: %s, Error: %s" % (thread_index, self.thread_return, self.thread_errmsg)
             self.task_done_success = True
         except AttributeError:
-            self.errmsg = "Class %s does not implement %s" % (my_cls.__class__.__name__, method_name)
+            self.errmsg = "Class %s does not implement %s" % (self.web_scrapy_obj.__class__.__name__, func_name)
         except Exception, e:
             self.__record_full_stack_traceback()
             self.errmsg = "The thread for[%s] stop !!!, due to: %s" % (self.web_scrapy_obj.get_description(), str(e))
         finally:
+            g_logger.debug("The thread for[%s::%s()] DONE...... %d" % (self.web_scrapy_obj.get_description(), func_name, self.thread_index))
             self.tasks.task_done()
