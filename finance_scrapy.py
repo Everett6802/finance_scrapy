@@ -454,6 +454,52 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
+def record_exe_time(action):
+    def decorator(func):
+        def wrapper(*args, **kwargs):
+            # show_info("* Start to run %s()......" % func.__name__)
+            time_lapse_msg = u"################### %s ###################" % action
+            show_info(time_lapse_msg)
+            time_range_start_second = int(time.time())
+            result = func(*args, **kwargs)
+            time_range_end_second = int(time.time())
+            # show_info("* Run %s()...... DONE!!!" % func.__name__)
+            time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_range_end_second - time_range_start_second)
+            show_info(time_lapse_msg)
+            return result
+        return wrapper
+    return decorator
+
+
+@record_exe_time("SCRAP")
+def do_scrap():
+    show_info("* Scrap the data from the website......")
+    g_mgr.do_scrapy()
+    show_info("* Scrap the data from the website...... DONE!!!")
+
+
+@record_exe_time("CHECK")
+def do_check():
+    show_info("* Check errors in finance folder: %s" % g_mgr.FinanceRootFolderPath)
+    error_msg = g_mgr.check_scrapy_to_string()
+    if error_msg is not None:
+        show_error(error_msg)
+        # run_result_str = time_lapse_msg + error_msg
+        snapshot_result(error_msg)
+    else:
+        show_debug("Not errors found")
+    return True if error_msg is not None else False
+
+
+@record_exe_time("CLONE")
+def do_clone():
+    show_info("* Clone the finance folder: %s" % g_mgr.FinanceRootFolderPath)
+    datetime_now = datetime.today()
+    clone_foldername = g_mgr.FinanceRootFolderPath + "_ok" + CMN.DEF.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
+    show_debug("Clone the finance folder to %s" % clone_foldername)
+    subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
+
+
 if __name__ == "__main__":
     # TestClass1.get_instance()
     # import pdb; pdb.set_trace()
@@ -561,35 +607,16 @@ if __name__ == "__main__":
 # Start to do something.......
 # Try to scrap the web data
     if not param_cfg["no_scrap"]:
-        show_info("* Scrap the data from the website......")
-        time_range_start_second = int(time.time())
-        # import pdb; pdb.set_trace()
-        g_mgr.do_scrapy()
-        time_range_end_second = int(time.time())
-        show_info("* Scrap the data from the website...... DONE!!!")
-        time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_range_end_second - time_range_start_second)
-        show_info(time_lapse_msg)
+        do_scrap()
 
     error_found = False
 # Check if all the csv files are created
     if not param_cfg["no_check"]:
-        show_info("* Check errors in finance folder: %s" % g_mgr.FinanceRootFolderPath)
-        error_msg = g_mgr.check_scrapy_to_string()
-        if error_msg is not None:
-            show_error(error_msg)
-            # run_result_str = time_lapse_msg + error_msg
-            snapshot_result(error_msg)
-            error_found = True
-        else:
-            show_debug("Not errors found")
+        error_found = do_check()
 
 # Clone the csv files if necessary
     if param_cfg["clone"]:
-        show_info("* Clone the finance folder: %s" % g_mgr.FinanceRootFolderPath)
         if not error_found:
-            datetime_now = datetime.today()
-            clone_foldername = g_mgr.FinanceRootFolderPath + "_ok" + CMN.DEF.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
-            show_debug("Clone the finance folder to %s" % clone_foldername)
-            subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
+            do_clone()
         else:
             show_error("Find errors while checking... Stop the Clone action")

@@ -129,9 +129,6 @@ class WebSracpyMgrBase(object):
         return scrapy_obj_cfg
 
 
-    def record_exe_time(func_name)
-
-
     def do_scrapy(self):
         # import pdb; pdb.set_trace()
         self._init_csv_time_duration()
