@@ -26,7 +26,7 @@ def show_usage_and_exit():
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--no_scrap\nDescription: Don't scrap Web data"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrap flag is NOT set"
-    print "--check\nDescription: Check the CSV files after scraping Web data"
+    print "--no_check\nDescription: Don't check the CSV files after scraping Web data"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check is set"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
@@ -186,7 +186,7 @@ def init_param():
     param_cfg["silent"] = False
     param_cfg["no_scrap"] = False
     param_cfg["show_progress"] = False
-    param_cfg["check"] = False
+    param_cfg["no_check"] = False
     param_cfg["clone"] = False
     param_cfg["reserve_old"] = False
     param_cfg["dry_run"] = False
@@ -244,8 +244,8 @@ def parse_param():
         elif re.match("--show_progress", sys.argv[index]):
             param_cfg["show_progress"] = True
             index_offset = 1
-        elif re.match("--check", sys.argv[index]):
-            param_cfg["check"] = True
+        elif re.match("--no_check", sys.argv[index]):
+            param_cfg["no_check"] = True
             index_offset = 1
         elif re.match("--clone", sys.argv[index]):
             param_cfg["clone"] = True
@@ -572,13 +572,13 @@ if __name__ == "__main__":
 
     error_found = False
 # Check if all the csv files are created
-    if param_cfg["check"]:
+    if not param_cfg["no_check"]:
         show_info("* Check errors in finance folder: %s" % g_mgr.FinanceRootFolderPath)
         error_msg = g_mgr.check_scrapy_to_string()
         if error_msg is not None:
             show_error(error_msg)
-            run_result_str = time_lapse_msg + error_msg
-            snapshot_result(run_result_str)
+            # run_result_str = time_lapse_msg + error_msg
+            snapshot_result(error_msg)
             error_found = True
         else:
             show_debug("Not errors found")

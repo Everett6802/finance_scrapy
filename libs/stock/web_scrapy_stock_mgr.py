@@ -293,6 +293,31 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                                 "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
                             }
                         )
+# Output the missing CSV to the file if necessary
+        if not self.xcfg["disable_output_missing_csv"]:
+            file_not_found_list_len = len(file_not_found_list)
+            file_is_empty_list_len = len(file_is_empty_list)  
+            if file_not_found_list_len != 0 or file_is_empty_list_len != 0:
+                missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_MISSING_CSV_STOCK_FILENAME)
+                g_logger.debug("Write missing CSVs to the file: %s......" % missing_csv_filepath)
+                with open(missing_csv_filepath, 'wb') as fp:
+                    try:
+# Output the file not found list
+                        if file_not_found_list_len != 0:
+                            fp.write("[FileNotFound]\n") 
+                            for file_not_found in file_not_found_list[:-1]:
+                                fp.write("%s:%d;" % (file_not_found["company_code_number"], file_not_found["index"]))
+                            fp.write("%s:%d\n" % (file_not_found_list[-1]["company_code_number"], file_not_found_list[-1]["index"]))
+# Output the file is empty list
+                        if file_is_empty_list_len != 0:
+                            fp.write("[FileIsEmpty]\n")
+                            for file_is_empty in file_is_empty_list[:-1]:
+                                fp.write("%s:%d;" % (file_is_empty["company_code_number"], file_is_empty["index"]))
+                            fp.write("%s:%d\n" % (file_is_empty_list[-1]["company_code_number"], file_is_empty_list[-1]["index"]))
+                    except Exception as e:
+                        g_logger.error(u"Fail to write data to missing CSV file, due to %s" %str(e))
+                        # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
+                        raise e
         return (file_not_found_list, file_is_empty_list)
 
 

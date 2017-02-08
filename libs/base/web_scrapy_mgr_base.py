@@ -25,6 +25,7 @@ class WebSracpyMgrBase(object):
             "show_progress": False,
             "need_estimate_complete_time": True,
             "start_estimate_complete_time_threshold": 2,
+            "disable_output_missing_csv": False,
             # "csv_time_duration_table": None
         }
         self.xcfg.update(cfg)
@@ -126,6 +127,9 @@ class WebSracpyMgrBase(object):
             "finance_root_folderpath": self.xcfg["finance_root_folderpath"]
             }
         return scrapy_obj_cfg
+
+
+    def record_exe_time(func_name)
 
 
     def do_scrapy(self):
