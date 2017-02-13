@@ -62,26 +62,16 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def _read_old_csv_time_duration(self):
         # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
-#         csv_data_folderpath = self.__get_finance_folderpath()
-#         g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
-#         csv_time_duration_dict = CMN.FUNC.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
-#         if csv_time_duration_dict is None:
-#             g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
-#             return
-# # # update the time range of each source type from config file
-# #         for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
-# #             self.source_type_csv_time_duration[source_type_index] = time_duration_tuple
-#         self.source_type_csv_time_duration = csv_time_duration_dict
-        source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
-        if source_type_csv_time_duration is not None:
-            self.source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
+        self.source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
+        # if source_type_csv_time_duration is not None:
+        #     self.source_type_csv_time_duration = source_type_csv_time_duration
 
 
     def _update_new_csv_time_duration(self, web_scrapy_obj):
         # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
-        new_csv_time_duration = web_scrapy_obj.get_new_csv_time_duration()
-        self.source_type_csv_time_duration[web_scrapy_obj.SourceTypeIndex] = new_csv_time_duration
+        # new_csv_time_duration = web_scrapy_obj.get_new_csv_time_duration()
+        self.source_type_csv_time_duration[web_scrapy_obj.SourceTypeIndex] = web_scrapy_obj.new_csv_time_duration
 
 
     def __write_new_csv_time_duration_to_cfg(self, finance_root_folderpath=None, source_type_csv_time_duration=None):
@@ -225,7 +215,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def count_scrapy_progress(self):
         if self.scrapy_amount is None:
             raise ValueError("self.scrapy_amount shoudl NOT be None")
-        return ((float)self.scrapy_source_type_progress_count / self.scrapy_amount * 100.0)
+        return (float(self.scrapy_source_type_progress_count) / self.scrapy_amount * 100.0)
 
 
     @property

@@ -82,7 +82,7 @@ class WebSracpyMgrBase(object):
 
 
     def _scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
-        # import pdb; pdb.set_trace()            
+        # import pdb; pdb.set_trace()
         web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **kwargs)
         if web_scrapy_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")

@@ -457,13 +457,11 @@ def setup_param():
 def record_exe_time(action):
     def decorator(func):
         def wrapper(*args, **kwargs):
-            # show_info("* Start to run %s()......" % func.__name__)
             time_lapse_msg = u"################### %s ###################" % action
             show_info(time_lapse_msg)
             time_range_start_second = int(time.time())
             result = func(*args, **kwargs)
             time_range_end_second = int(time.time())
-            # show_info("* Run %s()...... DONE!!!" % func.__name__)
             time_lapse_msg = u"######### Time Lapse: %d second(s) #########\n" % (time_range_end_second - time_range_start_second)
             show_info(time_lapse_msg)
             return result

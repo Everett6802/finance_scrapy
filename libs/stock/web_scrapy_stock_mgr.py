@@ -132,10 +132,10 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def _update_new_csv_time_duration(self, web_scrapy_obj):
         # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration_dict is not None, "self.source_type_csv_time_duration_dict should NOT be None"
-        new_csv_time_duration_dict = web_scrapy_obj.get_new_csv_time_duration_dict()
-        # source_type_index_offset = web_scrapy_obj.SourceTypeIndex - CMN.DEF.DEF_DATA_SOURCE_STOCK_START
-        for company_number, time_duration_tuple in new_csv_time_duration_dict.items():
-            self.source_type_csv_time_duration_dict[company_number][web_scrapy_obj.SourceTypeIndex] = time_duration_tuple
+        # new_csv_time_duration_dict = web_scrapy_obj.get_new_csv_time_duration_dict()
+        if web_scrapy_obj.new_csv_time_duration_dict is not None:
+            for company_number, time_duration_tuple in web_scrapy_obj.new_csv_time_duration_dict.items():
+                self.source_type_csv_time_duration_dict[company_number][web_scrapy_obj.SourceTypeIndex] = time_duration_tuple
 
 
     def __write_new_csv_time_duration_to_cfg(self, finance_root_folderpath=None, source_type_csv_time_duration_dict=None, company_group_set=None):

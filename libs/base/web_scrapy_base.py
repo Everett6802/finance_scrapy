@@ -360,6 +360,7 @@ class WebScrapyBase(object):
 
 
     def _get_timeslice_iterable(self, **kwargs):
+        # import pdb;pdb.set_trace()
         assert kwargs["time_duration_start"].get_time_unit_type() == kwargs["time_duration_end"].get_time_unit_type(), "The time unit of start and end time is NOT identical; Start: %s, End: %s" % (type(kwargs["time_duration_start"]), type(kwargs["time_duration_end"]))
         if self.url_time_unit != kwargs["time_duration_start"].get_time_unit_type():
             (new_finance_time_start, new_finance_time_end) = self._modify_time_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])

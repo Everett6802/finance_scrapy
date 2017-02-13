@@ -48,7 +48,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     def _adjust_csv_time_duration(self):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 # Limit the time range from the web site
         time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index)
 # Determine the CSV/Web time duration
