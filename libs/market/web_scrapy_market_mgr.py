@@ -62,9 +62,9 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def _read_old_csv_time_duration(self):
         # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
-        self.source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
-        # if source_type_csv_time_duration is not None:
-        #     self.source_type_csv_time_duration = source_type_csv_time_duration
+        source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
+        if source_type_csv_time_duration is not None:
+            self.source_type_csv_time_duration = source_type_csv_time_duration
 
 
     def _update_new_csv_time_duration(self, web_scrapy_obj):
