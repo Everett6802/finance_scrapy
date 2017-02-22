@@ -168,6 +168,42 @@ DEF_SOURCE_URL_PARSING = [
         "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
+    {# 資產負債表
+        "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb03?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": 'table tr',
+        "url_multi_data_one_page": False,
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+    },
+    {# 損益表
+        "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb04?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": 'table tr',
+        "url_multi_data_one_page": False,
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+    },
+    {# 現金流量表
+        "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb05?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": 'table tr',
+        "url_multi_data_one_page": False,
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+    },
+    {# 股東權益變動表
+        "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
+        "url_timeslice": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
+        "url_css_selector": 'table tr',
+        "url_multi_data_one_page": False,
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
+    },
     # {# 三大法人上市個股買賣超日報
     #     "url_format": "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
     #     "url_timeslice": TIMESLICE_GENERATE_BY_WORKDAY,
@@ -257,6 +293,10 @@ DEF_DATA_SOURCE_INDEX_MAPPING = [
 ###############################################################################
 # Stock Start
     u'個股集保戶股權分散表',
+    u'資產負債表',
+    u'損益表',
+    u'現金流量表',
+    u'股東權益變動表',
     # u'三大法人上市個股買賣超彙總',
     # u'三大法人上櫃個股買賣超彙總',
     # u'外資及陸資上市個股投資持股統計',
@@ -282,6 +322,10 @@ DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
 ###############################################################################
 # Stock Start
     "company_depository_shareholder_distribution_table",
+    "balance_sheet",
+    "income_statement",
+    "cash_flow_statement",
+    "statement_of_changes_in_equity",
     # "company_stock_top3_legal_persons_net_buy_and_sell_summary",
     # "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
     # "company_foreign_investors_shareholder",
@@ -302,8 +346,10 @@ DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING = [
     "market",
     "market",
     "stock",
-    # "stock",
-    # "stock",
+    "stock",
+    "stock",
+    "stock",
+    "stock",
 ]
 # Semi-open interval
 DEF_DATA_SOURCE_MARKET_START = 0
@@ -328,6 +374,10 @@ DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
 ###############################################################################
 # Stock Start
     "WebScrapyDepositoryShareholderDistributionTable",
+    "WebScrapyBalanceSheet",
+    "WebScrapyIncomeStatement",
+    "WebScrapyCashFlowStatement",
+    "WebScrapyStatementOfChangesInEquity",
     # "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
     # "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
     # "WebScrapyCompanyForeignInvestorsShareholder",
