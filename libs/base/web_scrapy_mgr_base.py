@@ -150,6 +150,7 @@ class WebSracpyMgrBase(object):
                 print progress_string
             show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=30)
             show_progress_timer_thread.start_timer(WebSracpyMgrBase.show_scrapy_progress, self)
+        # import pdb; pdb.set_trace()
         for source_type_time_duration in self.source_type_time_duration_list:
             try:
                 self._scrap_single_source_data(source_type_time_duration)

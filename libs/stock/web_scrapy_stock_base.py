@@ -31,6 +31,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         self.new_csv_time_duration_dict = None
         self.scrapy_company_progress_count = 0
         self.company_profile = None
+        self.cur_company_code_number = None # Caution: This value is updated every time when assemble_web_url() is called
 
 
     def __get_company_profile(self):
@@ -125,6 +126,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 # import pdb; pdb.set_trace()
 # Update the time range of time slice
                 time_slice_generator_cfg = {"company_code_number": company_code_number, "time_duration_start": web2csv_time_duration_update.NewWebStart, "time_duration_end": web2csv_time_duration_update.NewWebEnd,}
+                # import pdb; pdb.set_trace()
 # Generate the time slice
                 timeslice_iterable = self._get_timeslice_iterable(**time_slice_generator_cfg)
                 csv_data_list_each_year = []
@@ -167,7 +169,8 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
 
     def assemble_web_url(self, timeslice, company_code_number):
-        raise NotImplementedError
+        # raise NotImplementedError
+        self.cur_company_code_number = company_code_number
 
 
     @property

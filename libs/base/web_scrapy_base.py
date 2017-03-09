@@ -112,6 +112,10 @@ class WebScrapyBase(object):
 # Can't be declared in class due to thread-safe
     # PARSE_URL_DATA_FUNC_PTR = None
     # GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
+    @classmethod
+    def _init_table_meta_data(cls):
+        pass
+
 
     def __init__(self, cur_file_path, **kwargs):
         self.xcfg = {

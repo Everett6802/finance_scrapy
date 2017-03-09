@@ -173,11 +173,11 @@ class FinanceDate(FinanceTimeBase):
                     # self.year = mobj.group(1)
                     self.month = int(mobj.group(2))
                     self.day = int(mobj.group(3))
-                elif isinstance(args[0], datetime):
+                elif isinstance(args[0], datetime) or isinstance(args[0], FinanceDate):
                     self.setup_year_value(args[0].year)
                     # self.year = args[0].year
                     self.month = args[0].month
-                    self.day = args[0].day   
+                    self.day = args[0].day
                 else:
                     raise
             elif len(args) == 3:
@@ -282,7 +282,7 @@ class FinanceMonth(FinanceTimeBase):
                     self.setup_year_value(mobj.group(1))
                     # self.year = mobj.group(1)
                     self.month = int(mobj.group(2))
-                elif isinstance(args[0], datetime):
+                elif isinstance(args[0], datetime) or isinstance(args[0], FinanceMonth):
                     self.setup_year_value(args[0].year)
                     # self.year = args[0].year
                     self.month = args[0].month
@@ -365,6 +365,68 @@ class FinanceMonth(FinanceTimeBase):
 
 class FinanceQuarter(FinanceTimeBase):
 
+    ANNUAL_REPORT_MONTH = 3
+    ANNUAL_REPORT_DAY = 31
+    Q1_QUARTERLY_REPORT_MONTH = 5
+    Q1_QUARTERLY_REPORT_DAY = 15
+    Q2_QUARTERLY_REPORT_MONTH = 8
+    Q2_QUARTERLY_REPORT_DAY = 14
+    Q3_QUARTERLY_REPORT_MONTH = 11
+    Q3_QUARTERLY_REPORT_DAY = 14
+
+    @classmethod
+    def __get_statement_release_date_list(cls, year):
+        statement_release_date_list = [
+            FinanceDate(year, cls.ANNUAL_REPORT_MONTH, cls.ANNUAL_REPORT_DAY),
+            FinanceDate(year, cls.Q1_QUARTERLY_REPORT_MONTH, cls.Q1_QUARTERLY_REPORT_DAY),
+            FinanceDate(year, cls.Q2_QUARTERLY_REPORT_MONTH, cls.Q2_QUARTERLY_REPORT_DAY),
+            FinanceDate(year, cls.Q3_QUARTERLY_REPORT_MONTH, cls.Q3_QUARTERLY_REPORT_DAY),            
+        ]
+        return statement_release_date_list
+
+
+    @classmethod
+    def get_start_finance_quarter_from_date(cls, *date_args):
+        """ Find the nearest start finance qaurter due to the specific finance date"""
+        finance_date = FinanceDate(*date_args)
+        statement_release_date_list = cls.__get_statement_release_date_list(finance_date.year)
+        finance_quarter = None
+        if finance_date <= statement_release_date_list[0]:
+            finance_quarter = FinanceQuarter(finance_date.year - 1, 4)
+        elif statement_release_date_list[1] >= finance_date > statement_release_date_list[0]:
+            finance_quarter = FinanceQuarter(finance_date.year, 1)
+        elif statement_release_date_list[2] >= finance_date > statement_release_date_list[1]:
+            finance_quarter = FinanceQuarter(finance_date.year, 2)
+        elif statement_release_date_list[3] >= finance_date > statement_release_date_list[2]:
+            finance_quarter = FinanceQuarter(finance_date.year, 3)
+        elif finance_date >= statement_release_date_list[3]:
+            finance_quarter = FinanceQuarter(finance_date.year, 4)
+        else:
+            raise ValueError("Fail to transform the finance date[%s] to quarter" % finance_date)
+        return finance_quarter
+
+
+    @classmethod
+    def get_end_finance_quarter_from_date(cls, *date_args):
+        """ Find the nearest end finance qaurter due to the specific finance date"""
+        finance_date = FinanceDate(*date_args)
+        statement_release_date_list = cls.__get_statement_release_date_list(finance_date.year)
+        finance_quarter = None
+        if finance_date < statement_release_date_list[0]:
+            finance_quarter = FinanceQuarter(finance_date.year - 1, 3)
+        elif statement_release_date_list[1] > finance_date >= statement_release_date_list[0]:
+            finance_quarter = FinanceQuarter(finance_date.year - 1, 4)
+        elif statement_release_date_list[2] > finance_date >= statement_release_date_list[1]:
+            finance_quarter = FinanceQuarter(finance_date.year, 1)
+        elif statement_release_date_list[3] > finance_date >= statement_release_date_list[2]:
+            finance_quarter = FinanceQuarter(finance_date.year, 2)
+        elif finance_date >= statement_release_date_list[3]:
+            finance_quarter = FinanceQuarter(finance_date.year, 3)
+        else:
+            raise ValueError("Fail to transform the end finance date[%s] to quarter" % finance_date)
+        return finance_quarter
+
+
     def __init__(self, *args):
         super(FinanceQuarter, self).__init__()
         self.quarter = None
@@ -377,7 +439,7 @@ class FinanceQuarter(FinanceTimeBase):
                     self.setup_year_value(mobj.group(1))
                     # self.year = mobj.group(1)
                     self.quarter = int(mobj.group(2))
-                elif isinstance(args[0], datetime):
+                elif isinstance(args[0], datetime) or isinstance(args[0], FinanceQuarter):
                     self.setup_year_value(args[0].year)
                     # self.year = args[0].year
                     self.quarter = (int)(math.ceil(args[0].month / 3.0))

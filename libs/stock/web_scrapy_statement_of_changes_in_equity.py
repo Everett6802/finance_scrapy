@@ -20,12 +20,12 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockBase)
 
     def assemble_web_url(self, timeslice, company_code_number):
         # import pdb; pdb.set_trace()
+        super(WebScrapyStatementOfChangesInEquity, self).assemble_web_url(timeslice, company_code_number)
         url = self.url_format.format(
             *(
-                timeslice.year, 
-                "%02d" % timeslice.month,
-                "%02d" % timeslice.day,
-                company_code_number
+                company_code_number,
+                timeslice.year - 1911, 
+                "%02d" % timeslice.quarter,
             )
         )
         return url
