@@ -21,6 +21,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         u"　　　現金及約當現金".encode('utf8'), #1
         u"　　　透過損益按公允價值衡量之金融資產－流動".encode('utf8'), #2
         u"　　　備供出售金融資產－流動淨額".encode('utf8'), #3
+        u"　　　無活絡市場之債務工具投資－流動淨額".encode('utf8'), #3
         u"　　　應收票據淨額".encode('utf8'), #4
         u"　　　應收帳款淨額".encode('utf8'), #5
         u"　　　應收帳款－關係人淨額".encode('utf8'), #6
@@ -33,8 +34,11 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         u"　　流動資產合計".encode('utf8'), #13
         u"　非流動資產".encode('utf8'), #14
         u"　　　備供出售金融資產－非流動淨額".encode('utf8'), #15
+        u"　　　以成本衡量之金融資產－非流動淨額".encode('utf8'), #15
+        u"　　　無活絡市場之債務工具投資－非流動淨額".encode('utf8'), #15
         u"　　　採用權益法之投資淨額".encode('utf8'), #16
         u"　　　不動產、廠房及設備".encode('utf8'), #17
+        u"　　　投資性不動產淨額".encode('utf8'), #17
         u"　　　無形資產".encode('utf8'), #18
         u"　　    遞延所得稅資產".encode('utf8'), #19
         u"　　　其他非流動資產".encode('utf8'), #20
@@ -42,8 +46,10 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         u"　資產總計".encode('utf8'), #22
         u"　流動負債".encode('utf8'), #23
         u"　　　短期借款".encode('utf8'), #24
+        u"　　　應付短期票券".encode('utf8'), #24
         u"　　　透過損益按公允價值衡量之金融負債－流動".encode('utf8'), #25
         u"　　　應付票據".encode('utf8'), #26
+        u"　　　應付票據－關係人".encode('utf8'), #26
         u"　　　應付帳款".encode('utf8'), #27
         u"　　　應付帳款－關係人".encode('utf8'), #28
         u"　　　其他應付款".encode('utf8'), #29
@@ -149,7 +155,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
     def _parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         data_list = []
         table_field_list = [None] * self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN
         interest_index = 0
@@ -163,7 +169,9 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
             data_index = None
             if interest_index < self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN:
                 try:
-                    data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(td[0].text)
+                    title = td[0].text.encode('utf8')
+                    # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
+                    data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title)
                     interest_index = cur_interest_index + 1
                     data_found = True
                 except ValueError:
@@ -171,14 +179,15 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
             if not data_found:
                 if not_interest_index < self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
                     try:
-                        cur_not_interest_index = self.TABLE_FIELD_INTEREST_TITLE_LIST[not_interest_index:].index(td[0].text)
+                        cur_not_interest_index = (self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title)
                         not_interest_index = cur_not_interest_index + 1
                         data_can_ignore = True
                     except ValueError:
                         pass                
 # Check if the entry is NOT in the title list of interest
             if (not data_found) and (not data_can_ignore):
-                raise ValueError(u"The title[%s] does NOT exist in the tile list of interest in company: %s" % (td[0].text, self.cur_company_code_number))
+                # import pdb; pdb.set_trace()
+                raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s] in company[%s] does NOT exist in the title list of interest" % (td[0].text, self.cur_company_code_number))
             if data_can_ignore:
                 continue
 # Parse the content of this entry, and the interested field into data structure
@@ -201,6 +210,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
 # 現金及約當現金 
 # 透過損益按公允價值衡量之金融資產 
 # 備供出售金融資產 
+# 無活絡市場之債務工具投資
 # 應收票據淨額 
 # 應收帳款淨額 
 # 應收帳款 
@@ -211,19 +221,24 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
 # 待出售非流動資產 
 # 其他流動資產 
 # 流動資產合計 
-# 備供出售金融資產 
+# 備供出售金融資產－非流動淨額
+# 以成本衡量之金融資產－非流動淨額
+# 無活絡市場之債務工具投資－非流動淨額
 # 採用權益法之投資淨額 
-# 不動產 
+# 不動產、廠房及設備
+# 投資性不動產淨額
 # 無形資產 
 # 遞延所得稅資產 
 # 其他非流動資產 
 # 非流動資產合計 
 # 資產總計 
 # 短期借款 
-# 透過損益按公允價值衡量之金融負債 
+# 應付短期票券
+# 透過損益按公允價值衡量之金融負債－流動 
 # 應付票據 
+# 應付票據－關係人
 # 應付帳款 
-# 應付帳款 
+# 應付帳款－關係人 
 # 其他應付款 
 # 本期所得稅負債 
 # 其他流動負債 

@@ -196,7 +196,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def set_company_from_file(self, filename):
-        company_word_list = CMN.FUNC.parse_source_type_time_duration_config_file(filename)
+        company_word_list = CMN.FUNC.parse_company_config_file(filename)
         self.set_company(company_word_list)
 
 

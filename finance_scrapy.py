@@ -544,6 +544,10 @@ if __name__ == "__main__":
     # start_finance_quarter = CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(2017, 3, 31)
     # end_finance_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(2017, 3, 31)
     # print "Start: %s, End: %s" % (start_finance_quarter, end_finance_quarter)
+    # try:
+    #     raise CMN.EXCEPTION.WebScrapyException()
+    # except CMN.EXCEPTION.WebScrapyException as e:
+    #     print e
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()

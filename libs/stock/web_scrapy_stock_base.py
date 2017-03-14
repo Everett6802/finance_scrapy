@@ -149,8 +149,19 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                         if csv_data_list is None:
                             raise RuntimeError(url)
                         csv_data_list_each_year.append(csv_data_list)
+                    except CMN.EXCEPTION.WebScrapyNotFoundException as e:
+                        # import pdb;pdb.set_trace()
+                        if isinstance(e.message, str):
+                            g_logger.error("Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                        else:
+                            g_logger.error(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                        raise e
                     except Exception as e:
-                        g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
+                        # import pdb;pdb.set_trace()
+                        if isinstance(e.message, str):
+                            g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                        else:
+                            g_logger.warn(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
 # Write the data of last year into csv
                 if len(csv_data_list_each_year) > 0:
                     self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])
