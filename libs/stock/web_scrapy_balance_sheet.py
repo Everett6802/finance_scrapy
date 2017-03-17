@@ -20,13 +20,16 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         u"　流動資產".encode('utf8'), #0
         u"　　　現金及約當現金".encode('utf8'), #1
         u"　　　透過損益按公允價值衡量之金融資產－流動".encode('utf8'), #2
+        u"　　    避險之衍生金融資產－流動".encode('utf8'), #2
         u"　　　備供出售金融資產－流動淨額".encode('utf8'), #3
         u"　　　無活絡市場之債務工具投資－流動淨額".encode('utf8'), #3
         u"　　　應收票據淨額".encode('utf8'), #4
+        u"　　　應收票據－關係人淨額".encode('utf8'), #4
         u"　　　應收帳款淨額".encode('utf8'), #5
         u"　　　應收帳款－關係人淨額".encode('utf8'), #6
         u"　　　其他應收款淨額".encode('utf8'), #7
         u"　　　其他應收款－關係人淨額".encode('utf8'), #8
+        u"　　　本期所得稅資產".encode('utf8'), #9
         u"　　　存貨".encode('utf8'), #9
         u"　　　預付款項".encode('utf8'), #10
         u"　　　待出售非流動資產（淨額）".encode('utf8'), #11
@@ -34,6 +37,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         u"　　流動資產合計".encode('utf8'), #13
         u"　非流動資產".encode('utf8'), #14
         u"　　　備供出售金融資產－非流動淨額".encode('utf8'), #15
+        u"　　　持有至到期日金融資產－非流動淨額".encode('utf8'), #15
         u"　　　以成本衡量之金融資產－非流動淨額".encode('utf8'), #15
         u"　　　無活絡市場之債務工具投資－非流動淨額".encode('utf8'), #15
         u"　　　採用權益法之投資淨額".encode('utf8'), #16
@@ -48,17 +52,21 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         u"　　　短期借款".encode('utf8'), #24
         u"　　　應付短期票券".encode('utf8'), #24
         u"　　　透過損益按公允價值衡量之金融負債－流動".encode('utf8'), #25
+        u"　　    避險之衍生金融負債－流動".encode('utf8'), #25
         u"　　　應付票據".encode('utf8'), #26
         u"　　　應付票據－關係人".encode('utf8'), #26
         u"　　　應付帳款".encode('utf8'), #27
         u"　　　應付帳款－關係人".encode('utf8'), #28
         u"　　　其他應付款".encode('utf8'), #29
         u"　　    本期所得稅負債".encode('utf8'), #30
+        u"　　    與待出售非流動資產直接相關之負債".encode('utf8'), #30
+        u"　　　負債準備－流動".encode('utf8'), #31
         u"　　　其他流動負債".encode('utf8'), #31
         u"　　流動負債合計".encode('utf8'), #32
         u"　非流動負債".encode('utf8'), #33
         u"　　　應付公司債".encode('utf8'), #34
         u"　　　長期借款".encode('utf8'), #35
+        u"　　　負債準備－非流動".encode('utf8'), #35
         u"　　　遞延所得稅負債".encode('utf8'), #36
         u"　　　其他非流動負債".encode('utf8'), #37
         u"　　非流動負債合計".encode('utf8'), #38
@@ -67,14 +75,18 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         u"　　股本".encode('utf8'), #41
         u"　　　　普通股股本".encode('utf8'), #42
         u"　　　　預收股本".encode('utf8'), #43
+        u"　　　　待分配股票股利".encode('utf8'), #43
         u"　　　股本合計".encode('utf8'), #44
         u"　　資本公積".encode('utf8'), #45
         u"　　　　資本公積－發行溢價".encode('utf8'), #46
         u"　　　　資本公積－庫藏股票交易".encode('utf8'), #47
+        u"　　　　資本公積－處分資產增益".encode('utf8'), #47
         u"　　　　資本公積－實際取得或處分子公司股權價格與帳面價值差額".encode('utf8'), #48
         u"　　　    資本公積－採用權益法認列關聯企業及合資股權淨值之變動數".encode('utf8'), #49
         u"　　　　資本公積－合併溢額".encode('utf8'), #50
         u"　　　　資本公積－員工認股權".encode('utf8'), #51
+        u"　　　　資本公積－認股權".encode('utf8'), #51
+        u"　　　　資本公積－限制員工權利股票".encode('utf8'), #51
         u"　　　　資本公積－其他".encode('utf8'), #52
         u"　　　資本公積合計".encode('utf8'), #53
         u"　　保留盈餘".encode('utf8'), #54
@@ -208,20 +220,25 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
                 data_list.extend(table_field_list[index])
         return data_list
 # 現金及約當現金 
-# 透過損益按公允價值衡量之金融資產 
+# 透過損益按公允價值衡量之金融資產
+# 避險之衍生金融資產－流動 
 # 備供出售金融資產 
 # 無活絡市場之債務工具投資
 # 應收票據淨額 
+# 應收票據－關係人淨額
 # 應收帳款淨額 
-# 應收帳款 
+# 應收帳款－關係人淨額
 # 其他應收款淨額 
+# 其他應收款－關係人淨額
 # 其他應收款 
+# 本期所得稅資產
 # 存貨 
 # 預付款項 
 # 待出售非流動資產 
 # 其他流動資產 
 # 流動資產合計 
 # 備供出售金融資產－非流動淨額
+# 持有至到期日金融資產－非流動淨額
 # 以成本衡量之金融資產－非流動淨額
 # 無活絡市場之債務工具投資－非流動淨額
 # 採用權益法之投資淨額 
@@ -235,29 +252,37 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
 # 短期借款 
 # 應付短期票券
 # 透過損益按公允價值衡量之金融負債－流動 
+# 避險之衍生金融負債－流動
 # 應付票據 
 # 應付票據－關係人
 # 應付帳款 
 # 應付帳款－關係人 
 # 其他應付款 
 # 本期所得稅負債 
+# 與待出售非流動資產直接相關之負債 
+# 負債準備－流動
 # 其他流動負債 
 # 流動負債合計 
 # 應付公司債 
 # 長期借款 
+# 負債準備－非流動
 # 遞延所得稅負債 
 # 其他非流動負債 
 # 非流動負債合計 
 # 負債總計 
 # 普通股股本 
-# 預收股本 
+# 預收股本
+# 待分配股票股利
 # 股本合計 
 # 資本公積－發行溢價
 # 資本公積－庫藏股票交易 
+# 資本公積－處分資產增益
 # 資本公積－實際取得或處分子公司股權價格與帳面價值差額 
 # 資本公積－採用權益法認列關聯企業及合資股權淨值之變動數 
 # 資本公積－合併溢額 
 # 資本公積－員工認股權 
+# 資本公積－認股權 
+# 資本公積－限制員工權利股票
 # 資本公積－其他 
 # 資本公積合計 
 # 法定盈餘公積 
