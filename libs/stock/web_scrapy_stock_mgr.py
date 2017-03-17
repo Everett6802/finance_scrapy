@@ -45,7 +45,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
         for index in range(self.__get_company_profile().CompanyGroupSize):
             folderpath = folderpath_format % index
-            g_logger.debug("Try to create new folder: %s" % folderpath)
+            # g_logger.debug("Try to create new folder: %s" % folderpath)
             CMN.FUNC.create_folder_if_not_exist(folderpath)
 
 
@@ -54,7 +54,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
         for index in range(self.__get_company_profile().CompanyGroupSize):
             folderpath = folderpath_format % index
-            g_logger.debug("Remove old folder: %s" % folderpath)
+            # g_logger.debug("Remove old folder: %s" % folderpath)
             shutil.rmtree(folderpath, ignore_errors=True)
 
 
