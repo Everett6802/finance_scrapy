@@ -14,100 +14,8 @@ g_lock =  threading.Lock()
 
 
 # 資產負債表
-class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
+class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
 
-    TABLE_FIELD_TITLE_LIST = [
-        u"　流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #0
-        u"　　　現金及約當現金".encode(CMN.DEF.URL_ENCODING_UTF8), #1
-        u"　　　透過損益按公允價值衡量之金融資產－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #2
-        u"　　    避險之衍生金融資產－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #2
-        u"　　　備供出售金融資產－流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #3
-        u"　　　無活絡市場之債務工具投資－流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #3
-        u"　　　應收票據淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #4
-        u"　　　應收票據－關係人淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #4
-        u"　　　應收帳款淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #5
-        u"　　　應收帳款－關係人淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #6
-        u"　　　其他應收款淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #7
-        u"　　　其他應收款－關係人淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #8
-        u"　　　本期所得稅資產".encode(CMN.DEF.URL_ENCODING_UTF8), #9
-        u"　　　存貨".encode(CMN.DEF.URL_ENCODING_UTF8), #9
-        u"　　　預付款項".encode(CMN.DEF.URL_ENCODING_UTF8), #10
-        u"　　　待出售非流動資產（淨額）".encode(CMN.DEF.URL_ENCODING_UTF8), #11
-        u"　　　其他流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #12
-        u"　　流動資產合計".encode(CMN.DEF.URL_ENCODING_UTF8), #13
-        u"　非流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #14
-        u"　　　備供出售金融資產－非流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #15
-        u"　　　持有至到期日金融資產－非流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #15
-        u"　　　以成本衡量之金融資產－非流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #15
-        u"　　　無活絡市場之債務工具投資－非流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #15
-        u"　　　採用權益法之投資淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #16
-        u"　　　不動產、廠房及設備".encode(CMN.DEF.URL_ENCODING_UTF8), #17
-        u"　　　投資性不動產淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #17
-        u"　　　無形資產".encode(CMN.DEF.URL_ENCODING_UTF8), #18
-        u"　　    遞延所得稅資產".encode(CMN.DEF.URL_ENCODING_UTF8), #19
-        u"　　　其他非流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #20
-        u"　　非流動資產合計".encode(CMN.DEF.URL_ENCODING_UTF8), #21
-        u"　資產總計".encode(CMN.DEF.URL_ENCODING_UTF8), #22
-        u"　流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #23
-        u"　　　短期借款".encode(CMN.DEF.URL_ENCODING_UTF8), #24
-        u"　　　應付短期票券".encode(CMN.DEF.URL_ENCODING_UTF8), #24
-        u"　　　透過損益按公允價值衡量之金融負債－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #25
-        u"　　    避險之衍生金融負債－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #25
-        u"　　　應付票據".encode(CMN.DEF.URL_ENCODING_UTF8), #26
-        u"　　　應付票據－關係人".encode(CMN.DEF.URL_ENCODING_UTF8), #26
-        u"　　　應付帳款".encode(CMN.DEF.URL_ENCODING_UTF8), #27
-        u"　　　應付帳款－關係人".encode(CMN.DEF.URL_ENCODING_UTF8), #28
-        u"　　　其他應付款".encode(CMN.DEF.URL_ENCODING_UTF8), #29
-        u"　　    本期所得稅負債".encode(CMN.DEF.URL_ENCODING_UTF8), #30
-        u"　　    與待出售非流動資產直接相關之負債".encode(CMN.DEF.URL_ENCODING_UTF8), #30
-        u"　　　負債準備－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #31
-        u"　　　其他流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #31
-        u"　　流動負債合計".encode(CMN.DEF.URL_ENCODING_UTF8), #32
-        u"　非流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #33
-        u"　　　應付公司債".encode(CMN.DEF.URL_ENCODING_UTF8), #34
-        u"　　　長期借款".encode(CMN.DEF.URL_ENCODING_UTF8), #35
-        u"　　　負債準備－非流動".encode(CMN.DEF.URL_ENCODING_UTF8), #35
-        u"　　　遞延所得稅負債".encode(CMN.DEF.URL_ENCODING_UTF8), #36
-        u"　　　其他非流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #37
-        u"　　非流動負債合計".encode(CMN.DEF.URL_ENCODING_UTF8), #38
-        u"　負債總計".encode(CMN.DEF.URL_ENCODING_UTF8), #39
-        u"　歸屬於母公司業主之權益".encode(CMN.DEF.URL_ENCODING_UTF8), #40
-        u"　　股本".encode(CMN.DEF.URL_ENCODING_UTF8), #41
-        u"　　　　普通股股本".encode(CMN.DEF.URL_ENCODING_UTF8), #42
-        u"　　　　預收股本".encode(CMN.DEF.URL_ENCODING_UTF8), #43
-        u"　　　　待分配股票股利".encode(CMN.DEF.URL_ENCODING_UTF8), #43
-        u"　　　股本合計".encode(CMN.DEF.URL_ENCODING_UTF8), #44
-        u"　　資本公積".encode(CMN.DEF.URL_ENCODING_UTF8), #45
-        u"　　　　資本公積－發行溢價".encode(CMN.DEF.URL_ENCODING_UTF8), #46
-        u"　　　　資本公積－庫藏股票交易".encode(CMN.DEF.URL_ENCODING_UTF8), #47
-        u"　　　　資本公積－處分資產增益".encode(CMN.DEF.URL_ENCODING_UTF8), #47
-        u"　　　　資本公積－實際取得或處分子公司股權價格與帳面價值差額".encode(CMN.DEF.URL_ENCODING_UTF8), #48
-        u"　　　    資本公積－採用權益法認列關聯企業及合資股權淨值之變動數".encode(CMN.DEF.URL_ENCODING_UTF8), #49
-        u"　　　　資本公積－合併溢額".encode(CMN.DEF.URL_ENCODING_UTF8), #50
-        u"　　　　資本公積－員工認股權".encode(CMN.DEF.URL_ENCODING_UTF8), #51
-        u"　　　　資本公積－認股權".encode(CMN.DEF.URL_ENCODING_UTF8), #51
-        u"　　　　資本公積－限制員工權利股票".encode(CMN.DEF.URL_ENCODING_UTF8), #51
-        u"　　　　資本公積－其他".encode(CMN.DEF.URL_ENCODING_UTF8), #52
-        u"　　　資本公積合計".encode(CMN.DEF.URL_ENCODING_UTF8), #53
-        u"　　保留盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), #54
-        u"　　　　法定盈餘公積".encode(CMN.DEF.URL_ENCODING_UTF8), #55
-        u"　　　　特別盈餘公積".encode(CMN.DEF.URL_ENCODING_UTF8), #56
-        u"　　　　未分配盈餘（或待彌補虧損）".encode(CMN.DEF.URL_ENCODING_UTF8), #57
-        u"　　　保留盈餘合計".encode(CMN.DEF.URL_ENCODING_UTF8), #58
-        u"　　其他權益".encode(CMN.DEF.URL_ENCODING_UTF8), #59
-        u"　　　　國外營運機構財務報表換算之兌換差額".encode(CMN.DEF.URL_ENCODING_UTF8), #60
-        u"　　　　備供出售金融資產未實現損益".encode(CMN.DEF.URL_ENCODING_UTF8), #61
-        u"　　　　其他權益－其他".encode(CMN.DEF.URL_ENCODING_UTF8), #62
-        u"　　　其他權益合計".encode(CMN.DEF.URL_ENCODING_UTF8), #63
-        u"　　　庫藏股票".encode(CMN.DEF.URL_ENCODING_UTF8), #64
-        u"　　歸屬於母公司業主之權益合計".encode(CMN.DEF.URL_ENCODING_UTF8), #65
-        u"　　非控制權益".encode(CMN.DEF.URL_ENCODING_UTF8), #66
-        u"　權益總計".encode(CMN.DEF.URL_ENCODING_UTF8), #67
-        u"　負債及權益總計".encode(CMN.DEF.URL_ENCODING_UTF8), #68
-        u"　待註銷股本股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #69
-        u"　預收股款（權益項下）之約當發行股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #70
-        u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #71
-    ]
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
         u"　流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #0
         u"　非流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #14
@@ -124,6 +32,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
     TABLE_FIELD_INTEREST_TITLE_LIST = None
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
+    TABLE_FIELD_INTEREST_DEFAULT_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN = 2
     TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
 
@@ -135,12 +44,16 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
             with g_lock:
                 if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-                    self.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in self.TABLE_FIELD_TITLE_LIST if title not in self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
+                    conf_filename = CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME
+                    if not CMN.FUNC.check_config_file_exist(conf_filename):
+                        raise ValueError("The %s file does NOT exist" % conf_filename)
+                    table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
+                    self.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
                     self.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(self.TABLE_FIELD_INTEREST_TITLE_LIST)}
                     self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
                     self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_INTEREST_TITLE_LIST)
                     self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
-                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 3
+                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
 
 
     def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
@@ -164,6 +77,19 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
         return url
 
 
+    def _parse_web_statement_field_data(self, web_data):
+        if len(web_data) == 0:
+            return None
+        data_list = []
+# Filter the data which is NOT interested in
+        for tr in web_data[7:]:
+        #     print "%d: %s" % (index, tr.text)
+            td = tr.select('td')
+            # data_list.append(td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8))
+            data_list.append(td[0].text)
+        return data_list
+
+
     def _parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
@@ -179,11 +105,11 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
             data_found = False
             data_can_ignore = False
             data_index = None
+            title = td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8)
             if interest_index < self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN:
                 try:
-                    title = td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8)
                     # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
-                    data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title)
+                    data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title) + interest_index
                     interest_index = cur_interest_index + 1
                     data_found = True
                 except ValueError:
@@ -191,7 +117,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
             if not data_found:
                 if not_interest_index < self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
                     try:
-                        cur_not_interest_index = (self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title)
+                        cur_not_interest_index = (self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title) + not_interest_index
                         not_interest_index = cur_not_interest_index + 1
                         data_can_ignore = True
                     except ValueError:
@@ -203,12 +129,26 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
             if data_can_ignore:
                 continue
 # Parse the content of this entry, and the interested field into data structure
-            entry_list_len = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[td[0].text]
+            entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[title]
+            field_index_list = None
+            if isinstance(entry_list_entry, list):
+                field_index_list = entry_list_entry
+            else:
+                field_index_list = range(1, entry_list_entry + 1)
             # entry_string = "%s" % str(td[0].text).strip(" ")
             table_field_list[data_index] = []
-            for i in range(1, entry_list_len):
+            # field_index = self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_START_INDEX
+            for field_index in field_index_list:
+                # field_index = self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_START_INDEX + i
                 # entry_string += (",%s" % str(td[i].text).strip(" "))
-                table_field_list[data_index].append(str(td[i].text).strip(" "))
+                # import pdb; pdb.set_trace()
+                field_value = str(td[field_index].text).strip(" ").replace(",", "")
+                if field_value.find('.') == -1: # Integer
+                    # if int(field_value) == 24551000:
+                    #     import pdb; pdb.set_trace()
+                    table_field_list[data_index].append(int(field_value))
+                else: # Floating point
+                    table_field_list[data_index].append(float(field_value))
 # Transforms the table into the 1-Dimension list
         padding_entry = "0" 
         for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
@@ -397,3 +337,97 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockBase):
 # 　待註銷股本股數（單位：股） 0  0  0  
 # 　預收股款（權益項下）之約當發行股數（單位：股） 0  0  0  
 # 　母公司暨子公司所持有之母公司庫藏股股數（單位：股） 6,717,732  7,887,835  3,747,208   
+
+##############################################
+    # TABLE_FIELD_TITLE_LIST = [
+    #     u"　流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #0
+    #     u"　　　現金及約當現金".encode(CMN.DEF.URL_ENCODING_UTF8), #1
+    #     u"　　　透過損益按公允價值衡量之金融資產－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #2
+    #     u"　　    避險之衍生金融資產－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #2
+    #     u"　　　備供出售金融資產－流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #3
+    #     u"　　　無活絡市場之債務工具投資－流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #3
+    #     u"　　　應收票據淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #4
+    #     u"　　　應收票據－關係人淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #4
+    #     u"　　　應收帳款淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #5
+    #     u"　　　應收帳款－關係人淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #6
+    #     u"　　　其他應收款淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #7
+    #     u"　　　其他應收款－關係人淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #8
+    #     u"　　　本期所得稅資產".encode(CMN.DEF.URL_ENCODING_UTF8), #9
+    #     u"　　　存貨".encode(CMN.DEF.URL_ENCODING_UTF8), #9
+    #     u"　　　預付款項".encode(CMN.DEF.URL_ENCODING_UTF8), #10
+    #     u"　　　待出售非流動資產（淨額）".encode(CMN.DEF.URL_ENCODING_UTF8), #11
+    #     u"　　　其他流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #12
+    #     u"　　流動資產合計".encode(CMN.DEF.URL_ENCODING_UTF8), #13
+    #     u"　非流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #14
+    #     u"　　　備供出售金融資產－非流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #15
+    #     u"　　　持有至到期日金融資產－非流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #15
+    #     u"　　　以成本衡量之金融資產－非流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #15
+    #     u"　　　無活絡市場之債務工具投資－非流動淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #15
+    #     u"　　　採用權益法之投資淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #16
+    #     u"　　　不動產、廠房及設備".encode(CMN.DEF.URL_ENCODING_UTF8), #17
+    #     u"　　　投資性不動產淨額".encode(CMN.DEF.URL_ENCODING_UTF8), #17
+    #     u"　　　無形資產".encode(CMN.DEF.URL_ENCODING_UTF8), #18
+    #     u"　　    遞延所得稅資產".encode(CMN.DEF.URL_ENCODING_UTF8), #19
+    #     u"　　　其他非流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #20
+    #     u"　　非流動資產合計".encode(CMN.DEF.URL_ENCODING_UTF8), #21
+    #     u"　資產總計".encode(CMN.DEF.URL_ENCODING_UTF8), #22
+    #     u"　流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #23
+    #     u"　　　短期借款".encode(CMN.DEF.URL_ENCODING_UTF8), #24
+    #     u"　　　應付短期票券".encode(CMN.DEF.URL_ENCODING_UTF8), #24
+    #     u"　　　透過損益按公允價值衡量之金融負債－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #25
+    #     u"　　    避險之衍生金融負債－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #25
+    #     u"　　　應付票據".encode(CMN.DEF.URL_ENCODING_UTF8), #26
+    #     u"　　　應付票據－關係人".encode(CMN.DEF.URL_ENCODING_UTF8), #26
+    #     u"　　　應付帳款".encode(CMN.DEF.URL_ENCODING_UTF8), #27
+    #     u"　　　應付帳款－關係人".encode(CMN.DEF.URL_ENCODING_UTF8), #28
+    #     u"　　　其他應付款".encode(CMN.DEF.URL_ENCODING_UTF8), #29
+    #     u"　　    本期所得稅負債".encode(CMN.DEF.URL_ENCODING_UTF8), #30
+    #     u"　　    與待出售非流動資產直接相關之負債".encode(CMN.DEF.URL_ENCODING_UTF8), #30
+    #     u"　　　負債準備－流動".encode(CMN.DEF.URL_ENCODING_UTF8), #31
+    #     u"　　　其他流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #31
+    #     u"　　流動負債合計".encode(CMN.DEF.URL_ENCODING_UTF8), #32
+    #     u"　非流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #33
+    #     u"　　　應付公司債".encode(CMN.DEF.URL_ENCODING_UTF8), #34
+    #     u"　　　長期借款".encode(CMN.DEF.URL_ENCODING_UTF8), #35
+    #     u"　　　負債準備－非流動".encode(CMN.DEF.URL_ENCODING_UTF8), #35
+    #     u"　　　遞延所得稅負債".encode(CMN.DEF.URL_ENCODING_UTF8), #36
+    #     u"　　　其他非流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #37
+    #     u"　　非流動負債合計".encode(CMN.DEF.URL_ENCODING_UTF8), #38
+    #     u"　負債總計".encode(CMN.DEF.URL_ENCODING_UTF8), #39
+    #     u"　歸屬於母公司業主之權益".encode(CMN.DEF.URL_ENCODING_UTF8), #40
+    #     u"　　股本".encode(CMN.DEF.URL_ENCODING_UTF8), #41
+    #     u"　　　　普通股股本".encode(CMN.DEF.URL_ENCODING_UTF8), #42
+    #     u"　　　　預收股本".encode(CMN.DEF.URL_ENCODING_UTF8), #43
+    #     u"　　　　待分配股票股利".encode(CMN.DEF.URL_ENCODING_UTF8), #43
+    #     u"　　　股本合計".encode(CMN.DEF.URL_ENCODING_UTF8), #44
+    #     u"　　資本公積".encode(CMN.DEF.URL_ENCODING_UTF8), #45
+    #     u"　　　　資本公積－發行溢價".encode(CMN.DEF.URL_ENCODING_UTF8), #46
+    #     u"　　　　資本公積－庫藏股票交易".encode(CMN.DEF.URL_ENCODING_UTF8), #47
+    #     u"　　　　資本公積－處分資產增益".encode(CMN.DEF.URL_ENCODING_UTF8), #47
+    #     u"　　　　資本公積－實際取得或處分子公司股權價格與帳面價值差額".encode(CMN.DEF.URL_ENCODING_UTF8), #48
+    #     u"　　　    資本公積－採用權益法認列關聯企業及合資股權淨值之變動數".encode(CMN.DEF.URL_ENCODING_UTF8), #49
+    #     u"　　　　資本公積－合併溢額".encode(CMN.DEF.URL_ENCODING_UTF8), #50
+    #     u"　　　　資本公積－員工認股權".encode(CMN.DEF.URL_ENCODING_UTF8), #51
+    #     u"　　　　資本公積－認股權".encode(CMN.DEF.URL_ENCODING_UTF8), #51
+    #     u"　　　　資本公積－限制員工權利股票".encode(CMN.DEF.URL_ENCODING_UTF8), #51
+    #     u"　　　　資本公積－其他".encode(CMN.DEF.URL_ENCODING_UTF8), #52
+    #     u"　　　資本公積合計".encode(CMN.DEF.URL_ENCODING_UTF8), #53
+    #     u"　　保留盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), #54
+    #     u"　　　　法定盈餘公積".encode(CMN.DEF.URL_ENCODING_UTF8), #55
+    #     u"　　　　特別盈餘公積".encode(CMN.DEF.URL_ENCODING_UTF8), #56
+    #     u"　　　　未分配盈餘（或待彌補虧損）".encode(CMN.DEF.URL_ENCODING_UTF8), #57
+    #     u"　　　保留盈餘合計".encode(CMN.DEF.URL_ENCODING_UTF8), #58
+    #     u"　　其他權益".encode(CMN.DEF.URL_ENCODING_UTF8), #59
+    #     u"　　　　國外營運機構財務報表換算之兌換差額".encode(CMN.DEF.URL_ENCODING_UTF8), #60
+    #     u"　　　　備供出售金融資產未實現損益".encode(CMN.DEF.URL_ENCODING_UTF8), #61
+    #     u"　　　　其他權益－其他".encode(CMN.DEF.URL_ENCODING_UTF8), #62
+    #     u"　　　其他權益合計".encode(CMN.DEF.URL_ENCODING_UTF8), #63
+    #     u"　　　庫藏股票".encode(CMN.DEF.URL_ENCODING_UTF8), #64
+    #     u"　　歸屬於母公司業主之權益合計".encode(CMN.DEF.URL_ENCODING_UTF8), #65
+    #     u"　　非控制權益".encode(CMN.DEF.URL_ENCODING_UTF8), #66
+    #     u"　權益總計".encode(CMN.DEF.URL_ENCODING_UTF8), #67
+    #     u"　負債及權益總計".encode(CMN.DEF.URL_ENCODING_UTF8), #68
+    #     u"　待註銷股本股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #69
+    #     u"　預收股款（權益項下）之約當發行股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #70
+    #     u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #71
+    # ]

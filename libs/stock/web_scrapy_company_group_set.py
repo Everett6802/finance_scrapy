@@ -95,12 +95,13 @@ class WebScrapyCompanyGroupSet(object):
                 raise ValueError("The company group[%d] has already been set to NULL" % company_group_number)
 
         for company_code_number in company_code_number_in_group_list:
+            # import pdb; pdb.set_trace()
             if self.check_company_exist:
                 if not self.__get_company_profile().is_company_exist(company_code_number):
-                    g_logger.warn("The company of company code number[%s] does NOT exist" % (company_code_number, company_group_number))
+                    g_logger.warn("The company of company code number[%s] does NOT exist" % (str(company_code_number), str(company_group_number)))
                     continue
             if company_code_number in self.company_number_in_group_dict[company_group_number]:
-                g_logger.warn("The company code number[%s] has already been added to the group[%d]" % (company_code_number, company_group_number))
+                g_logger.warn("The company code number[%s] has already been added to the group[%s]" % (str(company_code_number), str(company_group_number)))
                 continue
             self.company_number_in_group_dict[company_group_number].append(company_code_number)
 

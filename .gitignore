@@ -6,3 +6,8 @@ snapshot/
 .company_profile.conf
 .company_group.conf
 conf/market_stock_switch.conf
+conf/.balance_sheet_field_name.conf
+conf/.income_statement_field_name.conf
+conf/.cash_flow_statement_field_name.conf
+conf/.statement_of_changes_in_equity_field_name.conf
+

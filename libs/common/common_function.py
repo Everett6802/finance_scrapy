@@ -45,6 +45,14 @@ def check_source_type_index_in_range(source_type_index):
     raise RuntimeError("Unknown finance mode")
 
 
+def check_statement_source_type_index_in_range(source_type_index):
+    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+        return False
+    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+        return True if CMN_DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_STOCK_STATMENT_END else False
+    raise RuntimeError("Unknown finance mode")
+
+
 def get_source_type_index_range():
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
         return (CMN_DEF.DEF_DATA_SOURCE_MARKET_START, CMN_DEF.DEF_DATA_SOURCE_MARKET_END)
@@ -206,10 +214,13 @@ def get_project_folderpath():
     return project_folder
 
 
-def get_config_filepath(conf_filename):
+def get_config_filepath(conf_filename, conf_folderpath=None):
     # current_path = os.path.dirname(os.path.realpath(__file__))
     # [project_folder, lib_folder] = current_path.rsplit('/', 1)
-    conf_filepath = "%s/%s/%s" % (CMN_DEF.DEF_PROJECT_FOLDERPATH, CMN_DEF.DEF_CONF_FOLDER, conf_filename)
+    if conf_folderpath is None:
+        conf_filepath = "%s/%s/%s" % (CMN_DEF.DEF_PROJECT_FOLDERPATH, CMN_DEF.DEF_CONF_FOLDER, conf_filename)
+    else:
+        conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
     g_logger.debug("Parse the config file: %s" % conf_filepath)
     return conf_filepath
 
@@ -252,11 +263,7 @@ def get_finance_mode_description():
 
 
 def read_config_file_lines_ex(conf_filename, conf_file_read_attribute, conf_folderpath=None):
-    conf_filepath = None
-    if conf_folderpath is None:
-        conf_filepath = get_config_filepath(conf_filename)
-    else:
-        conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
     config_line_list = []
     try:
         with open(conf_filepath, conf_file_read_attribute) as fp:
@@ -278,12 +285,36 @@ def read_config_file_lines(conf_filename, conf_folderpath=None):
     return read_config_file_lines_ex(conf_filename, 'r', conf_folderpath)
 
 
+def unicode_read_config_file_lines_ex(conf_filename, conf_file_read_attribute, conf_folderpath=None, conf_unicode_encode=None):
+    if conf_unicode_encode is None:
+        conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+    config_line_list = []
+    try:
+        with open(conf_filepath, conf_file_read_attribute) as fp:
+            for line_tmp in fp:
+                line = line_tmp.decode(conf_unicode_encode)
+                if line.startswith('#'):
+                    continue
+                line_strip = line.strip('\n')
+                if len(line_strip) == 0:
+                    continue
+                config_line_list.append(line_strip)
+    except Exception as e:
+        errmsg = "Error occur while reading config file[%s] in unicode, due to %s" % (conf_filename, str(e))
+        g_logger.error(errmsg)
+        raise ValueError(errmsg)
+    return config_line_list
+
+
+def unicode_read_config_file_lines(conf_filename, conf_folderpath=None, conf_unicode_encode=None):
+    if conf_unicode_encode is None:
+        conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
+    return unicode_read_config_file_lines_ex(conf_filename, 'rb', conf_folderpath, conf_unicode_encode)
+
+
 def write_config_file_lines_ex(config_line_list, conf_filename, conf_file_write_attribute, conf_folderpath=None):
-    conf_filepath = None
-    if conf_folderpath is None:
-        conf_filepath = get_config_filepath(conf_filename)
-    else:
-        conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
     try:
         with open(conf_filepath, conf_file_write_attribute) as fp:
             for line in config_line_list:
@@ -298,6 +329,29 @@ def write_config_file_lines_ex(config_line_list, conf_filename, conf_file_write_
 
 def write_config_file_lines(config_line_list, conf_filename, conf_folderpath=None):
     return write_config_file_lines_ex(config_line_list, conf_filename, 'w', conf_folderpath)
+
+
+def unicode_write_config_file_lines_ex(config_line_list, conf_filename, conf_file_write_attribute, conf_folderpath=None, conf_unicode_encode=None):
+    if conf_unicode_encode is None:
+        conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+    try:
+        with open(conf_filepath, conf_file_write_attribute) as fp:
+            for line_tmp in config_line_list:
+                line = line_tmp.encode(conf_unicode_encode)
+                if not line.endswith("\n"):
+                    line += "\n"
+                fp.write(line)
+    except Exception as e:
+        errmsg = "Error occur while writing config file[%s], due to %s" % (conf_filename, str(e))
+        g_logger.error(errmsg)
+        raise ValueError(errmsg)
+
+
+def unicode_write_config_file_lines(config_line_list, conf_filename, conf_folderpath=None, conf_unicode_encode=None):
+    if conf_unicode_encode is None:
+        conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
+    return unicode_write_config_file_lines_ex(config_line_list, conf_filename, 'wb', conf_folderpath, conf_unicode_encode)
 
 
 def parse_source_type_time_duration_config_file(conf_filename, time_duration_type):
@@ -432,6 +486,10 @@ def check_file_exist(filepath):
         check_exist = False
     return check_exist
 
+
+def check_config_file_exist(conf_filename, conf_folderpath=None):
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+    return check_file_exist(conf_filepath)
 
 def create_folder(folderpath):
     # os.mkdir(folderpath)

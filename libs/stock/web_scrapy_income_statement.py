@@ -14,7 +14,7 @@ g_lock =  threading.Lock()
 
 
 # 損益表
-class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockBase):
+class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 
     TABLE_FIELD_TITLE_LIST = [
         u"　　銷貨收入".encode(CMN.DEF.URL_ENCODING_UTF8),

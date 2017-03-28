@@ -247,6 +247,24 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             self._scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
 
 
+    def _renew_single_source_statement(self, source_type_time_duration, dst_statement_field_list):
+        if not CMN.FUNC.check_statement_source_type_index_in_range(source_type_time_duration.source_type_index):
+            raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (source_type_time_duration.source_type_index, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_END))
+        # import pdb;pdb.set_trace()
+        if self.company_group_set is None:
+            self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
+# Setup the time duration configuration for the scrapy object
+        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
+        # scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
+        scrapy_obj_cfg["company_group_set"] = self.company_group_set
+# Create the scrapy object
+        web_scrapy_obj = self._instantiate_web_scrapy_object(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
+        if web_scrapy_obj is None:
+            raise RuntimeError("Fail to allocate WebScrapyStockBase derived class")
+        g_logger.debug("Start to renew %s statement field......", web_scrapy_obj.get_description())
+        web_scrapy_obj.update_statement_field_to_file(dst_statement_field_list)
+
+
     def show_company_list_in_finance_folder(self, finance_root_folderpath=None):
         # import pdb; pdb.set_trace()
         if not CMN.FUNC.check_file_exist(self.xcfg["finance_root_folderpath"]):
@@ -267,6 +285,48 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 company_ode_number_in_group_list.append(company_code_number)
             if len(company_ode_number_in_group_list) != 0:
                 print "%s: %s" % (company_group_number, ",".join(company_ode_number_in_group_list))
+
+
+    def renew_statement_field(self):
+        # import pdb; pdb.set_trace()
+        for source_type_time_duration in self.source_type_time_duration_list:
+            conf_filename = CMN.DEF.DEF_STATEMENT_FIELD_NAME_CONF_FILENAME[source_type_time_duration.source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START]
+            dst_statement_field_list = []
+            config_file_exist = False
+            if CMN.FUNC.check_config_file_exist(conf_filename):
+# Read the original statement field list from file if exist
+                config_file_exist = True
+                dst_statement_field_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename)
+            old_dst_statement_field_list = copy.deepcopy(dst_statement_field_list)
+            try:
+# Update the statement field
+                self._renew_single_source_statement(source_type_time_duration, dst_statement_field_list)
+            except Exception as e:
+                if isinstance(e.message, str):
+                    errmsg = "Renew %s statement fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
+                else:
+                    errmsg = u"Renew %s statement fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
+                CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
+                g_logger.error(errmsg)
+                raise e
+            need_renew = True
+            # import pdb; pdb.set_trace()
+# Compare the statement field in the old and new config file
+            if config_file_exist:
+                new_statement_field_list = list(set(dst_statement_field_list) - set(old_dst_statement_field_list))
+                if len(new_statement_field_list) != 0:
+                    msg = u"***** Add new field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], source_type_time_duration.time_duration_start, source_type_time_duration.time_duration_end)
+                    for new_statement_field in new_statement_field_list:
+                        msg += u"%s\n" % new_statement_field
+                    CMN.FUNC.try_print(msg)
+                    g_logger.info(msg)
+                else:
+                    need_renew = False
+# Write the new statement field list into file if necessary
+            # import pdb; pdb.set_trace()
+            if need_renew:
+                CMN.FUNC.unicode_write_config_file_lines(dst_statement_field_list, conf_filename)
+                # CMN.FUNC.write_config_file_lines_ex(dst_statement_field_list, conf_filename, "wb")
 
 
     def check_scrapy(self):

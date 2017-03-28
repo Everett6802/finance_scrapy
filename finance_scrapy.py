@@ -39,9 +39,9 @@ def show_usage_and_exit():
     source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
     for source_type_index in source_type_index_list:
         print "  %d: %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index])
-    print "  Format 1: 1,3,5"
-    print "  Format 2: 2-6"
-    print "  Format 3: 1,3-4,6"
+    print "  Format 1: Source type (ex. 1,3,5)"
+    print "  Format 2: Source type range (ex. 2-6)"
+    print "  Format 3: Source type/type range hybrid (ex. 1,3-4,6)"
     print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
     print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
     print "--time_duration_range_all\nDescription: The data in the all time range of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
@@ -61,6 +61,7 @@ def show_usage_and_exit():
         print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
         print "--multi_thread\nDescription: Scrape web data in multi-thread"
         print "  Format: multi-thread number (ex. 4)"
+        print "--renew_statement_field\nDescription: Renew the statment field\nCaution: Exit after renewing the statement field"
     print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder cant NOT be duplicate. If so, the merge progress aborts"
     print "  Format 1 (folderpath): /var/tmp/finance"
     print "  Format 2 (folderpath1,folderpath2,folderpath3): /var/tmp/finance1,/var/tmp/finance2,/var/tmp/finance3"
@@ -158,6 +159,12 @@ def merge_finance_folder_and_exit(merge_finance_folderpath_src_list, merge_finan
     g_mgr.merge_finance_folder(merge_finance_folderpath_src_list, merge_finance_folderpath_dst)
     sys.exit(0)
 
+
+def renew_statement_field_and_exit():
+    show_info("Renew the field of the statement")
+    g_mgr.renew_statement_field()
+    sys.exit(0)
+
 # def switch_mode(mode):
 # # MARKET: 0
 # # STOCK: 1
@@ -200,6 +207,7 @@ def init_param():
     param_cfg["company_list_in_folderpath"] = None
     param_cfg["company"] = None
     param_cfg["company_from_file"] = None
+    param_cfg["renew_statement_field"] = False
     param_cfg["multi_thread"] = None
     param_cfg["merge_finance_folderpath_src_list"] = None
     param_cfg["merge_finance_folderpath_dst"] = None
@@ -323,6 +331,9 @@ def parse_param():
             else:
                 param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
+        elif re.match("--renew_statement_field", sys.argv[index]):
+            param_cfg["renew_statement_field"] = True
+            index_offset = 1
         elif re.match("--multi_thread", sys.argv[index]):
             param_cfg["multi_thread"] = int(sys.argv[index + 1])
             index_offset = 2
@@ -368,6 +379,9 @@ def check_param():
         if param_cfg["company_from_file"] is not None:
             param_cfg["company_from_file"] = None
             show_warn("The 'company_from_file' argument is ignored since it's 'Market' mode")
+        if param_cfg["renew_statement_field"]:
+            param_cfg["renew_statement_field"] = False
+            show_warn("The 'renew_statement_field' argument is ignored since it's 'Market' mode")
         if param_cfg["multi_thread"] is not None:
             param_cfg["multi_thread"] = None
             show_warn("The 'multi_thread' argument is invalid since it's 'Market' mode")
@@ -381,6 +395,11 @@ def check_param():
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
                 show_warn("The 'company' argument is ignored since 'company_from_file' is set")
+        if param_cfg["multi_thread"] is not None:
+            if mparam_cfg["renew_statement_field"]:
+                param_cfg["multi_thread"] = None
+                show_warn("The 'multi_thread' argument is invalid when the 'renew_statement_field' argument is true")
+
     if param_cfg["merge_finance_folderpath_src_list"] is not None and param_cfg["merge_finance_folderpath_dst"] is None:
         param_cfg["merge_finance_folderpath_dst"] = CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH
         show_warn("Set the 'merge_finance_folderpath_dst' argument to default destination folderpath: %s" % CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
@@ -403,18 +422,33 @@ def setup_param():
                 mobj = re.match("([\d]+)-([\d]+)", source_type_index_str)
                 if mobj is not None:
                     source_type_start_index = int(mobj.group(1))
-                    if not CMN.FUNC.check_source_type_index_in_range(source_type_start_index):
+                    start_index_in_range = False
+                    if param_cfg["renew_statement_field"]:
+                        start_index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_start_index)
+                    else:
+                        start_index_in_range = CMN.FUNC.check_source_type_index_in_range(source_type_start_index)
+                    if not start_index_in_range:
                         errmsg = "Unsupported source type index: %d" % source_type_start_index
                         show_error_and_exit(errmsg)
                     source_type_end_index = int(mobj.group(2))
-                    if not CMN.FUNC.check_source_type_index_in_range(source_type_end_index):
+                    end_index_in_range = False
+                    if param_cfg["renew_statement_field"]:
+                        end_index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_end_index)
+                    else:
+                        end_index_in_range = CMN.FUNC.check_source_type_index_in_range(source_type_end_index)
+                    if not end_index_in_range:
                         errmsg = "Unsupported source type index: %d" % source_type_end_index
                         show_error_and_exit(errmsg)
                     for source_type_index in range(source_type_start_index, source_type_end_index + 1):
                         source_type_index_list.append(source_type_index)
                 else:
                     source_type_index = int(source_type_index_str)
-                    if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
+                    index_in_range = False
+                    if param_cfg["renew_statement_field"]:
+                        index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_index)
+                    else:
+                        index_in_range = CMN.FUNC.check_source_type_index_in_range(source_type_index)
+                    if not index_in_range:
                         errmsg = "Unsupported source type index: %d" % source_type_index
                         show_error_and_exit(errmsg)
                     source_type_index_list.append(source_type_index)
@@ -498,6 +532,28 @@ def do_clone():
     subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
 
 
+def insert_not_exist_element(dst_list, src_list):
+    dst_index = 0
+    src_index = 0
+    dst_list_len = len(dst_list)
+    # import pdb; pdb.set_trace()
+    for src_data in src_list:
+        data_found = False
+        try:
+            cur_offset = (dst_list[dst_index:]).index(src_data)
+            dst_index = dst_index + cur_offset + 1
+            # data_found = True
+        except ValueError:
+# New element, insert the data into the list
+            if dst_index == dst_list_len:
+                dst_list.append(src_data)
+            else:
+                dst_list.insert(dst_index, src_data)
+            dst_index += 1
+            dst_list_len += 1
+        print "FUNC: %s" % dst_list
+
+
 if __name__ == "__main__":
     # TestClass1.get_instance()
     # import pdb; pdb.set_trace()
@@ -548,6 +604,19 @@ if __name__ == "__main__":
     #     raise CMN.EXCEPTION.WebScrapyException()
     # except CMN.EXCEPTION.WebScrapyException as e:
     #     print e
+    # dst_list = [1,2,4,5,7,9]
+    # print dst_list
+    # import copy
+    # old_dst_list = copy.deepcopy(dst_list)
+    # src_list = [0,1,2,3,5,6,7,8]
+    # print src_list
+    # insert_not_exist_element(dst_list, src_list)
+    # print dst_list
+    # print list(set(dst_list) - set(dst_list))
+    # dst_list.insert(len(dst_list), -1)
+    # print dst_list
+    # dst_list.append(-2)
+    # print dst_list
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()
@@ -591,7 +660,7 @@ if __name__ == "__main__":
 # RUN the argument that will return after the execution is done
     if param_cfg["check_url"]:
         check_url_and_exit()
-    elif param_cfg["debug_source"] is not None:
+    if param_cfg["debug_source"] is not None:
         debug_source_and_exit(param_cfg["debug_source"])
 # Check the parameters for the manager
     check_param()
@@ -603,22 +672,19 @@ if __name__ == "__main__":
 # Merge the finance folders...
     if param_cfg["merge_finance_folderpath_src_list"] is not None:
         merge_finance_folder_and_exit(param_cfg["merge_finance_folderpath_src_list"], param_cfg["merge_finance_folderpath_dst"])
-
+    if param_cfg["renew_statement_field"]:
+        renew_statement_field_and_exit()
 # Start to do something about scrapy......
 # Reset the file positon of the log file to 0
     # if param_cfg["check"]:
     #     CMN.WSL.reset_web_scrapy_logger_content()
-
-# Start to do something.......
 # Try to scrap the web data
     if not param_cfg["no_scrap"]:
         do_scrap()
-
     error_found = False
 # Check if all the csv files are created
     if not param_cfg["no_check"]:
         error_found = do_check()
-
 # Clone the csv files if necessary
     if param_cfg["clone"]:
         if not error_found:

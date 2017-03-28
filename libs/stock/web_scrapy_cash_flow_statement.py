@@ -11,7 +11,7 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 # 現金流量表
-class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockBase):
+class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()

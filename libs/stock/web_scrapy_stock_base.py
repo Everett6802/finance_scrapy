@@ -6,6 +6,7 @@ import json
 import requests
 import csv
 import time
+from abc import ABCMeta, abstractmethod
 from random import randint
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
@@ -142,7 +143,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                             csv_data_list_each_year = []
                         cur_year = timeslice.year
                     url = self.assemble_web_url(timeslice, company_code_number)
-                    g_logger.debug("Get the data by date from URL: %s" % url)
+                    g_logger.debug("Get the data from URL: %s" % url)
                     try:
 # Grab the data from website and assemble the data to the entry of CSV
                         csv_data_list = self._parse_web_data(self._get_web_data(url))
@@ -157,7 +158,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                             g_logger.error(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
                         raise e
                     except Exception as e:
-                        # import pdb;pdb.set_trace()
+                        import pdb;pdb.set_trace()
                         if isinstance(e.message, str):
                             g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, e.message))
                         else:
@@ -187,3 +188,63 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     @property
     def CompanyProgressCount(self):
         return self.scrapy_company_progress_count
+
+##########################################################################
+
+class WebScrapyStockStatementBase(WebScrapyStockBase):
+
+    __metaclass__ = ABCMeta
+    def __init__(self, cur_file_path, **kwargs):
+        super(WebScrapyStockStatementBase, self).__init__(cur_file_path, **kwargs)
+
+
+    def _insert_not_exist_statement_element(self, dst_statement_field_list, src_statement_list):
+        dst_index = 0
+        src_index = 0
+        dst_statement_field_list_len = len(dst_statement_field_list)
+        # import pdb; pdb.set_trace()
+        for src_data in src_statement_list:
+            data_found = False
+            try:
+                cur_offset = (dst_statement_field_list[dst_index:]).index(src_data)
+                dst_index = dst_index + cur_offset + 1
+                # data_found = True
+            except ValueError:
+    # New element, insert the data into the list
+                if dst_index == dst_statement_field_list_len:
+                    dst_statement_field_list.append(src_data)
+                else:
+                    dst_statement_field_list.insert(dst_index, src_data)
+                dst_index += 1
+                dst_statement_field_list_len += 1
+            # print "FUNC: %s" % dst_statement_field_list
+
+
+    def update_statement_field_to_file(self, dst_statement_field_list):
+        # import pdb; pdb.set_trace()
+        for company_group_number, company_code_number_list in self.company_group_set.items():
+            for company_code_number in company_code_number_list:
+# Create the time slice iterator due to correct time range
+                # import pdb; pdb.set_trace()
+# Update the time range of time slice
+# Limit the time range from the web site
+                time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index, company_code_number)
+                g_logger.debug("Update statement field => [%s:%s] %s:%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], company_code_number, time_duration_after_lookup_time.time_duration_start, time_duration_after_lookup_time.time_duration_end))
+                time_slice_generator_cfg = {"company_code_number": company_code_number, "time_duration_start": time_duration_after_lookup_time.time_duration_start, "time_duration_end": time_duration_after_lookup_time.time_duration_end,}
+# Generate the time slice
+                timeslice_iterable = self._get_timeslice_iterable(**time_slice_generator_cfg)
+                # import pdb; pdb.set_trace()
+# Generate the time slice list                
+                for timeslice in timeslice_iterable:
+                    url = self.assemble_web_url(timeslice, company_code_number)
+                    g_logger.debug("Get the statement data from URL: %s" % url)
+# Grab the data from website and assemble the data to the entry of CSV
+                    company_statement_field_list = self._parse_web_statement_field_data(self._get_web_data(url))
+                    if company_statement_field_list is None:
+                        raise RuntimeError(url)
+                    self._insert_not_exist_statement_element(dst_statement_field_list, company_statement_field_list)
+
+
+    @abstractmethod
+    def _parse_web_statement_field_data(self, web_data):
+        raise NotImplementedError

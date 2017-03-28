@@ -68,7 +68,7 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def __instantiate_web_scrapy_object(cls, source_type_index, **kwargs):
+    def _instantiate_web_scrapy_object(cls, source_type_index, **kwargs):
         # import pdb; pdb.set_trace()
         module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
         module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
@@ -83,7 +83,7 @@ class WebSracpyMgrBase(object):
 
     def _scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
         # import pdb; pdb.set_trace()
-        web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **kwargs)
+        web_scrapy_obj = self._instantiate_web_scrapy_object(source_type_index, **kwargs)
         if web_scrapy_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
         with self.web_scrapy_obj_list_thread_lock:
@@ -105,7 +105,7 @@ class WebSracpyMgrBase(object):
             with self.web_scrapy_obj_list_thread_lock:
                 if self.web_scrapy_obj_list is None:
                     self.web_scrapy_obj_list = []
-                web_scrapy_obj = self.__instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
+                web_scrapy_obj = self._instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
                 self.web_scrapy_obj_list.append(web_scrapy_obj)
                 # time.sleep(3)
             g_logger.debug("Start to scrap %s...... %d" % (web_scrapy_obj.get_description(), index))
@@ -183,7 +183,7 @@ class WebSracpyMgrBase(object):
     @classmethod
     def do_scrapy_debug(cls, source_type_index, silent_mode=False):
         # import pdb; pdb.set_trace()
-        web_scrapy_obj = WebSracpyMgrBase.__instantiate_web_scrapy_object(source_type_index)
+        web_scrapy_obj = WebSracpyMgrBase._instantiate_web_scrapy_object(source_type_index)
         web_scrapy_obj.do_debug(silent_mode)
 
 
