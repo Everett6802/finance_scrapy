@@ -2,20 +2,44 @@
 
 import re
 import requests
+import threading
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
 import web_scrapy_stock_base as WebScrapyStockBase
 g_logger = CMN.WSL.get_web_scrapy_logger()
+g_lock =  threading.Lock()
 
 
 # 現金流量表
 class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 
+    TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
+    ]
+    TABLE_FIELD_INTEREST_TITLE_LIST = None
+    TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
+    TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
+    TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN = 2
+    TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
+
+
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyCashFlowStatement, self).__init__(__file__, **kwargs)
+# Initialize the table meta-data
+        if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+            with g_lock:
+                if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+                    conf_filename = CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME
+                    if not CMN.FUNC.check_config_file_exist(conf_filename):
+                        raise ValueError("The %s file does NOT exist" % conf_filename)
+                    table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
+                    self.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
+                    self.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(self.TABLE_FIELD_INTEREST_TITLE_LIST)}
+                    self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
+                    self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_INTEREST_TITLE_LIST)
+                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
 
 
     def assemble_web_url(self, timeslice, company_code_number):
@@ -29,6 +53,19 @@ class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase)
             )
         )
         return url
+
+
+    def _parse_web_statement_field_data(self, web_data):
+        if len(web_data) == 0:
+            return None
+        data_list = []
+# Filter the data which is NOT interested in
+        for tr in web_data[7:]:
+        #     print "%d: %s" % (index, tr.text)
+            td = tr.select('td')
+            # data_list.append(td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8))
+            data_list.append(td[0].text)
+        return data_list
 
 
     def _parse_web_data(self, web_data):
@@ -58,54 +95,6 @@ class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase)
         if not sum_found:
             raise ValueError("Fail to find the sum flag in the table");
         return data_list
-# 持股1-999人數
-# 持股1-999股數
-# 持股1-999佔集保庫存數比例
-# 持股1,000-5,000人數
-# 持股1,000-5,000股數
-# 持股1,000-5,000佔集保庫存數比例
-# 持股5,001-10,000人數
-# 持股5,001-10,000股數
-# 持股5,001-10,000佔集保庫存數比例
-# 持股10,001-15,000人數
-# 持股10,001-15,000股數
-# 持股10,001-15,000佔集保庫存數比例
-# 持股15,001-20,000人數
-# 持股15,001-20,000股數
-# 持股15,001-20,000佔集保庫存數比例
-# 持股20,001-30,000人數
-# 持股20,001-30,000股數
-# 持股20,001-30,000佔集保庫存數比例
-# 持股30,001-40,000人數
-# 持股30,001-40,000股數
-# 持股30,001-40,000佔集保庫存數比例
-# 持股40,001-50,000人數
-# 持股40,001-50,000股數
-# 持股40,001-50,000佔集保庫存數比例
-# 持股50,001-100,000人數
-# 持股50,001-100,000股數
-# 持股150,001-100,000佔集保庫存數比例
-# 持股100,001-200,000人數
-# 持股100,001-200,000股數
-# 持股100,001-200,000佔集保庫存數比例
-# 持股200,001-400,000人數
-# 持股200,001-400,000股數
-# 持股200,001-400,000佔集保庫存數比例
-# 持股400,001-600,000人數
-# 持股400,001-600,000股數
-# 持股400,001-600,000佔集保庫存數比例
-# 持股600,001-800,000人數
-# 持股600,001-800,000股數
-# 持股600,001-800,000佔集保庫存數比例
-# 持股800,001-1,000,000人數
-# 持股800,001-1,000,000股數
-# 持股800,001-1,000,000佔集保庫存數比例
-# 持股1,000,001以上人數
-# 持股1,000,001以上股數
-# 持股1,000,001以上佔集保庫存數比例
-# 合計人數
-# 合計股數
-# 合計佔集保庫存數比例
 
 
     def do_debug(self, silent_mode=False):

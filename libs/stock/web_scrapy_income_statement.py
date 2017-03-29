@@ -16,73 +16,6 @@ g_lock =  threading.Lock()
 # 損益表
 class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 
-    TABLE_FIELD_TITLE_LIST = [
-        u"　　銷貨收入".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　　銷貨退回".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　　銷貨折讓".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　銷貨收入淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　投資收入".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　　營建收入淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　營建工程收入".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　其他營業收入淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"營業收入合計".encode(CMN.DEF.URL_ENCODING_UTF8), #0
-        u"　銷貨成本".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　　營建成本".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　營建工程成本".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"營業成本合計".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"營業毛利（毛損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"未實現銷貨（損）益".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"已實現銷貨（損）益".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"營業毛利（毛損）淨額".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"營業費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　推銷費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　管理費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　研究發展費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　營業費用合計".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"其他收益及費損淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　其他收益及費損淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"營業利益（損失）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"營業外收入及支出".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　其他收入".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　其他利益及損失淨額".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　財務成本淨額".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　採用權益法認列之關聯企業及合資損益之份額淨額".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　營業外收入及支出合計".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"稅前淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"所得稅費用（利益）合計".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"繼續營業單位本期淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"停業單位損益".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　停業單位損益合計".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"本期淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"不重分類至損益之項目：".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　確定福利計畫之再衡量數".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　重估增值".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　指定按公允價值衡量之金融負債信用風險變動影響數".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　與待出售非流動資產直接相關之權益".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　權益工具投資之利益(損失)".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　採用權益法認列之關聯企業及合資之其他綜合損益之份額-不重分類至損益之項目".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　不重分類至損益之其他項目".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　與不重分類之項目相關之所得稅".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"後續可能重分類至損益之項目：".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　國外營運機構財務報表換算之兌換差額".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　備供出售金融資產未實現評價損益".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　現金流量避險中屬有效避險部分之避險工具利益(損失)".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　採用權益法認列關聯企業及合資之其他綜合損益之份額-可能重分類至損益之項目".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　與可能重分類之項目相關之所得稅".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　其他綜合損益（淨額）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"本期綜合損益總額".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　母公司業主（淨利／損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　非控制權益（淨利／損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　母公司業主（綜合損益）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　非控制權益（綜合損益）".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　繼續營業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"　　繼續營業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　　停業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"　稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
-    ]
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
         u"營業費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
         u"其他收益及費損淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
@@ -100,28 +33,28 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
     TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
 
 
+    @classmethod
+    def __init_table_metadata(cls):
+        with g_lock:
+            if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+                conf_filename = CMN.DEF.DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME
+                if not CMN.FUNC.check_config_file_exist(conf_filename):
+                    raise CMN.EXCEPTION.WebScrapyNotFoundException("The %s file does NOT exist" % conf_filename)
+                table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
+                cls.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
+                cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
+                cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
+                cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
+                cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
+                cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　　繼續營業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
+                cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
+                cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　　停業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
+                cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
+
+
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyIncomeStatement, self).__init__(__file__, **kwargs)
-# Initialize the table meta-data
-        if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-            with g_lock:
-                if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-                    self.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in self.TABLE_FIELD_TITLE_LIST if title not in self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
-                    self.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(self.TABLE_FIELD_INTEREST_TITLE_LIST)}
-                    self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
-                    self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_INTEREST_TITLE_LIST)
-                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
-                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
-                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
-
-
-    def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
-        assert finance_time_start.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input start time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_start.get_time_unit_type())
-        assert finance_time_end.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input end time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_end.get_time_unit_type())
-        finance_quarter_start = CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(finance_time_start)
-        finance_quarter_end = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(finance_time_end)
-        return (finance_quarter_start, finance_quarter_end)
 
 
     def assemble_web_url(self, timeslice, company_code_number):
@@ -137,10 +70,26 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
         return url
 
 
+    def _parse_web_statement_field_data(self, web_data):
+        if len(web_data) == 0:
+            return None
+        data_list = []
+# Filter the data which is NOT interested in
+        for tr in web_data[7:]:
+        #     print "%d: %s" % (index, tr.text)
+            td = tr.select('td')
+            # data_list.append(td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8))
+            data_list.append(td[0].text)
+        return data_list
+
+
     def _parse_web_data(self, web_data):
         if len(web_data) == 0:
             return None
         # import pdb; pdb.set_trace()
+        if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+# Initialize the table meta-data
+            self.__init_table_metadata()
         data_list = []
         table_field_list = [None] * self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN
         interest_index = 0
@@ -152,11 +101,11 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
             data_found = False
             data_can_ignore = False
             data_index = None
+            title = td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8)
             if interest_index < self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN:
                 try:
-                    title = td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8)
                     # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
-                    data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title)
+                    data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title) + interest_index
                     interest_index = cur_interest_index + 1
                     data_found = True
                 except ValueError:
@@ -164,7 +113,7 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
             if not data_found:
                 if not_interest_index < self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
                     try:
-                        cur_not_interest_index = (self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title)
+                        cur_not_interest_index = (self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title) + not_interest_index
                         not_interest_index = cur_not_interest_index + 1
                         data_can_ignore = True
                     except ValueError:
@@ -172,84 +121,39 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 # Check if the entry is NOT in the title list of interest
             if (not data_found) and (not data_can_ignore):
                 # import pdb; pdb.set_trace()
-                raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s] in company[%s] does NOT exist in the title list of interest" % (td[0].text, self.cur_company_code_number))
+                raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s] in company[%s] does NOT exist in the title list of interest" % (title, self.cur_company_code_number))
             if data_can_ignore:
                 continue
 # Parse the content of this entry, and the interested field into data structure
-            entry_list_len = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[td[0].text]
-            # entry_string = "%s" % str(td[0].text).strip(" ")
+            entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[title]
+            # print "data_index: %d, title: [%s]" % (data_index, title)
+            field_index_list = None
+            if isinstance(entry_list_entry, list):
+                field_index_list = entry_list_entry
+            else:
+                field_index_list = range(1, entry_list_entry + 1)
+            # if data_index == 39:
+            #     import pdb; pdb.set_trace()
             table_field_list[data_index] = []
-            for i in range(1, entry_list_len):
-                # entry_string += (",%s" % str(td[i].text).strip(" "))
-                table_field_list[data_index].append(str(td[i].text).strip(" "))
+            for field_index in field_index_list:
+                field_value = str(td[field_index].text).strip(" ").replace(",", "")
+                if field_value.find('.') == -1: # Integer
+                    table_field_list[data_index].append(int(field_value))
+                else: # Floating point
+                    table_field_list[data_index].append(float(field_value))
 # Transforms the table into the 1-Dimension list
         padding_entry = "0" 
         for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
             if table_field_list[index] is None:
 # Padding
-                entry_list_len = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
+                entry_list_len = entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
+                # print "data_index: %d, title: [%s]" % (data_index, title)
+                if isinstance(entry_list_entry, list):
+                    entry_list_len = len(entry_list_entry)
                 data_list.extend([padding_entry] * entry_list_len)
             else:
                 data_list.extend(table_field_list[index])
         return data_list
-# 銷貨收入 
-# 銷貨退回 
-# 銷貨折讓 
-# 銷貨收入淨額 
-# 投資收入 
-# 營建收入淨額 
-# 營建工程收入
-# 其他營業收入淨額 
-# 銷貨成本 
-# 營建成本 
-# 營建工程成本 
-# 營業收入合計 
-# 營業成本合計 
-# 營業毛利（毛損） 
-# 未實現銷貨（損）益
-# 已實現銷貨（損）益
-# 營業毛利（毛損）淨額 
-# 營業費用 
-# 推銷費用 
-# 管理費用 
-# 研究發展費用 
-# 營業費用合計 
-# 其他收益及費損淨額
-# 營業利益（損失） 
-# 營業外收入及支出 
-# 其他收入 
-# 其他利益及損失淨額 
-# 財務成本淨額 
-# 採用權益法認列之關聯企業及合資損益之份額淨額
-# 營業外收入及支出合計 
-# 稅前淨利（淨損） 
-# 所得稅費用（利益）合計 
-# 繼續營業單位本期淨利（淨損） 
-# 停業單位損益合計 
-# 本期淨利（淨損）
-# 確定福利計畫之再衡量數
-# 重估增值
-# 指定按公允價值衡量之金融負債信用風險變動影響數
-# 與待出售非流動資產直接相關之權益
-# 權益工具投資之利益(損失)
-# 採用權益法認列之關聯企業及合資之其他綜合損益之份額-不重分類至損益之項目
-# 不重分類至損益之其他項目
-# 與不重分類之項目相關之所得稅
-# 國外營運機構財務報表換算之兌換差額 
-# 備供出售金融資產未實現評價損益 
-# 現金流量避險中屬有效避險部分之避險工具利益(損失)
-# 採用權益法認列關聯企業及合資之其他綜合損益之份額-可能重分類至損益之項目
-# 與可能重分類之項目相關之所得稅 
-# 其他綜合損益（淨額） 
-# 母公司業主（淨利／損） 
-# 非控制權益（淨利／損） 
-# 母公司業主（綜合損益） 
-# 非控制權益（綜合損益） 
-# 繼續營業單位淨利（淨損）
-# 基本每股盈餘 
-# 繼續營業單位淨利（淨損）
-# 停業單位淨利（淨損） 
-# 稀釋每股盈餘
 
 
     def do_debug(self, silent_mode=False):
@@ -309,3 +213,72 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 # 基本每股盈餘 1.35  2.76  2.73  4.54  
 # 稀釋每股盈餘         
 # 稀釋每股盈餘 1.32  2.72  2.68  4.48
+
+########################################################################
+    # TABLE_FIELD_TITLE_LIST = [
+    #     u"　　銷貨收入".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　　銷貨退回".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　　銷貨折讓".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　銷貨收入淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　投資收入".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　　營建收入淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　營建工程收入".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　其他營業收入淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"營業收入合計".encode(CMN.DEF.URL_ENCODING_UTF8), #0
+    #     u"　銷貨成本".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　　營建成本".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　營建工程成本".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"營業成本合計".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"營業毛利（毛損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"未實現銷貨（損）益".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"已實現銷貨（損）益".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"營業毛利（毛損）淨額".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"營業費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　推銷費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　管理費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　研究發展費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　營業費用合計".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"其他收益及費損淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　其他收益及費損淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"營業利益（損失）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"營業外收入及支出".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　其他收入".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　其他利益及損失淨額".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　財務成本淨額".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　採用權益法認列之關聯企業及合資損益之份額淨額".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　營業外收入及支出合計".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"稅前淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"所得稅費用（利益）合計".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"繼續營業單位本期淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"停業單位損益".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　停業單位損益合計".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"本期淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"不重分類至損益之項目：".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　確定福利計畫之再衡量數".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　重估增值".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　指定按公允價值衡量之金融負債信用風險變動影響數".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　與待出售非流動資產直接相關之權益".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　權益工具投資之利益(損失)".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　採用權益法認列之關聯企業及合資之其他綜合損益之份額-不重分類至損益之項目".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　不重分類至損益之其他項目".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　與不重分類之項目相關之所得稅".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"後續可能重分類至損益之項目：".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　國外營運機構財務報表換算之兌換差額".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　備供出售金融資產未實現評價損益".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　現金流量避險中屬有效避險部分之避險工具利益(損失)".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　採用權益法認列關聯企業及合資之其他綜合損益之份額-可能重分類至損益之項目".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　與可能重分類之項目相關之所得稅".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　其他綜合損益（淨額）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"本期綜合損益總額".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　母公司業主（淨利／損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　非控制權益（淨利／損）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　母公司業主（綜合損益）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　非控制權益（綜合損益）".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　繼續營業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"　　繼續營業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　　停業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"　稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    # ]

@@ -198,6 +198,14 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         super(WebScrapyStockStatementBase, self).__init__(cur_file_path, **kwargs)
 
 
+    def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
+        assert finance_time_start.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input start time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_start.get_time_unit_type())
+        assert finance_time_end.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input end time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_end.get_time_unit_type())
+        finance_quarter_start = CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(finance_time_start)
+        finance_quarter_end = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(finance_time_end)
+        return (finance_quarter_start, finance_quarter_end)
+
+
     def _insert_not_exist_statement_element(self, dst_statement_field_list, src_statement_list):
         dst_index = 0
         src_index = 0

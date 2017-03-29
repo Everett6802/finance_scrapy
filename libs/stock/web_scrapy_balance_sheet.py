@@ -37,31 +37,25 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
     TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
 
 
+    @classmethod
+    def __init_table_metadata(cls):
+        with g_lock:
+            if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+                conf_filename = CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME
+                if not CMN.FUNC.check_config_file_exist(conf_filename):
+                    raise CMN.EXCEPTION.WebScrapyNotFoundException("The %s file does NOT exist" % conf_filename)
+                table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
+                cls.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
+                cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
+                cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
+                cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
+                cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
+                cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
+
+
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyBalanceSheet, self).__init__(__file__, **kwargs)
-# Initialize the table meta-data
-        if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-            with g_lock:
-                if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-                    conf_filename = CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME
-                    if not CMN.FUNC.check_config_file_exist(conf_filename):
-                        raise ValueError("The %s file does NOT exist" % conf_filename)
-                    table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
-                    self.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
-                    self.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(self.TABLE_FIELD_INTEREST_TITLE_LIST)}
-                    self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
-                    self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_INTEREST_TITLE_LIST)
-                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
-                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
-
-
-    def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
-        assert finance_time_start.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input start time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_start.get_time_unit_type())
-        assert finance_time_end.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input end time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_end.get_time_unit_type())
-        finance_quarter_start = CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(finance_time_start)
-        finance_quarter_end = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(finance_time_end)
-        return (finance_quarter_start, finance_quarter_end)
 
 
     def assemble_web_url(self, timeslice, company_code_number):
@@ -94,6 +88,9 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
         if len(web_data) == 0:
             return None
         # import pdb; pdb.set_trace()
+        if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+# Initialize the table meta-data
+            self.__init_table_metadata()
         data_list = []
         table_field_list = [None] * self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN
         interest_index = 0
@@ -125,27 +122,22 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
 # Check if the entry is NOT in the title list of interest
             if (not data_found) and (not data_can_ignore):
                 # import pdb; pdb.set_trace()
-                raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s] in company[%s] does NOT exist in the title list of interest" % (td[0].text, self.cur_company_code_number))
+                raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s] in company[%s] does NOT exist in the title list of interest" % (title, self.cur_company_code_number))
             if data_can_ignore:
                 continue
 # Parse the content of this entry, and the interested field into data structure
             entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[title]
+            # print "data_index: %d, title: [%s]" % (data_index, title)
             field_index_list = None
             if isinstance(entry_list_entry, list):
                 field_index_list = entry_list_entry
             else:
                 field_index_list = range(1, entry_list_entry + 1)
-            # entry_string = "%s" % str(td[0].text).strip(" ")
             table_field_list[data_index] = []
-            # field_index = self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_START_INDEX
             for field_index in field_index_list:
-                # field_index = self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_START_INDEX + i
-                # entry_string += (",%s" % str(td[i].text).strip(" "))
                 # import pdb; pdb.set_trace()
                 field_value = str(td[field_index].text).strip(" ").replace(",", "")
                 if field_value.find('.') == -1: # Integer
-                    # if int(field_value) == 24551000:
-                    #     import pdb; pdb.set_trace()
                     table_field_list[data_index].append(int(field_value))
                 else: # Floating point
                     table_field_list[data_index].append(float(field_value))
@@ -154,91 +146,15 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
         for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
             if table_field_list[index] is None:
 # Padding
-                entry_list_len = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
+                entry_list_len = entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
+                # print "data_index: %d, title: [%s]" % (data_index, title)
+                if isinstance(entry_list_entry, list):
+                    entry_list_len = len(entry_list_entry)
                 data_list.extend([padding_entry] * entry_list_len)
             else:
                 data_list.extend(table_field_list[index])
         return data_list
-# 現金及約當現金 
-# 透過損益按公允價值衡量之金融資產
-# 避險之衍生金融資產－流動 
-# 備供出售金融資產 
-# 無活絡市場之債務工具投資
-# 應收票據淨額 
-# 應收票據－關係人淨額
-# 應收帳款淨額 
-# 應收帳款－關係人淨額
-# 其他應收款淨額 
-# 其他應收款－關係人淨額
-# 其他應收款 
-# 本期所得稅資產
-# 存貨 
-# 預付款項 
-# 待出售非流動資產 
-# 其他流動資產 
-# 流動資產合計 
-# 備供出售金融資產－非流動淨額
-# 持有至到期日金融資產－非流動淨額
-# 以成本衡量之金融資產－非流動淨額
-# 無活絡市場之債務工具投資－非流動淨額
-# 採用權益法之投資淨額 
-# 不動產、廠房及設備
-# 投資性不動產淨額
-# 無形資產 
-# 遞延所得稅資產 
-# 其他非流動資產 
-# 非流動資產合計 
-# 資產總計 
-# 短期借款 
-# 應付短期票券
-# 透過損益按公允價值衡量之金融負債－流動 
-# 避險之衍生金融負債－流動
-# 應付票據 
-# 應付票據－關係人
-# 應付帳款 
-# 應付帳款－關係人 
-# 其他應付款 
-# 本期所得稅負債 
-# 與待出售非流動資產直接相關之負債 
-# 負債準備－流動
-# 其他流動負債 
-# 流動負債合計 
-# 應付公司債 
-# 長期借款 
-# 負債準備－非流動
-# 遞延所得稅負債 
-# 其他非流動負債 
-# 非流動負債合計 
-# 負債總計 
-# 普通股股本 
-# 預收股本
-# 待分配股票股利
-# 股本合計 
-# 資本公積－發行溢價
-# 資本公積－庫藏股票交易 
-# 資本公積－處分資產增益
-# 資本公積－實際取得或處分子公司股權價格與帳面價值差額 
-# 資本公積－採用權益法認列關聯企業及合資股權淨值之變動數 
-# 資本公積－合併溢額 
-# 資本公積－員工認股權 
-# 資本公積－認股權 
-# 資本公積－限制員工權利股票
-# 資本公積－其他 
-# 資本公積合計 
-# 法定盈餘公積 
-# 特別盈餘公積 
-# 未分配盈餘 
-# 保留盈餘合計 
-# 國外營運機構財務報表換算之兌換差額 
-# 備供出售金融資產未實現損益 
-# 其他權益 
-# 其他權益合計 
-# 庫藏股票 
-# 歸屬於母公司業主之權益合計 
-# 非控制權益 
-# 權益總計 
-# 負債及權益總計 
-# 母公司暨子公司所持有之母公司庫藏股股數 
+
 
     def do_debug(self, silent_mode=False):
         # import pdb; pdb.set_trace()
