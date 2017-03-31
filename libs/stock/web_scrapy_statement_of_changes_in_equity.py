@@ -2,14 +2,15 @@
 
 import re
 import requests
-import threading
+# import threading
+import collections
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
 import web_scrapy_stock_base as WebScrapyStockBase
 g_logger = CMN.WSL.get_web_scrapy_logger()
-g_lock =  threading.Lock()
+# g_lock =  threading.Lock()
 
 
 # 股東權益變動表
@@ -22,79 +23,37 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN = 2
     TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
+    TABLE_FIELD_START_INDEX = 5
+    TABLE_FIELD_END_INDEX = 13
+
+
+    @classmethod
+    def init_class_variables(cls):
+        if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+            cls._init_statement_field_class_variables(CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME)
+            # conf_filename = CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME
+            # if not CMN.FUNC.check_config_file_exist(conf_filename):
+            #     raise CMN.EXCEPTION.WebScrapyNotFoundException("The %s file does NOT exist" % conf_filename)
+            # table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
+            # cls.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
+            # cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
+            # cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
+            # cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
+            # cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
+            cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
 
 
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyStatementOfChangesInEquity, self).__init__(__file__, **kwargs)
-# Initialize the table meta-data
-        if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-            with g_lock:
-                if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-                    conf_filename = CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME
-                    if not CMN.FUNC.check_config_file_exist(conf_filename):
-                        raise ValueError("The %s file does NOT exist" % conf_filename)
-                    table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
-                    self.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
-                    self.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(self.TABLE_FIELD_INTEREST_TITLE_LIST)}
-                    self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
-                    self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(self.TABLE_FIELD_INTEREST_TITLE_LIST)
-                    self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: self.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
-
-
-    def assemble_web_url(self, timeslice, company_code_number):
-        # import pdb; pdb.set_trace()
-        super(WebScrapyStatementOfChangesInEquity, self).assemble_web_url(timeslice, company_code_number)
-        url = self.url_format.format(
-            *(
-                company_code_number,
-                timeslice.year - 1911, 
-                "%02d" % timeslice.quarter,
-            )
-        )
-        return url
 
 
     def _parse_web_statement_field_data(self, web_data):
-        if len(web_data) == 0:
-            return None
-        data_list = []
-# Filter the data which is NOT interested in
-        for tr in web_data[7:]:
-        #     print "%d: %s" % (index, tr.text)
-            td = tr.select('td')
-            # data_list.append(td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8))
-            data_list.append(td[0].text)
-        return data_list
+        return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_statement_field_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
     def _parse_web_data(self, web_data):
-        if len(web_data) == 0:
-            return None
-        # import pdb; pdb.set_trace()
-        data_list = []
-        data_list.append(self.date_cur_string)
-# Scrape the data of each stock interval
-        for tr in web_data[9:24]:
-            td = tr.select('td')
-            data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
-            data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
-            data_list.append(td[4].text)
-# Ignore the data which is NOT interesting... Scrape the data of sum
-        sum_found = False
-        # import pdb; pdb.set_trace()
-        for tr in web_data[24:]:
-            td = tr.select('td')
-            if not re.match(self.TABLE_SUM_FLAG, td[1].text, re.U):
-                continue
-            data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
-            data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
-            data_list.append(td[4].text)
-            sum_found = True
-            break
-        if not sum_found:
-            raise ValueError("Fail to find the sum flag in the table");
-        return data_list
+        return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
     def do_debug(self, silent_mode=False):

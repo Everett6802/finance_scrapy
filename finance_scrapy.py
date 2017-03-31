@@ -554,6 +554,42 @@ def insert_not_exist_element(dst_list, src_list):
         print "FUNC: %s" % dst_list
 
 
+class TestBase(object):
+    # TEST_VALUE = None
+    def __init__(self):
+        pass
+
+    @classmethod
+    def show(cls):
+        print cls.TEST_VALUE
+
+
+class TestDerived1(TestBase):
+    TEST_VALUE = 1
+    def __init__(self):
+        super(TestDerived1, self).__init__()
+        if self.TEST_VALUE is None:
+            print "TEST_VALUE init"
+            self.TEST_VALUE = 1
+
+    @property
+    def value(self):
+        return self.TEST_VALUE
+    @value.setter
+    def value(self, val):
+        self.TEST_VALUE = val
+
+
+class TestDerived2(TestBase):
+    TEST_VALUE = 2
+    def __init__(self):
+        super(TestDerived2, self).__init__()
+        if self.TEST_VALUE is None:
+            print "TEST_VALUE init"
+            self.TEST_VALUE = 2
+
+
+
 if __name__ == "__main__":
     # TestClass1.get_instance()
     # import pdb; pdb.set_trace()
@@ -617,6 +653,24 @@ if __name__ == "__main__":
     # print dst_list
     # dst_list.append(-2)
     # print dst_list
+    # test_derived1 = TestDerived1()
+    # test_derived1.show()
+    # test_derived2 = TestDerived2()
+    # test_derived2.show()
+    # test_derived1 = TestDerived1()
+    # test_derived1.show()
+    # test_derived2 = TestDerived2()
+    # test_derived2.show()
+
+    # import pdb; pdb.set_trace()    
+    # print TestDerived1.TEST_VALUE
+    # test_derived1 = TestDerived1()
+    # test_derived11 = TestDerived1()
+    # print test_derived1.TEST_VALUE
+    # print test_derived11.TEST_VALUE
+    # test_derived1.value = 2
+    # print test_derived1.value
+    # print test_derived11.value
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()

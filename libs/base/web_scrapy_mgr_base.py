@@ -76,6 +76,7 @@ class WebSracpyMgrBase(object):
         g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
 # Find the module
         web_scrapy_class_type = cls.__get_class_for_name(module_folder, module_name, class_name)
+        web_scrapy_class_type.init_class_variables()
 # Instantiate the class 
         web_scrapy_obj = web_scrapy_class_type(**kwargs)
         return web_scrapy_obj

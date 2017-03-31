@@ -113,7 +113,7 @@ class WebScrapyBase(object):
     # PARSE_URL_DATA_FUNC_PTR = None
     # GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
     @classmethod
-    def _init_table_meta_data(cls):
+    def init_class_variables(cls):
         pass
 
 

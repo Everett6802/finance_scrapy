@@ -4,6 +4,7 @@ import os
 import re
 import json
 import requests
+import collections
 import csv
 import time
 from abc import ABCMeta, abstractmethod
@@ -196,6 +197,20 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
     __metaclass__ = ABCMeta
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyStockStatementBase, self).__init__(cur_file_path, **kwargs)
+        if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+            raise ValueError("TABLE_FIELD_INTEREST_TITLE_LIST is None")
+
+
+    @classmethod
+    def _init_statement_field_class_variables(cls, conf_filename):
+        if not CMN.FUNC.check_config_file_exist(conf_filename):
+            raise CMN.EXCEPTION.WebScrapyNotFoundException("The %s file does NOT exist" % conf_filename)
+        table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
+        cls.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
+        cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
+        cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
+        cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
+        cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
 
 
     def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
@@ -253,6 +268,115 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                     self._insert_not_exist_statement_element(dst_statement_field_list, company_statement_field_list)
 
 
+    def assemble_web_url(self, timeslice, company_code_number):
+        # import pdb; pdb.set_trace()
+        super(WebScrapyStockStatementBase, self).assemble_web_url(timeslice, company_code_number)
+        url = self.url_format.format(
+            *(
+                company_code_number,
+                timeslice.year - 1911, 
+                "%02d" % timeslice.quarter,
+            )
+        )
+        return url
+
+
+    def _parse_web_statement_field_data_internal(self, web_data, web_data_start_index, web_data_end_index=None):
+        web_data_len = len(web_data)
+        if web_data_len == 0:
+            return None
+        if web_data_end_index is None:
+            web_data_end_index = web_data_len
+        data_list = []
+# Filter the data which is NOT interested in
+        for tr in web_data[web_data_start_index:web_data_end_index]:
+        #     print "%d: %s" % (index, tr.text)
+            td = tr.select('td')
+            # data_list.append(td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8))
+            data_list.append(td[0].text)
+        return data_list
+
+
+    def _parse_web_data_internal(self, web_data, web_data_start_index, web_data_end_index=None):
+        web_data_len = len(web_data)
+        if web_data_len == 0:
+            return None
+        if web_data_end_index is None:
+            web_data_end_index = web_data_len
+        # import pdb; pdb.set_trace()
+#         if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+# # Initialize the table meta-data
+#             self.__init_table_metadata()
+        data_list = []
+        table_field_list = [None] * self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN
+        interest_index = 0
+        not_interest_index = 0
+# Filter the data which is NOT interested in
+        for index, tr in enumerate(web_data[web_data_start_index:web_data_end_index]):
+        #     print "%d: %s" % (index, tr.text)
+            td = tr.select('td')
+            data_found = False
+            data_can_ignore = False
+            data_index = None
+            title = td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8)
+            if interest_index < self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN:
+                try:
+                    # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
+                    data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title) + interest_index
+                    interest_index = cur_interest_index + 1
+                    data_found = True
+                except ValueError:
+                    pass
+            if not data_found:
+                if not_interest_index < self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
+                    try:
+                        cur_not_interest_index = (self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title) + not_interest_index
+                        not_interest_index = cur_not_interest_index + 1
+                        data_can_ignore = True
+                    except ValueError:
+                        pass                
+# Check if the entry is NOT in the title list of interest
+            if (not data_found) and (not data_can_ignore):
+                # import pdb; pdb.set_trace()
+                raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s] in company[%s] does NOT exist in the title list of interest" % (title, self.cur_company_code_number))
+            if data_can_ignore:
+                continue
+# Parse the content of this entry, and the interested field into data structure
+            entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[title]
+            # print "data_index: %d, title: [%s]" % (data_index, title)
+            field_index_list = None
+            if isinstance(entry_list_entry, list):
+                field_index_list = entry_list_entry
+            else:
+                field_index_list = range(1, entry_list_entry + 1)
+            table_field_list[data_index] = []
+            for field_index in field_index_list:
+                # import pdb; pdb.set_trace()
+                field_value = str(td[field_index].text).strip(" ").replace(",", "")
+                if field_value.find('.') == -1: # Integer
+                    table_field_list[data_index].append(int(field_value))
+                else: # Floating point
+                    table_field_list[data_index].append(float(field_value))
+# Transforms the table into the 1-Dimension list
+        padding_entry = "0" 
+        for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
+            if table_field_list[index] is None:
+# Padding
+                entry_list_len = entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
+                # print "data_index: %d, title: [%s]" % (data_index, title)
+                if isinstance(entry_list_entry, list):
+                    entry_list_len = len(entry_list_entry)
+                data_list.extend([padding_entry] * entry_list_len)
+            else:
+                data_list.extend(table_field_list[index])
+        return data_list
+
+
     @abstractmethod
     def _parse_web_statement_field_data(self, web_data):
-        raise NotImplementedError
+        pass
+
+
+    @abstractmethod
+    def _parse_web_data(self, web_data):
+        pass
