@@ -68,17 +68,31 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def _instantiate_web_scrapy_object(cls, source_type_index, **kwargs):
+    def _get_web_scrapy_class(cls, source_type_index):
         # import pdb; pdb.set_trace()
         module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
         module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
         class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
         g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
 # Find the module
-        web_scrapy_class_type = cls.__get_class_for_name(module_folder, module_name, class_name)
-        web_scrapy_class_type.init_class_variables()
+        web_scrapy_class = cls.__get_class_for_name(module_folder, module_name, class_name)
+        return web_scrapy_class
+
+
+    @classmethod
+    def _get_web_scrapy_object(cls, web_scrapy_class, **kwargs):
 # Instantiate the class 
-        web_scrapy_obj = web_scrapy_class_type(**kwargs)
+        web_scrapy_obj = web_scrapy_class(**kwargs)
+        return web_scrapy_obj
+
+
+    @classmethod
+    def _instantiate_web_scrapy_object(cls, source_type_index, **kwargs):
+# Get the class
+        web_scrapy_class = cls._get_web_scrapy_class(source_type_index)
+        web_scrapy_class.init_class_variables()
+# Instantiate the class 
+        web_scrapy_obj = cls._get_web_scrapy_object(web_scrapy_class, **kwargs)
         return web_scrapy_obj
 
 
@@ -240,7 +254,8 @@ class WebSracpyMgrBase(object):
 
 
     def enable_dry_run(self, enable):
-        g_logger.debug("Enable Dry-Run ......")
+        if enable:
+            g_logger.debug("Enable Dry-Run ......")
         self.xcfg["dry_run_only"] = enable
 
 

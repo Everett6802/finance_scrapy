@@ -21,26 +21,17 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
     TABLE_FIELD_INTEREST_TITLE_LIST = None
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
-    TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN = 2
+    TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN = 15
     TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
     TABLE_FIELD_START_INDEX = 5
-    TABLE_FIELD_END_INDEX = 13
+    TABLE_FIELD_END_INDEX = None # 13
 
 
     @classmethod
     def init_class_variables(cls):
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-            cls._init_statement_field_class_variables(CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME)
-            # conf_filename = CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME
-            # if not CMN.FUNC.check_config_file_exist(conf_filename):
-            #     raise CMN.EXCEPTION.WebScrapyNotFoundException("The %s file does NOT exist" % conf_filename)
-            # table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
-            # cls.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
-            # cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
-            # cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
-            # cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
-            # cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
-            cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
+            cls._init_statement_field_class_variables(CMN.DEF.DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME)
+            # cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
 
 
     def __init__(self, **kwargs):
@@ -64,7 +55,7 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
         soup = BeautifulSoup(res.text)
         g_data = soup.select('table tr')
         # print g_data
-        # Title
+# Title
         title_td = g_data[4].select('td')
         title_td_len = len(title_td)
         title_line = ""

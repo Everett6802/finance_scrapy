@@ -258,7 +258,10 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         # scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
         scrapy_obj_cfg["company_group_set"] = self.company_group_set
 # Create the scrapy object
-        web_scrapy_obj = self._instantiate_web_scrapy_object(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
+        # import pdb; pdb.set_trace()
+        web_scrapy_class = self._get_web_scrapy_class(source_type_time_duration.source_type_index)
+        scrapy_obj_cfg["renew_statement_field"] = True
+        web_scrapy_obj = self._get_web_scrapy_object(web_scrapy_class, **scrapy_obj_cfg)
         if web_scrapy_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyStockBase derived class")
         g_logger.debug("Start to renew %s statement field......", web_scrapy_obj.get_description())

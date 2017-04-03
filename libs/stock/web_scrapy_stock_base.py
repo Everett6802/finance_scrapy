@@ -197,8 +197,9 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
     __metaclass__ = ABCMeta
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyStockStatementBase, self).__init__(cur_file_path, **kwargs)
-        if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-            raise ValueError("TABLE_FIELD_INTEREST_TITLE_LIST is None")
+        if not kwargs.get("renew_statement_field", False):
+            if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+                raise ValueError("TABLE_FIELD_INTEREST_TITLE_LIST is None")
 
 
     @classmethod
@@ -304,9 +305,6 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         if web_data_end_index is None:
             web_data_end_index = web_data_len
         # import pdb; pdb.set_trace()
-#         if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-# # Initialize the table meta-data
-#             self.__init_table_metadata()
         data_list = []
         table_field_list = [None] * self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN
         interest_index = 0
@@ -319,6 +317,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             data_can_ignore = False
             data_index = None
             title = td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8)
+            # import pdb; pdb.set_trace()
             if interest_index < self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN:
                 try:
                     # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
@@ -344,6 +343,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 # Parse the content of this entry, and the interested field into data structure
             entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[title]
             # print "data_index: %d, title: [%s]" % (data_index, title)
+            # import pdb;pdb.set_trace()
             field_index_list = None
             if isinstance(entry_list_entry, list):
                 field_index_list = entry_list_entry
@@ -352,6 +352,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             table_field_list[data_index] = []
             for field_index in field_index_list:
                 # import pdb; pdb.set_trace()
+                # print "data_index: %d, field_index: %d, data: [%s]" % (data_index, field_index, td[field_index].text)
                 field_value = str(td[field_index].text).strip(" ").replace(",", "")
                 if field_value.find('.') == -1: # Integer
                     table_field_list[data_index].append(int(field_value))

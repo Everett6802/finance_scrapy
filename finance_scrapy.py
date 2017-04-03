@@ -418,6 +418,7 @@ def setup_param():
         if param_cfg["source"] is not None:
             source_type_index_str_list = param_cfg["source"].split(",")
             source_type_index_list = []
+            # import pdb; pdb.set_trace()
             for source_type_index_str in source_type_index_str_list:
                 mobj = re.match("([\d]+)-([\d]+)", source_type_index_str)
                 if mobj is not None:
