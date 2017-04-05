@@ -34,7 +34,11 @@ class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase)
     def init_class_variables(cls):
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
             cls._init_statement_field_class_variables(CMN.DEF.DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME)
-            # cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"營業活動之現金流量－間接法".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
+
+
+    # @classmethod
+    # def show_statement_field_dimension(cls):
+    #     cls._show_statement_field_dimension(CMN.DEF.DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME)
 
 
     def __init__(self, **kwargs):

@@ -34,6 +34,11 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
             # cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
 
 
+    # @classmethod
+    # def show_statement_field_dimension(cls):
+    #     cls._show_statement_field_dimension(CMN.DEF.DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME)
+
+
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyStatementOfChangesInEquity, self).__init__(__file__, **kwargs)

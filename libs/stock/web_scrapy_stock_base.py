@@ -159,7 +159,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                             g_logger.error(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
                         raise e
                     except Exception as e:
-                        import pdb;pdb.set_trace()
+                        # import pdb;pdb.set_trace()
                         if isinstance(e.message, str):
                             g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, e.message))
                         else:
@@ -197,6 +197,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
     __metaclass__ = ABCMeta
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyStockStatementBase, self).__init__(cur_file_path, **kwargs)
+        # import pdb;pdb.set_trace()
         if not kwargs.get("renew_statement_field", False):
             if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
                 raise ValueError("TABLE_FIELD_INTEREST_TITLE_LIST is None")
@@ -212,6 +213,23 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
         cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
         cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
+
+
+    @classmethod
+    def show_statement_field_dimension(cls):
+        cls.init_class_variables()
+        field_count = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
+        field_element_count = 0
+        for title in cls.TABLE_FIELD_INTEREST_TITLE_LIST:
+            entry_list_entry = cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[title]
+            if isinstance(entry_list_entry, list):
+                # import pdb; pdb.set_trace()
+                # print u"title: %s, entry_list_entry: %s" % (title, entry_list_entry)
+                field_element_count += len(entry_list_entry)
+            else:
+                # print "title: %s, entry_list_entry: %d" % (title, entry_list_entry)
+                field_element_count += entry_list_entry
+        CMN.FUNC.try_print("Field Count: %d, Field Element Count: %d" % (field_count, field_element_count))
 
 
     def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):

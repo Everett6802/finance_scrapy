@@ -15,6 +15,8 @@ import web_scrapy_company_group_set as CompanyGroupSet
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
+SHOW_STATMENT_FIELD_DIMENSION = True
+
 class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     company_profile = None
@@ -266,6 +268,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             raise RuntimeError("Fail to allocate WebScrapyStockBase derived class")
         g_logger.debug("Start to renew %s statement field......", web_scrapy_obj.get_description())
         web_scrapy_obj.update_statement_field_to_file(dst_statement_field_list)
+        if SHOW_STATMENT_FIELD_DIMENSION:
+            web_scrapy_class.show_statement_field_dimension()
 
 
     def show_company_list_in_finance_folder(self, finance_root_folderpath=None):
