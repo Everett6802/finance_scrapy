@@ -24,7 +24,8 @@ class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase)
     TABLE_FIELD_INTEREST_TITLE_LIST = None
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
-    TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN = 1
+    TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
+    TABLE_FIELD_INTEREST_ENTRY_LEN = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
     TABLE_FIELD_START_INDEX = 6
     TABLE_FIELD_END_INDEX = None
@@ -36,9 +37,10 @@ class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase)
             cls._init_statement_field_class_variables(CMN.DEF.DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME)
 
 
-    # @classmethod
-    # def show_statement_field_dimension(cls):
-    #     cls._show_statement_field_dimension(CMN.DEF.DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME)
+    @classmethod
+    def show_statement_field_dimension(cls):
+        cls.init_class_variables()
+        cls._show_statement_field_dimension_internal(CMN.DEF.DEF_CASH_FLOW_STATEMENT_INTEREST_FIELD_METADATA_FILENAME)
 
 
     def __init__(self, **kwargs):

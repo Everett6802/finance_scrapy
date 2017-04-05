@@ -32,8 +32,8 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
     TABLE_FIELD_INTEREST_TITLE_LIST = None
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
-    TABLE_FIELD_INTEREST_DEFAULT_ENTRY_START_INDEX = 1
-    TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN = 1 #2
+    TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
+    TABLE_FIELD_INTEREST_ENTRY_LEN = 1 #2
     TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
     TABLE_FIELD_START_INDEX = 7
     TABLE_FIELD_END_INDEX = None
@@ -46,9 +46,10 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
             cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
 
 
-    # @classmethod
-    # def show_statement_field_dimension(cls):
-    #     cls._show_statement_field_dimension(CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME)
+    @classmethod
+    def show_statement_field_dimension(cls):
+        cls.init_class_variables()
+        cls._show_statement_field_dimension_internal(CMN.DEF.DEF_BALANCE_SHEET_INTEREST_FIELD_METADATA_FILENAME)
 
 
     def __init__(self, **kwargs):

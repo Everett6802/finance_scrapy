@@ -10,4 +10,7 @@ conf/.balance_sheet_field_name.conf
 conf/.income_statement_field_name.conf
 conf/.cash_flow_statement_field_name.conf
 conf/.statement_of_changes_in_equity_field_name.conf
-
+conf/balance_sheet_interest_field_metadata
+conf/income_statement_interest_field_metadata
+conf/cash_flow_statement_interest_field_metadata
+conf/statement_of_changes_in_equity_interest_field_metadata

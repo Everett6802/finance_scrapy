@@ -7,6 +7,7 @@ import requests
 import collections
 import csv
 import time
+import copy
 from abc import ABCMeta, abstractmethod
 from random import randint
 from bs4 import BeautifulSoup
@@ -201,6 +202,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         if not kwargs.get("renew_statement_field", False):
             if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
                 raise ValueError("TABLE_FIELD_INTEREST_TITLE_LIST is None")
+        self.cur_quarter_str = None
 
 
     @classmethod
@@ -212,24 +214,34 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
         cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
         cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
-        cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_DEFAULT_ENTRY_LEN)
+        cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_ENTRY_LEN)
 
 
     @classmethod
-    def show_statement_field_dimension(cls):
-        cls.init_class_variables()
+    def _show_statement_field_dimension_internal(cls, interest_conf_filename):
         field_count = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
         field_element_count = 0
-        for title in cls.TABLE_FIELD_INTEREST_TITLE_LIST:
+        table_field_interest_description_list = []
+        for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
             entry_list_entry = cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[title]
+            field_entry_index_list = None
             if isinstance(entry_list_entry, list):
-                # import pdb; pdb.set_trace()
                 # print u"title: %s, entry_list_entry: %s" % (title, entry_list_entry)
+                field_entry_index_list = entry_list_entry
                 field_element_count += len(entry_list_entry)
             else:
                 # print "title: %s, entry_list_entry: %d" % (title, entry_list_entry)
+                table_field_interest_entry_end_index = cls.TABLE_FIELD_INTEREST_ENTRY_START_INDEX + cls.TABLE_FIELD_INTEREST_ENTRY_LEN
+                field_entry_index_list = range(cls.TABLE_FIELD_INTEREST_ENTRY_START_INDEX, table_field_interest_entry_end_index)
                 field_element_count += entry_list_entry
-        CMN.FUNC.try_print("Field Count: %d, Field Element Count: %d" % (field_count, field_element_count))
+# Remove the whitespace and Add the field index list
+            field_string_entry_index_list = [str(field_entry_index) for field_entry_index in field_entry_index_list]
+            title_without_whitesapce = re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE) + u"[%d]: %s" % (title_index, ",".join(field_string_entry_index_list))
+            table_field_interest_description_list.append(title_without_whitesapce.encode(CMN.DEF.URL_ENCODING_UTF8))
+        field_count_msg = "Field Count: %d, Field Element Count: %d" % (field_count, field_element_count)
+        CMN.FUNC.try_print(field_count_msg)
+        table_field_interest_description_list.insert(0, field_count_msg)
+        CMN.FUNC.write_config_file_lines_ex(table_field_interest_description_list, interest_conf_filename, "wb")
 
 
     def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
@@ -297,6 +309,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 "%02d" % timeslice.quarter,
             )
         )
+        self.cur_quarter_str = CMN.FUNC.transform_quarter_str(timeslice.year, timeslice.quarter)
         return url
 
 
@@ -323,7 +336,8 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         if web_data_end_index is None:
             web_data_end_index = web_data_len
         # import pdb; pdb.set_trace()
-        data_list = []
+        # data_list = []
+        data_list = [self.cur_quarter_str,]
         table_field_list = [None] * self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN
         interest_index = 0
         not_interest_index = 0
@@ -366,12 +380,13 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             if isinstance(entry_list_entry, list):
                 field_index_list = entry_list_entry
             else:
-                field_index_list = range(1, entry_list_entry + 1)
+                field_index_list = range(self.TABLE_FIELD_INTEREST_ENTRY_START_INDEX, self.TABLE_FIELD_INTEREST_ENTRY_START_INDEX + entry_list_entry)
             table_field_list[data_index] = []
             for field_index in field_index_list:
                 # import pdb; pdb.set_trace()
                 # print "data_index: %d, field_index: %d, data: [%s]" % (data_index, field_index, td[field_index].text)
-                field_value = str(td[field_index].text).strip(" ").replace(",", "")
+                # field_value = str(td[field_index].text).strip(" ").replace(",", "")
+                field_value = CMN.FUNC.remove_comma_in_string(str(td[field_index].text).strip(" "))
                 if field_value.find('.') == -1: # Integer
                     table_field_list[data_index].append(int(field_value))
                 else: # Floating point
