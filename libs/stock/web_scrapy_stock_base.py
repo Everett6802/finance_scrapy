@@ -218,7 +218,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 
 
     @classmethod
-    def _show_statement_field_dimension_internal(cls, interest_conf_filename):
+    def _show_statement_field_dimension_internal(cls, interest_conf_filename, auto_gen_sql_element):
         field_count = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
         field_element_count = 0
         table_field_interest_description_list = []
@@ -241,6 +241,44 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         field_count_msg = "Field Count: %d, Field Element Count: %d" % (field_count, field_element_count)
         CMN.FUNC.try_print(field_count_msg)
         table_field_interest_description_list.insert(0, field_count_msg)
+
+##############################################################################
+# Generate the Table Field Definition/Table Field Type Definition list element
+# for the finance_recorder_java project
+##############################################################################
+        if auto_gen_sql_element:
+            table_field_interest_description_list.append(u"\n\n".encode(CMN.DEF.URL_ENCODING_UTF8))
+# Table Field Definition
+            table_field_interest_description_list.append(u"##### TABLE_FIELD_DEFINITION #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+            table_field_interest_description_list.append(u"\"date\", // 日期".encode(CMN.DEF.URL_ENCODING_UTF8))
+            for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+                table_field_element_definition = u"\"value%d\", // %s" % (title_index + 1, re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE))
+                table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
+# Table Field Type Definition
+            table_field_interest_description_list.append(u"##### TABLE_FIELD_TYPE_DEFINITION #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+            table_field_interest_description_list.append(u"\"DATE NOT NULL PRIMARY KEY\", // 日期".encode(CMN.DEF.URL_ENCODING_UTF8))
+            for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+                table_field_element_definition = u"\"BIGINT\", // %s" % re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE)
+                table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
+##############################################################################
+# Generate the Field Type Definition/Field Description list element
+# for the finance_analyzer project
+##############################################################################
+        if auto_gen_sql_element:
+            table_field_interest_description_list.append(u"\n\n".encode(CMN.DEF.URL_ENCODING_UTF8))
+# Field Type Definition
+            table_field_interest_description_list.append(u"##### FIELD_TYPE_DEFINITION #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+            table_field_interest_description_list.append(u"FinanceField_DATE, // 日期".encode(CMN.DEF.URL_ENCODING_UTF8))
+            for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+                table_field_element_definition = u"FinanceField_LONG, // %s" % re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE)
+                table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
+# Field Description
+            table_field_interest_description_list.append(u"##### FIELD_DESCRIPTION #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+            table_field_interest_description_list.append(u"\"日期\", // FinanceField_DATE".encode(CMN.DEF.URL_ENCODING_UTF8))
+            for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+                table_field_element_definition = u"\"%s\", // FinanceField_LONG" % re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE)
+                table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
+
         CMN.FUNC.write_config_file_lines_ex(table_field_interest_description_list, interest_conf_filename, "wb")
 
 

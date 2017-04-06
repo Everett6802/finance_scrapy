@@ -47,9 +47,9 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 
 
     @classmethod
-    def show_statement_field_dimension(cls):
+    def show_statement_field_dimension(cls, auto_gen_sql_element=True):
         cls.init_class_variables()
-        cls._show_statement_field_dimension_internal(CMN.DEF.DEF_INCOME_STATEMENT_INTEREST_FIELD_METADATA_FILENAME)
+        cls._show_statement_field_dimension_internal(CMN.DEF.DEF_INCOME_STATEMENT_INTEREST_FIELD_METADATA_FILENAME, auto_gen_sql_element)
 
 
     def __init__(self, **kwargs):
