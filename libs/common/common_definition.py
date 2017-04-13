@@ -49,6 +49,7 @@ WRITE2CSV_ONE_DAY_PER_FILE = 1
 
 PARSE_URL_DATA_BY_BS4 = 0
 PARSE_URL_DATA_BY_JSON = 1
+PARSE_URL_DATA_BY_CUSTOMIZATION = 2
 
 URL_ENCODING_BIG5 = 'big5'
 URL_ENCODING_UTF8 = 'utf-8'
@@ -80,6 +81,183 @@ TIMESLICE_TO_TIME_UNIT_MAPPING = {
     TIMESLICE_GENERATE_BY_REVENUE: DATA_TIME_UNIT_MONTH,
     TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON: DATA_TIME_UNIT_QUARTER,
 }
+
+DEF_REPUBLIC_ERA_YEAR_OFFSET = 1911
+DEF_START_YEAR = 2000
+DEF_END_YEAR = 2100
+DEF_START_DATE_STR = "%d-01-01" % DEF_START_YEAR
+DEF_END_DATE_STR = "%d-01-01" % DEF_END_YEAR
+DEF_REPUBLIC_ERA_START_YEAR = DEF_START_YEAR - DEF_REPUBLIC_ERA_YEAR_OFFSET
+DEF_REPUBLIC_ERA_END_YEAR = DEF_END_YEAR - DEF_REPUBLIC_ERA_YEAR_OFFSET
+DEF_START_QUARTER = 1
+DEF_END_QUARTER = 4
+DEF_START_MONTH = 1
+DEF_END_MONTH = 12
+DEF_START_DAY = 1
+# Config filename
+# DEF_WEB_SCRAPY_BEGIN_DATE_STR = DEF_START_DATE_STR
+# DEF_MARKET_LAST_CONFIG_FILENAME = "def_market_last.conf"
+DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME = "def_market_all_time_range.conf"
+# DEF_STOCK_LAST_CONFIG_FILENAME = "def_stock_last.conf"
+DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME = "def_stock_all_time_range.conf"
+DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
+DEF_COMPANY_PROFILE_CONF_FILENAME = ".company_profile.conf"
+DEF_COMPANY_GROUP_CONF_FILENAME = ".company_group.conf"
+DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME = ".balance_sheet_field_name.conf"
+DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME = ".income_statement_field_name.conf"
+DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME = ".cash_flow_statement_field_name.conf"
+DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME = ".statement_of_changes_in_equity_field_name.conf"
+DEF_STATEMENT_FIELD_NAME_CONF_FILENAME = [
+    DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME,
+    DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME,
+    DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME,
+    DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME,
+]
+DEF_BALANCE_SHEET_INTEREST_FIELD_METADATA_FILENAME = "balance_sheet_interest_field_metadata"
+DEF_INCOME_STATEMENT_INTEREST_FIELD_METADATA_FILENAME = "income_statement_interest_field_metadata"
+DEF_CASH_FLOW_STATEMENT_INTEREST_FIELD_METADATA_FILENAME = "cash_flow_statement_interest_field_metadata"
+DEF_STATEMENT_OF_CHANGES_IN_EQUITY_INTEREST_FIELD_METADATA_FILENAME = "statement_of_changes_in_equity_interest_field_metadata"
+DEF_FINANCE_ANALYSIS_CONF_FILENAME = ".finance_analysis.conf"
+DEF_MARKET_STOCK_SWITCH_CONF_FILENAME = "market_stock_switch.conf"
+DEF_CSV_DATA_TIME_DURATION_FILENAME = ".csv_time_range.conf"
+DEF_COMMAND_EXAMPLE_FILENAME = "command_example"
+# Constants
+DEF_COPY_CONF_FILE_DST_PROJECT_NAME1 = "finance_recorder_java"
+DEF_COPY_CONF_FILE_DST_PROJECT_NAME2 = "finance_analyzer"
+DEF_TODAY_MARKET_DATA_EXIST_HOUR = 20
+DEF_TODAY_MARKET_DATA_EXIST_MINUTE = 0
+DEF_TODAY_STOCK_DATA_EXIST_HOUR = 20
+DEF_TODAY_STOCK_DATA_EXIST_MINUTE = 0
+DEF_CONF_FOLDER = "conf"
+DEF_CSV_ROOT_FOLDERPATH = "/var/tmp/finance"
+DEF_CSV_DST_MERGE_ROOT_FOLDERPATH = "/var/tmp/finance_merge"
+DEF_CSV_MARKET_FOLDERNAME = "market"
+DEF_CSV_STOCK_FOLDERNAME = "stock"
+DEF_MISSING_CSV_MARKET_FILENAME = ".missing_csv_market"
+DEF_MISSING_CSV_STOCK_FILENAME = ".missing_csv_stock"
+DEF_SNAPSHOT_FOLDER = "snapshot"
+DEF_UNICODE_ENCODING_IN_FILE = "utf-8"
+DEF_SCRAPY_WAIT_TIMEOUT = 8
+DEF_SCRAPY_RETRY_TIMES = 3
+DEF_COMMA_DATA_SPLIT = ",";
+DEF_SPACE_DATA_SPLIT = " ";
+DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG = "##### Column Field Start #####"
+
+DEF_DATA_SOURCE_INDEX_MAPPING = [
+# Market Start
+    u'臺股指數及成交量',
+    u'三大法人現貨買賣超',
+    u'現貨融資融券餘額',
+    u'三大法人期貨和選擇權留倉淨額',
+    u'三大法人期貨或選擇權留倉淨額',
+    u'三大法人選擇權買賣權留倉淨額',
+    u'三大法人選擇權賣權買權比',
+    u'十大交易人及特定法人期貨資訊',
+# Market End
+###############################################################################
+# Stock Start
+    u'個股集保戶股權分散表',
+    u'資產負債表',
+    u'損益表',
+    u'現金流量表',
+    u'股東權益變動表',
+    # u'三大法人上市個股買賣超彙總',
+    # u'三大法人上櫃個股買賣超彙總',
+    # u'外資及陸資上市個股投資持股統計',
+    # u'外資及陸資買賣超彙總',
+    # u'投信買賣超彙總',
+    # u'自營商買賣超彙總',
+# Stock End
+]
+DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
+
+DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
+DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
+# Market Start
+    "stock_exchange_and_volume",
+    "stock_top3_legal_persons_net_buy_or_sell",
+    "stock_margin_trading_and_short_selling",
+    "future_and_option_top3_legal_persons_open_interest",
+    "future_or_option_top3_legal_persons_open_interest",
+    "option_top3_legal_persons_buy_and_sell_option_open_interest",
+    "option_put_call_ratio",
+    "future_top10_dealers_and_legal_persons",
+# Market End
+###############################################################################
+# Stock Start
+    "company_depository_shareholder_distribution_table",
+    "balance_sheet",
+    "income_statement",
+    "cash_flow_statement",
+    "statement_of_changes_in_equity",
+    # "company_stock_top3_legal_persons_net_buy_and_sell_summary",
+    # "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
+    # "company_foreign_investors_shareholder",
+    # "company_foreign_investors_net_buy_and_sell_summary",
+    # "company_investment_trust_net_buy_and_sell_summary",
+    # "company_dealers_net_buy_and_sell_summary",
+# Stock End
+]
+DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
+
+DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING = [
+    "market",
+    "market",
+    "market",
+    "market",
+    "market",
+    "market",
+    "market",
+    "market",
+    "stock",
+    "stock",
+    "stock",
+    "stock",
+    "stock",
+]
+# Semi-open interval
+DEF_DATA_SOURCE_MARKET_START = 0
+DEF_DATA_SOURCE_MARKET_END = DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING.index("stock")
+DEF_DATA_SOURCE_STOCK_START = DEF_DATA_SOURCE_MARKET_END
+DEF_DATA_SOURCE_STOCK_END = len(DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING)
+DEF_DATA_SOURCE_MARKET_SIZE = DEF_DATA_SOURCE_MARKET_END - DEF_DATA_SOURCE_MARKET_START
+DEF_DATA_SOURCE_STOCK_SIZE = DEF_DATA_SOURCE_STOCK_END - DEF_DATA_SOURCE_STOCK_START
+
+DEF_DATA_SOURCE_STOCK_STATMENT_START = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("balance_sheet")
+DEF_DATA_SOURCE_STOCK_STATMENT_END = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity") + 1
+
+# DEF_DATA_SOURCE_STATEMENT_OF_CHANGES_IN_EQUITY_INDEX = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity")
+
+DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
+# Market Start
+    "WebScrapyStockExchangeAndVolume",
+    "WebScrapyStockTop3LegalPersonsNetBuyOrSell",
+    "WebScrapyStockMarginTradingAndShortSelling",
+    "WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest",
+    "WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest",
+    "WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
+    "WebScrapyOptionPutCallRatio",
+    "WebScrapyFutureTop10DealersAndLegalPersons",
+# Market End
+###############################################################################
+# Stock Start
+    "WebScrapyDepositoryShareholderDistributionTable",
+    "WebScrapyBalanceSheet",
+    "WebScrapyIncomeStatement",
+    "WebScrapyCashFlowStatement",
+    "WebScrapyStatementOfChangesInEquity",
+    # "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+    # "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+    # "WebScrapyCompanyForeignInvestorsShareholder",
+    # "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
+    # "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
+    # "WebScrapyCompanyDealersNetBuyOrSellSummary",
+# Stock End
+]
+
+# DEF_WORKDAY_CANLENDAR_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
+DEF_WORKDAY_CANLENDAR_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyOptionPutCallRatio")
+DEF_DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyDepositoryShareholderDistributionTable")
 
 DEF_SOURCE_URL_PARSING = [
 # Market Start
@@ -199,8 +377,8 @@ DEF_SOURCE_URL_PARSING = [
         "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
         "url_timeslice": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
         "url_encoding": URL_ENCODING_UTF8,
-        "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
-        "url_css_selector": 'table tr',
+        "url_parsing_method": PARSE_URL_DATA_BY_CUSTOMIZATION, 
+        "url_css_selector": '', # Useless when url_parsing_method is PARSE_URL_DATA_BY_CUSTOMIZATION
         "url_multi_data_one_page": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
@@ -223,178 +401,6 @@ DEF_SOURCE_URL_PARSING = [
     # },
 # Stock End
 ]
-
-DEF_REPUBLIC_ERA_YEAR_OFFSET = 1911
-DEF_START_YEAR = 2000
-DEF_END_YEAR = 2100
-DEF_START_DATE_STR = "%d-01-01" % DEF_START_YEAR
-DEF_END_DATE_STR = "%d-01-01" % DEF_END_YEAR
-DEF_REPUBLIC_ERA_START_YEAR = DEF_START_YEAR - DEF_REPUBLIC_ERA_YEAR_OFFSET
-DEF_REPUBLIC_ERA_END_YEAR = DEF_END_YEAR - DEF_REPUBLIC_ERA_YEAR_OFFSET
-DEF_START_QUARTER = 1
-DEF_END_QUARTER = 4
-DEF_START_MONTH = 1
-DEF_END_MONTH = 12
-DEF_START_DAY = 1
-
-# DEF_WEB_SCRAPY_BEGIN_DATE_STR = DEF_START_DATE_STR
-# DEF_MARKET_LAST_CONFIG_FILENAME = "def_market_last.conf"
-DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME = "def_market_all_time_range.conf"
-# DEF_STOCK_LAST_CONFIG_FILENAME = "def_stock_last.conf"
-DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME = "def_stock_all_time_range.conf"
-DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
-DEF_COMPANY_PROFILE_CONF_FILENAME = ".company_profile.conf"
-DEF_COMPANY_GROUP_CONF_FILENAME = ".company_group.conf"
-DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME = ".balance_sheet_field_name.conf"
-DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME = ".income_statement_field_name.conf"
-DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME = ".cash_flow_statement_field_name.conf"
-DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME = ".statement_of_changes_in_equity_field_name.conf"
-DEF_STATEMENT_FIELD_NAME_CONF_FILENAME = [
-    DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME,
-    DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME,
-    DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME,
-    DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME,
-]
-DEF_BALANCE_SHEET_INTEREST_FIELD_METADATA_FILENAME = "balance_sheet_interest_field_metadata"
-DEF_INCOME_STATEMENT_INTEREST_FIELD_METADATA_FILENAME = "income_statement_interest_field_metadata"
-DEF_CASH_FLOW_STATEMENT_INTEREST_FIELD_METADATA_FILENAME = "cash_flow_statement_interest_field_metadata"
-DEF_STATEMENT_OF_CHANGES_IN_EQUITY_INTEREST_FIELD_METADATA_FILENAME = "statement_of_changes_in_equity_interest_field_metadata"
-DEF_FINANCE_ANALYSIS_CONF_FILENAME = ".finance_analysis.conf"
-DEF_MARKET_STOCK_SWITCH_CONF_FILENAME = "market_stock_switch.conf"
-DEF_CSV_DATA_TIME_DURATION_FILENAME = ".csv_time_range.conf"
-DEF_COMMAND_EXAMPLE_FILENAME = "command_example"
-DEF_COPY_CONF_FILE_DST_PROJECT_NAME1 = "finance_recorder_java"
-DEF_COPY_CONF_FILE_DST_PROJECT_NAME2 = "finance_analyzer"
-DEF_TODAY_MARKET_DATA_EXIST_HOUR = 20
-DEF_TODAY_MARKET_DATA_EXIST_MINUTE = 0
-DEF_TODAY_STOCK_DATA_EXIST_HOUR = 20
-DEF_TODAY_STOCK_DATA_EXIST_MINUTE = 0
-DEF_CONF_FOLDER = "conf"
-DEF_CSV_ROOT_FOLDERPATH = "/var/tmp/finance"
-DEF_CSV_DST_MERGE_ROOT_FOLDERPATH = "/var/tmp/finance_merge"
-DEF_CSV_MARKET_FOLDERNAME = "market"
-DEF_CSV_STOCK_FOLDERNAME = "stock"
-DEF_MISSING_CSV_MARKET_FILENAME = ".missing_csv_market"
-DEF_MISSING_CSV_STOCK_FILENAME = ".missing_csv_stock"
-DEF_SNAPSHOT_FOLDER = "snapshot"
-DEF_UNICODE_ENCODING_IN_FILE = "utf-8"
-DEF_SCRAPY_WAIT_TIMEOUT = 8
-DEF_SCRAPY_RETRY_TIMES = 3
-DEF_COMMA_DATA_SPLIT = ",";
-DEF_SPACE_DATA_SPLIT = " ";
-DEF_DATA_SOURCE_INDEX_MAPPING = [
-# Market Start
-    u'臺股指數及成交量',
-    u'三大法人現貨買賣超',
-    u'現貨融資融券餘額',
-    u'三大法人期貨和選擇權留倉淨額',
-    u'三大法人期貨或選擇權留倉淨額',
-    u'三大法人選擇權買賣權留倉淨額',
-    u'三大法人選擇權賣權買權比',
-    u'十大交易人及特定法人期貨資訊',
-# Market End
-###############################################################################
-# Stock Start
-    u'個股集保戶股權分散表',
-    u'資產負債表',
-    u'損益表',
-    u'現金流量表',
-    u'股東權益變動表',
-    # u'三大法人上市個股買賣超彙總',
-    # u'三大法人上櫃個股買賣超彙總',
-    # u'外資及陸資上市個股投資持股統計',
-    # u'外資及陸資買賣超彙總',
-    # u'投信買賣超彙總',
-    # u'自營商買賣超彙總',
-# Stock End
-]
-DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
-
-DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
-DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
-# Market Start
-    "stock_exchange_and_volume",
-    "stock_top3_legal_persons_net_buy_or_sell",
-    "stock_margin_trading_and_short_selling",
-    "future_and_option_top3_legal_persons_open_interest",
-    "future_or_option_top3_legal_persons_open_interest",
-    "option_top3_legal_persons_buy_and_sell_option_open_interest",
-    "option_put_call_ratio",
-    "future_top10_dealers_and_legal_persons",
-# Market End
-###############################################################################
-# Stock Start
-    "company_depository_shareholder_distribution_table",
-    "balance_sheet",
-    "income_statement",
-    "cash_flow_statement",
-    "statement_of_changes_in_equity",
-    # "company_stock_top3_legal_persons_net_buy_and_sell_summary",
-    # "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
-    # "company_foreign_investors_shareholder",
-    # "company_foreign_investors_net_buy_and_sell_summary",
-    # "company_investment_trust_net_buy_and_sell_summary",
-    # "company_dealers_net_buy_and_sell_summary",
-# Stock End
-]
-DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
-
-DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING = [
-    "market",
-    "market",
-    "market",
-    "market",
-    "market",
-    "market",
-    "market",
-    "market",
-    "stock",
-    "stock",
-    "stock",
-    "stock",
-    "stock",
-]
-# Semi-open interval
-DEF_DATA_SOURCE_MARKET_START = 0
-DEF_DATA_SOURCE_MARKET_END = DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING.index("stock")
-DEF_DATA_SOURCE_STOCK_START = DEF_DATA_SOURCE_MARKET_END
-DEF_DATA_SOURCE_STOCK_END = len(DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING)
-DEF_DATA_SOURCE_MARKET_SIZE = DEF_DATA_SOURCE_MARKET_END - DEF_DATA_SOURCE_MARKET_START
-DEF_DATA_SOURCE_STOCK_SIZE = DEF_DATA_SOURCE_STOCK_END - DEF_DATA_SOURCE_STOCK_START
-
-DEF_DATA_SOURCE_STOCK_STATMENT_START = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("balance_sheet")
-DEF_DATA_SOURCE_STOCK_STATMENT_END = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity") + 1
-
-DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
-# Market Start
-    "WebScrapyStockExchangeAndVolume",
-    "WebScrapyStockTop3LegalPersonsNetBuyOrSell",
-    "WebScrapyStockMarginTradingAndShortSelling",
-    "WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest",
-    "WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest",
-    "WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
-    "WebScrapyOptionPutCallRatio",
-    "WebScrapyFutureTop10DealersAndLegalPersons",
-# Market End
-###############################################################################
-# Stock Start
-    "WebScrapyDepositoryShareholderDistributionTable",
-    "WebScrapyBalanceSheet",
-    "WebScrapyIncomeStatement",
-    "WebScrapyCashFlowStatement",
-    "WebScrapyStatementOfChangesInEquity",
-    # "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
-    # "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
-    # "WebScrapyCompanyForeignInvestorsShareholder",
-    # "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
-    # "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
-    # "WebScrapyCompanyDealersNetBuyOrSellSummary",
-# Stock End
-]
-
-# DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
-DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyOptionPutCallRatio")
-DEF_DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_DATA_SOURCE_REFERENCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyDepositoryShareholderDistributionTable")
 
 DEF_MIN_DATE_STRING_LENGTH = 8
 DEF_MAX_DATE_STRING_LENGTH = 10

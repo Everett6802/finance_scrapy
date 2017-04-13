@@ -19,3 +19,8 @@ class WebScrapyNotFoundException(WebScrapyException):
     pass
     # def __init__(self):
     #     pass
+
+
+class WebScrapyIncorrectFormatException(WebScrapyException):
+    """Class for incorrect format exceptions"""
+    pass

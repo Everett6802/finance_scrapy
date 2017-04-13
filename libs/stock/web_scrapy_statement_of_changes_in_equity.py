@@ -24,8 +24,10 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
     TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN = 15
     TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = None
-    TABLE_FIELD_START_INDEX = 5
+    TABLE_FIELD_START_INDEX = 3
     TABLE_FIELD_END_INDEX = None # 13
+    TABLE_COLUMN_FIELD_TITLE_INDEX = TABLE_FIELD_START_INDEX - 1
+    TABLE_COLUMN_FIELD_EXIST = True
 
 
     @classmethod
@@ -46,8 +48,21 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
         super(WebScrapyStatementOfChangesInEquity, self).__init__(__file__, **kwargs)
 
 
+    def __customized_select_web_data(cls, url_data):
+        url_data.encoding = self.source_url_parsing_cfg["url_encoding"]
+        soup = BeautifulSoup(url_data.text)
+        table_list = soup.select('table')
+        if len(table_list) != 3:
+            raise ValueError("The len of the table_list should be 3, not %d" % len(table_list))
+        return table_list[1].select('tr')
+
+
     def _parse_web_statement_field_data(self, web_data):
         return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_statement_field_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
+
+
+    def _parse_web_statement_column_field_data(self, web_data):
+        return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_statement_column_field_data_internal(web_data, self.TABLE_COLUMN_FIELD_TITLE_INDEX)
 
 
     def _parse_web_data(self, web_data):
@@ -56,14 +71,17 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
 
     def do_debug(self, silent_mode=False):
         # import pdb; pdb.set_trace()
-        res = CMN.FUNC.request_from_url_and_check_return("http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id=3189&year=104&season=02")
+        res = CMN.FUNC.request_from_url_and_check_return("http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id=6269&year=104&season=02")
         res.encoding = 'utf-8'
         # print res.text
         soup = BeautifulSoup(res.text)
-        g_data = soup.select('table tr')
+        # g_data = soup.select('table tr')
+        table_list = soup.select('table')
+        g_data = table_list[1].select('tr')
         # print g_data
 # Title
-        title_td = g_data[4].select('td')
+        # import pdb;pdb.set_trace()
+        title_td = g_data[2].select('td')
         title_td_len = len(title_td)
         title_line = ""
         for title_i in range(0, title_td_len):
@@ -71,9 +89,11 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
             if mobj is None:
                 raise ValueError(u"Title Field[%d] Incorrect format: %s" % (title_i, title_td[title_i].text))
             title_line += u"%s " % mobj.group(1)
+            # title_line += u"%s " % title_td[title_i].text
         print u"Title: %s" % title_line
-        # Content
-        for index, tr in enumerate(g_data[5:13]):
+# Content
+        # import pdb;pdb.set_trace()
+        for index, tr in enumerate(g_data[3:]):
         #      print "%d: %s" % (index, tr.text)
             td = tr.select('td')
             td_len = len(td)

@@ -196,6 +196,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 class WebScrapyStockStatementBase(WebScrapyStockBase):
 
     __metaclass__ = ABCMeta
+    TABLE_COLUMN_FIELD_EXIST = False
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyStockStatementBase, self).__init__(cur_file_path, **kwargs)
         # import pdb;pdb.set_trace()
@@ -329,8 +330,13 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             # print "FUNC: %s" % dst_statement_field_list
 
 
-    def update_statement_field_to_file(self, dst_statement_field_list):
+    def update_statement_field(self, dst_statement_field_list, dst_statement_column_field_list=None):
         # import pdb; pdb.set_trace()
+# Check if _parse_web_statement_column_field_data() is implemented before it's invoked
+        if dst_statement_column_field_list is not None:
+            if not hasattr(self, "_parse_web_statement_column_field_data"):
+                raise AttributeError("_parse_web_statement_column_field_data() is NOT implemented")
+# Update statement field from each company
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
 # Create the time slice iterator due to correct time range
@@ -347,11 +353,19 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 for timeslice in timeslice_iterable:
                     url = self.assemble_web_url(timeslice, company_code_number)
                     g_logger.debug("Get the statement data from URL: %s" % url)
-# Grab the data from website and assemble the data to the entry of CSV
+# Find the statement field
                     company_statement_field_list = self._parse_web_statement_field_data(self._get_web_data(url))
                     if company_statement_field_list is None:
                         raise RuntimeError(url)
                     self._insert_not_exist_statement_element(dst_statement_field_list, company_statement_field_list)
+# Find the statement column field
+                    if dst_statement_column_field_list is not None:
+                        # if not hasattr(self, "_parse_web_statement_column_field_data"):
+                        #     raise AttributeError("_parse_web_statement_column_field_data() is NOT implemented")
+                        company_statement_column_field_list = self._parse_web_statement_column_field_data(self._get_web_data(url))
+                        if company_statement_column_field_list is None:
+                            raise RuntimeError(url)
+                        self._insert_not_exist_statement_element(dst_statement_column_field_list, company_statement_column_field_list)
 
 
     def assemble_web_url(self, timeslice, company_code_number):
@@ -381,6 +395,20 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             td = tr.select('td')
             # data_list.append(td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8))
             data_list.append(td[0].text)
+        return data_list
+
+
+    def _parse_web_statement_column_field_data_internal(self, web_data, web_column_data_start_index):
+        web_data_len = len(web_data)
+        if web_data_len == 0:
+            return None
+        data_list = []
+# Filter the data which is NOT interested in
+        td = web_data[web_column_data_start_index].select('td')
+        td_len = len(td)
+        for i in range(0, td_len):
+            # print "%d: %s" % (i, td[i].text)
+            data_list.append(td[i].text)
         return data_list
 
 

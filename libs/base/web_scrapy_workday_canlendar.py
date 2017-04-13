@@ -15,7 +15,7 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebScrapyWorkdayCanlendar(object):
 
     def __init__(self, date_start=None, date_end=None):
-        self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[CMN.DEF.DEF_WORKDAY_CANLENDAR_DATA_SOURCE_REFERENCE_INDEX]
+        self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
         self.url_format = self.source_url_parsing_cfg["url_format"]
         self.encoding = self.source_url_parsing_cfg["url_encoding"]
         self.select_flag = self.source_url_parsing_cfg["url_css_selector"]

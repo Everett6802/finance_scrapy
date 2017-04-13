@@ -6,7 +6,7 @@ import json
 import requests
 import csv
 import time
-import collections
+# import collections
 import sys
 from abc import ABCMeta, abstractmethod
 from random import randint
@@ -168,6 +168,14 @@ class WebScrapyBase(object):
 
 
     @classmethod
+    def __select_web_data_by_customization(cls, url_data, parse_url_data_type_cfg):
+        g_logger.debug("Parse URL data by Customization......")
+        if not hasattr(self, "__customized_select_web_data"):
+            raise AttributeError("__customized_select_web_data() is NOT implemented")
+        return self.__customized_select_web_data(url_data)
+
+
+    @classmethod
     def _write_to_csv(cls, csv_filepath, csv_data_list, multi_data_one_page):
         # import pdb; pdb.set_trace()
         if multi_data_one_page:
@@ -226,7 +234,8 @@ class WebScrapyBase(object):
         if self.PARSE_URL_DATA_FUNC_PTR is None:
             self.PARSE_URL_DATA_FUNC_PTR = [
                 self.__select_web_data_by_bs4, 
-                self.__select_web_data_by_json
+                self.__select_web_data_by_json,
+                self.__select_web_data_by_customization
             ]
         return self.PARSE_URL_DATA_FUNC_PTR
 

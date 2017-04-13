@@ -249,7 +249,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             self._scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
 
 
-    def _renew_single_source_statement(self, source_type_time_duration, dst_statement_field_list):
+    def _renew_single_source_statement(self, source_type_time_duration, dst_statement_field_list, dst_statement_column_field_list):
         if not CMN.FUNC.check_statement_source_type_index_in_range(source_type_time_duration.source_type_index):
             raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (source_type_time_duration.source_type_index, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_END))
         # import pdb;pdb.set_trace()
@@ -267,7 +267,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if web_scrapy_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyStockBase derived class")
         g_logger.debug("Start to renew %s statement field......", web_scrapy_obj.get_description())
-        web_scrapy_obj.update_statement_field_to_file(dst_statement_field_list)
+        # dst_statement_column_field_list = [] if web_scrapy_class.TABLE_COLUMN_FIELD_EXIST else None
+        web_scrapy_obj.update_statement_field(dst_statement_field_list, dst_statement_column_field_list)
         if SHOW_STATMENT_FIELD_DIMENSION:
             web_scrapy_class.show_statement_field_dimension()
 
@@ -297,17 +298,36 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def renew_statement_field(self):
         # import pdb; pdb.set_trace()
         for source_type_time_duration in self.source_type_time_duration_list:
+            web_scrapy_class = self._get_web_scrapy_class(source_type_time_duration.source_type_index)
+            table_column_field_exist = web_scrapy_class.TABLE_COLUMN_FIELD_EXIST
             conf_filename = CMN.DEF.DEF_STATEMENT_FIELD_NAME_CONF_FILENAME[source_type_time_duration.source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START]
-            dst_statement_field_list = []
+            dst_statement_field_list = None #[]
+            dst_statement_column_field_list = None #([] if table_column_field_exist else None) 
+            old_dst_statement_field_list = None #[]
+            old_dst_statement_column_field_list = None #([] if table_column_field_exist else None) 
             config_file_exist = False
+# Check if the original statement field exists
             if CMN.FUNC.check_config_file_exist(conf_filename):
 # Read the original statement field list from file if exist
+                if table_column_field_exist:
+# If the column field exist......
+                    statement_field_list_tmp = CMN.FUNC.unicode_read_config_file_lines(conf_filename)
+                    try:
+                        column_field_start_flag_index = statement_field_list_tmp.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+                        dst_statement_field_list = copy.deepcopy(statement_field_list_tmp[0:column_field_start_flag_index])
+                        dst_statement_column_field_list = copy.deepcopy(statement_field_list_tmp[column_field_start_flag_index + 1:])
+                    except ValueError:
+                        raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("The column field flag is NOT found in the config file" % conf_filename)
+                else:
+                    dst_statement_field_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename)
+# Keep track of the old data
+                old_dst_statement_field_list = copy.deepcopy(dst_statement_field_list)
+                if table_column_field_exist:
+                    old_dst_statement_column_field_list = copy.deepcopy(dst_statement_column_field_list)
                 config_file_exist = True
-                dst_statement_field_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename)
-            old_dst_statement_field_list = copy.deepcopy(dst_statement_field_list)
             try:
 # Update the statement field
-                self._renew_single_source_statement(source_type_time_duration, dst_statement_field_list)
+                self._renew_single_source_statement(source_type_time_duration, dst_statement_field_list, dst_statement_column_field_list)
             except Exception as e:
                 if isinstance(e.message, str):
                     errmsg = "Renew %s statement fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
@@ -316,7 +336,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
                 g_logger.error(errmsg)
                 raise e
-            need_renew = True
+            need_renew = False
             # import pdb; pdb.set_trace()
 # Compare the statement field in the old and new config file
             if config_file_exist:
@@ -327,11 +347,22 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                         msg += u"%s\n" % new_statement_field
                     CMN.FUNC.try_print(msg)
                     g_logger.info(msg)
-                else:
-                    need_renew = False
+                    need_renew = True
+                if table_column_field_exist:
+                    new_statement_column_field_list = list(set(dst_statement_column_field_list) - set(old_dst_statement_column_field_list))
+                    if len(new_statement_column_field_list) != 0:
+                        msg = u"***** Add new column field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], source_type_time_duration.time_duration_start, source_type_time_duration.time_duration_end)
+                        for new_statement_column_field in new_statement_column_field_list:
+                            msg += u"%s\n" % new_statement_column_field
+                        CMN.FUNC.try_print(msg)
+                        g_logger.info(msg)
+                        need_renew = True
 # Write the new statement field list into file if necessary
             # import pdb; pdb.set_trace()
             if need_renew:
+                if table_column_field_exist:
+                    dst_statement_field_list.append(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+                    dst_statement_field_list.extend(dst_statement_column_field_list)
                 CMN.FUNC.unicode_write_config_file_lines(dst_statement_field_list, conf_filename)
                 # CMN.FUNC.write_config_file_lines_ex(dst_statement_field_list, conf_filename, "wb")
 
