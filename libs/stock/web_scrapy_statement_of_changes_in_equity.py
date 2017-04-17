@@ -23,7 +23,7 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN = 15
-    TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT = None
+    TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = None
     TABLE_FIELD_START_INDEX = 5
     TABLE_FIELD_END_INDEX = None # 13
 
@@ -32,7 +32,7 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
     def init_class_variables(cls):
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
             cls._init_statement_field_class_variables(CMN.DEF.DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME)
-            # cls.TABLE_FIELD_INTEREST_ENTRY_LEN_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
+            # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
 
 
     @classmethod

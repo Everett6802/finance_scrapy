@@ -354,7 +354,7 @@ def unicode_write_config_file_lines(config_line_list, conf_filename, conf_folder
     return unicode_write_config_file_lines_ex(config_line_list, conf_filename, 'wb', conf_folderpath, conf_unicode_encode)
 
 
-def parse_source_type_time_duration_config_file(conf_filename, time_duration_type):
+def read_source_type_time_duration_config_file(conf_filename, time_duration_type):
     # import pdb; pdb.set_trace()
     config_line_list = read_config_file_lines(conf_filename)
     source_type_time_duration_config_list = []
@@ -377,7 +377,7 @@ def parse_source_type_time_duration_config_file(conf_filename, time_duration_typ
     return source_type_time_duration_config_list
 
 
-def parse_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as_list=False):
+def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as_list=False):
     # import pdb; pdb.set_trace()
     csv_time_duration_dict = {}
     try:
@@ -410,12 +410,12 @@ def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time
     write_config_file_lines_ex(config_line_list, conf_filename, "wb", conf_folderpath)
 
 
-def parse_company_config_file(conf_filename):
+def read_company_config_file(conf_filename):
     # import pdb; pdb.set_trace()
     config_line_list = read_config_file_lines(conf_filename)
     company_config_list = []
     for line in config_line_list:
-        param_list = line.split(' ')
+        param_list = line.split(CMN_DEF.DEF_SPACE_DATA_SPLIT)
         for param in param_list:
             company_config_list.append(param)
     return company_config_list

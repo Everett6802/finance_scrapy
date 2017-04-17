@@ -91,7 +91,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             for company_code_number in company_code_number_list:
                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
                 g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
-                csv_time_duration_dict = CMN.FUNC.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+                csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
                 if csv_time_duration_dict is None:
                     g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
                     continue
@@ -117,7 +117,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #             for company_code_number in company_code_number_list:
 #                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
 #                 g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
-#                 csv_time_duration_dict = CMN.FUNC.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+#                 csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
 #                 if csv_time_duration_dict is None:
 #                     g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
 #                     continue
@@ -198,7 +198,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def set_company_from_file(self, filename):
-        company_word_list = CMN.FUNC.parse_company_config_file(filename)
+        company_word_list = CMN.FUNC.read_company_config_file(filename)
         self.set_company(company_word_list)
 
 

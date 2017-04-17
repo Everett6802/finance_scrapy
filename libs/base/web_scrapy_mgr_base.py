@@ -218,7 +218,7 @@ class WebSracpyMgrBase(object):
 
     def set_source_type_time_duration_from_file(self, filename, time_duration_type):
         # import pdb; pdb.set_trace()
-        self.source_type_time_duration_list = CMN.FUNC.parse_source_type_time_duration_config_file(filename, time_duration_type)
+        self.source_type_time_duration_list = CMN.FUNC.read_source_type_time_duration_config_file(filename, time_duration_type)
         self.__check_source_type_in_correct_finance_mode()
 
 
@@ -280,7 +280,7 @@ class WebSracpyMgrBase(object):
 #         source_type_time_duration_list = None
 #         if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
 #             conf_filename = CMN.DEF.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
-#             source_type_time_duration_list = CMN.FUNC.parse_source_type_time_duration_config_file(conf_filename)
+#             source_type_time_duration_list = CMN.FUNC.read_source_type_time_duration_config_file(conf_filename)
 #             if source_type_time_duration_list is None:
 #                 errmsg = "Fail to parse the config file: %s" % conf_filename
 #                 g_logger.error(errmsg)

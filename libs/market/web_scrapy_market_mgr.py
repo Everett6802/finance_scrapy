@@ -50,7 +50,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def __parse_csv_time_duration_cfg(self, finance_root_folderpath=None):
         csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
         g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
-        csv_time_duration_dict = CMN.FUNC.parse_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+        csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
         if csv_time_duration_dict is None:
             g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
 # # update the time range of each source type from config file
