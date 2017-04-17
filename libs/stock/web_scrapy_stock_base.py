@@ -210,12 +210,28 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
     def _init_statement_field_class_variables(cls, conf_filename):
         if not CMN.FUNC.check_config_file_exist(conf_filename):
             raise CMN.EXCEPTION.WebScrapyNotFoundException("The %s file does NOT exist" % conf_filename)
-        table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
+        table_field_title_list = None
+        table_column_field_title_list = None
+        if cls.TABLE_COLUMN_FIELD_EXIST:
+            total_table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
+            try:
+                column_field_start_flag_index = total_table_field_title_list.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+                table_field_title_list = copy.deepcopy(total_table_field_title_list[0:column_field_start_flag_index])
+                table_column_field_title_list = copy.deepcopy(total_table_field_title_list[column_field_start_flag_index + 1:])
+            except ValueError:
+                raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("The column field flag is NOT found in the config file" % conf_filename)        else:
+            table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
         cls.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
-        cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
+        # cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
         cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
         cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
-        cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_ENTRY_LEN)
+        if cls.TABLE_COLUMN_FIELD_EXIST:
+            cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST = [title for title in table_column_field_title_list if title not in cls.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST]           
+            cls.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST)
+            cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST)
+        else:
+            cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_ENTRY_LEN)
+
 
 
     @classmethod
@@ -420,6 +436,44 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             web_data_end_index = web_data_len
         # import pdb; pdb.set_trace()
         # data_list = []
+
+        if self.TABLE_COLUMN_FIELD_EXIST:
+            td = g_data[web_data_start_index].select('td')
+            td_len = len(td)
+            interest_index = 0
+            not_interest_index = 0
+            for i in range(0, td_len):
+                data_found = False
+                data_can_ignore = False
+                data_index = None
+                title = td[i].text.encode(CMN.DEF.URL_ENCODING_UTF8)
+                if interest_index < self.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST_LEN:
+                    try:
+                        # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
+                        data_index = cur_interest_index = (self.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title) + interest_index
+                        interest_index = cur_interest_index + 1
+                        data_found = True
+                    except ValueError:
+                        pass
+                if not data_found:
+                    if not_interest_index < self.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
+                        try:
+                            cur_not_interest_index = (self.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title) + not_interest_index
+                            not_interest_index = cur_not_interest_index + 1
+                            data_can_ignore = True
+                        except ValueError:
+                            pass                
+    # Check if the entry is NOT in the title list of interest
+                if (not data_found) and (not data_can_ignore):
+                    # import pdb; pdb.set_trace()
+                    raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The column title[%s] in company[%s] does NOT exist in the title list of interest" % (title, self.cur_company_code_number))
+                if data_can_ignore:
+                    continue
+# Parse the content of this entry, and the interested field into data structure
+                entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_ELEMENT_DEFAULTDICT[title]
+# Caution: Point to the first web data
+            web_data_start_index += 1
+
         data_list = [self.cur_quarter_str,]
         table_field_list = [None] * self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN
         interest_index = 0

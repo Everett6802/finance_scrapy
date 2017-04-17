@@ -311,11 +311,11 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 # Read the original statement field list from file if exist
                 if table_column_field_exist:
 # If the column field exist......
-                    statement_field_list_tmp = CMN.FUNC.unicode_read_config_file_lines(conf_filename)
+                    total_statement_field_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename)
                     try:
-                        column_field_start_flag_index = statement_field_list_tmp.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
-                        dst_statement_field_list = copy.deepcopy(statement_field_list_tmp[0:column_field_start_flag_index])
-                        dst_statement_column_field_list = copy.deepcopy(statement_field_list_tmp[column_field_start_flag_index + 1:])
+                        column_field_start_flag_index = total_statement_field_list.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+                        dst_statement_field_list = copy.deepcopy(total_statement_field_list[0:column_field_start_flag_index])
+                        dst_statement_column_field_list = copy.deepcopy(total_statement_field_list[column_field_start_flag_index + 1:])
                     except ValueError:
                         raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("The column field flag is NOT found in the config file" % conf_filename)
                 else:

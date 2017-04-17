@@ -21,6 +21,12 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
     TABLE_FIELD_INTEREST_TITLE_LIST = None
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
+# Column
+    TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST = [
+    ]
+    TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST = None
+    TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
+    TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN = 15
     TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = None
@@ -66,7 +72,7 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
 
 
     def _parse_web_data(self, web_data):
-        return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
+        return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_data_internal(web_data, self.TABLE_COLUMN_FIELD_TITLE_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
     def do_debug(self, silent_mode=False):
