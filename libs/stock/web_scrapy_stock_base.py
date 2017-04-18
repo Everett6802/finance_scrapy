@@ -233,7 +233,6 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_ENTRY_LEN)
 
 
-
     @classmethod
     def _show_statement_field_dimension_internal(cls, interest_conf_filename, auto_gen_sql_element):
         field_count = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
@@ -316,6 +315,76 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         CMN.FUNC.write_config_file_lines_ex(table_field_interest_description_list, interest_conf_filename, "wb")
 
 
+    @classmethod
+    def _show_statement_column_field_dimension_internal(cls, interest_conf_filename, auto_gen_sql_element):
+        # field_count = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
+        # field_element_count = 0
+        table_field_interest_description_list = []
+        for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+            title_without_whitesapce = re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE) + u"[%d]" % title_index)
+            table_field_interest_description_list.append(title_without_whitesapce.encode(CMN.DEF.URL_ENCODING_UTF8))
+        table_field_interest_description_list_len = len(table_field_interest_description_list)
+# Column
+        table_column_field_interest_description_list = []
+        for column_title_index, column_title in enumerate(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST):
+            column_title_without_whitesapce = re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE) + u"[%d]" % column_title_index)
+            table_column_field_interest_description_list.append(column_title_without_whitesapce.encode(CMN.DEF.URL_ENCODING_UTF8))
+        table_column_field_interest_description_list_len = len(table_column_field_interest_description_list)
+        field_count_msg = "Field Count: %d, Column Field Count: %d, Field Element Count: %d" % (table_field_interest_description_list_len, table_column_field_interest_description_list_len, table_field_interest_description_list_len * table_column_field_interest_description_list_len)
+        CMN.FUNC.try_print(field_count_msg)
+        table_field_interest_description_list.insert(0, field_count_msg)
+        table_field_interest_description_list.append(u"##### Column Field #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+        table_field_interest_description_list.extend(table_column_field_interest_description_list)
+
+        # import pdb; pdb.set_trace()
+##############################################################################
+# Generate the Table Field Definition/Table Field Type Definition list element
+# for the finance_recorder_java project
+##############################################################################
+        if auto_gen_sql_element:
+            table_field_interest_description_list.append(u"\n\n".encode(CMN.DEF.URL_ENCODING_UTF8))
+# Table Field Definition
+            table_field_interest_description_list.append(u"##### TABLE_FIELD_DEFINITION #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+            table_field_interest_description_list.append(u"\"date\", // 日期".encode(CMN.DEF.URL_ENCODING_UTF8))
+            field_count = 0
+            for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+                for column_title_index, column_title in enumerate(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST):
+                    field_count += 1
+                    table_field_element_definition = u"\"value%d\", // %s:%s" % (field_count, re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE), re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE))
+                    table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
+# Table Field Type Definition
+            table_field_interest_description_list.append(u"##### TABLE_FIELD_TYPE_DEFINITION #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+            table_field_interest_description_list.append(u"\"DATE NOT NULL PRIMARY KEY\", // 日期".encode(CMN.DEF.URL_ENCODING_UTF8))
+            # field_type_count = 0
+            for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+                for column_title_index, column_title in enumerate(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST):
+                    # field_type_count += 1
+                    table_field_element_definition = u"\"BIGINT\", // %s:%s" % (re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE), re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE))
+                    table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
+##############################################################################
+# Generate the Field Type Definition/Field Description list element
+# for the finance_analyzer project
+##############################################################################
+        if auto_gen_sql_element:
+            table_field_interest_description_list.append(u"\n\n".encode(CMN.DEF.URL_ENCODING_UTF8))
+# Field Type Definition
+            table_field_interest_description_list.append(u"##### FIELD_TYPE_DEFINITION #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+            table_field_interest_description_list.append(u"FinanceField_DATE, // 日期".encode(CMN.DEF.URL_ENCODING_UTF8))
+            for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+                for column_title_index, column_title in enumerate(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST):
+                    table_field_element_definition = u"FinanceField_LONG, // %s:%s" % (re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE), re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE))
+                    table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
+# Field Description
+            table_field_interest_description_list.append(u"##### FIELD_DESCRIPTION #####".encode(CMN.DEF.URL_ENCODING_UTF8))
+            table_field_interest_description_list.append(u"\"日期\", // FinanceField_DATE".encode(CMN.DEF.URL_ENCODING_UTF8))
+            for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
+                for column_title_index, column_title in enumerate(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST):
+                    table_field_element_definition = u"\"%s:%s\", // FinanceField_LONG" % (re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE), re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE))
+                    table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
+
+        CMN.FUNC.write_config_file_lines_ex(table_field_interest_description_list, interest_conf_filename, "wb")
+
+
     def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
         assert finance_time_start.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input start time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_start.get_time_unit_type())
         assert finance_time_end.get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The input end time unit type should be %d, not %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, finance_time_end.get_time_unit_type())
@@ -347,7 +416,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 
 
     def update_statement_field(self, dst_statement_field_list, dst_statement_column_field_list=None):
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
 # Check if _parse_web_statement_column_field_data() is implemented before it's invoked
         if dst_statement_column_field_list is not None:
             if not hasattr(self, "_parse_web_statement_column_field_data"):
@@ -436,8 +505,9 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             web_data_end_index = web_data_len
         # import pdb; pdb.set_trace()
         # data_list = []
-
+        table_column_field_index_mapping_list = None
         if self.TABLE_COLUMN_FIELD_EXIST:
+            table_column_field_index_mapping_list = []
             td = g_data[web_data_start_index].select('td')
             td_len = len(td)
             interest_index = 0
@@ -463,14 +533,15 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                             data_can_ignore = True
                         except ValueError:
                             pass                
-    # Check if the entry is NOT in the title list of interest
+# Check if the entry is NOT in the title list of interest
                 if (not data_found) and (not data_can_ignore):
                     # import pdb; pdb.set_trace()
                     raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The column title[%s] in company[%s] does NOT exist in the title list of interest" % (title, self.cur_company_code_number))
                 if data_can_ignore:
                     continue
 # Parse the content of this entry, and the interested field into data structure
-                entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_ELEMENT_DEFAULTDICT[title]
+                table_column_field_index_mapping_list.append(data_index)
+            self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = collections.defaultdict(lambda: len(table_column_field_index_mapping_list))
 # Caution: Point to the first web data
             web_data_start_index += 1
 
@@ -530,17 +601,26 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                     table_field_list[data_index].append(float(field_value))
 # Transforms the table into the 1-Dimension list
         padding_entry = "0" 
-        for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
-            if table_field_list[index] is None:
-# Padding
+        if self.TABLE_COLUMN_FIELD_EXIST:
+            for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
                 entry_list_len = entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
-                # print "data_index: %d, title: [%s]" % (data_index, title)
-                if isinstance(entry_list_entry, list):
-                    entry_list_len = len(entry_list_entry)
+# Padding in column
                 data_list.extend([padding_entry] * entry_list_len)
-            else:
-                data_list.extend(table_field_list[index])
-            # print "index: %d, len: [%s]" % (index, len(data_list))
+                for column_field_key, column_field_value in enumerate(table_column_field_index_mapping_list):
+                    data_list[-1][column_field_value] = table_field_list[column_field_key]
+                # print "index: %d, len: [%s]" % (index, len(data_list))
+        else:
+            for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
+                if table_field_list[index] is None:
+# Padding
+                    entry_list_len = entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
+                    # print "data_index: %d, title: [%s]" % (data_index, title)
+                    if isinstance(entry_list_entry, list):
+                        entry_list_len = len(entry_list_entry)
+                    data_list.extend([padding_entry] * entry_list_len)
+                else:
+                    data_list.extend(table_field_list[index])
+                # print "index: %d, len: [%s]" % (index, len(data_list))
         return data_list
 
 

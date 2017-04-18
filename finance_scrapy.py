@@ -664,9 +664,9 @@ if __name__ == "__main__":
     # test_derived2.show()
 
     # import pdb; pdb.set_trace()
-    print TestBase.TEST_VALUE    
-    print TestDerived1.TEST_VALUE
-    print TestDerived2.TEST_VALUE
+    # print TestBase.TEST_VALUE    
+    # print TestDerived1.TEST_VALUE
+    # print TestDerived2.TEST_VALUE
     # test_derived1 = TestDerived1()
     # test_derived11 = TestDerived1()
     # print test_derived1.TEST_VALUE
@@ -674,7 +674,7 @@ if __name__ == "__main__":
     # test_derived1.value = 2
     # print test_derived1.value
     # print test_derived11.value
-    sys.exit(0)
+    # sys.exit(0)
 
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
