@@ -54,8 +54,9 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
         super(WebScrapyStatementOfChangesInEquity, self).__init__(__file__, **kwargs)
 
 
-    def __customized_select_web_data(cls, url_data):
-        url_data.encoding = self.source_url_parsing_cfg["url_encoding"]
+    @classmethod
+    def _customized_select_web_data(cls, url_data, url_parsing_cfg):
+        url_data.encoding = url_parsing_cfg["url_encoding"]
         soup = BeautifulSoup(url_data.text)
         table_list = soup.select('table')
         if len(table_list) != 3:

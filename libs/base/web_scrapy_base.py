@@ -170,9 +170,9 @@ class WebScrapyBase(object):
     @classmethod
     def __select_web_data_by_customization(cls, url_data, parse_url_data_type_cfg):
         g_logger.debug("Parse URL data by Customization......")
-        if not hasattr(self, "__customized_select_web_data"):
-            raise AttributeError("__customized_select_web_data() is NOT implemented")
-        return self.__customized_select_web_data(url_data)
+        if not hasattr(cls, "_customized_select_web_data"):
+            raise AttributeError("_customized_select_web_data() is NOT implemented")
+        return cls._customized_select_web_data(url_data, parse_url_data_type_cfg)
 
 
     @classmethod

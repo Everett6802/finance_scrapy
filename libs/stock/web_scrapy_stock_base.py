@@ -208,6 +208,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 
     @classmethod
     def _init_statement_field_class_variables(cls, conf_filename):
+        # import pdb; pdb.set_trace()
         if not CMN.FUNC.check_config_file_exist(conf_filename):
             raise CMN.EXCEPTION.WebScrapyNotFoundException("The %s file does NOT exist" % conf_filename)
         table_field_title_list = None
@@ -219,7 +220,8 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 table_field_title_list = copy.deepcopy(total_table_field_title_list[0:column_field_start_flag_index])
                 table_column_field_title_list = copy.deepcopy(total_table_field_title_list[column_field_start_flag_index + 1:])
             except ValueError:
-                raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("The column field flag is NOT found in the config file" % conf_filename)        else:
+                raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("The column field flag is NOT found in the config file" % conf_filename)        
+        else:
             table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
         cls.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
         # cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
@@ -321,13 +323,13 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         # field_element_count = 0
         table_field_interest_description_list = []
         for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST):
-            title_without_whitesapce = re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE) + u"[%d]" % title_index)
+            title_without_whitesapce = re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE) + u"[%d]" % title_index
             table_field_interest_description_list.append(title_without_whitesapce.encode(CMN.DEF.URL_ENCODING_UTF8))
         table_field_interest_description_list_len = len(table_field_interest_description_list)
 # Column
         table_column_field_interest_description_list = []
         for column_title_index, column_title in enumerate(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST):
-            column_title_without_whitesapce = re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE) + u"[%d]" % column_title_index)
+            column_title_without_whitesapce = re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE) + u"[%d]" % column_title_index
             table_column_field_interest_description_list.append(column_title_without_whitesapce.encode(CMN.DEF.URL_ENCODING_UTF8))
         table_column_field_interest_description_list_len = len(table_column_field_interest_description_list)
         field_count_msg = "Field Count: %d, Column Field Count: %d, Field Element Count: %d" % (table_field_interest_description_list_len, table_column_field_interest_description_list_len, table_field_interest_description_list_len * table_column_field_interest_description_list_len)
@@ -416,7 +418,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 
 
     def update_statement_field(self, dst_statement_field_list, dst_statement_column_field_list=None):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
 # Check if _parse_web_statement_column_field_data() is implemented before it's invoked
         if dst_statement_column_field_list is not None:
             if not hasattr(self, "_parse_web_statement_column_field_data"):

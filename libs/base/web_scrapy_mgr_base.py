@@ -51,9 +51,14 @@ class WebSracpyMgrBase(object):
             if module:
                 # print 'Import file: %s.py (%s)' % (module_name, module)
                 return reload(module)
-        except Exception:
-            msg = 'Import template file failure: %s.py' % module_name
-            raise Exception(msg)
+        except CMN.EXCEPTION.WebScrapyException as e:
+            msg = 'Import template file failure: %s.py, due to: %s' % (module_name, str(e))
+            CMN.FUNC.try_print(msg)
+            raise e
+        except Exception as e:
+            msg = 'Import template file failure: %s.py, due to: %s' % (module_name, str(e))
+            CMN.FUNC.try_print(msg)
+            raise e
 
 
     @classmethod
@@ -88,6 +93,7 @@ class WebSracpyMgrBase(object):
 
     @classmethod
     def _instantiate_web_scrapy_object(cls, source_type_index, **kwargs):
+        # import pdb; pdb.set_trace()
 # Get the class
         web_scrapy_class = cls._get_web_scrapy_class(source_type_index)
         web_scrapy_class.init_class_variables()

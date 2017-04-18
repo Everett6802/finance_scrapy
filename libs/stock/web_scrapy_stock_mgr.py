@@ -269,8 +269,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         g_logger.debug("Start to renew %s statement field......", web_scrapy_obj.get_description())
         # dst_statement_column_field_list = [] if web_scrapy_class.TABLE_COLUMN_FIELD_EXIST else None
         web_scrapy_obj.update_statement_field(dst_statement_field_list, dst_statement_column_field_list)
-        if SHOW_STATMENT_FIELD_DIMENSION:
-            web_scrapy_class.show_statement_field_dimension()
+        # if SHOW_STATMENT_FIELD_DIMENSION:
+        #     web_scrapy_class.show_statement_field_dimension()
 
 
     def show_company_list_in_finance_folder(self, finance_root_folderpath=None):
@@ -325,6 +325,10 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 if table_column_field_exist:
                     old_dst_statement_column_field_list = copy.deepcopy(dst_statement_column_field_list)
                 config_file_exist = True
+            else:
+                dst_statement_field_list = []
+                if table_column_field_exist:
+                    dst_statement_column_field_list = []              
             try:
 # Update the statement field
                 self._renew_single_source_statement(source_type_time_duration, dst_statement_field_list, dst_statement_column_field_list)
@@ -357,6 +361,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                         CMN.FUNC.try_print(msg)
                         g_logger.info(msg)
                         need_renew = True
+            else:
+                need_renew = True
 # Write the new statement field list into file if necessary
             # import pdb; pdb.set_trace()
             if need_renew:
@@ -365,6 +371,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     dst_statement_field_list.extend(dst_statement_column_field_list)
                 CMN.FUNC.unicode_write_config_file_lines(dst_statement_field_list, conf_filename)
                 # CMN.FUNC.write_config_file_lines_ex(dst_statement_field_list, conf_filename, "wb")
+            if SHOW_STATMENT_FIELD_DIMENSION:
+                web_scrapy_class.show_statement_field_dimension()
 
 
     def check_scrapy(self):
