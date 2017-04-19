@@ -57,7 +57,8 @@ class WebScrapyCompanyDealersNetBuyOrSellSummary(WebScrapyMarketBase.WebScrapyMa
 # 自營商買賣超股數
 
 
-    def do_debug(self, silent_mode=False):
+    @staticmethod
+    def do_debug(silent_mode=False):
         # res = requests.get("http://www.twse.com.tw/ch/trading/fund/TWT43U/TWT43U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
         res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/fund/TWT43U/TWT43U.php?download=&qdate=105%2F03%2F25&sorting=by_stkno")
         #print res.text

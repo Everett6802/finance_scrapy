@@ -65,7 +65,8 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
         return super(WebScrapyBalanceSheet, self)._parse_web_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
-    def do_debug(self, silent_mode=False):
+    @staticmethod
+    def do_debug(silent_mode=False):
         # import pdb; pdb.set_trace()
         res = CMN.FUNC.request_from_url_and_check_return("http://mops.twse.com.tw/mops/web/ajax_t164sb03?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id=2448&year=104&season=02")
         res.encoding = 'utf-8'

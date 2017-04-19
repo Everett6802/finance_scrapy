@@ -76,9 +76,10 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
         return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_data_internal(web_data, self.TABLE_COLUMN_FIELD_TITLE_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
-    def do_debug(self, silent_mode=False):
-        # import pdb; pdb.set_trace()
-        res = CMN.FUNC.request_from_url_and_check_return("http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id=6269&year=104&season=02")
+    @staticmethod
+    def do_debug(silent_mode=False):
+        import pdb; pdb.set_trace()
+        res = CMN.FUNC.request_from_url_and_check_return("http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id=4947&year=105&season=01")
         res.encoding = 'utf-8'
         # print res.text
         soup = BeautifulSoup(res.text)

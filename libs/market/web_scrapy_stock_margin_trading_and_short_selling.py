@@ -67,7 +67,8 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
 # 融資金額(仟元)_今日餘額
 
 
-    def do_debug(self, silent_mode=False):
+    @staticmethod
+    def do_debug(silent_mode=False):
         # res = requests.get("http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate=104%2F11%2F19&selectType=MS")
         res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate=104%2F11%2F19&selectType=MS")
         # print res.text

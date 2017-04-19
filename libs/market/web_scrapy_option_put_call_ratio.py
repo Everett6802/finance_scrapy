@@ -97,7 +97,8 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
 # "買賣權未平倉量比率%",
 
 
-    def do_debug(self, silent_mode=False):
+    @staticmethod
+    def do_debug(silent_mode=False):
         # res = requests.get("http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart=2015%2F10%2F1&dateend=2015%2F10%2F31")
         res = CMN.FUNC.request_from_url_and_check_return("http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart=2015%2F10%2F1&dateend=2015%2F10%2F31")
         # print res.text

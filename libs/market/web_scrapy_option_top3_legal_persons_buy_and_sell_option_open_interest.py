@@ -87,7 +87,8 @@ class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(WebScrapyMarke
 # "賣權_外資_買賣差額_契約金額",
 
 
-    def do_debug(self, silent_mode=False):
+    @staticmethod
+    def do_debug(silent_mode=False):
         # res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=2015&DATA_DATE_M=11&DATA_DATE_D=3&syear=2015&smonth=11&sday=3&datestart=2015%2F11%2F3&COMMODITY_ID=TXO")
         res = CMN.FUNC.request_from_url_and_check_return("http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=2015&DATA_DATE_M=11&DATA_DATE_D=3&syear=2015&smonth=11&sday=3&datestart=2015%2F11%2F3&COMMODITY_ID=TXO")
         res.encoding = 'utf-8'

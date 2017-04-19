@@ -144,7 +144,8 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 # 合計佔集保庫存數比例
 
 
-    def do_debug(self, silent_mode=False):
+    @staticmethod
+    def do_debug(silent_mode=False):
         # import pdb; pdb.set_trace()
         # res = requests.get("https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE=20160408&SqlMethod=StockNo&StockNo=2347&StockName=&sub=%ACd%B8%DF")
         res = CMN.FUNC.request_from_url_and_check_return("https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE=20160408&SqlMethod=StockNo&StockNo=2347&StockName=&sub=%ACd%B8%DF")
@@ -154,7 +155,6 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
         g_data = soup.select('table tbody tr')
         # print g_data
         # print g_data[7].text
-
         for tr in g_data[9:25]:
         #     print tr.text
             td = tr.select('td')

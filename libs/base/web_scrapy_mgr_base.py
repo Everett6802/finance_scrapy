@@ -204,8 +204,10 @@ class WebSracpyMgrBase(object):
     @classmethod
     def do_scrapy_debug(cls, source_type_index, silent_mode=False):
         # import pdb; pdb.set_trace()
-        web_scrapy_obj = WebSracpyMgrBase._instantiate_web_scrapy_object(source_type_index)
-        web_scrapy_obj.do_debug(silent_mode)
+        web_scrapy_class = cls._get_web_scrapy_class(source_type_index)
+        web_scrapy_class.do_debug(silent_mode)
+        # web_scrapy_obj = WebSracpyMgrBase._instantiate_web_scrapy_object(source_type_index)
+        # web_scrapy_obj.do_debug(silent_mode)
 
 
     def __check_source_type_in_correct_finance_mode(self):
