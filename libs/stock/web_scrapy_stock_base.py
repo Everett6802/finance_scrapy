@@ -135,6 +135,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 csv_data_list_each_year = []
                 cur_year = None
                 # import pdb; pdb.set_trace()
+                csv_data_list = None
 # Generate the time slice list                
                 for timeslice in timeslice_iterable:
 # Write the data into csv year by year
@@ -147,24 +148,48 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     url = self.assemble_web_url(timeslice, company_code_number)
                     g_logger.debug("Get the data from URL: %s" % url)
                     try:
+                        # import pdb;pdb.set_trace()
 # Grab the data from website and assemble the data to the entry of CSV
                         csv_data_list = self._parse_web_data(self._get_web_data(url))
                         if csv_data_list is None:
                             raise RuntimeError(url)
-                        csv_data_list_each_year.append(csv_data_list)
                     except CMN.EXCEPTION.WebScrapyNotFoundException as e:
                         # import pdb;pdb.set_trace()
+                        errmsg = None
                         if isinstance(e.message, str):
-                            g_logger.error("Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                            errmsg = "Fail to scrap URL[%s], due to: %s" % (url, e.message)
                         else:
-                            g_logger.error(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                            errmsg = u"Fail to scrap URL[%s], due to: %s" % (url, e.message)
+                        CMN.FUNC.try_print(errmsg)
+                        g_logger.error(errmsg)
                         raise e
+                    except CMN.EXCEPTION.WebScrapyServerBusyException as e:
+                        RETRY_TIMES = 5
+                        SLEEP_TIME_BEFORE_RETRY = 15
+                        scrapy_success = False
+                        for retry_times in range(1, RETRY_TIMES + 1):
+                            if scrapy_success:
+                                break
+                            g_logger.warn("Server is busy, let's retry...... %d", retry_times)
+                            time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
+                            try:
+# Grab the data from website and assemble the data to the entry of CSV
+                                csv_data_list = self._parse_web_data(self._get_web_data(url))
+                                if csv_data_list is None:
+                                    raise RuntimeError(url)
+                            except CMN.EXCEPTION.WebScrapyServerBusyException as e:
+                                pass
+                            else:
+                                scrapy_success = True
+                        if not scrapy_success:
+                            raise CMN.EXCEPTION.WebScrapyServerBusyException("Fail to scrap URL[%s] after retry for %d times" % (url, RETRY_TIMES))
                     except Exception as e:
                         # import pdb;pdb.set_trace()
                         if isinstance(e.message, str):
                             g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, e.message))
                         else:
                             g_logger.warn(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                    csv_data_list_each_year.append(csv_data_list)
 # Write the data of last year into csv
                 if len(csv_data_list_each_year) > 0:
                     self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])
@@ -401,13 +426,14 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         dst_statement_field_list_len = len(dst_statement_field_list)
         # import pdb; pdb.set_trace()
         for src_data in src_statement_list:
-            data_found = False
             try:
-                cur_offset = (dst_statement_field_list[dst_index:]).index(src_data)
-                dst_index = dst_index + cur_offset + 1
-                # data_found = True
+                # g_logger.debug(u"Check the statement field[%s] exist" % src_data)
+                # cur_offset = (dst_statement_field_list[dst_index:]).index(src_data)
+                # dst_index = dst_index + cur_offset + 1
+                dst_index = dst_statement_field_list.index(src_data)
+                dst_index += 1
             except ValueError:
-    # New element, insert the data into the list
+# New element, insert the data into the list
                 if dst_index == dst_statement_field_list_len:
                     dst_statement_field_list.append(src_data)
                 else:
@@ -436,22 +462,70 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 # Generate the time slice
                 timeslice_iterable = self._get_timeslice_iterable(**time_slice_generator_cfg)
                 # import pdb; pdb.set_trace()
+                company_statement_field_list = None
+                company_statement_column_field_list = None
+                # if company_code_number == "2317":
+                #     import pdb; pdb.set_trace()
 # Generate the time slice list                
                 for timeslice in timeslice_iterable:
                     url = self.assemble_web_url(timeslice, company_code_number)
                     g_logger.debug("Get the statement data from URL: %s" % url)
+                    try:
 # Find the statement field
-                    company_statement_field_list = self._parse_web_statement_field_data(self._get_web_data(url))
-                    if company_statement_field_list is None:
-                        raise RuntimeError(url)
-                    self._insert_not_exist_statement_element(dst_statement_field_list, company_statement_field_list)
-# Find the statement column field
-                    if dst_statement_column_field_list is not None:
-                        # if not hasattr(self, "_parse_web_statement_column_field_data"):
-                        #     raise AttributeError("_parse_web_statement_column_field_data() is NOT implemented")
-                        company_statement_column_field_list = self._parse_web_statement_column_field_data(self._get_web_data(url))
-                        if company_statement_column_field_list is None:
+                        company_statement_field_list = self._parse_web_statement_field_data(self._get_web_data(url))
+                        if company_statement_field_list is None:
                             raise RuntimeError(url)
+# Find the statement column field
+                        if dst_statement_column_field_list is not None:
+                            company_statement_column_field_list = self._parse_web_statement_column_field_data(self._get_web_data(url))
+                            if company_statement_column_field_list is None:
+                                raise RuntimeError(url)
+                    except CMN.EXCEPTION.WebScrapyNotFoundException as e:
+                        # import pdb;pdb.set_trace()
+                        errmsg = None
+                        if isinstance(e.message, str):
+                            errmsg = "Fail to scrap URL[%s], due to: %s" % (url, e.message)
+                        else:
+                            errmsg = u"Fail to scrap URL[%s], due to: %s" % (url, e.message)
+                        CMN.FUNC.try_print(errmsg)
+                        g_logger.error(errmsg)
+                        raise e
+                    except CMN.EXCEPTION.WebScrapyServerBusyException as e:
+                        RETRY_TIMES = 5
+                        SLEEP_TIME_BEFORE_RETRY = 15
+                        scrapy_success = False
+                        for retry_times in range(1, RETRY_TIMES + 1):
+                            if scrapy_success:
+                                break
+                            g_logger.warn("Server is busy, let's retry...... %d", retry_times)
+                            time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
+                            try:
+# Find the statement field
+                                company_statement_field_list = self._parse_web_statement_field_data(self._get_web_data(url))
+                                if company_statement_field_list is None:
+                                    raise RuntimeError(url)
+# Find the statement column field
+                                if dst_statement_column_field_list is not None:
+                                    company_statement_column_field_list = self._parse_web_statement_column_field_data(self._get_web_data(url))
+                                    if company_statement_column_field_list is None:
+                                        raise RuntimeError(url)
+                            except CMN.EXCEPTION.WebScrapyServerBusyException as e:
+                                pass
+                            else:
+                                scrapy_success = True
+                        if not scrapy_success:
+                            raise CMN.EXCEPTION.WebScrapyServerBusyException("Fail to scrap URL[%s] after retry for %d times" % (url, RETRY_TIMES))
+                    except Exception as e:
+                        # import pdb;pdb.set_trace()
+                        if isinstance(e.message, str):
+                            g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                        else:
+                            g_logger.warn(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                    # g_logger.debug("Update statement field from company: %s" % company_code_number)
+# Update the new statement field
+                    self._insert_not_exist_statement_element(dst_statement_field_list, company_statement_field_list)
+                    if dst_statement_column_field_list is not None:
+# Update the new statement column field
                         self._insert_not_exist_statement_element(dst_statement_column_field_list, company_statement_column_field_list)
 
 
@@ -482,6 +556,9 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             td = tr.select('td')
             # data_list.append(td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8))
             data_list.append(td[0].text)
+        if len(data_list) == 0:
+            # import pdb;pdb.set_trace()
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The field data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], self.cur_company_code_number))
         return data_list
 
 
@@ -496,6 +573,9 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         for i in range(0, td_len):
             # print "%d: %s" % (i, td[i].text)
             data_list.append(td[i].text)
+        if len(data_list) == 0:
+            # import pdb;pdb.set_trace()
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The column field data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], self.cur_company_code_number))
         return data_list
 
 
@@ -507,10 +587,12 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             web_data_end_index = web_data_len
         # import pdb; pdb.set_trace()
         # data_list = []
+        table_column_field_index_list = None
         table_column_field_index_mapping_list = None
         if self.TABLE_COLUMN_FIELD_EXIST:
+            table_column_field_index_list = []
             table_column_field_index_mapping_list = []
-            td = g_data[web_data_start_index].select('td')
+            td = web_data[web_data_start_index].select('td')
             td_len = len(td)
             interest_index = 0
             not_interest_index = 0
@@ -519,71 +601,94 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 data_can_ignore = False
                 data_index = None
                 title = td[i].text.encode(CMN.DEF.URL_ENCODING_UTF8)
-                if interest_index < self.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST_LEN:
-                    try:
-                        # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
-                        data_index = cur_interest_index = (self.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title) + interest_index
-                        interest_index = cur_interest_index + 1
-                        data_found = True
-                    except ValueError:
-                        pass
+                # if interest_index < self.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST_LEN:
+                #     try:
+                #         # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
+                #         data_index = cur_interest_index = (self.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title) + interest_index
+                #         interest_index = cur_interest_index + 1
+                #         data_found = True
+                #     except ValueError:
+                #         pass
+                try:
+                    # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
+                    data_index = self.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST.index(title)
+                    data_found = True
+                except ValueError:
+                    pass
                 if not data_found:
-                    if not_interest_index < self.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
-                        try:
-                            cur_not_interest_index = (self.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title) + not_interest_index
-                            not_interest_index = cur_not_interest_index + 1
-                            data_can_ignore = True
-                        except ValueError:
-                            pass                
+                    # if not_interest_index < self.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
+                    #     try:
+                    #         cur_not_interest_index = (self.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title) + not_interest_index
+                    #         not_interest_index = cur_not_interest_index + 1
+                    #         data_can_ignore = True
+                    #     except ValueError:
+                    #         pass
+                    try:
+                        self.TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST.index(title)
+                        data_can_ignore = True
+                    except ValueError:
+                        pass           
 # Check if the entry is NOT in the title list of interest
                 if (not data_found) and (not data_can_ignore):
                     # import pdb; pdb.set_trace()
-                    raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The column title[%s] in company[%s] does NOT exist in the title list of interest" % (title, self.cur_company_code_number))
+                    raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The column title[%s] in company[%s] does NOT exist in the title list of interest" % (title.decode(CMN.DEF.URL_ENCODING_UTF8), self.cur_company_code_number))
                 if data_can_ignore:
                     continue
 # Parse the content of this entry, and the interested field into data structure
+                table_column_field_index_list.append(i + 1)
                 table_column_field_index_mapping_list.append(data_index)
-            self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = collections.defaultdict(lambda: len(table_column_field_index_mapping_list))
+            self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = collections.defaultdict(list) # Caution: Add the value in every row
 # Caution: Point to the first web data
             web_data_start_index += 1
-
+        # import pdb; pdb.set_trace()
         data_list = [self.cur_quarter_str,]
         table_field_list = [None] * self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN
-        interest_index = 0
-        not_interest_index = 0
+        # interest_index = 0
+        # not_interest_index = 0
 # Filter the data which is NOT interested in
         for index, tr in enumerate(web_data[web_data_start_index:web_data_end_index]):
-        #     print "%d: %s" % (index, tr.text)
+            # print "%d: %s" % (index, tr.text)
             td = tr.select('td')
             data_found = False
             data_can_ignore = False
             data_index = None
             title = td[0].text.encode(CMN.DEF.URL_ENCODING_UTF8)
             # import pdb; pdb.set_trace()
-            if interest_index < self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN:
-                try:
-                    # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
-                    data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title) + interest_index
-                    interest_index = cur_interest_index + 1
-                    data_found = True
-                except ValueError:
-                    pass
+            # if interest_index < self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN:
+            #     try:
+            #         # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
+            #         data_index = cur_interest_index = (self.TABLE_FIELD_INTEREST_TITLE_LIST[interest_index:]).index(title) + interest_index
+            #         interest_index = cur_interest_index + 1
+            #         data_found = True
+            #     except ValueError:
+            #         pass
+            try:
+                # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
+                data_index = self.TABLE_FIELD_INTEREST_TITLE_LIST.index(title)
+                data_found = True
+            except ValueError:
+                pass
             if not data_found:
-                if not_interest_index < self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
-                    try:
-                        cur_not_interest_index = (self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title) + not_interest_index
-                        not_interest_index = cur_not_interest_index + 1
-                        data_can_ignore = True
-                    except ValueError:
-                        pass                
+                # if not_interest_index < self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN:
+                #     try:
+                #         cur_not_interest_index = (self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST[not_interest_index:]).index(title) + not_interest_index
+                #         not_interest_index = cur_not_interest_index + 1
+                #         data_can_ignore = True
+                #     except ValueError:
+                #         pass
+                try:
+                    self.TABLE_FIELD_NOT_INTEREST_TITLE_LIST.index(title)
+                    data_can_ignore = True
+                except ValueError:
+                    pass            
 # Check if the entry is NOT in the title list of interest
             if (not data_found) and (not data_can_ignore):
                 # import pdb; pdb.set_trace()
-                raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s] in company[%s] does NOT exist in the title list of interest" % (title, self.cur_company_code_number))
+                raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s] in company[%s] does NOT exist in the title list of interest" % (title.decode(CMN.DEF.URL_ENCODING_UTF8), self.cur_company_code_number))
             if data_can_ignore:
                 continue
 # Parse the content of this entry, and the interested field into data structure
-            entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[title]
+            entry_list_entry = table_column_field_index_list if self.TABLE_COLUMN_FIELD_EXIST else self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[title]
             # print "data_index: %d, title: [%s]" % (data_index, title)
             # import pdb;pdb.set_trace()
             field_index_list = None
@@ -601,15 +706,25 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                     table_field_list[data_index].append(int(field_value))
                 else: # Floating point
                     table_field_list[data_index].append(float(field_value))
+        data_is_empty = True
+        for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
+            if table_field_list[index] is not None:
+                data_is_empty = False
+                break
+        if data_is_empty:
+            # import pdb;pdb.set_trace()
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], self.cur_company_code_number))
 # Transforms the table into the 1-Dimension list
+        # import pdb;pdb.set_trace()
         padding_entry = "0" 
         if self.TABLE_COLUMN_FIELD_EXIST:
             for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
-                entry_list_len = entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
+                # entry_list_len = entry_list_entry = self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[self.TABLE_FIELD_INTEREST_TITLE_LIST[index]]
 # Padding in column
-                data_list.extend([padding_entry] * entry_list_len)
+                data_entry_list = [padding_entry] * self.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST_LEN
                 for column_field_key, column_field_value in enumerate(table_column_field_index_mapping_list):
-                    data_list[-1][column_field_value] = table_field_list[column_field_key]
+                    data_entry_list[column_field_value] = table_field_list[index][column_field_key]
+                data_list.extend(data_entry_list)
                 # print "index: %d, len: [%s]" % (index, len(data_list))
         else:
             for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):
@@ -623,6 +738,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 else:
                     data_list.extend(table_field_list[index])
                 # print "index: %d, len: [%s]" % (index, len(data_list))
+        # import pdb;pdb.set_trace()
         return data_list
 
 

@@ -17,12 +17,79 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockStatementBase):
 
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
+        u"　追溯適用及追溯重編之影響數".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　追溯調整共同控制下組織重組之前手權益".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　期初重編後餘額".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　法定盈餘公積彌補虧損".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　採用權益法認列之關聯企業及合資之變動數".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　提列法定盈餘公積".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　特別股股票股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　法定盈餘公積彌補虧損".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　特別盈餘公積彌補虧損".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　特別盈餘公積迴轉".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　提列特別盈餘公積".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　普通股現金股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　特別股現金股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　資本公積配發股票股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　因合併而產生者".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　資本公積配發現金股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　因發行可轉換公司債（特別股）認列權益組成項目－認股權而產生者".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　普通股股票股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　因合併而產生者".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　資本公積彌補虧損".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　資本公積配發股票股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　資本公積配發現金股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　其他資本公積變動數".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　因受領贈與產生者".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　因發行可轉換公司債（特別股）認列權益組成項目－認股權而產生者".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　　採用權益法認列之關聯企業及合資之變動數".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　本期淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　本期其他綜合損益".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　本期綜合損益總額".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　對子公司所有權權益變動".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　處分採用權益法之投資 /子公司".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　實際取得或處分子公司股權價格與帳面價值差額".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　子公司處分母公司股票視同庫藏股交易".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　非控制權益增減".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　其他".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　可轉換公司債轉換".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　庫藏股買回".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　實際取得或處分子公司股權價格與帳面價值差額".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　股份基礎給付".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　非控制權益增減".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　其他".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"　權益增加（減少）總額".encode(CMN.DEF.URL_ENCODING_UTF8),
     ]
     TABLE_FIELD_INTEREST_TITLE_LIST = None
     TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
 # Column
     TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST = [
+        u"普通股股本".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"債券換股權利證書".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"預收股本".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"待分配股票股利".encode(CMN.DEF.URL_ENCODING_UTF8),
+        # u"股本合計".encode(CMN.DEF.URL_ENCODING_UTF8),
+        # u"資本公積".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"法定盈餘公積".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"特別盈餘公積".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"未分配盈餘（或待彌補虧損）".encode(CMN.DEF.URL_ENCODING_UTF8),
+        # u"保留盈餘合計".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"國外營運機構財務報表換算之兌換差額".encode(CMN.DEF.URL_ENCODING_UTF8),
+        # u"透過其他綜合損益按公允價值衡量之權益工具投資利益（損失）".encode(CMN.DEF.URL_ENCODING_UTF8),
+        # u"備供出售金融資產未實現（損）益".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"現金流量避險中屬有效避險部分之避險工具利益（損失）".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"國外營運機構淨投資避險中屬有效避險部分之避險工具利益（損失）".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"指定按公允價值衡量之金融負債信用風險變動影響數".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"確定福利計畫再衡量數".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"重估增值".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"與待出售（非流動）資產直接相關之權益".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"其他".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"其他權益項目合計".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"庫藏股票".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"歸屬於母公司業主之權益總計".encode(CMN.DEF.URL_ENCODING_UTF8),
+        u"非控制權益".encode(CMN.DEF.URL_ENCODING_UTF8),
+        # u"權益總額".encode(CMN.DEF.URL_ENCODING_UTF8),
     ]
     TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST = None
     TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
@@ -60,7 +127,8 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
         soup = BeautifulSoup(url_data.text)
         table_list = soup.select('table')
         if len(table_list) != 3:
-            raise ValueError("The len of the table_list should be 3, not %d" % len(table_list))
+            raise CMN.EXCEPTION.WebScrapyServerBusyException("The len of the table_list should be 3, not %d. Server is probably busy, need retry" % len(table_list))
+            # raise ValueError("The len of the table_list should be 3, not %d" % len(table_list))
         return table_list[1].select('tr')
 
 
@@ -78,7 +146,7 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
 
     @staticmethod
     def do_debug(silent_mode=False):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         res = CMN.FUNC.request_from_url_and_check_return("http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id=4947&year=105&season=01")
         res.encoding = 'utf-8'
         # print res.text

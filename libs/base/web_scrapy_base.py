@@ -184,7 +184,6 @@ class WebScrapyBase(object):
             csv_data_list = []
             for csv_data_tmp in csv_data_list_tmp:
                 csv_data_list.extend(csv_data_tmp)
-
         g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
         with open(csv_filepath, 'a+') as fp:
             fp_writer = csv.writer(fp, delimiter=',')

@@ -141,7 +141,7 @@ DEF_SCRAPY_WAIT_TIMEOUT = 8
 DEF_SCRAPY_RETRY_TIMES = 3
 DEF_COMMA_DATA_SPLIT = ",";
 DEF_SPACE_DATA_SPLIT = " ";
-DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG = "##### Column Field Start #####"
+DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG = "===== Column Field Start =====" # Caution: Can't start with '#' which is ignored while reading config file
 
 DEF_DATA_SOURCE_INDEX_MAPPING = [
 # Market Start

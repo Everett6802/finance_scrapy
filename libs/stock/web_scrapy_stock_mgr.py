@@ -313,6 +313,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 # If the column field exist......
                     total_statement_field_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename)
                     try:
+                        # import pdb; pdb.set_trace()
                         column_field_start_flag_index = total_statement_field_list.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
                         dst_statement_field_list = copy.deepcopy(total_statement_field_list[0:column_field_start_flag_index])
                         dst_statement_column_field_list = copy.deepcopy(total_statement_field_list[column_field_start_flag_index + 1:])
