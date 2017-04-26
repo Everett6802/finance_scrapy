@@ -116,33 +116,41 @@ class WebScrapyCompanyProfile(object):
             if need_check_company_diff:
                 # import pdb; pdb.set_trace()
                 old_company_profile_list = self.company_profile_list
-
 # Update data from the web
             self.__update_company_profile_from_web()
+            cur_timestamp_str = CMN.FUNC.generate_cur_timestamp_str()
 # Compare the difference of company code number info
             if need_check_company_diff:
                 new_company_profile_list = self.company_profile_list
-                self.__diff_company_profile(old_company_profile_list, new_company_profile_list)
+                (is_company_change, old_lost_list, new_added_list) = self.__diff_company_profile(old_company_profile_list, new_company_profile_list)
+# Keep track of the chnage of the company profile
+                if is_company_change:
+                    self.__write_company_profile_change_list_to_file(old_lost_list, new_added_list, cur_timestamp_str)
+            else:
+                self.__write_company_profile_change_list_to_file(None, None, cur_timestamp_str)
 # Write the result into the config file
-            self.__write_company_profile_to_file()
+            self.__write_company_profile_to_file(cur_timestamp_str)
 # Copy the config file to the finance_analyzer/finance_recorder_java project
-            self.__copy_company_profile_config_file()
+            # self.__copy_company_profile_config_file()
             self.update_from_web = True
 
 
-
     def __copy_company_profile_config_file(self):
+        # import pdb; pdb.set_trace()
         # current_path = os.path.dirname(os.path.realpath(__file__))
-        # [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
+        [working_folder, project_name] = CMN.DEF.DEF_PROJECT_FOLDERPATH.rsplit('/', 1)
         dst_folderpath_list = [
-            "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.DEF_CONF_FOLDER),
-            "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.DEF_CONF_FOLDER),
         ]
-        src_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        company_profile_src_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        company_group_src_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
-            if os.path.exists(dst_folderpath):
-                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
-                shutil.copy2(src_filepath, dst_folderpath)
+            # if os.path.exists(dst_folderpath):
+            #     g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
+            #     shutil.copy2(src_filepath, dst_folderpath)
+            CMN.FUNC.copy_file_if_exist(company_profile_src_filepath, dst_folderpath)
+            CMN.FUNC.copy_file_if_exist(company_group_src_filepath, dst_folderpath)
 
 
     def __update_company_profile_from_file(self):
@@ -157,28 +165,40 @@ class WebScrapyCompanyProfile(object):
             g_logger.warn("The Company Code Number config file does NOT exist")
             need_update_from_web = True
         else:
-            try:
-                date_range_str = None
-                with open(conf_filepath, 'rb') as fp:
-                    for line in fp:
-                        line_unicode = line.rstrip("\n").decode(self.UNICODE_ENCODING_IN_FILE)
-                        element_list = re.split(r",", line_unicode, re.U)
-                        if len(element_list) != self.COMPANY_PROFILE_ELEMENT_EX_LEN:
-                            raise ValueError("The Company Code Number length[%d] should be %d" % (len(element_list), self.COMPANY_PROFILE_ELEMENT_EX_LEN))
-                        self.company_profile_dict[element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
-                        self.company_profile_list.append(element_list)
-                        company_group_name = element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME]
-                        if self.company_group_name2num_dict.get(company_group_name, None) is None:
-                            self.company_group_name2num_dict[company_group_name] = len(self.company_group_num2name_list)
-                            self.company_group_num2name_list.append(company_group_name)
-            except Exception as e:
-                g_logger.error("Error occur while parsing Company Code Number info, due to %s" % str(e))
-                raise e
-            else:
+            # try:
+            #     with open(conf_filepath, 'rb') as fp:
+            #         for line in fp:
+            #             line_unicode = line.rstrip("\n").decode(self.UNICODE_ENCODING_IN_FILE)
+            #             element_list = re.split(r",", line_unicode, re.U)
+            #             if len(element_list) != self.COMPANY_PROFILE_ELEMENT_EX_LEN:
+            #                 raise ValueError("The Company Code Number length[%d] should be %d" % (len(element_list), self.COMPANY_PROFILE_ELEMENT_EX_LEN))
+            #             self.company_profile_dict[element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
+            #             self.company_profile_list.append(element_list)
+            #             company_group_name = element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME]
+            #             if self.company_group_name2num_dict.get(company_group_name, None) is None:
+            #                 self.company_group_name2num_dict[company_group_name] = len(self.company_group_num2name_list)
+            #                 self.company_group_num2name_list.append(company_group_name)
+            # except Exception as e:
+            #     g_logger.error("Error occur while parsing Company Code Number info, due to %s" % str(e))
+            #     raise e
+            # else:
+            #     self.__company_group_size = len(self.company_group_num2name_list)
+            #     self.__company_amount = len(self.company_profile_list)
+            #     self.__generate_company_group_profile_list()
+            line_unicode_list = CMN.FUNC.unicode_read_config_file_lines(CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+            for line_unicode in line_unicode_list:
+                element_list = re.split(r",", line_unicode, re.U)
+                if len(element_list) != self.COMPANY_PROFILE_ELEMENT_EX_LEN:
+                    raise ValueError("The Company Code Number length[%d] should be %d" % (len(element_list), self.COMPANY_PROFILE_ELEMENT_EX_LEN))
+                self.company_profile_dict[element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
+                self.company_profile_list.append(element_list)
+                company_group_name = element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME]
+                if self.company_group_name2num_dict.get(company_group_name, None) is None:
+                    self.company_group_name2num_dict[company_group_name] = len(self.company_group_num2name_list)
+                    self.company_group_num2name_list.append(company_group_name)
                 self.__company_group_size = len(self.company_group_num2name_list)
                 self.__company_amount = len(self.company_profile_list)
                 self.__generate_company_group_profile_list()
-
         return need_update_from_web
 
 
@@ -215,32 +235,35 @@ class WebScrapyCompanyProfile(object):
                 old_index += 1
                 new_index += 1
             elif old_company_code_number_list[old_index] > new_company_code_number_list[new_index]:
-                new_added_list.append(new_company_code_number_list[new_index])
+                new_added_list.append(str(new_company_code_number_list[new_index]))
                 new_index += 1
             else:
-                old_lost_list.append(old_company_code_number_list[old_index])
+                old_lost_list.append(str(old_company_code_number_list[old_index]))
                 old_index += 1
         if old_index < old_company_code_number_list_len:
             while old_index != old_company_code_number_list_len:
-                old_lost_list.append(old_company_code_number_list[old_index])
+                old_lost_list.append(str(old_company_code_number_list[old_index]))
                 old_index += 1
         elif new_index < new_company_code_number_list_len:
             while new_index != new_company_code_number_list_len:
-                new_added_list.append(new_company_code_number_list[old_index])
+                new_added_list.append(str(new_company_code_number_list[old_index]))
                 new_index += 1
         assert (old_index == old_company_code_number_list_len), "old_index[%d] is NOT equal to old_company_code_number_list_len[%d]" % (old_index, old_company_code_number_list_len)
         assert (new_index == new_company_code_number_list_len), "new_index[%d] is NOT equal to new_company_code_number_list_len[%d]" % (new_index, new_company_code_number_list_len)
-
+        is_company_change = False
         if len(old_lost_list) != 0:
+            is_company_change = True
             res_str = "Some old company lost:"
             for old_lost in old_lost_list:
-                res_str += (" %d" % old_lost)
+                res_str += (" %s" % old_lost)
             print res_str
         if len(new_added_list) != 0:
+            is_company_change = True
             res_str = "Some new company added:"
             for new_added in new_added_list:
-                res_str += (" %d" % new_added)
+                res_str += (" %s" % new_added)
             print res_str
+        return (is_company_change, old_lost_list, new_added_list)
 
 
     def __scrap_company_profile_from_web(self, market_type):
@@ -393,61 +416,108 @@ class WebScrapyCompanyProfile(object):
             self.company_group_profile_list[int(company_group_number)].append(company_profile)
 
 
-    def __write_company_profile_to_file(self):
+    def __write_company_profile_to_file(self, cur_timestamp_str=None):
         # import pdb; pdb.set_trace()
-        # current_path = os.path.dirname(os.path.realpath(__file__))
-        # [project_folder, lib_folder] = current_path.rsplit('/', 1)
 # File for keeping track of the company code number info
-        conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
-        g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
-        with open(conf_filepath, 'wb') as fp:
-            try:
-                for company_profile in self.company_profile_list:
-                    self.company_profile_dict[company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_profile
-                    company_profile_unicode = u",".join(company_profile)
-                    # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
+#         conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+#         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
+#         with open(conf_filepath, 'wb') as fp:
+#             try:
+#                 for company_profile in self.company_profile_list:
+#                     self.company_profile_dict[company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_profile
+#                     company_profile_unicode = u",".join(company_profile)
+#                     # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
+# # Can be readable for the CSV reader by encoding utf-8 unicode
+#                     fp.write(company_profile_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
+#             except Exception as e:
+#                 g_logger.error(u"Error occur while writing Company Code Number info into config file, due to %s" %str(e))
+#                 # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
+#                 raise e
+        if cur_timestamp_str is None:
+            cur_timestamp_str = CMN.FUNC.generate_cur_timestamp_str()
+        g_logger.debug("Write the Company Code Number info to the file: %s......" % CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        company_profile_unicode_list = []
+# Add the timestamp in the first line
+        company_profile_unicode_list.append(cur_timestamp_str)
+        for company_profile in self.company_profile_list:
+            self.company_profile_dict[company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_profile
+            company_profile_unicode = u",".join(company_profile)
+            company_profile_unicode_list.append(company_profile_unicode)
+            # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-                    fp.write(company_profile_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
- 
-            except Exception as e:
-                g_logger.error(u"Error occur while writing Company Code Number info into config file, due to %s" %str(e))
-                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
-                raise e
+        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
 # File for keeping track of the company group info
-        conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
-        g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
-        with open(conf_filepath, 'wb') as fp:
-            try:
-                for index, company_group in enumerate(self.company_group_num2name_list):
-                    company_group_unicode = u"%d %s" % (index, company_group)
+#         conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
+#         g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
+#         with open(conf_filepath, 'wb') as fp:
+#             try:
+#                 for index, company_group in enumerate(self.company_group_num2name_list):
+#                     company_group_unicode = u"%d %s" % (index, company_group)
+# # Can be readable for the CSV reader by encoding utf-8 unicode
+#                     fp.write(company_group_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
+#             except Exception as e:
+#                 g_logger.error(u"Error occur while writing Company Group into config file, due to %s" %str(e))
+#                 # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
+#                 raise e
+        g_logger.debug("Write the Company Group info to the file: %s......" % CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
+        company_group_unicode_list = []
+        company_group_unicode_list.append(cur_timestamp_str)
+        for index, company_group in enumerate(self.company_group_num2name_list):
+            company_group_unicode = u"%d %s" % (index, company_group)
+            company_group_unicode_list.append(company_group_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-                    fp.write(company_group_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
- 
-            except Exception as e:
-                g_logger.error(u"Error occur while writing Company Group into config file, due to %s" %str(e))
-                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
-                raise e
+        CMN.FUNC.unicode_write_config_file_lines(company_group_unicode_list, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
+
+
+    def __write_company_profile_change_list_to_file(self, old_lost_list=None, new_added_list=None, cur_timestamp_str=None):
+        # import pdb; pdb.set_trace()
+        if cur_timestamp_str is None:
+            cur_timestamp_str = CMN.FUNC.generate_cur_timestamp_str()
+        config_line_list = [cur_timestamp_str,]
+        if old_lost_list is None and new_added_list is None:
+# Remove the old config file if exist
+            CMN.FUNC.remove_config_file_if_exist(CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
+            config_line_list.append("Initial update")
+            CMN.FUNC.write_config_file_lines(config_line_list, CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
+        else:
+# Append the company change result
+            if not CMN.FUNC.check_config_file_exist(CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME):
+                raise ValueError("The config file[%s] does NOT exist" % CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
+            company_change_str = ""
+            if old_lost_list is not None:
+                company_change_str += "OldLost:" + ",".join(old_lost_list) + " "
+            if new_added_list is not None:
+                company_change_str += "NewAdded:" + ",".join(new_added_list) + " "
+            config_line_list.append(company_change_str)
+            CMN.FUNC.write_config_file_lines_ex(config_line_list, CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME, "a+")
 
 
     def __write_company_group_to_file(self):
         # import pdb; pdb.set_trace()
-        # current_path = os.path.dirname(os.path.realpath(__file__))
-        # [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
-        g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
-        with open(conf_filepath, 'wb') as fp:
-            try:
-                for company_profile in self.company_profile_list:
-                    self.company_profile_dict[company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_profile
-                    company_profile_unicode = u",".join(company_profile)
-                    # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
+#         conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+#         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
+#         with open(conf_filepath, 'wb') as fp:
+#             try:
+#                 for company_profile in self.company_profile_list:
+#                     self.company_profile_dict[company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_profile
+#                     company_profile_unicode = u",".join(company_profile)
+#                     # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
+# # Can be readable for the CSV reader by encoding utf-8 unicode
+#                     fp.write(company_profile_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
+#             except Exception as e:
+#                 g_logger.error(u"Error occur while writing Company Code Number info into config file, due to %s" %str(e))
+#                 # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
+#                 raise e
+        cur_timestamp_str = CMN.FUNC.generate_cur_timestamp_str()
+        company_profile_unicode_list = []
+        company_profile_unicode_list.append(cur_timestamp_str)
+        for company_profile in self.company_profile_list:
+            self.company_profile_dict[company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = company_profile
+            company_profile_unicode = u",".join(company_profile)
+            company_profile_unicode_list.append(company_profile_unicode)
+            # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-                    fp.write(company_profile_unicode.encode(self.UNICODE_ENCODING_IN_FILE) + "\n") 
- 
-            except Exception as e:
-                g_logger.error(u"Error occur while writing Company Code Number info into config file, due to %s" %str(e))
-                # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
-                raise e
+        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
 
 
     def __get_exceptional_company_industry_by_company_code_number_first_2_digit(self, company_code_number):

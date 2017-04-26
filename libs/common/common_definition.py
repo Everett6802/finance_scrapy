@@ -102,6 +102,7 @@ DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME = "def_market_all_time_range.conf"
 DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME = "def_stock_all_time_range.conf"
 DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
 DEF_COMPANY_PROFILE_CONF_FILENAME = ".company_profile.conf"
+DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME = ".company_profile_change_list.conf"
 DEF_COMPANY_GROUP_CONF_FILENAME = ".company_group.conf"
 DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME = ".balance_sheet_field_name.conf"
 DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME = ".income_statement_field_name.conf"
@@ -142,6 +143,7 @@ DEF_SCRAPY_RETRY_TIMES = 3
 DEF_COMMA_DATA_SPLIT = ",";
 DEF_SPACE_DATA_SPLIT = " ";
 DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG = "===== Column Field Start =====" # Caution: Can't start with '#' which is ignored while reading config file
+DEF_CUR_TIMESTAMP_STRING_PREFIX = "# time@"
 
 DEF_DATA_SOURCE_INDEX_MAPPING = [
 # Market Start

@@ -180,6 +180,18 @@ def transform_month_str(year_value, month_value):
 def transform_quarter_str(year_value, quarter_value):
     return "%dq%d" % (year_value, quarter_value)
 
+
+def transform_time_str(hour_value, minute_value, second_value):
+    return "%02d:%02d:%02d" % (hour_value, minute_value, second_value)
+
+
+def generate_cur_timestamp_str():
+    datetime_cur = datetime.today()
+    date_str = transform_date_str(datetime_cur.year, datetime_cur.month, datetime_cur.day)
+    time_str = transform_time_str(datetime_cur.hour, datetime_cur.minute, datetime_cur.second)
+    return "%s %s %s" % (CMN_DEF.DEF_CUR_TIMESTAMP_STRING_PREFIX, date_str, time_str)
+
+
 # def transform_string2datetime(date_string, need_year_transform=False):
 #     element_arr = date_string.split('-')
 #     if len(element_arr) != 3:
@@ -523,6 +535,11 @@ def remove_file_if_exist(filepath):
     if can_remove:
         remove_file(filepath)
     return can_remove
+
+
+def remove_config_file_if_exist(conf_filename, conf_folderpath=None):
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+    return remove_file_if_exist(conf_filepath)
 
 
 def remove_folder(folderpath):

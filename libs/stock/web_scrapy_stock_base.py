@@ -522,11 +522,12 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                         else:
                             g_logger.warn(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
                     # g_logger.debug("Update statement field from company: %s" % company_code_number)
+                    else:
 # Update the new statement field
-                    self._insert_not_exist_statement_element(dst_statement_field_list, company_statement_field_list)
-                    if dst_statement_column_field_list is not None:
+                        self._insert_not_exist_statement_element(dst_statement_field_list, company_statement_field_list)
+                        if dst_statement_column_field_list is not None:
 # Update the new statement column field
-                        self._insert_not_exist_statement_element(dst_statement_column_field_list, company_statement_column_field_list)
+                            self._insert_not_exist_statement_element(dst_statement_column_field_list, company_statement_column_field_list)
 
 
     def assemble_web_url(self, timeslice, company_code_number):
