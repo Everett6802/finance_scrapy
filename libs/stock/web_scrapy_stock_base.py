@@ -135,9 +135,11 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 csv_data_list_each_year = []
                 cur_year = None
                 # import pdb; pdb.set_trace()
-                csv_data_list = None
-# Generate the time slice list                
+                web_data_emtpy_time_start = web_data_emtpy_time_end = None
+                self.emtpy_web_data_list = []
+# Generate the time slice list
                 for timeslice in timeslice_iterable:
+                    csv_data_list = None
 # Write the data into csv year by year
                     if timeslice.year != cur_year:
                         if len(csv_data_list_each_year) > 0:
@@ -151,8 +153,6 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                         # import pdb;pdb.set_trace()
 # Grab the data from website and assemble the data to the entry of CSV
                         csv_data_list = self._parse_web_data(self._get_web_data(url))
-                        if csv_data_list is None:
-                            raise RuntimeError(url)
                     except CMN.EXCEPTION.WebScrapyNotFoundException as e:
                         # import pdb;pdb.set_trace()
                         errmsg = None
@@ -175,8 +175,6 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                             try:
 # Grab the data from website and assemble the data to the entry of CSV
                                 csv_data_list = self._parse_web_data(self._get_web_data(url))
-                                if csv_data_list is None:
-                                    raise RuntimeError(url)
                             except CMN.EXCEPTION.WebScrapyServerBusyException as e:
                                 pass
                             else:
@@ -189,7 +187,39 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                             g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, e.message))
                         else:
                             g_logger.warn(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
-                    csv_data_list_each_year.append(csv_data_list)
+                    else:
+                        if csv_data_list is None:
+                            # import pdb;pdb.set_trace()
+                            if web_data_emtpy_time_start is None:
+                                web_data_emtpy_time_start = web_data_emtpy_time_end = timeslice
+                            else:
+                                if web_data_emtpy_time_end.check_continous_time_duration(timeslice):
+                                    web_data_emtpy_time_end = timeslice
+                                else:
+# Keep track of the time range in which the web data is empty
+                                    self.emtpy_web_data_list.append(
+                                        CMN.CLS.SourceTypeCompanyTimeDurationTuple(
+                                            self.source_type_index,
+                                            company_code_number,
+                                            CMN.DEF.DATA_TIME_DURATION_RANGE, 
+                                            web_data_emtpy_time_start, 
+                                            web_data_emtpy_time_end
+                                        )
+                                    )
+                                    web_data_emtpy_time_start = web_data_emtpy_time_end = None
+                            # raise RuntimeError(url)
+                        else:
+                            csv_data_list_each_year.append(csv_data_list)
+# Keep track of the time range in which the web data is empty
+                self.emtpy_web_data_list.append(
+                    CMN.CLS.SourceTypeCompanyTimeDurationTuple(
+                        self.source_type_index,
+                        company_code_number,
+                        CMN.DEF.DATA_TIME_DURATION_RANGE, 
+                        web_data_emtpy_time_start, 
+                        web_data_emtpy_time_end
+                    )
+                )
 # Write the data of last year into csv
                 if len(csv_data_list_each_year) > 0:
                     self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])

@@ -37,6 +37,7 @@ class WebSracpyMgrBase(object):
         self.web_scrapy_obj_list = None
         self.web_scrapy_obj_list_thread_lock = threading.Lock()
         self.web_scrapy_start_datetime = None
+        self.emtpy_web_data_list = None
 
 
     @classmethod
@@ -112,6 +113,9 @@ class WebSracpyMgrBase(object):
             self.web_scrapy_obj_list.append(web_scrapy_obj)
         g_logger.debug("Start to scrap %s......", web_scrapy_obj.get_description())
         web_scrapy_obj.scrap_web_to_csv()
+# Update the empty web data list
+        if web_scrapy_obj.EmptyWebDataFound:
+            self.emtpy_web_data_list.extend(web_scrapy_obj.EmptyWebDataList)
 # Update the new CSV time duration
         self._update_new_csv_time_duration(web_scrapy_obj)
         with self.web_scrapy_obj_list_thread_lock:
@@ -133,6 +137,9 @@ class WebSracpyMgrBase(object):
             thread_pool.add_scrap_web_to_csv_task(web_scrapy_obj)
         thread_pool.wait_completion()
         for web_scrapy_obj in self.web_scrapy_obj_list:
+# Update the empty web data list
+            if web_scrapy_obj.EmptyWebDataFound:
+                self.emtpy_web_data_list.extend(web_scrapy_obj.EmptyWebDataList)
 # Update the new CSV time duration
             self._update_new_csv_time_duration(web_scrapy_obj)
         with self.web_scrapy_obj_list_thread_lock:
@@ -172,6 +179,7 @@ class WebSracpyMgrBase(object):
             show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=30)
             show_progress_timer_thread.start_timer(WebSracpyMgrBase.show_scrapy_progress, self)
         # import pdb; pdb.set_trace()
+        self.emtpy_web_data_list = []
         for source_type_time_duration in self.source_type_time_duration_list:
             try:
                 self._scrap_single_source_data(source_type_time_duration)
@@ -363,6 +371,20 @@ class WebSracpyMgrBase(object):
     @property
     def StartEstimateCompleteTimeThreshold(self):
         return self.xcfg["start_estimate_complete_time_threshold"]
+
+
+    @property
+    def EmptyWebDataFound(self):
+        if self.emtpy_web_data_list is None:
+            raise ValueError("self.emtpy_web_data_list should NOT be None")
+        return True if len(self.emtpy_web_data_list) != 0 else False
+
+
+    @property
+    def EmptyWebDataList(self):
+        if self.emtpy_web_data_list is None:
+            raise ValueError("self.emtpy_web_data_list should NOT be None")
+        return self.emtpy_web_data_list
 
 
     @staticmethod

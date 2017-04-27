@@ -7,6 +7,7 @@ MonthTuple = collections.namedtuple('MonthTuple', ('year', 'month'))
 QuarterTuple = collections.namedtuple('QuarterTuple', ('year', 'quarter'))
 TimeDurationTuple = collections.namedtuple('TimeDurationTuple', ('time_duration_start', 'time_duration_end'))
 SourceTypeTimeDurationTuple = collections.namedtuple('SourceTypeTimeDurationTuple', ('source_type_index', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
+SourceTypeCompanyTimeDurationTuple = collections.namedtuple('SourceTypeCompanyTimeDurationTuple', ('source_type_index', 'company_code_number', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
 import common_definition as CMN_DEF
 import common_function as CMN_FUNC
 
@@ -84,6 +85,10 @@ class FinanceTimeBase(object):
         raise NotImplementedError
 
 
+    def check_continous_time_duration(self, another_time_duration):
+        raise NotImplementedError
+
+
     def get_year(self):
         assert (self.year is not None), "year value should NOT be None"
         return self.year
@@ -101,6 +106,10 @@ class FinanceTimeBase(object):
         else:
             self.year = int(year_value)
             self.republic_era_year = self.year - CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET
+
+
+    def check_continous_time_duration(self, another_time_duration):
+        return CMN_FUNC.is_continous_time_duration(self, another_time_duration)
 
 
     @staticmethod

@@ -150,6 +150,7 @@ class WebScrapyBase(object):
         self.description = None
         self.timeslice_generator = None
         self.url_time_range = None
+        self.emtpy_web_data_list = None
 
 
     @classmethod
@@ -386,6 +387,20 @@ class WebScrapyBase(object):
     def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
         # """IMPORTANT: This function should NOT be implemented and called unless the time unit is NOT date !"""
         raise RuntimeError("This %s function should NOT be called !!!" % sys._getframe(0).f_code.co_name)
+
+
+    @property
+    def EmptyWebDataFound(self):
+        if self.emtpy_web_data_list is None:
+            raise ValueError("self.emtpy_web_data_list should NOT be None")
+        return True if len(self.emtpy_web_data_list) != 0 else False
+
+
+    @property
+    def EmptyWebDataList(self):
+        if self.emtpy_web_data_list is None:
+            raise ValueError("self.emtpy_web_data_list should NOT be None")
+        return self.emtpy_web_data_list
 
 
     @abstractmethod

@@ -705,3 +705,14 @@ def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_t
         return (True if (finance_time_range_start <= finance_time <= finance_time_range_end) else False)
     else:
         return (True if (finance_time_range_start >= finance_time >= finance_time_range_end) else False)
+
+def is_continous_time_duration(time_duration1, time_duration2):
+    assert type(time_duration1) == type(time_duration2), "The time types[%s, %s] are NOT identical" % (type(time_duration1), type(time_duration2))  
+    if time_duration1 == time_duration2:
+        return True
+    time_duration_start = time_duration1
+    time_duration_end = time_duration2
+    if time_duration1 > time_duration2:
+        time_duration_start = time_duration2
+        time_duration_end = time_duration1            
+    return True if (time_duration_start + 1) == time_duration_end else False

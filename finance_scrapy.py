@@ -509,6 +509,14 @@ def do_scrap():
     show_info("* Scrap the data from the website......")
     g_mgr.do_scrapy()
     show_info("* Scrap the data from the website...... DONE!!!")
+    if g_mgr.EmptyWebDataFound:
+        show_warn("No Web Data while scraping:")
+        # import pdb; pdb.set_trace()
+        for empty_web_data_info in g_mgr.EmptyWebDataList:
+            if CMN.DEF.IS_FINANCE_MARKET_MODE:
+                show_warn("source_type_index: %d, time range: %s - %s" % (empty_web_data_info.source_type_index, empty_web_data_info.time_duration_start, empty_web_data_info.time_duration_end))
+            else:
+                show_warn("source_type_index: %d, company: %s, time range: %s - %s" % (empty_web_data_info.source_type_index, empty_web_data_info.company_code_number, empty_web_data_info.time_duration_start, empty_web_data_info.time_duration_end))
 
 
 @record_exe_time("CHECK")
@@ -674,6 +682,22 @@ if __name__ == "__main__":
     # test_derived1.value = 2
     # print test_derived1.value
     # print test_derived11.value
+    # date1 = CMN.CLS.FinanceDate(2016, 12, 31)
+    # print date1.check_continous_time_duration(CMN.CLS.FinanceDate(2016, 11, 30))
+    # print date1.check_continous_time_duration(CMN.CLS.FinanceDate(2016, 12, 30))
+    # print date1.check_continous_time_duration(CMN.CLS.FinanceDate(2017, 1, 1))
+    # print date1.check_continous_time_duration(CMN.CLS.FinanceDate(2017, 4, 25))
+    # month1 = CMN.CLS.FinanceMonth(2016, 12)
+    # print month1.check_continous_time_duration(CMN.CLS.FinanceMonth(2016, 1))
+    # print month1.check_continous_time_duration(CMN.CLS.FinanceMonth(2016, 12))
+    # print month1.check_continous_time_duration(CMN.CLS.FinanceMonth(2017, 1))
+    # print month1.check_continous_time_duration(CMN.CLS.FinanceMonth(2017, 4))
+    # quarter1 = CMN.CLS.FinanceQuarter(2016, 4)
+    # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2016, 1))
+    # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2016, 3))
+    # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2017, 1))
+    # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2017, 4))
+
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()
