@@ -541,62 +541,107 @@ def do_clone():
     subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
 
 
-def insert_not_exist_element(dst_list, src_list):
-    dst_index = 0
-    src_index = 0
-    dst_list_len = len(dst_list)
-    # import pdb; pdb.set_trace()
-    for src_data in src_list:
-        data_found = False
-        try:
-            cur_offset = (dst_list[dst_index:]).index(src_data)
-            dst_index = dst_index + cur_offset + 1
-            # data_found = True
-        except ValueError:
-# New element, insert the data into the list
-            if dst_index == dst_list_len:
-                dst_list.append(src_data)
-            else:
-                dst_list.insert(dst_index, src_data)
-            dst_index += 1
-            dst_list_len += 1
-        print "FUNC: %s" % dst_list
+# def insert_not_exist_element(dst_list, src_list):
+#     dst_index = 0
+#     src_index = 0
+#     dst_list_len = len(dst_list)
+#     # import pdb; pdb.set_trace()
+#     for src_data in src_list:
+#         data_found = False
+#         try:
+#             cur_offset = (dst_list[dst_index:]).index(src_data)
+#             dst_index = dst_index + cur_offset + 1
+#             # data_found = True
+#         except ValueError:
+# # New element, insert the data into the list
+#             if dst_index == dst_list_len:
+#                 dst_list.append(src_data)
+#             else:
+#                 dst_list.insert(dst_index, src_data)
+#             dst_index += 1
+#             dst_list_len += 1
+#         print "FUNC: %s" % dst_list
 
 
-class TestBase(object):
-    TEST_VALUE = 0
-    def __init__(self):
+# class TestBase(object):
+#     TEST_VALUE = 0
+#     def __init__(self):
+#         pass
+
+#     @classmethod
+#     def show(cls):
+#         print cls.TEST_VALUE
+
+
+# class TestDerived1(TestBase):
+#     TEST_VALUE = 1
+#     def __init__(self):
+#         super(TestDerived1, self).__init__()
+#         if self.TEST_VALUE is None:
+#             print "TEST_VALUE init"
+#             self.TEST_VALUE = 1
+
+#     @property
+#     def value(self):
+#         return self.TEST_VALUE
+#     @value.setter
+#     def value(self, val):
+#         self.TEST_VALUE = val
+
+
+# class TestDerived2(TestBase):
+#     # TEST_VALUE = 2
+#     def __init__(self):
+#         super(TestDerived2, self).__init__()
+#         if self.TEST_VALUE is None:
+#             print "TEST_VALUE init"
+#             self.TEST_VALUE = 2
+
+class TestClass(object):
+    SHOW_FUNC_PTR = None
+    def __new__(cls):
+        print "fuck you"
+    @classmethod
+    def show1(cls):
+        print "one"
+    @classmethod
+    def show2(cls):
+        print "two"
+    @classmethod
+    def show3(cls):
+        print "three"
+    @classmethod
+    def show(cls, method):
+        if cls.SHOW_FUNC_PTR is None:
+            print "Initialize"
+            cls.SHOW_FUNC_PTR = [cls.show1, cls.show2, cls.show3,]
+        return (cls.SHOW_FUNC_PTR[method])()
+    @classmethod
+    def get_parent_class(cls):
+        assert len(cls.__bases__) == 1, "Only support single inheritance"
+        return cls.__bases__[0]
+    @classmethod
+    def get_class_name(cls):
+        return cls.__name__
+    @classmethod
+    def fuck(cls):
+        print "FUCK !!!"
+
+
+class TestClass1(TestClass):
+    @classmethod
+    def fuck(cls):
+        print "FUCK111 !!!"
+
+class TestClass2(TestClass):
+    @classmethod
+    def show(cls, method):
         pass
 
+class TestClass11(TestClass1):
     @classmethod
-    def show(cls):
-        print cls.TEST_VALUE
-
-
-class TestDerived1(TestBase):
-    TEST_VALUE = 1
-    def __init__(self):
-        super(TestDerived1, self).__init__()
-        if self.TEST_VALUE is None:
-            print "TEST_VALUE init"
-            self.TEST_VALUE = 1
-
-    @property
-    def value(self):
-        return self.TEST_VALUE
-    @value.setter
-    def value(self, val):
-        self.TEST_VALUE = val
-
-
-class TestDerived2(TestBase):
-    # TEST_VALUE = 2
-    def __init__(self):
-        super(TestDerived2, self).__init__()
-        if self.TEST_VALUE is None:
-            print "TEST_VALUE init"
-            self.TEST_VALUE = 2
-
+    def show(cls, method):
+        TestClass.show(method)
 
 
 if __name__ == "__main__":
@@ -698,6 +743,18 @@ if __name__ == "__main__":
     # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2017, 1))
     # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2017, 4))
 
+    # TestClass1.show(0)
+    # TestClass1.show(1)
+    # TestClass1.show(2)
+    # TestClass11.show(0)
+    # TestClass11.show(1)
+    # TestClass11.show(2)
+    # TestClass.fuck()
+    # TestClass1.get_parent_class().fuck()
+    # print TestClass.get_class_name()
+    # print TestClass1.get_class_name()
+    # # test_object1 = TestClass1()
+    # # test_object11 = TestClass11()
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()

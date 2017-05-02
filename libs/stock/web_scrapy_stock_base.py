@@ -152,7 +152,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     try:
                         # import pdb;pdb.set_trace()
 # Grab the data from website and assemble the data to the entry of CSV
-                        csv_data_list = self._parse_web_data(self._get_web_data(url))
+                        csv_data_list = self._parse_web_data(self.get_web_data(url))
                     except CMN.EXCEPTION.WebScrapyNotFoundException as e:
                         # import pdb;pdb.set_trace()
                         errmsg = None
@@ -174,7 +174,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                             time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
                             try:
 # Grab the data from website and assemble the data to the entry of CSV
-                                csv_data_list = self._parse_web_data(self._get_web_data(url))
+                                csv_data_list = self._parse_web_data(self.get_web_data(url))
                             except CMN.EXCEPTION.WebScrapyServerBusyException as e:
                                 pass
                             else:
@@ -211,15 +211,16 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                         else:
                             csv_data_list_each_year.append(csv_data_list)
 # Keep track of the time range in which the web data is empty
-                self.emtpy_web_data_list.append(
-                    CMN.CLS.SourceTypeCompanyTimeDurationTuple(
-                        self.source_type_index,
-                        company_code_number,
-                        CMN.DEF.DATA_TIME_DURATION_RANGE, 
-                        web_data_emtpy_time_start, 
-                        web_data_emtpy_time_end
+                if web_data_emtpy_time_start is not None:
+                    self.emtpy_web_data_list.append(
+                        CMN.CLS.SourceTypeCompanyTimeDurationTuple(
+                            self.source_type_index,
+                            company_code_number,
+                            CMN.DEF.DATA_TIME_DURATION_RANGE, 
+                            web_data_emtpy_time_start, 
+                            web_data_emtpy_time_end
+                        )
                     )
-                )
 # Write the data of last year into csv
                 if len(csv_data_list_each_year) > 0:
                     self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])
@@ -292,6 +293,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 
     @classmethod
     def _show_statement_field_dimension_internal(cls, interest_conf_filename, auto_gen_sql_element):
+        # import pdb; pdb.set_trace()
         field_count = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
         field_element_count = 0
         table_field_interest_description_list = []
@@ -368,7 +370,6 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 for entry_index in range(field_index_list_len):
                     table_field_element_definition = u"\"%s\", // FinanceField_LONG" % re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE)
                     table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
-
         CMN.FUNC.write_config_file_lines_ex(table_field_interest_description_list, interest_conf_filename, "wb")
 
 
@@ -438,7 +439,6 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 for column_title_index, column_title in enumerate(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST):
                     table_field_element_definition = u"\"%s:%s\", // FinanceField_LONG" % (re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE), re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE))
                     table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
-
         CMN.FUNC.write_config_file_lines_ex(table_field_interest_description_list, interest_conf_filename, "wb")
 
 
@@ -502,12 +502,12 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                     g_logger.debug("Get the statement data from URL: %s" % url)
                     try:
 # Find the statement field
-                        company_statement_field_list = self._parse_web_statement_field_data(self._get_web_data(url))
+                        company_statement_field_list = self._parse_web_statement_field_data(self.get_web_data(url))
                         if company_statement_field_list is None:
                             raise RuntimeError(url)
 # Find the statement column field
                         if dst_statement_column_field_list is not None:
-                            company_statement_column_field_list = self._parse_web_statement_column_field_data(self._get_web_data(url))
+                            company_statement_column_field_list = self._parse_web_statement_column_field_data(self.get_web_data(url))
                             if company_statement_column_field_list is None:
                                 raise RuntimeError(url)
                     except CMN.EXCEPTION.WebScrapyNotFoundException as e:
@@ -531,12 +531,12 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                             time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
                             try:
 # Find the statement field
-                                company_statement_field_list = self._parse_web_statement_field_data(self._get_web_data(url))
+                                company_statement_field_list = self._parse_web_statement_field_data(self.get_web_data(url))
                                 if company_statement_field_list is None:
                                     raise RuntimeError(url)
 # Find the statement column field
                                 if dst_statement_column_field_list is not None:
-                                    company_statement_column_field_list = self._parse_web_statement_column_field_data(self._get_web_data(url))
+                                    company_statement_column_field_list = self._parse_web_statement_column_field_data(self.get_web_data(url))
                                     if company_statement_column_field_list is None:
                                         raise RuntimeError(url)
                             except CMN.EXCEPTION.WebScrapyServerBusyException as e:

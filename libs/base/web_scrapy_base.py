@@ -110,47 +110,15 @@ class WebScrapyBase(object):
             self.new_csv_end = new_csv_end
 
 # Can't be declared in class due to thread-safe
-    # PARSE_URL_DATA_FUNC_PTR = None
     # GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
-    @classmethod
-    def init_class_variables(cls):
-        pass
-
-
-    def __init__(self, cur_file_path, **kwargs):
-        self.xcfg = {
-            "time_duration_type": CMN.DEF.DATA_TIME_DURATION_TODAY,
-            "time_duration_start": None,
-            "time_duration_end": None,
-            "dry_run_only": False,
-            "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH,
-            "csv_time_duration_table": None,
-            # "multi_thread": False,
-        }
-        # import pdb; pdb.set_trace()
-        self.xcfg.update(kwargs)
-# Find which module is instansiate
-        cur_module_name = re.sub(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.FUNC.get_cur_module_name(cur_file_path))
-# Find correspnding index of the module
-        self.source_type_index = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
+    PARSE_URL_DATA_FUNC_PTR = None
 # Find corresponding config of the module
-        self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[self.source_type_index]
-
-        self.PARSE_URL_DATA_FUNC_PTR = None
-        self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
-
-        self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]
-        self.url_format = self.source_url_parsing_cfg["url_format"]
-        self.url_parsing_method = self.source_url_parsing_cfg["url_parsing_method"]
-        # csv_time_unit = CMN.DEF.DEF_CSV_TIME_UNIT[self.source_type_index]
-        self.url_time_unit = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
-        # self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file if url_time_unit == csv_time_unit self.__scrap_single_web_data_to_single_csv_file
-        # self.timeslice_iterable = timeslice_generator_obj.generate_time_slice(self.timeslice_generate_method, **kwargs)
-        # self.time_slice_kwargs = {"time_duration_start": None, "time_duration_end": None}
-        self.description = None
-        self.timeslice_generator = None
-        self.url_time_range = None
-        self.emtpy_web_data_list = None
+    SOURCE_TYPE_INDEX = None
+    SOURCE_URL_PARSING_CFG = None
+    TIMESLICE_GENERATE_METHOD = None
+    URL_FORMAT = None
+    URL_PARSING_METHOD = None
+    URL_TIME_UNIT = None
 
 
     @classmethod
@@ -193,6 +161,92 @@ class WebScrapyBase(object):
 
 
     @classmethod
+    def get_class_name(cls):
+        return cls.__name__
+
+
+    @classmethod
+    def get_parent_class(cls):
+        assert len(cls.__bases__) == 1, "Only support single inheritance"
+        return cls.__bases__[0]
+
+
+    @classmethod
+    def init_class_common_variables(cls):
+# CAUTION: This function MUST be called by the LEAF derived class
+        if cls.PARSE_URL_DATA_FUNC_PTR is None:
+            cls.PARSE_URL_DATA_FUNC_PTR = [
+                cls.__select_web_data_by_bs4, 
+                cls.__select_web_data_by_json,
+                cls.__select_web_data_by_customization,
+            ]
+# Find correspnding index of the class
+# Caution: Can NOT be called here !!! 
+# Since this function is probably called by the class which is NOT a leaf derived class
+        if cls.SOURCE_TYPE_INDEX is None:
+            cls.SOURCE_TYPE_INDEX = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index(cls.__name__)
+# Find corresponding config of the module
+        if cls.SOURCE_URL_PARSING_CFG is None:
+            cls.SOURCE_URL_PARSING_CFG = CMN.DEF.DEF_SOURCE_URL_PARSING[cls.SOURCE_TYPE_INDEX]
+        if cls.TIMESLICE_GENERATE_METHOD is None:
+            cls.TIMESLICE_GENERATE_METHOD = cls.SOURCE_URL_PARSING_CFG["url_timeslice"]
+        if cls.URL_FORMAT is None:
+            cls.URL_FORMAT = cls.SOURCE_URL_PARSING_CFG["url_format"]
+        if cls.URL_PARSING_METHOD is None:
+            cls.URL_PARSING_METHOD = cls.SOURCE_URL_PARSING_CFG["url_parsing_method"]
+        if cls.URL_TIME_UNIT is None:
+            cls.URL_TIME_UNIT = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[cls.TIMESLICE_GENERATE_METHOD]
+
+
+    @classmethod
+    def init_class_customized_variables(cls):
+# CAUTION: This function MUST be called by the LEAF derived class
+        pass
+
+
+    @classmethod
+    def get_web_data(cls, url):
+        req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
+        web_data = (cls.PARSE_URL_DATA_FUNC_PTR[cls.URL_PARSING_METHOD])(req, cls.SOURCE_URL_PARSING_CFG)
+        return web_data
+
+
+    @classmethod
+    def check_web_data_exist(cls, url):
+        return True if cls.get_web_data_from_url(url) is not None else False
+
+
+    def __init__(self, cur_file_path, **kwargs):
+        self.xcfg = {
+            "time_duration_type": CMN.DEF.DATA_TIME_DURATION_TODAY,
+            "time_duration_start": None,
+            "time_duration_end": None,
+            "dry_run_only": False,
+            "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH,
+            "csv_time_duration_table": None,
+            # "multi_thread": False,
+        }
+        # import pdb; pdb.set_trace()
+        self.xcfg.update(kwargs)
+        # self.PARSE_URL_DATA_FUNC_PTR = None
+        self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
+# Find which module is instansiate
+        cur_module_name = re.sub(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.FUNC.get_cur_module_name(cur_file_path))
+# Find correspnding index of the module
+        self.source_type_index = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
+# Find corresponding config of the module
+        self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[self.source_type_index]
+        self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]
+        self.url_format = self.source_url_parsing_cfg["url_format"]
+        self.url_parsing_method = self.source_url_parsing_cfg["url_parsing_method"]
+        self.url_time_unit = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
+        self.description = None
+        self.timeslice_generator = None
+        self.url_time_range = None
+        self.emtpy_web_data_list = None
+
+
+    @classmethod
     def _get_url_time_range(cls):
         raise NotImplementedError
 
@@ -230,22 +284,24 @@ class WebScrapyBase(object):
         return self.timeslice_generator
 
 
-    def __get_parse_url_data_func_ptr(self):
-        if self.PARSE_URL_DATA_FUNC_PTR is None:
-            self.PARSE_URL_DATA_FUNC_PTR = [
-                self.__select_web_data_by_bs4, 
-                self.__select_web_data_by_json,
-                self.__select_web_data_by_customization
-            ]
-        return self.PARSE_URL_DATA_FUNC_PTR
+    # def __get_parse_url_data_func_ptr(self):
+    #     if self.PARSE_URL_DATA_FUNC_PTR is None:
+    #         self.PARSE_URL_DATA_FUNC_PTR = [
+    #             self.__select_web_data_by_bs4, 
+    #             self.__select_web_data_by_json,
+    #             self.__select_web_data_by_customization
+    #         ]
+    #     return self.PARSE_URL_DATA_FUNC_PTR
 
 
-    def _get_web_data(self, url):
-        req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
-        # parse_url_data_type = self.parse_url_data_type_obj.get_type()
-        # return (self.PARSE_URL_DATA_FUNC_PTR[parse_url_data_type])(res)
-        # import pdb; pdb.set_trace()
-        return (self.__get_parse_url_data_func_ptr()[self.url_parsing_method])(req, self.source_url_parsing_cfg)
+    # def _get_web_data(self, url):
+    #     # import pdb; pdb.set_trace()
+    #     req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
+    #     # parse_url_data_type = self.parse_url_data_type_obj.get_type()
+    #     # return (self.PARSE_URL_DATA_FUNC_PTR[parse_url_data_type])(res)
+    #     # import pdb; pdb.set_trace()
+    #     # return (self.__get_parse_url_data_func_ptr()[self.url_parsing_method])(req, self.source_url_parsing_cfg)
+    #     return (self.PARSE_URL_DATA_FUNC_PTR[self.url_parsing_method])(req, self.source_url_parsing_cfg)
 
 
     def _get_overlapped_web2csv_time_duration_update_cfg(self, csv_old_time_duration_tuple, time_duration_start, time_duration_end):

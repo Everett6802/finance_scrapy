@@ -74,7 +74,7 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def _get_web_scrapy_class(cls, source_type_index):
+    def _get_web_scrapy_class(cls, source_type_index, init_class_variables=True):
         # import pdb; pdb.set_trace()
         module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
         module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
@@ -82,6 +82,9 @@ class WebSracpyMgrBase(object):
         g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
 # Find the module
         web_scrapy_class = cls.__get_class_for_name(module_folder, module_name, class_name)
+        if init_class_variables:
+            web_scrapy_class.init_class_common_variables() # Caution: Must be called in the leaf derived class
+            web_scrapy_class.init_class_customized_variables() # Caution: Must be called in the leaf derived class         
         return web_scrapy_class
 
 
@@ -97,7 +100,6 @@ class WebSracpyMgrBase(object):
         # import pdb; pdb.set_trace()
 # Get the class
         web_scrapy_class = cls._get_web_scrapy_class(source_type_index)
-        web_scrapy_class.init_class_variables()
 # Instantiate the class 
         web_scrapy_obj = cls._get_web_scrapy_object(web_scrapy_class, **kwargs)
         return web_scrapy_obj
@@ -213,11 +215,8 @@ class WebSracpyMgrBase(object):
 
     @classmethod
     def do_scrapy_debug(cls, source_type_index, silent_mode=False):
-        # import pdb; pdb.set_trace()
         web_scrapy_class = cls._get_web_scrapy_class(source_type_index)
         web_scrapy_class.do_debug(silent_mode)
-        # web_scrapy_obj = WebSracpyMgrBase._instantiate_web_scrapy_object(source_type_index)
-        # web_scrapy_obj.do_debug(silent_mode)
 
 
     def __check_source_type_in_correct_finance_mode(self):
@@ -280,53 +279,6 @@ class WebSracpyMgrBase(object):
     @property
     def DryRun(self):
         return self.xcfg["dry_run_only"]
-
-
-#     def initialize(**kwargs):
-#         # import pdb; pdb.set_trace()
-# # Determine the source type method first
-#         if kwargs.get("source_type_method", None) is not None:
-#             self.xcfg["source_type_method"] = kwargs["source_type_method"]
-#         else: # Set the default value if it is None
-#             self.xcfg["source_type_method"] = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX
-#         try:
-#             method_index = CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TYPE.index(method)
-#         except ValueError as e:
-#             g_logger.error("Unsupported method: %s" % method)
-#             raise e
-
-#         source_type_time_duration_list = None
-#         if method_index != CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_USER_DEFINED_INDEX:
-#             conf_filename = CMN.DEF.DEF_TODAY_CONFIG_FILENAME if method_index == CMN.DEF.DEF_WEB_SCRAPY_DATA_SOURCE_TODAY_INDEX else CMN.DEF.DEF_HISTORY_CONFIG_FILENAME
-#             source_type_time_duration_list = CMN.FUNC.read_source_type_time_duration_config_file(conf_filename)
-#             if source_type_time_duration_list is None:
-#                 errmsg = "Fail to parse the config file: %s" % conf_filename
-#                 g_logger.error(errmsg)
-#                 raise ValueError(errmsg)
-#         else:
-#             if kwargs.get("source_type_index_list", None) is not None:
-#                 self.xcfg["source_type_index_list"] = kwargs["source_type_index_list"]
-#             else:
-#                 self.xcfg["source_type_index_list"] = []
-#                 if CMN.DEF.IS_FINANCE_MARKET_MODE: # Set all market soure type as the default value if it is None
-#                     for index in range(CMN.DEF.DEF_DATA_SOURCE_MARKET_START, CMN.DEF.DEF_DATA_SOURCE_MARKET_END):
-#                         self.xcfg["source_type_index_list"].append(index)
-#                 elif CMN.DEF.IS_FINANCE_STOCK_MODE: # Set all stock soure type as the default value if it is None
-#                     for index in range(CMN.DEF.DEF_DATA_SOURCE_STOCK_START, CMN.DEF.DEF_DATA_SOURCE_STOCK_END):
-#                         self.xcfg["source_type_index_list"].append(index)
-
-#         if kwargs.get("time_duration_start", None) is not None:
-#             self.xcfg["time_duration_start"] = kwargs["time_duration_start"]
-#         else:
-#             self.xcfg["time_duration_start"] = None
-#         if kwargs.get("time_duration_end", None) is not None:
-#             self.xcfg["time_duration_end"] = kwargs["time_duration_end"]
-#         else:
-#             self.xcfg["time_duration_end"] = None
-#         for source_type_index in self.xcfg["source_type_index_list"]:
-#             source_type_time_duration_list.append(
-#                 CMN.CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_start, time_duration_end)
-#             )
 
 
     def _create_finance_root_folder_if_not_exist(self, root_folderpath=None):

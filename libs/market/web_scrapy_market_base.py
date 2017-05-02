@@ -109,7 +109,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
             g_logger.debug("Get the data by date from URL: %s" % url)
             try:
 # Grab the data from website and assemble the data to the entry of CSV
-                csv_data_list = self._parse_web_data(self._get_web_data(url))
+                csv_data_list = self._parse_web_data(self.get_web_data(url))
             except Exception as e:
                 g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
             else:
@@ -134,15 +134,16 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
                 else:
                     csv_data_list_each_year.append(csv_data_list)
 # Keep track of the time range in which the web data is empty
-        self.emtpy_web_data_list.append(
-            CMN.CLS.SourceTypeCompanyTimeDurationTuple(
-                self.source_type_index,
-                company_code_number,
-                CMN.DEF.DATA_TIME_DURATION_RANGE, 
-                web_data_emtpy_time_start, 
-                web_data_emtpy_time_end
+        if web_data_emtpy_time_start is None:
+            self.emtpy_web_data_list.append(
+                CMN.CLS.SourceTypeCompanyTimeDurationTuple(
+                    self.source_type_index,
+                    company_code_number,
+                    CMN.DEF.DATA_TIME_DURATION_RANGE, 
+                    web_data_emtpy_time_start, 
+                    web_data_emtpy_time_end
+                )
             )
-        )
 # Write the data of last year into csv
         if len(csv_data_list_each_year) > 0:
             self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])

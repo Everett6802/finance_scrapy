@@ -233,7 +233,7 @@ def get_config_filepath(conf_filename, conf_folderpath=None):
         conf_filepath = "%s/%s/%s" % (CMN_DEF.DEF_PROJECT_FOLDERPATH, CMN_DEF.DEF_CONF_FOLDER, conf_filename)
     else:
         conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
-    g_logger.debug("Parse the config file: %s" % conf_filepath)
+    # g_logger.debug("Parse the config file: %s" % conf_filepath)
     return conf_filepath
 
 
@@ -502,6 +502,7 @@ def check_file_exist(filepath):
 def check_config_file_exist(conf_filename, conf_folderpath=None):
     conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
     return check_file_exist(conf_filepath)
+
 
 def create_folder(folderpath):
     # os.mkdir(folderpath)

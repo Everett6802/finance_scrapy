@@ -261,7 +261,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         scrapy_obj_cfg["company_group_set"] = self.company_group_set
 # Create the scrapy object
         # import pdb; pdb.set_trace()
-        web_scrapy_class = self._get_web_scrapy_class(source_type_time_duration.source_type_index)
+        web_scrapy_class = self._get_web_scrapy_class(source_type_time_duration.source_type_index, False)
+        web_scrapy_class.init_class_common_variables() # Caution
         scrapy_obj_cfg["renew_statement_field"] = True
         web_scrapy_obj = self._get_web_scrapy_object(web_scrapy_class, **scrapy_obj_cfg)
         if web_scrapy_obj is None:
@@ -298,7 +299,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def renew_statement_field(self):
         # import pdb; pdb.set_trace()
         for source_type_time_duration in self.source_type_time_duration_list:
-            web_scrapy_class = self._get_web_scrapy_class(source_type_time_duration.source_type_index)
+            web_scrapy_class = self._get_web_scrapy_class(source_type_time_duration.source_type_index, False)
             table_column_field_exist = web_scrapy_class.TABLE_COLUMN_FIELD_EXIST
             conf_filename = CMN.DEF.DEF_STATEMENT_FIELD_NAME_CONF_FILENAME[source_type_time_duration.source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START]
             dst_statement_field_list = None #[]
