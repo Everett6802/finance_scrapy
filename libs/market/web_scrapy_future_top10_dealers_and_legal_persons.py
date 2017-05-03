@@ -77,7 +77,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
 
     def assemble_web_url(self, timeslice):
         # import pdb; pdb.set_trace()
-        url = self.url_format.format(*(timeslice.year, timeslice.month, timeslice.day))
+        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
         self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         if self.need_check_everytime:
             self.cur_date = timeslice

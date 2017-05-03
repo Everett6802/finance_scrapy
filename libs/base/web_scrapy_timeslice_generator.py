@@ -179,9 +179,9 @@ class WebScrapyTimeSliceGenerator(object):
             raise ValueError("Fail to find the company[%s] foreign investors sharehold date list" % company_code_number)
 # Check time range
         if date_end < company_foreign_investors_shareholder_date_list[0]:
-            raise ValueError("The end day [%s] is earlier than the first one[%s]" % (date_end, company_foreign_investors_shareholder_date_list[0]))
+            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("The end day [%s] is earlier than the first one[%s]" % (date_end, company_foreign_investors_shareholder_date_list[0]))
         if date_start > company_foreign_investors_shareholder_date_list[-1]:
-            raise ValueError("The start day [%s] is later than the last one[%s]" % (date_start, company_foreign_investors_shareholder_date_list[-1]))
+            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("The start day [%s] is later than the last one[%s]" % (date_start, company_foreign_investors_shareholder_date_list[-1]))
 
         if date_start < company_foreign_investors_shareholder_date_list[0]:
             g_logger.warn("The start day [%s] is earlier than the first one[%s]" % (date_start, company_foreign_investors_shareholder_date_list[0]))

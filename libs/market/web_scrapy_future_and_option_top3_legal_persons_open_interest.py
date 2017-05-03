@@ -27,7 +27,7 @@ class WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.W
 
 
     def assemble_web_url(self, timeslice):
-        url = self.url_format.format(*(timeslice.year, timeslice.month, timeslice.day))
+        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
         self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 

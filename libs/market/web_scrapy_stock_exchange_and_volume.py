@@ -53,8 +53,8 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
         # assert (timeslice is None), "timeslice is NOT None"
         # import pdb; pdb.set_trace()
         # datetime_month_cfg = self.get_datetime_startday()
-        # url = self.url_format.format(*(datetime_month_cfg.year, datetime_month_cfg.month))
-        url = self.url_format.format(*(timeslice.year, timeslice.month))
+        # url = self.URL_FORMAT.format(*(datetime_month_cfg.year, datetime_month_cfg.month))
+        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month))
 # Check if it's no need to acquire the whole month data in this month
         try:
             index = self.data_not_whole_month_list.index(timeslice)

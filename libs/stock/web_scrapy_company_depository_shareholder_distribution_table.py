@@ -55,7 +55,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 
     def assemble_web_url(self, timeslice, company_code_number):
         # import pdb; pdb.set_trace()
-        url = self.url_format.format(
+        url = self.URL_FORMAT.format(
             *(
                 timeslice.year, 
                 "%02d" % timeslice.month,
@@ -74,7 +74,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
         data_list = []
         data_list.append(self.date_cur_string)
 # Scrape the data of each stock interval
-        for tr in web_data[9:24]:
+        for tr in web_data[10:25]:
             td = tr.select('td')
             data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
             data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
@@ -82,7 +82,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 # Ignore the data which is NOT interesting... Scrape the data of sum
         sum_found = False
         # import pdb; pdb.set_trace()
-        for tr in web_data[24:]:
+        for tr in web_data[25:]:
             td = tr.select('td')
             if not re.match(self.TABLE_SUM_FLAG, td[1].text, re.U):
                 continue

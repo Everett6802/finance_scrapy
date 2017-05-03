@@ -230,16 +230,16 @@ class WebScrapyBase(object):
         self.xcfg.update(kwargs)
         # self.PARSE_URL_DATA_FUNC_PTR = None
         self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
-# Find which module is instansiate
-        cur_module_name = re.sub(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.FUNC.get_cur_module_name(cur_file_path))
-# Find correspnding index of the module
-        self.source_type_index = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
-# Find corresponding config of the module
-        self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[self.source_type_index]
-        self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]
-        self.url_format = self.source_url_parsing_cfg["url_format"]
-        self.url_parsing_method = self.source_url_parsing_cfg["url_parsing_method"]
-        self.url_time_unit = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
+# # Find which module is instansiate
+#         cur_module_name = re.sub(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.FUNC.get_cur_module_name(cur_file_path))
+# # Find correspnding index of the module
+#         self.source_type_index = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
+# # Find corresponding config of the module
+#         self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[self.source_type_index]
+#         self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]
+#         self.url_format = self.source_url_parsing_cfg["url_format"]
+#         self.url_parsing_method = self.source_url_parsing_cfg["url_parsing_method"]
+#         self.url_time_unit = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
         self.description = None
         self.timeslice_generator = None
         self.url_time_range = None
@@ -253,12 +253,12 @@ class WebScrapyBase(object):
 
     @property
     def SourceTypeIndex(self):
-        return self.source_type_index
+        return self.SOURCE_TYPE_INDEX
 
 
     def get_description(self):
         if self.description is None:
-            self.description = "%s" % CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index]
+            self.description = "%s" % CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX]
             # if show_detail:
             #     if not self.timeslice_list_generated:
             #         self.__generate_timeslice_list()
@@ -318,7 +318,7 @@ class WebScrapyBase(object):
             is_time_duration_end_in_range = CMN.FUNC.is_time_in_range(csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_end) 
             if is_time_duration_start_in_range and is_time_duration_end_in_range:
 # All csv data already exists, no need to update the new data
-                g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index]))
+                g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX]))
                 return web2csv_time_duration_update
             elif is_time_duration_start_in_range:
 # I just assume the new time range can be only extended from the start of end side of the original time range
@@ -335,7 +335,7 @@ class WebScrapyBase(object):
             else:
 # If the time range of new data contain all the time range of csv data, the system is not desiged to update two time range interval
                 raise ValueError("The system does NOT support this type[2] of the range update; CSV data[%s:%s], new data[%s:%s]" % (csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-            g_logger.debug("Time range overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+            g_logger.debug("Time range overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
         else:
 # I assume that the two interval must be consecutive 
             if time_duration_start > csv_old_time_duration_tuple.time_duration_end: 
@@ -346,7 +346,7 @@ class WebScrapyBase(object):
                 web2csv_time_duration_update.AppendDirection = WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT
             else:
                 raise ValueError("The system does NOT support this type[4] of the range update; CSV data[%s:%s], new data[%s:%s]" % (csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-            g_logger.debug("Time range does Not overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+            g_logger.debug("Time range does Not overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
 # Set the time range config
             # if web2csv_time_duration_update.NeedUpdate:
         assert web2csv_time_duration_update.NeedUpdate, "Error! No data to be updated!!"
@@ -431,12 +431,12 @@ class WebScrapyBase(object):
     def _get_timeslice_iterable(self, **kwargs):
         # import pdb;pdb.set_trace()
         assert kwargs["time_duration_start"].get_time_unit_type() == kwargs["time_duration_end"].get_time_unit_type(), "The time unit of start and end time is NOT identical; Start: %s, End: %s" % (type(kwargs["time_duration_start"]), type(kwargs["time_duration_end"]))
-        if self.url_time_unit != kwargs["time_duration_start"].get_time_unit_type():
+        if self.URL_TIME_UNIT != kwargs["time_duration_start"].get_time_unit_type():
             (new_finance_time_start, new_finance_time_end) = self._modify_time_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
             kwargs["time_duration_start"] = new_finance_time_start
             kwargs["time_duration_end"] = new_finance_time_end
 # Generate the time slice
-        timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.timeslice_generate_method, **kwargs)
+        timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.TIMESLICE_GENERATE_METHOD, **kwargs)
         return timeslice_iterable
 
 

@@ -599,8 +599,8 @@ def do_clone():
 
 class TestClass(object):
     SHOW_FUNC_PTR = None
-    def __new__(cls):
-        print "fuck you"
+    # def __new__(cls):
+    #     print "fuck you"
     @classmethod
     def show1(cls):
         print "one"

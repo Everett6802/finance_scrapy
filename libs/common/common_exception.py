@@ -29,3 +29,8 @@ class WebScrapyIncorrectFormatException(WebScrapyException):
 class WebScrapyServerBusyException(WebScrapyException):
     """Class for server busy exceptions"""
     pass
+
+
+class WebScrapyIncorrectValueException(WebScrapyException):
+    """Class for incorrect value exceptions"""
+    pass

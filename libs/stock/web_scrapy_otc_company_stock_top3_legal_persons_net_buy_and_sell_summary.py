@@ -28,7 +28,7 @@ class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_bas
 
 
     def assemble_web_url(self, timeslice):
-        url = self.url_format.format(
+        url = self.URL_FORMAT.format(
             *(
                 timeslice.year - 1911, 
                 "%02d" % timeslice.month,

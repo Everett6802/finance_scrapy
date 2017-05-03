@@ -26,7 +26,7 @@ class WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary(web_scrapy_base.WebScr
 
 
     def assemble_web_url(self, timeslice):
-        url = self.url_format.format(
+        url = self.URL_FORMAT.format(
             *(
                 timeslice.year - 1911, 
                 "%02d" % timeslice.month,

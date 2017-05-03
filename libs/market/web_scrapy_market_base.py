@@ -42,7 +42,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
     def _check_old_csv_time_duration_exist(self, *args):
         if self.xcfg["csv_time_duration_table"] is None:
             return False 
-        if self.xcfg["csv_time_duration_table"].get(self.source_type_index, None) is None:
+        if self.xcfg["csv_time_duration_table"].get(self.SOURCE_TYPE_INDEX, None) is None:
             return False 
         return True
 
@@ -50,12 +50,12 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
     def _adjust_csv_time_duration(self):
         # import pdb; pdb.set_trace()
 # Limit the time range from the web site
-        time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.source_type_index)
+        time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.SOURCE_TYPE_INDEX)
 # Determine the CSV/Web time duration
         web2csv_time_duration_update = None
         if self._check_old_csv_time_duration_exist():
             web2csv_time_duration_update = self._get_overlapped_web2csv_time_duration_update_cfg(
-                self.xcfg["csv_time_duration_table"][self.source_type_index], 
+                self.xcfg["csv_time_duration_table"][self.SOURCE_TYPE_INDEX], 
                 time_duration_after_lookup_time.time_duration_start, 
                 time_duration_after_lookup_time.time_duration_end
             )
@@ -72,13 +72,13 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
     def scrap_web_to_csv(self):
         # import pdb; pdb.set_trace()
 # Find the file path for writing data into csv
-        csv_filepath = self.assemble_csv_filepath(self.source_type_index)
+        csv_filepath = self.assemble_csv_filepath(self.SOURCE_TYPE_INDEX)
 # Determine the actual time range
         web2csv_time_duration_update = self._adjust_csv_time_duration()
         if not web2csv_time_duration_update.NeedUpdate:
-            g_logger.debug("[%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd))
+            g_logger.debug("[%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd))
             return
-        scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
+        scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
         g_logger.debug(scrapy_msg)
 # Check if only dry-run
         if self.xcfg["dry_run_only"]:
@@ -102,7 +102,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # Write the data into csv year by year
             if timeslice.year != cur_year:
                 if len(csv_data_list_each_year) > 0:
-                    self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])
+                    self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
                     csv_data_list_each_year = []
                 cur_year = timeslice.year
             url = self.assemble_web_url(timeslice)
@@ -123,7 +123,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # Keep track of the time range in which the web data is empty
                             self.emtpy_web_data_list.append(
                                 CMN.CLS.SourceTypeCompanyTimeDurationTuple(
-                                    self.source_type_index,
+                                    self.SOURCE_TYPE_INDEX,
                                     CMN.DEF.DATA_TIME_DURATION_RANGE, 
                                     web_data_emtpy_time_start, 
                                     web_data_emtpy_time_end
@@ -134,11 +134,10 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
                 else:
                     csv_data_list_each_year.append(csv_data_list)
 # Keep track of the time range in which the web data is empty
-        if web_data_emtpy_time_start is None:
+        if web_data_emtpy_time_start is not None:
             self.emtpy_web_data_list.append(
                 CMN.CLS.SourceTypeCompanyTimeDurationTuple(
-                    self.source_type_index,
-                    company_code_number,
+                    self.SOURCE_TYPE_INDEX,
                     CMN.DEF.DATA_TIME_DURATION_RANGE, 
                     web_data_emtpy_time_start, 
                     web_data_emtpy_time_end
@@ -146,7 +145,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
             )
 # Write the data of last year into csv
         if len(csv_data_list_each_year) > 0:
-            self._write_to_csv(csv_filepath, csv_data_list_each_year, self.source_url_parsing_cfg["url_multi_data_one_page"])
+            self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
 # Append the old CSV data after the new web data if necessary
         if web2csv_time_duration_update.AppendDirection == BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
             g_logger.debug("Append the old CSV data to the file: %s" % csv_filepath)

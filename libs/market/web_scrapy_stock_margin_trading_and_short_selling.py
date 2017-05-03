@@ -28,7 +28,7 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
 
     def assemble_web_url(self, timeslice):
         # import pdb; pdb.set_trace()
-        url = self.url_format.format(
+        url = self.URL_FORMAT.format(
             *(
                 timeslice.year - 1911, 
                 "%02d" % timeslice.month,
