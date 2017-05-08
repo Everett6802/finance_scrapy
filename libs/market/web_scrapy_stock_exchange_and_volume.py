@@ -13,23 +13,12 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 臺股指數及成交量
 class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
 
-    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
-    #     super(WebScrapyStockExchangeAndVolume, self).__init__(
-    #         # "http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report{0}{1:02d}/{0}{1:02d}_F3_1_2.php?STK_NO=&myear={0}&mmon={1:02d}",
-    #         __file__
-    #         # CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
-    #         # datetime_range_start, 
-    #         # datetime_range_end,
-    #         # enable_time_range_mode = True,
-    #     )
-    #     # import pdb; pdb.set_trace()
-    #     datetime_start_cfg = self.get_datetime_startday()
-    #     datetime_end_cfg = self.get_datetime_endday()
-    #     # assert (datetime_start_cfg.year == datetime_end_cfg.year), "Start Year[%d] is NOT equal to End Year[%d]" % (datetime_start_cfg.year, datetime_end_cfg.year)
-    #     # assert (datetime_start_cfg.month == datetime_end_cfg.month), "Start Month[%d] is NOT equal to End Month[%d]" % (datetime_start_cfg.month, datetime_end_cfg.month)
-    #     self.whole_month_data = True
-    #     if  datetime_start_cfg.day > 1 or datetime_end_cfg.day < CMN.get_cfg_month_last_day(datetime_end_cfg):
-    #         self.whole_month_data = False
+    @classmethod
+    def assemble_web_url(cls, timeslice, *args):
+        url = self.self.URL_FORMAT.format(*(timeslice.year, timeslice.month))
+        return url
+
+
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyStockExchangeAndVolume, self).__init__(__file__, **kwargs)
@@ -49,12 +38,8 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
                 self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
 
 
-    def assemble_web_url(self, timeslice):
-        # assert (timeslice is None), "timeslice is NOT None"
-        # import pdb; pdb.set_trace()
-        # datetime_month_cfg = self.get_datetime_startday()
-        # url = self.URL_FORMAT.format(*(datetime_month_cfg.year, datetime_month_cfg.month))
-        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month))
+    def prepare_for_scrapy(self, timeslice):
+        url = self.assemble_web_url(timeslice)
 # Check if it's no need to acquire the whole month data in this month
         try:
             index = self.data_not_whole_month_list.index(timeslice)

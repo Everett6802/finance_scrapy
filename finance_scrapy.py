@@ -598,6 +598,7 @@ def do_clone():
 #             self.TEST_VALUE = 2
 
 class TestClass(object):
+    FUCK = "Fuck You"
     SHOW_FUNC_PTR = None
     # def __new__(cls):
     #     print "fuck you"
@@ -626,6 +627,8 @@ class TestClass(object):
     @classmethod
     def fuck(cls):
         print "FUCK !!!"
+    def shit(self):
+        print self.FUCK
 
 
 class TestClass1(TestClass):
@@ -753,8 +756,11 @@ if __name__ == "__main__":
     # TestClass1.get_parent_class().fuck()
     # print TestClass.get_class_name()
     # print TestClass1.get_class_name()
-    # # test_object1 = TestClass1()
-    # # test_object11 = TestClass11()
+    # test_object1 = TestClass1()
+    # test_object1.shit()
+    # # # test_object11 = TestClass11()
+    # web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(9)
+
     # sys.exit(0)
 
     # import pdb; pdb.set_trace()

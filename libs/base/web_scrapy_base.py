@@ -213,7 +213,7 @@ class WebScrapyBase(object):
 
     @classmethod
     def check_web_data_exist(cls, url):
-        return True if cls.get_web_data_from_url(url) is not None else False
+        return True if cls.get_web_data(url) is not None else False
 
 
     def __init__(self, cur_file_path, **kwargs):
@@ -406,10 +406,9 @@ class WebScrapyBase(object):
 # in Market mode
 # args[0]: source_type_index
 # in Stock mode
-# args[0]: source_type_index
-# args[1]: company_code_number
-        time_duration_start_from_lookup_table = self._get_url_time_range().get_time_range_start(*args)
-        time_duration_end_from_lookup_table = self._get_url_time_range().get_time_range_end(*args)
+# args[0]: company_code_number
+# args[1]: source_type_index
+        (time_duration_start_from_lookup_table, time_duration_end_from_lookup_table) = self._get_url_time_range().get_time_range(*args)
         time_duration_start = time_duration_end = None
         if self.xcfg["time_duration_start"] is None:
             time_duration_start = time_duration_start_from_lookup_table

@@ -13,20 +13,8 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 三大法人買賣金額統計表
 class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMarketBase):
 
-    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
-    #     super(WebScrapyStockTop3LegalPersonsNetBuyOrSell, self).__init__(
-    #         # "http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date={0}%2F{1}%2F{2}&mSubmit=%ACd%B8%DF&yr=1979&w_date=19790904&m_date=19790904", 
-    #         __file__
-    #         # CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
-    #         # datetime_range_start, 
-    #         # datetime_range_end
-    #     )
-    def __init__(self, **kwargs):
-        super(WebScrapyStockTop3LegalPersonsNetBuyOrSell, self).__init__(__file__, **kwargs)
-        self.cur_date_str = None
-
-
-    def assemble_web_url(self, timeslice):
+    @classmethod
+    def assemble_web_url(cls, timeslice, *args):
         url = self.URL_FORMAT.format(
             *(
                 timeslice.year - 1911, 
@@ -34,6 +22,16 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
                 "%02d" % timeslice.day
             )
         )
+        return url
+
+
+    def __init__(self, **kwargs):
+        super(WebScrapyStockTop3LegalPersonsNetBuyOrSell, self).__init__(__file__, **kwargs)
+        self.cur_date_str = None
+
+
+    def prepare_for_scrapy(self, timeslice):
+        url = self.assemble_web_url(timeslice)
         self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 

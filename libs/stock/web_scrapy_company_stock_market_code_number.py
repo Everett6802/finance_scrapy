@@ -15,6 +15,11 @@ g_logger = WSL.get_web_scrapy_logger()
 # 上市櫃公司代號
 class WebScrapyCompanyStockMarketCodeNumber(web_scrapy_base.WebScrapyBase):
 
+    @classmethod
+    def assemble_web_url(cls, timeslice, company_code_number, *args):
+        raise RuntimeError("No need to run this function")
+
+
     def __init__(self, market_type):
         self.market_type = market_type
         self.str_mode = None
@@ -34,7 +39,7 @@ class WebScrapyCompanyStockMarketCodeNumber(web_scrapy_base.WebScrapyBase):
         )
 
 
-    def assemble_web_url(self, timeslice):
+    def prepare_for_scrapy(self, timeslice, company_code_number):
         raise RuntimeError("No need to run this function")
 
 

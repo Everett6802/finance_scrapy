@@ -22,7 +22,6 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
-    # url_time_range = None
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyStockBase, self).__init__(cur_file_path, **kwargs)
         self.company_group_set = None
@@ -34,7 +33,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         self.new_csv_time_duration_dict = None
         self.scrapy_company_progress_count = 0
         self.company_profile = None
-        self.cur_company_code_number = None # Caution: This value is updated every time when assemble_web_url() is called
+        self.cur_company_code_number = None # Caution: This value is updated every time when prepare_for_scrapy() is called
 
 
     def __get_company_profile(self):
@@ -79,7 +78,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     def _adjust_csv_time_duration(self, company_code_number):
         # import pdb; pdb.set_trace()
 # Limit the time range from the web site
-        time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(self.SOURCE_TYPE_INDEX, company_code_number)
+        time_duration_after_lookup_time = (self._adjust_time_duration_start_and_end_time_func_ptr(self.xcfg["time_duration_type"]))(company_code_number, self.SOURCE_TYPE_INDEX)
 # Determine the CSV/Web time duration
         web2csv_time_duration_update = None
         if self._check_old_csv_time_duration_exist(company_code_number):
@@ -147,7 +146,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                             self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
                             csv_data_list_each_year = []
                         cur_year = timeslice.year
-                    url = self.assemble_web_url(timeslice, company_code_number)
+                    url = self.prepare_for_scrapy(timeslice, company_code_number)
                     g_logger.debug("Get the data from URL: %s" % url)
                     try:
                         # import pdb;pdb.set_trace()
@@ -238,7 +237,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         return self.new_csv_time_duration_dict
 
 
-    def assemble_web_url(self, timeslice, company_code_number):
+    def prepare_for_scrapy(self, timeslice, company_code_number):
         # raise NotImplementedError
         self.cur_company_code_number = company_code_number
 
@@ -247,12 +246,33 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     def CompanyProgressCount(self):
         return self.scrapy_company_progress_count
 
+
+    @abstractmethod
+    def assemble_web_url(cls, timeslice, company_code_number, *args):
+# CAUTION: This function MUST be called by the LEAF derived class
+        raise NotImplementedError
+
 ##########################################################################
 
 class WebScrapyStockStatementBase(WebScrapyStockBase):
 
     __metaclass__ = ABCMeta
     TABLE_COLUMN_FIELD_EXIST = False
+
+
+    @classmethod
+    def assemble_web_url(cls, timeslice, company_code_number, *args):
+# CAUTION: This function MUST be called by the LEAF derived class
+        url = cls.URL_FORMAT.format(
+            *(
+                company_code_number,
+                timeslice.year - 1911, 
+                "%02d" % timeslice.quarter,
+            )
+        )
+        return url
+
+
     def __init__(self, cur_file_path, **kwargs):
         super(WebScrapyStockStatementBase, self).__init__(cur_file_path, **kwargs)
         # import pdb;pdb.set_trace()
@@ -498,7 +518,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 #     import pdb; pdb.set_trace()
 # Generate the time slice list                
                 for timeslice in timeslice_iterable:
-                    url = self.assemble_web_url(timeslice, company_code_number)
+                    url = self.prepare_for_scrapy(timeslice, company_code_number)
                     g_logger.debug("Get the statement data from URL: %s" % url)
                     try:
 # Find the statement field
@@ -560,16 +580,10 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                             self._insert_not_exist_statement_element(dst_statement_column_field_list, company_statement_column_field_list)
 
 
-    def assemble_web_url(self, timeslice, company_code_number):
+    def prepare_for_scrapy(self, timeslice, company_code_number):
         # import pdb; pdb.set_trace()
-        super(WebScrapyStockStatementBase, self).assemble_web_url(timeslice, company_code_number)
-        url = self.URL_FORMAT.format(
-            *(
-                company_code_number,
-                timeslice.year - 1911, 
-                "%02d" % timeslice.quarter,
-            )
-        )
+        super(WebScrapyStockStatementBase, self).prepare_for_scrapy(timeslice, company_code_number)
+        url = self.assemble_web_url(timeslice, company_code_number)
         self.cur_quarter_str = CMN.FUNC.transform_quarter_str(timeslice.year, timeslice.quarter)
         return url
 

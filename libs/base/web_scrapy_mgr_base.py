@@ -40,74 +40,9 @@ class WebSracpyMgrBase(object):
         self.emtpy_web_data_list = None
 
 
-    @classmethod
-    def __import_module(cls, module_folder, module_name):
-        # import pdb; pdb.set_trace()
-        module_path = "%s/%s" % (CMN.DEF.DEF_PROJECT_LIB_FOLDERPATH, module_folder)
-        sys.path.insert(0, module_path)
-        module_file = '%s/%s.py' % (module_path, module_name)
-        assert os.path.exists(module_file), "module file does not exist: %s" % module_file
-        try:
-            module = __import__(module_name)
-            if module:
-                # print 'Import file: %s.py (%s)' % (module_name, module)
-                return reload(module)
-        except CMN.EXCEPTION.WebScrapyException as e:
-            msg = 'Import template file failure: %s.py, due to: %s' % (module_name, str(e))
-            CMN.FUNC.try_print(msg)
-            raise e
-        except Exception as e:
-            msg = 'Import template file failure: %s.py, due to: %s' % (module_name, str(e))
-            CMN.FUNC.try_print(msg)
-            raise e
-
-
-    @classmethod
-    def __get_class_for_name(cls, module_folder, module_name, class_name):
-        # import pdb; pdb.set_trace()
-        m = cls.__import_module(module_folder, module_name)
-        parts = module_name.split('.')
-        parts.append(class_name)
-        for comp in parts[1:]:
-            m = getattr(m, comp)            
-        return m
-
-
-    @classmethod
-    def _get_web_scrapy_class(cls, source_type_index, init_class_variables=True):
-        # import pdb; pdb.set_trace()
-        module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
-        module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
-        class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
-        g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
-# Find the module
-        web_scrapy_class = cls.__get_class_for_name(module_folder, module_name, class_name)
-        if init_class_variables:
-            web_scrapy_class.init_class_common_variables() # Caution: Must be called in the leaf derived class
-            web_scrapy_class.init_class_customized_variables() # Caution: Must be called in the leaf derived class         
-        return web_scrapy_class
-
-
-    @classmethod
-    def _get_web_scrapy_object(cls, web_scrapy_class, **kwargs):
-# Instantiate the class 
-        web_scrapy_obj = web_scrapy_class(**kwargs)
-        return web_scrapy_obj
-
-
-    @classmethod
-    def _instantiate_web_scrapy_object(cls, source_type_index, **kwargs):
-        # import pdb; pdb.set_trace()
-# Get the class
-        web_scrapy_class = cls._get_web_scrapy_class(source_type_index)
-# Instantiate the class 
-        web_scrapy_obj = cls._get_web_scrapy_object(web_scrapy_class, **kwargs)
-        return web_scrapy_obj
-
-
     def _scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
         # import pdb; pdb.set_trace()
-        web_scrapy_obj = self._instantiate_web_scrapy_object(source_type_index, **kwargs)
+        web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(source_type_index, **kwargs)
         if web_scrapy_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
         with self.web_scrapy_obj_list_thread_lock:
@@ -132,7 +67,7 @@ class WebSracpyMgrBase(object):
             with self.web_scrapy_obj_list_thread_lock:
                 if self.web_scrapy_obj_list is None:
                     self.web_scrapy_obj_list = []
-                web_scrapy_obj = self._instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
+                web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
                 self.web_scrapy_obj_list.append(web_scrapy_obj)
                 # time.sleep(3)
             g_logger.debug("Start to scrap %s...... %d" % (web_scrapy_obj.get_description(), index))
@@ -215,7 +150,7 @@ class WebSracpyMgrBase(object):
 
     @classmethod
     def do_scrapy_debug(cls, source_type_index, silent_mode=False):
-        web_scrapy_class = cls._get_web_scrapy_class(source_type_index)
+        web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_index)
         web_scrapy_class.do_debug(silent_mode)
 
 

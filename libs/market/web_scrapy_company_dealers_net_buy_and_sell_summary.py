@@ -13,21 +13,9 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 自營商買賣超彙總表
 class WebScrapyCompanyDealersNetBuyOrSellSummary(WebScrapyMarketBase.WebScrapyMarketBase):
 
-    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
-    #     super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(
-    #         "http://www.twse.com.tw/ch/trading/fund/TWT43U/TWT43U.php?download=&qdate={0}%2F{1}%2F{2}&sorting=by_stkno", 
-    #         __file__, 
-    #         'utf-8', 
-    #         'table tr', 
-    #         datetime_range_start, 
-    #         datetime_range_end
-    #     )
-    def __init__(self, **kwargs):
-        super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(__file__, **kwargs)
-
-
-    def assemble_web_url(self, timeslice):
-        url = self.URL_FORMAT.format(
+    @classmethod
+    def assemble_web_url(cls, timeslice, *args):
+        url = cls.URL_FORMAT.format(
             *(
                 timeslice.year - 1911, 
                 "%02d" % timeslice.month,
@@ -35,6 +23,14 @@ class WebScrapyCompanyDealersNetBuyOrSellSummary(WebScrapyMarketBase.WebScrapyMa
             )
         )
         return url
+
+
+    def __init__(self, **kwargs):
+        super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(__file__, **kwargs)
+
+
+    def prepare_for_scrapy(self, timeslice):
+        return self.assemble_web_url(timeslice)
 
 
     def _parse_web_data(self, web_data):

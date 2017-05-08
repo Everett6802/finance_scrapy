@@ -13,15 +13,12 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 臺指選擇權賣權買權比
 class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
 
-    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
-    #     super(WebScrapyOptionPutCallRatio, self).__init__(
-    #         # "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={3}%2F{4}%2F{5}", 
-    #         __file__
-    #         # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),
-    #         # datetime_range_start, 
-    #         # datetime_range_end,
-    #         # enable_time_range_mode = True,
-    #     )
+    @classmethod
+    def assemble_web_url(cls, timeslice, *args):
+        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, args[0], args[1]))
+        return url
+
+
     def __init__(self, **kwargs):
         super(WebScrapyOptionPutCallRatio, self).__init__(__file__, **kwargs)
         self.whole_month_data = True
@@ -46,29 +43,22 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
         return (finance_time_start.get_finance_month_object(), finance_time_end.get_finance_month_object())
 
 
-    def assemble_web_url(self, timeslice):
-        # if timeslice is None:
-        #     datetime_start_cfg = self.get_datetime_startday()
-        #     datetime_end_cfg= self.get_datetime_endday()
-        #     url = self.URL_FORMAT.format(*(datetime_start_cfg.year, datetime_start_cfg.month, datetime_start_cfg.day, datetime_end_cfg.year, datetime_end_cfg.month, datetime_end_cfg.day))
-        # else:
-        #     url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
-        # import pdb; pdb.set_trace()
+    def prepare_for_scrapy(self, timeslice):
 # Check if it's no need to acquire the whole month data in this month
         try:
             index = self.data_not_whole_month_list.index(timeslice)
             if len(self.data_not_whole_month_list) == 1:
-                url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, self.xcfg["time_duration_start"].day, self.xcfg["time_duration_end"].day))
+                url = self.assemble_web_url(timeslice, self.xcfg["time_duration_start"].day, self.xcfg["time_duration_end"].day)
             else:
                 if index == 0:
                     end_day_in_month = CMN.FUNC.get_month_last_day(timeslice.year, timeslice.month)
-                    url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, self.xcfg["time_duration_start"].day, end_day_in_month))
+                    url = self.assemble_web_url(timeslice, self.xcfg["time_duration_start"].day, end_day_in_month)
                 else:
-                    url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, 1, self.xcfg["time_duration_start"].day))
+                    url = self.assemble_web_url(timeslice, 1, self.xcfg["time_duration_start"].day)
             self.whole_month_data = False
         except ValueError:
             end_day_in_month = CMN.FUNC.get_month_last_day(timeslice.year, timeslice.month)
-            url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, 1, end_day_in_month))
+            url = self.assemble_web_url(timeslice, 1, end_day_in_month)
             self.whole_month_data = True
         return url
 

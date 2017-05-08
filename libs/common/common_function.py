@@ -12,6 +12,7 @@ import inspect
 from datetime import datetime, timedelta
 import common_definition as CMN_DEF
 import common_class as CMN_CLS
+import common_exception as CMN_EXCEPTION
 import web_scrapy_logging as WSL
 g_logger = WSL.get_web_scrapy_logger()
 
@@ -35,6 +36,66 @@ def get_full_stack_traceback():
         for line in item[4]:
             errmsg += ' ' + line.lstrip()
     return errmsg
+
+
+def import_web_scrapy_module(module_folder, module_name):
+    # import pdb; pdb.set_trace()
+    module_path = "%s/%s" % (CMN_DEF.DEF_PROJECT_LIB_FOLDERPATH, module_folder)
+    sys.path.insert(0, module_path)
+    module_file = '%s/%s.py' % (module_path, module_name)
+    assert os.path.exists(module_file), "module file does not exist: %s" % module_file
+    try:
+        module = __import__(module_name)
+        if module:
+            # print 'Import file: %s.py (%s)' % (module_name, module)
+            return reload(module)
+    except CMN_EXCEPTION.WebScrapyException as e:
+        msg = 'Import template file failure: %s.py, due to: %s' % (module_name, str(e))
+        try_print(msg)
+        raise e
+    except Exception as e:
+        msg = 'Import template file failure: %s.py, due to: %s' % (module_name, str(e))
+        try_print(msg)
+        raise e
+
+
+def get_web_scrapy_class_for_name(module_folder, module_name, class_name):
+    # import pdb; pdb.set_trace()
+    m = import_web_scrapy_module(module_folder, module_name)
+    parts = module_name.split('.')
+    parts.append(class_name)
+    for comp in parts[1:]:
+        m = getattr(m, comp)            
+    return m
+
+
+def get_web_scrapy_class(source_type_index, init_class_variables=True):
+    # import pdb; pdb.set_trace()
+    module_folder = CMN_DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
+    module_name = CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
+    class_name = CMN_DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
+    g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
+# Find the module
+    web_scrapy_class = get_web_scrapy_class_for_name(module_folder, module_name, class_name)
+    if init_class_variables:
+        web_scrapy_class.init_class_common_variables() # Caution: Must be called in the leaf derived class
+        web_scrapy_class.init_class_customized_variables() # Caution: Must be called in the leaf derived class         
+    return web_scrapy_class
+
+
+def get_web_scrapy_object(web_scrapy_class, **kwargs):
+# Instantiate the class 
+    web_scrapy_obj = web_scrapy_class(**kwargs)
+    return web_scrapy_obj
+
+
+def instantiate_web_scrapy_object(source_type_index, **kwargs):
+    # import pdb; pdb.set_trace()
+# Get the class
+    web_scrapy_class = get_web_scrapy_class(source_type_index)
+# Instantiate the class 
+    web_scrapy_obj = get_web_scrapy_object(web_scrapy_class, **kwargs)
+    return web_scrapy_obj
 
 
 def check_source_type_index_in_range(source_type_index):
@@ -139,6 +200,15 @@ def check_date_str_format(date_string):
     return mobj
 
 
+def is_date_str_format(date_string):
+    check_result = True
+    try:
+        check_date_str_format(date_string)
+    except ValueError:
+        check_result = False
+    return check_result
+
+
 def check_month_str_format(month_string):
     mobj = re.match("([\d]{2,4})-([\d]{2})", month_string)
     if mobj is None:
@@ -154,6 +224,15 @@ def check_month_str_format(month_string):
     return mobj
 
 
+def is_month_str_format(month_string):
+    check_result = True
+    try:
+        check_month_str_format(month_string)
+    except ValueError:
+        check_result = False
+    return check_result
+
+
 def check_quarter_str_format(quarter_string):
     mobj = re.match("([\d]{2,4})[Qq]([\d]{1})", quarter_string)
     if mobj is None:
@@ -167,6 +246,15 @@ def check_quarter_str_format(quarter_string):
 # # Check Quarter Range
 #     check_quarter_range(mobj.group(2))
     return mobj
+
+
+def is_quarter_str_format(quarter_string):
+    check_result = True
+    try:
+        check_quarter_str_format(quarter_string)
+    except ValueError:
+        check_result = False
+    return check_result
 
 
 def transform_date_str(year_value, month_value, day_value):
@@ -238,10 +326,10 @@ def get_config_filepath(conf_filename, conf_folderpath=None):
 
 
 def get_finance_analysis_mode():
-    config_line_list = read_config_file_lines(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
-    if len(config_line_list) != 1:
+    conf_line_list = read_config_file_lines(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+    if len(conf_line_list) != 1:
         raise ValueError("Incorrect setting in %s" % CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
-    mode = int(config_line_list[0])
+    mode = int(conf_line_list[0])
     if mode not in [CMN_DEF.FINANCE_ANALYSIS_MARKET, CMN_DEF.FINANCE_ANALYSIS_STOCK]:
         raise ValueError("Unknown finance analysis mode: %d" % mode)
     return mode
@@ -274,23 +362,27 @@ def get_finance_mode_description():
     return CMN_DEF.FINANCE_MODE_DESCRIPTION[CMN_DEF.FINANCE_MODE]
 
 
-def read_config_file_lines_ex(conf_filename, conf_file_read_attribute, conf_folderpath=None):
-    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
-    config_line_list = []
+def read_file_lines_ex(filepath, file_read_attribute):
+    line_list = []
     try:
-        with open(conf_filepath, conf_file_read_attribute) as fp:
+        with open(filepath, file_read_attribute) as fp:
             for line in fp:
                 if line.startswith('#'):
                     continue
                 line_strip = line.strip('\n')
                 if len(line_strip) == 0:
                     continue
-                config_line_list.append(line_strip)
+                line_list.append(line_strip)
     except Exception as e:
-        errmsg = "Error occur while reading config file[%s], due to %s" % (conf_filename, str(e))
+        errmsg = "Error occur while reading file[%s], due to %s" % (filepath, str(e))
         g_logger.error(errmsg)
         raise ValueError(errmsg)
-    return config_line_list
+    return line_list
+
+
+def read_config_file_lines_ex(conf_filename, conf_file_read_attribute, conf_folderpath=None):
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+    return read_file_lines_ex(conf_filepath, conf_file_read_attribute)
 
 
 def read_config_file_lines(conf_filename, conf_folderpath=None):
@@ -301,7 +393,7 @@ def unicode_read_config_file_lines_ex(conf_filename, conf_file_read_attribute, c
     if conf_unicode_encode is None:
         conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
     conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
-    config_line_list = []
+    conf_line_list = []
     try:
         with open(conf_filepath, conf_file_read_attribute) as fp:
             for line_tmp in fp:
@@ -311,12 +403,12 @@ def unicode_read_config_file_lines_ex(conf_filename, conf_file_read_attribute, c
                 line_strip = line.strip('\n')
                 if len(line_strip) == 0:
                     continue
-                config_line_list.append(line_strip)
+                conf_line_list.append(line_strip)
     except Exception as e:
         errmsg = "Error occur while reading config file[%s] in unicode, due to %s" % (conf_filename, str(e))
         g_logger.error(errmsg)
         raise ValueError(errmsg)
-    return config_line_list
+    return conf_line_list
 
 
 def unicode_read_config_file_lines(conf_filename, conf_folderpath=None, conf_unicode_encode=None):
@@ -325,31 +417,35 @@ def unicode_read_config_file_lines(conf_filename, conf_folderpath=None, conf_uni
     return unicode_read_config_file_lines_ex(conf_filename, 'rb', conf_folderpath, conf_unicode_encode)
 
 
-def write_config_file_lines_ex(config_line_list, conf_filename, conf_file_write_attribute, conf_folderpath=None):
-    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+def write_file_lines_ex(line_list, filepath, file_write_attribute):
     try:
-        with open(conf_filepath, conf_file_write_attribute) as fp:
-            for line in config_line_list:
+        with open(filepath, file_write_attribute) as fp:
+            for line in line_list:
                 if not line.endswith("\n"):
                     line += "\n"
                 fp.write(line)
     except Exception as e:
-        errmsg = "Error occur while writing config file[%s], due to %s" % (conf_filename, str(e))
+        errmsg = "Error occur while writing file[%s], due to %s" % (filepath, str(e))
         g_logger.error(errmsg)
         raise ValueError(errmsg)
 
 
-def write_config_file_lines(config_line_list, conf_filename, conf_folderpath=None):
-    return write_config_file_lines_ex(config_line_list, conf_filename, 'w', conf_folderpath)
+def write_config_file_lines_ex(conf_line_list, conf_filename, conf_file_write_attribute, conf_folderpath=None):
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+    write_file_lines_ex(conf_line_list, conf_filepath, conf_file_write_attribute)
 
 
-def unicode_write_config_file_lines_ex(config_line_list, conf_filename, conf_file_write_attribute, conf_folderpath=None, conf_unicode_encode=None):
+def write_config_file_lines(conf_line_list, conf_filename, conf_folderpath=None):
+    return write_config_file_lines_ex(conf_line_list, conf_filename, 'w', conf_folderpath)
+
+
+def unicode_write_config_file_lines_ex(conf_line_list, conf_filename, conf_file_write_attribute, conf_folderpath=None, conf_unicode_encode=None):
     if conf_unicode_encode is None:
         conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
     conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
     try:
         with open(conf_filepath, conf_file_write_attribute) as fp:
-            for line_tmp in config_line_list:
+            for line_tmp in conf_line_list:
                 line = line_tmp.encode(conf_unicode_encode)
                 if not line.endswith("\n"):
                     line += "\n"
@@ -360,17 +456,17 @@ def unicode_write_config_file_lines_ex(config_line_list, conf_filename, conf_fil
         raise ValueError(errmsg)
 
 
-def unicode_write_config_file_lines(config_line_list, conf_filename, conf_folderpath=None, conf_unicode_encode=None):
+def unicode_write_config_file_lines(conf_line_list, conf_filename, conf_folderpath=None, conf_unicode_encode=None):
     if conf_unicode_encode is None:
         conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
-    return unicode_write_config_file_lines_ex(config_line_list, conf_filename, 'wb', conf_folderpath, conf_unicode_encode)
+    return unicode_write_config_file_lines_ex(conf_line_list, conf_filename, 'wb', conf_folderpath, conf_unicode_encode)
 
 
 def read_source_type_time_duration_config_file(conf_filename, time_duration_type):
     # import pdb; pdb.set_trace()
-    config_line_list = read_config_file_lines(conf_filename)
+    conf_line_list = read_config_file_lines(conf_filename)
     source_type_time_duration_config_list = []
-    for line in config_line_list:
+    for line in conf_line_list:
         param_list = line.split(' ')
         param_list_len = len(param_list)
         # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
@@ -393,8 +489,8 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as
     # import pdb; pdb.set_trace()
     csv_time_duration_dict = {}
     try:
-        config_line_list = read_config_file_lines(conf_filename, conf_folderpath)
-        for line in config_line_list:
+        conf_line_list = read_config_file_lines(conf_filename, conf_folderpath)
+        for line in conf_line_list:
             param_list = line.split(' ')
             param_list_len = len(param_list)
             # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
@@ -411,22 +507,22 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as
 
 def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict):
     # import pdb; pdb.set_trace()
-    config_line_list = []
+    conf_line_list = []
     source_type_start_index, source_type_end_index = get_source_type_index_range()
     for source_type_index in range(source_type_start_index, source_type_end_index):
         time_duration_tuple = csv_time_duration_dict.get(source_type_index, None)
         if time_duration_tuple is None:
             continue
         csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
-        config_line_list.append(csv_time_duration_entry_unicode.encode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE) + "\n")
-    write_config_file_lines_ex(config_line_list, conf_filename, "wb", conf_folderpath)
+        conf_line_list.append(csv_time_duration_entry_unicode.encode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE) + "\n")
+    write_config_file_lines_ex(conf_line_list, conf_filename, "wb", conf_folderpath)
 
 
 def read_company_config_file(conf_filename):
     # import pdb; pdb.set_trace()
-    config_line_list = read_config_file_lines(conf_filename)
+    conf_line_list = read_config_file_lines(conf_filename)
     company_config_list = []
-    for line in config_line_list:
+    for line in conf_line_list:
         param_list = line.split(CMN_DEF.DEF_SPACE_DATA_SPLIT)
         for param in param_list:
             company_config_list.append(param)
@@ -717,3 +813,7 @@ def is_continous_time_duration(time_duration1, time_duration2):
         time_duration_start = time_duration2
         time_duration_end = time_duration1            
     return True if (time_duration_start + 1) == time_duration_end else False
+
+
+def get_year_offset_datetime_cfg(datetime_cfg, year_offset):
+    return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)

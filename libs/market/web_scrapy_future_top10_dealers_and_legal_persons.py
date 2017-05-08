@@ -13,42 +13,19 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 期貨大額交易人未沖銷部位結構表 : 臺股期貨
 class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMarketBase):
 
-    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
-    #     self.OLD_FORMAT_ROW_START = 3
-    #     self.OLD_FORMAT_ROW_END = 5
-    #     self.NEW_FORMAT_ROW_START = 4
-    #     self.NEW_FORMAT_ROW_END = 6
-    #     self.DATE_OLD_FORMAT = datetime(2013, 7, 26)
-
-    #     super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(
-    #         # "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
-    #         __file__
-    #         # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
-    #         # datetime_range_start, 
-    #         # datetime_range_end
-    #     )
-
-    #     self.need_check_everytime = False
-    #     self.data_row_start_index = self.NEW_FORMAT_ROW_START
-    #     self.data_row_end_index = self.NEW_FORMAT_ROW_END
-    #     self.cur_date = None
-    #     self.start_index_list = [1, 1]
-    #     datetime_real_start = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_start()
-    #     datetime_real_end = super(WebScrapyFutureTop10DealersAndLegalPersons, self).get_real_datetime_end()
-    #     if datetime_real_start <= self.DATE_OLD_FORMAT and datetime_real_end > self.DATE_OLD_FORMAT:
-    #         self.need_check_everytime = True
-    #         self.data_row_start_index = None
-    #         self.data_row_end_index = None
-    #         self.start_index_list = None
-    #     elif datetime_real_end <= self.DATE_OLD_FORMAT:
-    #         self.data_row_start_index = self.OLD_FORMAT_ROW_START
-    #         self.data_row_end_index = self.OLD_FORMAT_ROW_END  
-    #         self.start_index_list = [2, 1] 
     OLD_FORMAT_ROW_START = 3
     OLD_FORMAT_ROW_END = 5
     NEW_FORMAT_ROW_START = 4
     NEW_FORMAT_ROW_END = 6
     DATE_OLD_FORMAT = CMN.CLS.FinanceDate(2013, 7, 26)
+
+
+    @classmethod
+    def assemble_web_url(cls, timeslice, *args):
+        url = cls.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
+        return url
+
+
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(__file__, **kwargs)
@@ -75,9 +52,9 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
             self.start_index_list = [2, 1] 
 
 
-    def assemble_web_url(self, timeslice):
+    def prepare_for_scrapy(self, timeslice):
         # import pdb; pdb.set_trace()
-        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
+        url = self.assemble_web_url(timeslice)
         self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         if self.need_check_everytime:
             self.cur_date = timeslice

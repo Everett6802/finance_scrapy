@@ -17,3 +17,4 @@ snapshot/
 #conf/statement_of_changes_in_equity_interest_field_metadata
 *.conf*
 *_metadata
+.time_range

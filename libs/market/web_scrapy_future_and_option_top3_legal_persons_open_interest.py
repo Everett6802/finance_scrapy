@@ -13,21 +13,19 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 期貨和選擇權未平倉口數與契約金額
 class WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.WebScrapyMarketBase):
 
-    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
-    #     super(WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest, self).__init__(
-    #         # "http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
-    #         __file__
-    #         # CMN_CLS.ParseURLDataByBS4('utf-8', '.table_c tr'),
-    #         # datetime_range_start, 
-    #         # datetime_range_end
-    #     )
+    @classmethod
+    def assemble_web_url(cls, timeslice, *args):
+        url = cls.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
+        return url
+
+
     def __init__(self, **kwargs):
         super(WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest, self).__init__(__file__, **kwargs)
         self.cur_date_str = None
 
 
-    def assemble_web_url(self, timeslice):
-        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
+    def prepare_for_scrapy(self, timeslice):
+        url = self.assemble_web_url(timeslice)
         self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 

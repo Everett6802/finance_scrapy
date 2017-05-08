@@ -105,7 +105,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
                     self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
                     csv_data_list_each_year = []
                 cur_year = timeslice.year
-            url = self.assemble_web_url(timeslice)
+            url = self.prepare_for_scrapy(timeslice)
             g_logger.debug("Get the data by date from URL: %s" % url)
             try:
 # Grab the data from website and assemble the data to the entry of CSV
@@ -159,5 +159,11 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         return self.new_csv_time_duration
 
 
-    def assemble_web_url(self, timeslice):
+    @classmethod
+    def assemble_web_url(cls, timeslice, *args):
+# CAUTION: This function MUST be called by the LEAF derived class
+        raise NotImplementedError
+
+
+    def prepare_for_scrapy(self, timeslice):
         raise NotImplementedError

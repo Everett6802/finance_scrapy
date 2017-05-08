@@ -16,18 +16,23 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 集保戶股權分散表
 class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScrapyStockBase):
 
-    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
-    #     super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(
-    #         "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1}{2}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
-    #         __file__, 
-    #         # 'big5', 
-    #         # 'table tbody tr', 
-    #         CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
-    #         datetime_range_start, 
-    #         datetime_range_end
-    #     )
-    #     self.generate_day_time_list_rule = self.__generate_day_time_list_rule_select_friday
     TABLE_SUM_FLAG = u'\u5408\u3000\u8a08' # "合　計"
+
+
+    @classmethod
+    def assemble_web_url(cls, timeslice, company_code_number, *args):
+# CAUTION: This function MUST be called by the LEAF derived class
+        url = cls.URL_FORMAT.format(
+            *(
+                timeslice.year, 
+                "%02d" % timeslice.month,
+                "%02d" % timeslice.day,
+                company_code_number
+            )
+        )
+        return url
+
+
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
         super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(__file__, **kwargs)
@@ -53,16 +58,9 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
         return (finance_time_start, finance_time_end)
 
 
-    def assemble_web_url(self, timeslice, company_code_number):
+    def prepare_for_scrapy(self, timeslice, company_code_number):
         # import pdb; pdb.set_trace()
-        url = self.URL_FORMAT.format(
-            *(
-                timeslice.year, 
-                "%02d" % timeslice.month,
-                "%02d" % timeslice.day,
-                company_code_number
-            )
-        )
+        url = self.assemble_web_url(timeslice, company_code_number)
         self.date_cur_string = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 

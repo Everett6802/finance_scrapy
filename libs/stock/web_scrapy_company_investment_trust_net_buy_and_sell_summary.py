@@ -14,6 +14,18 @@ g_logger = WSL.get_web_scrapy_logger()
 # 投信買賣超彙總表
 class WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary(web_scrapy_base.WebScrapyBase):
 
+    @classmethod
+    def assemble_web_url(cls, timeslice, company_code_number, *args):
+        url = self.URL_FORMAT.format(
+            *(
+                datetime_cfg.year - 1911, 
+                "%02d" % timeslice.month,
+                "%02d" % timeslice.day
+            )
+        )
+        return url
+
+
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary, self).__init__(
             "http://www.twse.com.tw/ch/trading/fund/TWT44U/TWT44U.php?download=&qdate={0}%2F{1}%2F{2}&sorting=by_stkno", 
@@ -25,14 +37,8 @@ class WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary(web_scrapy_base.WebScra
         )
 
 
-    def assemble_web_url(self, timeslice):
-        url = self.URL_FORMAT.format(
-            *(
-                datetime_cfg.year - 1911, 
-                "%02d" % timeslice.month,
-                "%02d" % timeslice.day
-            )
-        )
+    def prepare_for_scrapy(self, timeslice, company_code_number):
+        url = self.assemble_web_url(timeslice, company_code_number)
         return url
 
 

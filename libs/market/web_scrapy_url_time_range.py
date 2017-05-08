@@ -13,39 +13,39 @@ class WebScrapyURLTimeRange(object):
 
     def __init__(self):
         # import pdb; pdb.set_trace()
-        self.DEF_DATA_SOURCE_START_DATE_CFG = None
-        self.DEF_DATA_SOURCE_START_DATE_CFG_LEN = 0
+        self.DEF_DATA_SOURCE_START_DATE_LIST = None
+        # self.DEF_DATA_SOURCE_START_DATE_LIST_LEN = 0
         self.last_url_data_date = None
 
 
     def initialize(self):
-        self.DEF_DATA_SOURCE_START_DATE_CFG = [
+        self.DEF_DATA_SOURCE_START_DATE_LIST = [
             CMN.CLS.FinanceDate("2001-01-01"),
             CMN.CLS.FinanceDate("2004-04-07"),
             CMN.CLS.FinanceDate("2001-01-01"),
-            CMN.CLS.FinanceDate(self.__get_year_offset_datetime_cfg(datetime.today(), -3)),
-            CMN.CLS.FinanceDate(self.__get_year_offset_datetime_cfg(datetime.today(), -3)),
-            CMN.CLS.FinanceDate(self.__get_year_offset_datetime_cfg(datetime.today(), -3)),
+            CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -3)),
+            CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -3)),
+            CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -3)),
             CMN.CLS.FinanceDate("2002-01-01"),
             CMN.CLS.FinanceDate("2004-07-01"),
-            CMN.CLS.FinanceDate("2012-05-02"),
-            CMN.CLS.FinanceDate("2012-05-02"),
-            CMN.CLS.FinanceDate("2015-04-30"),
+            # CMN.CLS.FinanceDate("2012-05-02"),
+            # CMN.CLS.FinanceDate("2012-05-02"),
+            # CMN.CLS.FinanceDate("2015-04-30"),
             # transform_string2datetime("2010-01-04"),
             # transform_string2datetime("2004-12-17"),
             # transform_string2datetime("2004-12-17"),
             # transform_string2datetime("2004-12-17"),
         ]
-        self.DEF_DATA_SOURCE_START_DATE_CFG_LEN = len(self.DEF_DATA_SOURCE_START_DATE_CFG)
+        # self.DEF_DATA_SOURCE_START_DATE_LIST_LEN = len(self.DEF_DATA_SOURCE_START_DATE_LIST)
 
 
-    def __get_year_offset_datetime_cfg(self, datetime_cfg, year_offset):
-        return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
+    # def __get_year_offset_datetime_cfg(self, datetime_cfg, year_offset):
+    #     return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
 
 
     def get_time_range_start(self, source_type_index):
         CMN.FUNC.check_source_type_index_in_range(source_type_index)
-        return self.DEF_DATA_SOURCE_START_DATE_CFG[source_type_index]
+        return self.DEF_DATA_SOURCE_START_DATE_LIST[source_type_index]
 
 
     def get_time_range_end(self, source_type_index):
@@ -53,3 +53,7 @@ class WebScrapyURLTimeRange(object):
         if self.last_url_data_date is None:
             self.last_url_data_date = CMN.FUNC.get_last_url_data_date(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE)
         return self.last_url_data_date
+
+
+    def get_time_range(self, source_type_index):
+        return (self.get_time_range_start(source_type_index), self.get_time_range_end(source_type_index))

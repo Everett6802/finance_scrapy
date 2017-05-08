@@ -125,12 +125,12 @@ class FinanceTimeBase(object):
 
 
     @staticmethod
-    def from_string(time_string):
-        if CMN_FUNC.check_date_str_format(time_string):
+    def from_time_string(time_string):
+        if CMN_FUNC.is_date_str_format(time_string):
             return FinanceDate.from_string(time_string)
-        elif CMN_FUNC.check_month_str_format(time_string):
+        elif CMN_FUNC.is_month_str_format(time_string):
             return FinanceMonth.from_string(time_string)
-        elif CMN_FUNC.check_quarter_str_format(time_string):
+        elif CMN_FUNC.is_quarter_str_format(time_string):
             return FinanceQuarter.from_string(time_string)
         else:
             ValueError("Unknown time format: %s" % time_string)
@@ -397,7 +397,11 @@ class FinanceQuarter(FinanceTimeBase):
     @classmethod
     def get_start_finance_quarter_from_date(cls, *date_args):
         """ Find the nearest start finance qaurter due to the specific finance date"""
-        finance_date = FinanceDate(*date_args)
+        finance_date = None
+        if isinstance(date_args[0], FinanceDate):
+            finance_date = date_args[0]
+        else:
+            finance_date = FinanceDate(*date_args)
         statement_release_date_list = cls.__get_statement_release_date_list(finance_date.year)
         finance_quarter = None
         if finance_date <= statement_release_date_list[0]:
@@ -418,7 +422,11 @@ class FinanceQuarter(FinanceTimeBase):
     @classmethod
     def get_end_finance_quarter_from_date(cls, *date_args):
         """ Find the nearest end finance qaurter due to the specific finance date"""
-        finance_date = FinanceDate(*date_args)
+        finance_date = None
+        if isinstance(date_args[0], FinanceDate):
+            finance_date = date_args[0]
+        else:
+            finance_date = FinanceDate(*date_args)
         statement_release_date_list = cls.__get_statement_release_date_list(finance_date.year)
         finance_quarter = None
         if finance_date < statement_release_date_list[0]:

@@ -13,21 +13,8 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 融資融券餘額統計表
 class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMarketBase):
 
-    # def __init__(self, datetime_range_start=None, datetime_range_end=None):
-    #     super(WebScrapyStockMarginTradingAndShortSelling, self).__init__(
-    #         # "http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS", 
-    #         __file__
-    #         # CMN_CLS.ParseURLDataByBS4('utf-8', 'tr'),
-    #         # datetime_range_start, 
-    #         # datetime_range_end
-    #     )
-    def __init__(self, **kwargs):
-        super(WebScrapyStockMarginTradingAndShortSelling, self).__init__(__file__, **kwargs)
-        self.cur_date_str = None
-
-
-    def assemble_web_url(self, timeslice):
-        # import pdb; pdb.set_trace()
+    @classmethod
+    def assemble_web_url(cls, timeslice, *args):
         url = self.URL_FORMAT.format(
             *(
                 timeslice.year - 1911, 
@@ -35,6 +22,17 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
                 "%02d" % timeslice.day
             )
         )
+        return url
+
+
+    def __init__(self, **kwargs):
+        super(WebScrapyStockMarginTradingAndShortSelling, self).__init__(__file__, **kwargs)
+        self.cur_date_str = None
+
+
+    def prepare_for_scrapy(self, timeslice):
+        # import pdb; pdb.set_trace()
+        url = self.assemble_web_url(timeslice)
         self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         return url
 

@@ -15,6 +15,18 @@ g_logger = WSL.get_web_scrapy_logger()
 # 外資及陸資投資持股統計
 class WebScrapyCompanyForeignInvestorsShareholder(web_scrapy_base.WebScrapyBase):
 
+    @classmethod
+    def assemble_web_url(cls, timeslice, company_code_number, *args):
+        url = self.URL_FORMAT.format(
+            *(
+                timeslice.year - 1911, 
+                "%02d" % timeslice.month,
+                "%02d" % timeslice.day
+            )
+        )
+        return url
+
+
     def __init__(self, datetime_range_start=None, datetime_range_end=None):
         super(WebScrapyCompanyForeignInvestorsShareholder, self).__init__(
             "http://www.twse.com.tw/ch/trading/fund/MI_QFIIS/MI_QFIIS.php?input_date={0}%2F{1}%2F{2}&select2=all&login_btn=%ACd%B8%DF&orderby=SortByStockCode", 
@@ -27,14 +39,8 @@ class WebScrapyCompanyForeignInvestorsShareholder(web_scrapy_base.WebScrapyBase)
         )
 
 
-    def assemble_web_url(self, timeslice):
-        url = self.URL_FORMAT.format(
-            *(
-                timeslice.year - 1911, 
-                "%02d" % timeslice.month,
-                "%02d" % timeslice.day
-            )
-        )
+    def prepare_for_scrapy(self, timeslice, company_code_number):
+        url = self.assemble_web_url(timeslice, company_code_number)
         return url
 
 
