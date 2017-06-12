@@ -74,7 +74,7 @@ def get_web_scrapy_class(source_type_index, init_class_variables=True):
     module_folder = CMN_DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
     module_name = CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
     class_name = CMN_DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
-    g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
+    g_logger.debug("Try to instantiate %s.%s" % (module_name, class_name))
 # Find the module
     web_scrapy_class = get_web_scrapy_class_for_name(module_folder, module_name, class_name)
     if init_class_variables:
@@ -277,7 +277,7 @@ def generate_cur_timestamp_str():
     datetime_cur = datetime.today()
     date_str = transform_date_str(datetime_cur.year, datetime_cur.month, datetime_cur.day)
     time_str = transform_time_str(datetime_cur.hour, datetime_cur.minute, datetime_cur.second)
-    return "%s %s %s" % (CMN_DEF.DEF_CUR_TIMESTAMP_STRING_PREFIX, date_str, time_str)
+    return "%s %s %s" % (CMN_DEF.DEF_CONFIG_TIMESTAMP_STRING_PREFIX, date_str, time_str)
 
 
 # def transform_string2datetime(date_string, need_year_transform=False):

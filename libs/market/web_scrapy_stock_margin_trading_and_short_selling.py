@@ -67,6 +67,7 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
 
     @staticmethod
     def do_debug(silent_mode=False):
+        # import pdb; pdb.set_trace()
         # res = requests.get("http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate=104%2F11%2F19&selectType=MS")
         res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate=104%2F11%2F19&selectType=MS")
         # print res.text

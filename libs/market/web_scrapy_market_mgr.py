@@ -95,68 +95,68 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self._scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
 
 
-    def check_scrapy(self):
-        # import pdb; pdb.set_trace()
-        file_not_found_list = []
-        file_is_empty_list = []
-        for source_type_time_duration in self.source_type_time_duration_list:
-            csv_filepath = CMN.FUNC.assemble_market_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_time_duration.source_type_index)
-# Check if the file exists
-            if not os.path.exists(csv_filepath):
-                file_not_found_list.append(
-                    {
-                        "index": source_type_time_duration.source_type_index,
-                        "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
-                    }
-                )
-            elif os.path.getsize(csv_filepath) == 0:
-                file_is_empty_list.append(
-                    {
-                        "index": source_type_time_duration.source_type_index,
-                        "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
-                    }
-                )
-# Output the missing CSV to the file if necessary
-        if not self.xcfg["disable_output_missing_csv"]:
-            file_not_found_list_len = len(file_not_found_list)
-            file_is_empty_list_len = len(file_is_empty_list)  
-            if file_not_found_list_len != 0 or file_is_empty_list_len != 0:
-                missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_MISSING_CSV_MARKET_FILENAME)
-                g_logger.debug("Write missing CSVs to the file: %s......" % missing_csv_filepath)
-                with open(missing_csv_filepath, 'wb') as fp:
-                    try:
-# Output the file not found list
-                        if file_not_found_list_len != 0:
-                            fp.write("[FileNotFound]\n") 
-                            for file_not_found in file_not_found_list[:-1]:
-                                fp.write("%d;" % file_not_found["index"])
-                            fp.write("%d\n" % file_not_found_list[-1]["index"])
-# Output the file is empty list
-                        if file_is_empty_list_len != 0:
-                            fp.write("[FileIsEmpty]\n")
-                            for file_is_empty in file_is_empty_list[:-1]:
-                                fp.write("%d;" % file_is_empty["index"])
-                            fp.write("%d\n" % file_is_empty_list[-1]["index"])
-                    except Exception as e:
-                        g_logger.error(u"Fail to write data to missing CSV file, due to %s" %str(e))
-                        # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
-                        raise e
-        return (file_not_found_list, file_is_empty_list)
+#     def check_scrapy(self):
+#         # import pdb; pdb.set_trace()
+#         file_not_found_list = []
+#         file_is_empty_list = []
+#         for source_type_time_duration in self.source_type_time_duration_list:
+#             csv_filepath = CMN.FUNC.assemble_market_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_time_duration.source_type_index)
+# # Check if the file exists
+#             if not os.path.exists(csv_filepath):
+#                 file_not_found_list.append(
+#                     {
+#                         "index": source_type_time_duration.source_type_index,
+#                         "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
+#                     }
+#                 )
+#             elif os.path.getsize(csv_filepath) == 0:
+#                 file_is_empty_list.append(
+#                     {
+#                         "index": source_type_time_duration.source_type_index,
+#                         "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
+#                     }
+#                 )
+# # Output the missing CSV to the file if necessary
+#         if not self.xcfg["disable_output_missing_csv"]:
+#             file_not_found_list_len = len(file_not_found_list)
+#             file_is_empty_list_len = len(file_is_empty_list)  
+#             if file_not_found_list_len != 0 or file_is_empty_list_len != 0:
+#                 missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_MISSING_CSV_MARKET_FILENAME)
+#                 g_logger.debug("Write missing CSVs to the file: %s......" % missing_csv_filepath)
+#                 with open(missing_csv_filepath, 'wb') as fp:
+#                     try:
+# # Output the file not found list
+#                         if file_not_found_list_len != 0:
+#                             fp.write("[FileNotFound]\n") 
+#                             for file_not_found in file_not_found_list[:-1]:
+#                                 fp.write("%d;" % file_not_found["index"])
+#                             fp.write("%d\n" % file_not_found_list[-1]["index"])
+# # Output the file is empty list
+#                         if file_is_empty_list_len != 0:
+#                             fp.write("[FileIsEmpty]\n")
+#                             for file_is_empty in file_is_empty_list[:-1]:
+#                                 fp.write("%d;" % file_is_empty["index"])
+#                             fp.write("%d\n" % file_is_empty_list[-1]["index"])
+#                     except Exception as e:
+#                         g_logger.error(u"Fail to write data to missing CSV file, due to %s" %str(e))
+#                         # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
+#                         raise e
+#         return (file_not_found_list, file_is_empty_list)
 
 
-    def check_scrapy_to_string(self):
-        (file_not_found_list, file_is_empty_list) = self.check_scrapy()
-        error_msg = None
-        error_msg_list = []
-        for file_not_found in file_not_found_list:
-            error_msg = u"FileNotFound: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
-            error_msg_list.append(error_msg)
-        for file_is_empty in file_is_empty_list:
-            error_msg = u"FileIsEmpty: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
-            error_msg_list.append(error_msg)
-        if len(error_msg_list) != 0:
-            error_msg = "\n".join(error_msg_list)
-        return error_msg
+#     def check_scrapy_to_string(self):
+#         (file_not_found_list, file_is_empty_list) = self.check_scrapy()
+#         error_msg = None
+#         error_msg_list = []
+#         for file_not_found in file_not_found_list:
+#             error_msg = u"FileNotFound: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
+#             error_msg_list.append(error_msg)
+#         for file_is_empty in file_is_empty_list:
+#             error_msg = u"FileIsEmpty: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
+#             error_msg_list.append(error_msg)
+#         if len(error_msg_list) != 0:
+#             error_msg = "\n".join(error_msg_list)
+#         return error_msg
 
 
     def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, source_type_index):

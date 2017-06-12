@@ -6,7 +6,7 @@ import json
 import requests
 import csv
 import time
-# import collections
+import collections
 import sys
 from abc import ABCMeta, abstractmethod
 from random import randint
@@ -109,8 +109,141 @@ class WebScrapyBase(object):
         def NewCSVEnd(self, new_csv_end):
             self.new_csv_end = new_csv_end
 
-# Can't be declared in class due to thread-safe
-    # GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
+
+        def backup_old_csv_if_necessary(self, csv_filepath):
+            if self.append_direction == WEB2CSV_APPEND_FRONT: #BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
+                g_logger.debug("Need add the new data in front of the old CSV data, rename the file: %s" % (csv_filepath + ".old"))
+                CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
+
+
+        def append_old_csv_if_necessary(self, csv_filepath):
+            if self.append_direction == WEB2CSV_APPEND_FRONT: #BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
+                g_logger.debug("Append the old CSV data to the file: %s" % csv_filepath)
+                CMN.FUNC.append_data_into_file(csv_filepath + ".old", csv_filepath)
+                CMN.FUNC.remove_file_if_exist(csv_filepath + ".old") 
+
+
+    class CSVFileNoScrapyRecord(object):
+
+        # STATUS_RECORD_TIME_RANGE_NOT_OVERLAP = 0
+        # STATUS_RECORD_CSV_FILE_ALREADY_EXIST = 1
+        # STATUS_RECORD_WEB_DATA_NOT_FOUND = 2
+        # RECORD_TYPE_INDEX_LIST = [
+        #     STATUS_RECORD_TIME_RANGE_NOT_OVERLAP,
+        #     STATUS_RECORD_CSV_FILE_ALREADY_EXIST,
+        #     STATUS_RECORD_WEB_DATA_NOT_FOUND
+        # ]
+        RECORD_TYPE_INDEX = 0
+        RECORD_TYPE_DESCRIPTION_INDEX = 1
+        RECORD_TYPE_ENTRY_LIST = [
+            ["TimeRangeNotOverlap", "The search time range does NOT overlap the one in the URL time range lookup table",],
+            ["CSVFileAlreadyExist", "The CSV files of the time range has already existed in the local folder",],
+            ["WebDataNotFound", "The web data of the URL is NOT found",],
+        ]
+        RECORD_TYPE_SIZE = len(RECORD_TYPE_ENTRY_LIST)
+        TIME_RANGE_NOT_OVERLAP_RECORD_INDEX = 0
+        CSV_FILE_ALREADY_EXIST_RECORD_INDEX = 1
+        WEB_DATA_NOT_FOUND_RECORD_INDEX = 2
+
+        RECORD_TYPE_LIST = [entry[RECORD_TYPE_INDEX] for entry in RECORD_TYPE_ENTRY_LIST]
+        RECORD_TYPE_DESCRIPTION_LIST = [entry[RECORD_TYPE_DESCRIPTION_INDEX] for entry in RECORD_TYPE_ENTRY_LIST]
+
+        @classmethod
+        def create_register_status_instance(cls):
+            # import pdb; pdb.set_trace()
+            csv_file_no_scrapy_record = cls()
+            for index in range(cls.RECORD_TYPE_SIZE):
+                csv_file_no_scrapy_record.__register_record_type(
+                    cls.RECORD_TYPE_LIST[index], 
+                    cls.RECORD_TYPE_DESCRIPTION_LIST[index]
+                )
+            return csv_file_no_scrapy_record
+
+
+        def __init__(self):
+            self.record_type_dict = {}
+            self.record_type_description_dict = {}
+            self.web_data_not_found_time_start = None
+            self.web_data_not_found_time_end = None
+
+
+        def __register_record_type(self, record_type_name, record_type_description):
+            # import pdb; pdb.set_trace()
+            if self.record_type_dict.has_key(record_type_name):
+                g_logger.debug("The type[%s] has already exist" % record_type_name)
+                return
+            self.record_type_dict[record_type_name] = []
+            self.record_type_description_dict[record_type_name] = record_type_description
+
+
+        def __add_record(self, record_type_name, *args):
+            if not self.record_type_dict.has_key(record_type_name):
+                raise ValueError("Unknown Check Status Type: %s" % record_type_name)
+            self.record_type_dict[record_type_name].append(args)
+
+
+        def add_time_range_not_overlap_record(self, *args):
+# Market
+# args[0]: source type index
+# Stock
+# args[0]: source type index
+# args[1]: company code number
+            self.__add_record("TimeRangeNotOverlap", *args)
+
+        def add_csv_file_already_exist_record(self, *args):
+# Market
+# args[0]: source type index
+# Stock
+# args[0]: source type index
+# args[1]: company code number
+            self.__add_record("CSVFileAlreadyExist", *args)
+
+        def add_web_data_not_found_record(self, *args):
+# Market
+# args[0]: time slice. None for a must to flush data into list
+# args[1]: source type index
+# Stock
+# args[0]: time slice. None for a must to flush data into list
+# args[1]: source type index
+# args[2]: company code number
+            need_flush = False
+            if args[0] is None:
+                if self.web_data_emtpy_time_start is not None:
+                    need_flush = True
+            else:
+                if self.web_data_emtpy_time_start is None:
+                    self.web_data_emtpy_time_start = self.web_data_emtpy_time_end = args[0]
+                else:
+                    if self.web_data_emtpy_time_end.check_continous_time_duration(args[0]):
+                        self.web_data_emtpy_time_end = args[0]
+                    else:
+                        need_flush = True
+# Keep track of the time range in which the web data is empty
+            if need_flush:
+# Market
+# args_new[0]: time slice. None for a must to flush data into list
+# args_new[1]: source type index
+# args_new[2]: empty time start
+# args_new[3]: empty time end
+# Stock
+# args_new[0]: time slice. None for a must to flush data into list
+# args_new[1]: source type index
+# args_new[2]: company code number
+# args_new[2]: empty time start
+# args_new[3]: empty time end
+                args_new = copy.deepcopy(args)
+                args_new.append(self.web_data_emtpy_time_start)
+                args_new.append(self.web_data_emtpy_time_end)
+                self.web_data_emtpy_time_start = self.web_data_emtpy_time_end = None
+                self.__add_record("WebDataNotFound", *args_new)
+
+
+        # def get_status_list(self, record_type_name):
+        #     if not self.record_type_dict.has_key(record_type_name):
+        #         raise ValueError("Unknown Check Status Type: %s" % record_type_name)
+        #     return self.record_type_dict[record_type_name]
+
+
     PARSE_URL_DATA_FUNC_PTR = None
 # Find corresponding config of the module
     SOURCE_TYPE_INDEX = None
@@ -119,7 +252,6 @@ class WebScrapyBase(object):
     URL_FORMAT = None
     URL_PARSING_METHOD = None
     URL_TIME_UNIT = None
-
 
     @classmethod
     def __select_web_data_by_bs4(cls, url_data, parse_url_data_type_cfg):
@@ -212,8 +344,52 @@ class WebScrapyBase(object):
 
 
     @classmethod
+    def try_get_web_data(cls, url):
+        g_logger.debug("Scrape web data from URL: %s" % url)
+        web_data = None
+        try:
+# Grab the data from website and assemble the data to the entry of CSV
+            web_data = cls.get_web_data(url)
+        except CMN.EXCEPTION.WebScrapyNotFoundException as e:
+            errmsg = None
+            if isinstance(e.message, str):
+                errmsg = "WebScrapyNotFoundException occurs while scraping URL[%s], due to: %s" % (url, e.message)
+            else:
+                errmsg = u"WebScrapyNotFoundException occurs while scraping URL[%s], due to: %s" % (url, e.message)
+            CMN.FUNC.try_print(errmsg)
+            g_logger.error(errmsg)
+            raise e
+        except CMN.EXCEPTION.WebScrapyServerBusyException as e:
+# Server is busy, let's retry......
+            RETRY_TIMES = 5
+            SLEEP_TIME_BEFORE_RETRY = 15
+            scrapy_success = False
+            for retry_times in range(1, RETRY_TIMES + 1):
+                if scrapy_success:
+                    break
+                g_logger.warn("Server is busy, let's retry...... %d", retry_times)
+                time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
+                try:
+                    web_data = cls.get_web_data(url)
+                except CMN.EXCEPTION.WebScrapyServerBusyException as e:
+                    pass
+                else:
+                    scrapy_success = True
+            if not scrapy_success:
+                raise CMN.EXCEPTION.WebScrapyServerBusyException("Fail to scrap URL[%s] after retry for %d times" % (url, RETRY_TIMES))
+        except Exception as e:
+            # import pdb;pdb.set_trace()
+            if isinstance(e.message, str):
+                g_logger.warn("Exception occurs while scraping URL[%s], due to: %s" % (url, e.message))
+            else:
+                g_logger.warn(u"Exception occurs while scraping URL[%s], due to: %s" % (url, e.message))
+        return web_data
+
+
+    @classmethod
     def check_web_data_exist(cls, url):
-        return True if cls.get_web_data(url) is not None else False
+        web_data = cls.get_web_data(url)
+        return True if (web_data is not None and len(web_data) > 0) else False
 
 
     def __init__(self, cur_file_path, **kwargs):
@@ -228,22 +404,12 @@ class WebScrapyBase(object):
         }
         # import pdb; pdb.set_trace()
         self.xcfg.update(kwargs)
-        # self.PARSE_URL_DATA_FUNC_PTR = None
-        self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = None
-# # Find which module is instansiate
-#         cur_module_name = re.sub(CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.FUNC.get_cur_module_name(cur_file_path))
-# # Find correspnding index of the module
-#         self.source_type_index = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
-# # Find corresponding config of the module
-#         self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[self.source_type_index]
-#         self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]
-#         self.url_format = self.source_url_parsing_cfg["url_format"]
-#         self.url_parsing_method = self.source_url_parsing_cfg["url_parsing_method"]
-#         self.url_time_unit = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
         self.description = None
         self.timeslice_generator = None
         self.url_time_range = None
-        self.emtpy_web_data_list = None
+        self.csv_file_no_scrapy_record = WebScrapyBase.CSVFileNoScrapyRecord.create_register_status_instance()
+        self.csv_file_no_scrapy_record_string_dict = collections.OrderedDict()
+        # self.emtpy_web_data_list = None
 
 
     @classmethod
@@ -276,32 +442,6 @@ class WebScrapyBase(object):
             # else:
             #     self.description = "%s" % CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.source_type_index]
         return self.description
-
-
-    def _get_time_slice_generator(self):
-        if self.timeslice_generator is None:
-            self.timeslice_generator = TimeSliceGenerator.WebScrapyTimeSliceGenerator.Instance()
-        return self.timeslice_generator
-
-
-    # def __get_parse_url_data_func_ptr(self):
-    #     if self.PARSE_URL_DATA_FUNC_PTR is None:
-    #         self.PARSE_URL_DATA_FUNC_PTR = [
-    #             self.__select_web_data_by_bs4, 
-    #             self.__select_web_data_by_json,
-    #             self.__select_web_data_by_customization
-    #         ]
-    #     return self.PARSE_URL_DATA_FUNC_PTR
-
-
-    # def _get_web_data(self, url):
-    #     # import pdb; pdb.set_trace()
-    #     req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
-    #     # parse_url_data_type = self.parse_url_data_type_obj.get_type()
-    #     # return (self.PARSE_URL_DATA_FUNC_PTR[parse_url_data_type])(res)
-    #     # import pdb; pdb.set_trace()
-    #     # return (self.__get_parse_url_data_func_ptr()[self.url_parsing_method])(req, self.source_url_parsing_cfg)
-    #     return (self.PARSE_URL_DATA_FUNC_PTR[self.url_parsing_method])(req, self.source_url_parsing_cfg)
 
 
     def _get_overlapped_web2csv_time_duration_update_cfg(self, csv_old_time_duration_tuple, time_duration_start, time_duration_end):
@@ -380,97 +520,151 @@ class WebScrapyBase(object):
         return web2csv_time_duration_update
 
 
-    def _adjust_time_duration_start_and_end_time_func_ptr(self, time_duration_type):
-        if self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR is None:
-            self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR = [
-                self._adjust_time_today_start_and_end_time, 
-                self._adjust_time_last_start_and_end_time, 
-                self._adjust_time_range_start_and_end_time
-            ]
-        return self.GET_TIME_DURATION_START_AND_END_TIME_FUNC_PTR[time_duration_type]
-
-
-    def _adjust_time_today_start_and_end_time(self, *args):
-        time_duration_start = time_duration_end = CMN.CLS.FinanceDate.get_today_finance_date()
-        return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
-
-
-    def _adjust_time_last_start_and_end_time(self, *args):
-        today_data_exist_hour = CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
-        today_data_exist_minute = CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
-        time_duration_start = time_duration_end = CMN.FUNC.get_last_url_data_date(today_data_exist_hour, today_data_exist_minute) 
-        return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
-
-
-    def _adjust_time_range_start_and_end_time(self, *args):
+    def _adjust_time_range_from_web(self, *args):
 # in Market mode
 # args[0]: source_type_index
 # in Stock mode
-# args[0]: company_code_number
-# args[1]: source_type_index
-        (time_duration_start_from_lookup_table, time_duration_end_from_lookup_table) = self._get_url_time_range().get_time_range(*args)
-        time_duration_start = time_duration_end = None
-        if self.xcfg["time_duration_start"] is None:
-            time_duration_start = time_duration_start_from_lookup_table
-        else:
-            if self.xcfg["time_duration_start"] < time_duration_start_from_lookup_table:
+# args[0]: source_type_index
+# args[1]: company_code_number
+# Define the suitable time range
+        # import pdb; pdb.set_trace()
+# define the function for transforming the time unit
+        def transfrom_time_duration_start_time_unit_from_date(time_duration_start):
+            assert isinstance(time_duration_start, CMN.CLS.FinanceDate), "The input start time duration time unit is %s, not FinanceDate" % type(time_duration_start)
+# Trasform the start time unit
+            if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+                return CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(time_duration_start)
+            elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_MONTH:
+                return CMN.CLS.FinanceMonth.get_finance_month_from_date(time_duration_start)
+            raise ValueError("Unsupported URL time unit in start time: %d" % self.URL_TIME_UNIT)
+        def transfrom_time_duration_end_time_unit_from_date(time_duration_end):
+            assert isinstance(time_duration_end, CMN.CLS.FinanceDate), "The input end time duration time unit is %s, not FinanceDate" % type(time_duration_end)
+# Trasform the end time unit
+            if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+                return  CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(time_duration_end)
+            elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_MONTH:
+                return  CMN.CLS.FinanceMonth.get_finance_month_from_date(time_duration_end)
+            raise ValueError("Unsupported URL time unit in end time: %d" % self.URL_TIME_UNIT)
+# Transform the time unit
+        time_duration_start = None
+        time_duration_end = None
+        if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
+            time_duration_start = time_duration_end = CMN.CLS.FinanceDate.get_today_finance_date()
+            time_duration_start = transfrom_time_duration_start_time_unit_from_date(time_duration_start)
+            time_duration_end = transfrom_time_duration_end_time_unit_from_date(time_duration_end)
+        elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
+            time_duration_start = time_duration_end = CMN.CLS.FinanceDate.get_last_finance_date()
+            time_duration_start = transfrom_time_duration_start_time_unit_from_date(time_duration_start)
+            time_duration_end = transfrom_time_duration_end_time_unit_from_date(time_duration_end)
+        elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
+            (time_duration_start_from_lookup_table, time_duration_end_from_lookup_table) = self._get_url_time_range().get_time_range(*args)
+            if self.xcfg["time_duration_start"] is None:
                 time_duration_start = time_duration_start_from_lookup_table
             else:
-                time_duration_start = self.xcfg["time_duration_start"]
-        if self.xcfg["time_duration_end"] is None:
-            time_duration_end = time_duration_end_from_lookup_table
-        else:
-            if self.xcfg["time_duration_end"] > time_duration_end_from_lookup_table:
+# Trasform the start time unit
+                self.xcfg["time_duration_start"] = transfrom_time_duration_start_time_unit_from_date(self.xcfg["time_duration_start"])
+                assert self.xcfg["time_duration_start"].get_time_unit_type() == time_duration_start_from_lookup_table.get_time_unit_type() , "The time duration start time unit is NOT identical, %d, %d" % (self.xcfg["time_duration_start"].get_time_unit_type(), time_duration_start_from_lookup_table.get_time_unit_type()) 
+            if self.xcfg["time_duration_end"] is None:
                 time_duration_end = time_duration_end_from_lookup_table
             else:
-                time_duration_end = self.xcfg["time_duration_end"]
+# Trasform the end time unit
+                self.xcfg["time_duration_end"] = transfrom_time_duration_end_time_unit_from_date(self.xcfg["time_duration_end"])
+                assert self.xcfg["time_duration_end"].get_time_unit_type() == time_duration_end_from_lookup_table.get_time_unit_type() , "The time duration end time unit is NOT identical, %d, %d" % (self.xcfg["time_duration_end"].get_time_unit_type(), time_duration_end_from_lookup_table.get_time_unit_type())     
+# Check the time duration is in the range of table
+            if not CMN.FUNC.is_time_range_overlap(time_duration_start_from_lookup_table, time_duration_end_from_lookup_table, self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]):
+                g_logger.debug("The time range[%s-%s] for searching is Out of Range of the table[%s-%s]" % (self.xcfg["time_duration_start"], self.xcfg["time_duration_end"], time_duration_start_from_lookup_table, time_duration_end_from_lookup_table))
+                return None
+            time_duration_start = time_duration_start_from_lookup_table if (self.xcfg["time_duration_start"] < time_duration_start_from_lookup_table) else self.xcfg["time_duration_start"]
+            time_duration_end = time_duration_end_from_lookup_table if (self.xcfg["time_duration_end"] > time_duration_end_from_lookup_table) else self.xcfg["time_duration_end"]
+        else:
+            raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
+        assert time_duration_start.get_time_unit_type() == time_duration_end.get_time_unit_type(), "The time unit is NOT identical, start: %d, end: %d" % (time_duration_start.get_time_unit_type(), time_duration_end.get_time_unit_type())
+        assert time_duration_start.get_time_unit_type() == self.URL_TIME_UNIT, "The time unit is NOT identical, expected: %d, actual: %d" % (self.URL_TIME_UNIT, time_duration_start.get_time_unit_type())
         return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
 
 
     def _get_timeslice_iterable(self, **kwargs):
         # import pdb;pdb.set_trace()
-        assert kwargs["time_duration_start"].get_time_unit_type() == kwargs["time_duration_end"].get_time_unit_type(), "The time unit of start and end time is NOT identical; Start: %s, End: %s" % (type(kwargs["time_duration_start"]), type(kwargs["time_duration_end"]))
-        if self.URL_TIME_UNIT != kwargs["time_duration_start"].get_time_unit_type():
-            (new_finance_time_start, new_finance_time_end) = self._modify_time_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
-            kwargs["time_duration_start"] = new_finance_time_start
-            kwargs["time_duration_end"] = new_finance_time_end
+        # assert kwargs["time_duration_start"].get_time_unit_type() == kwargs["time_duration_end"].get_time_unit_type(), "The time unit of start and end time is NOT identical; Start: %s, End: %s" % (type(kwargs["time_duration_start"]), type(kwargs["time_duration_end"]))
+        # if self.URL_TIME_UNIT != kwargs["time_duration_start"].get_time_unit_type():
+        #     (new_finance_time_start, new_finance_time_end) = self._modify_time_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
+        #     kwargs["time_duration_start"] = new_finance_time_start
+        #     kwargs["time_duration_end"] = new_finance_time_end
 # Generate the time slice
-        timeslice_iterable = self._get_time_slice_generator().generate_time_slice(self.TIMESLICE_GENERATE_METHOD, **kwargs)
+        if self.timeslice_generator is None:
+            self.timeslice_generator = TimeSliceGenerator.WebScrapyTimeSliceGenerator.Instance()
+        timeslice_iterable = self.timeslice_generator.generate_time_slice(self.TIMESLICE_GENERATE_METHOD, **kwargs)
         return timeslice_iterable
 
 
-    def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
-        # """IMPORTANT: This function should NOT be implemented and called unless the time unit is NOT date !"""
-        raise RuntimeError("This %s function should NOT be called !!!" % sys._getframe(0).f_code.co_name)
+    # def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
+    #     # """IMPORTANT: This function should NOT be implemented and called unless the time unit is NOT date !"""
+    #     raise RuntimeError("This %s function should NOT be called !!!" % sys._getframe(0).f_code.co_name)
+
+
+    # @property
+    # def EmptyWebDataFound(self):
+    #     if self.emtpy_web_data_list is None:
+    #         raise ValueError("self.emtpy_web_data_list should NOT be None")
+    #     return True if len(self.emtpy_web_data_list) != 0 else False
+
+
+    # @property
+    # def EmptyWebDataList(self):
+    #     if self.emtpy_web_data_list is None:
+    #         raise ValueError("self.emtpy_web_data_list should NOT be None")
+    #     return self.emtpy_web_data_list
 
 
     @property
-    def EmptyWebDataFound(self):
-        if self.emtpy_web_data_list is None:
-            raise ValueError("self.emtpy_web_data_list should NOT be None")
-        return True if len(self.emtpy_web_data_list) != 0 else False
+    def CSVFileNoScrapyTypeSize(self):
+        return WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_SIZE
 
 
     @property
-    def EmptyWebDataList(self):
-        if self.emtpy_web_data_list is None:
-            raise ValueError("self.emtpy_web_data_list should NOT be None")
-        return self.emtpy_web_data_list
+    def CSVFileNoScrapyTypeList(self):
+        return WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST
+
+
+    @property
+    def CSVFileNoScrapyTypeDescriptionList(self):
+        return WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_DESCRIPTION_LIST
+
+
+    @property
+    def CSVFileNoScrapyTimeRangeNotOverlapRecordIndex(self):
+        return WebScrapyBase.CSVFileNoScrapyRecord.TIME_RANGE_NOT_OVERLAP_RECORD_INDEX
+
+
+    @property
+    def CSVFileNoScrapyCSVFileAlreadyExistRecordIndex(self):
+        return WebScrapyBase.CSVFileNoScrapyRecord.CSV_FILE_ALREADY_EXIST_RECORD_INDEX
+
+
+    @property
+    def CSVFileNoScrapyWebDataNotFoundRecordIndex(self):
+        return WebScrapyBase.CSVFileNoScrapyRecord.WEB_DATA_NOT_FOUND_RECORD_INDEX
+
+
+    @property
+    def CSVFileNoScrapyDescriptionDict(self):
+        assert self.csv_file_no_scrapy_record_string_dict != None, "self.csv_file_no_scrapy_record_string_dict is None"
+        return self.csv_file_no_scrapy_record_string_dict
 
 
     @abstractmethod
-    def _check_old_csv_time_duration_exist(self, *args):
-        raise NotImplementedError
-
-
-    @abstractmethod
-    def _adjust_csv_time_duration(self):
+    def _adjust_time_range_from_csv(self, *args):
         raise NotImplementedError
 
 
     @abstractmethod
     def _parse_web_data(self, web_data):
         raise NotImplementedError
+
+
+    # @abstractmethod
+    # def _parse_status_to_string_list(self):
+    #     raise NotImplementedError
 
 
     @abstractmethod

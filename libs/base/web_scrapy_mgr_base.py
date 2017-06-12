@@ -5,6 +5,7 @@ import sys
 import time
 import requests
 import threading
+import collections
 from datetime import datetime, timedelta
 from abc import ABCMeta, abstractmethod
 import libs.common as CMN
@@ -37,7 +38,29 @@ class WebSracpyMgrBase(object):
         self.web_scrapy_obj_list = None
         self.web_scrapy_obj_list_thread_lock = threading.Lock()
         self.web_scrapy_start_datetime = None
-        self.emtpy_web_data_list = None
+        self.csv_file_check_status_record_string_dict = None
+        self.csv_file_check_status_record_description_dict = None
+
+
+    def __append_no_scrapy_csv_file(self, web_scrapy_obj):
+        # import pdb; pdb.set_trace()
+# Collect the CSV file status record from each web scrapy object
+        for index in range(web_scrapy_obj.CSVFileNoScrapyTypeSize):
+            no_scrapy_type = web_scrapy_obj.CSVFileNoScrapyTypeList[index]
+            if not web_scrapy_obj.CSVFileNoScrapyDescriptionDict.has_key(no_scrapy_type):
+                continue
+            if len(web_scrapy_obj.CSVFileNoScrapyDescriptionDict[no_scrapy_type]) == 0:
+                continue
+# Initialize the OrderedDict for keeping track of CSV files
+            if self.csv_file_check_status_record_string_dict is None:
+                self.csv_file_check_status_record_string_dict = collections.OrderedDict()
+                self.csv_file_check_status_record_description_dict = collections.OrderedDict()
+                for index_for_init in range(web_scrapy_obj.CSVFileNoScrapyTypeSize):
+                    no_scrapy_type_for_init = web_scrapy_obj.CSVFileNoScrapyTypeList[index_for_init]
+                    self.csv_file_check_status_record_string_dict[no_scrapy_type_for_init] = []
+                    self.csv_file_check_status_record_description_dict[no_scrapy_type_for_init] = web_scrapy_obj.CSVFileNoScrapyTypeDescriptionList[index_for_init]
+# Keep track of the data of each web scrapy object       
+            self.csv_file_check_status_record_string_dict[no_scrapy_type].extend(web_scrapy_obj.CSVFileNoScrapyDescriptionDict[no_scrapy_type])
 
 
     def _scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
@@ -50,9 +73,8 @@ class WebSracpyMgrBase(object):
             self.web_scrapy_obj_list.append(web_scrapy_obj)
         g_logger.debug("Start to scrap %s......", web_scrapy_obj.get_description())
         web_scrapy_obj.scrap_web_to_csv()
-# Update the empty web data list
-        if web_scrapy_obj.EmptyWebDataFound:
-            self.emtpy_web_data_list.extend(web_scrapy_obj.EmptyWebDataList)
+# Keep track of the CSV file status
+        self.__append_no_scrapy_csv_file(web_scrapy_obj)
 # Update the new CSV time duration
         self._update_new_csv_time_duration(web_scrapy_obj)
         with self.web_scrapy_obj_list_thread_lock:
@@ -74,9 +96,8 @@ class WebSracpyMgrBase(object):
             thread_pool.add_scrap_web_to_csv_task(web_scrapy_obj)
         thread_pool.wait_completion()
         for web_scrapy_obj in self.web_scrapy_obj_list:
-# Update the empty web data list
-            if web_scrapy_obj.EmptyWebDataFound:
-                self.emtpy_web_data_list.extend(web_scrapy_obj.EmptyWebDataList)
+# Keep track of the CSV file status
+            self.__append_no_scrapy_csv_file(web_scrapy_obj)
 # Update the new CSV time duration
             self._update_new_csv_time_duration(web_scrapy_obj)
         with self.web_scrapy_obj_list_thread_lock:
@@ -116,7 +137,7 @@ class WebSracpyMgrBase(object):
             show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=30)
             show_progress_timer_thread.start_timer(WebSracpyMgrBase.show_scrapy_progress, self)
         # import pdb; pdb.set_trace()
-        self.emtpy_web_data_list = []
+        # self.emtpy_web_data_list = []
         for source_type_time_duration in self.source_type_time_duration_list:
             try:
                 self._scrap_single_source_data(source_type_time_duration)
@@ -146,6 +167,22 @@ class WebSracpyMgrBase(object):
             RuntimeError(total_errmsg)
 # Write the new CSV data time range into file
         self._write_new_csv_time_duration()
+
+
+    def show_no_scrapy(self):
+        # import pdb; pdb.set_trace()
+        assert (self.csv_file_check_status_record_string_dict is not None), "self.csv_file_check_status_record_string_dict is None" 
+        no_scrapy_csv_file_string = ""
+        for no_scrapy_type, no_scrapy_csv_file_list in self.csv_file_check_status_record_string_dict.items():
+            if len(no_scrapy_csv_file_list) == 0:
+                continue
+            csv_file_check_status_record_description = self.csv_file_check_status_record_description_dict[no_scrapy_type]
+            csv_file_check_status_record_string = "; ".join(no_scrapy_csv_file_list)
+            no_scrapy_csv_file_string += "*** %s ***\n%s\n" % (csv_file_check_status_record_description, csv_file_check_status_record_string)
+        if len(no_scrapy_csv_file_string) != 0:
+            g_logger.info(no_scrapy_csv_file_string)
+            if CMN.DEF.CAN_PRINT_CONSOLE:
+                print no_scrapy_csv_file_string
 
 
     @classmethod
@@ -260,18 +297,23 @@ class WebSracpyMgrBase(object):
         return self.xcfg["start_estimate_complete_time_threshold"]
 
 
-    @property
-    def EmptyWebDataFound(self):
-        if self.emtpy_web_data_list is None:
-            raise ValueError("self.emtpy_web_data_list should NOT be None")
-        return True if len(self.emtpy_web_data_list) != 0 else False
+    # @property
+    # def EmptyWebDataFound(self):
+    #     if self.emtpy_web_data_list is None:
+    #         raise ValueError("self.emtpy_web_data_list should NOT be None")
+    #     return True if len(self.emtpy_web_data_list) != 0 else False
+
+
+    # @property
+    # def EmptyWebDataList(self):
+    #     if self.emtpy_web_data_list is None:
+    #         raise ValueError("self.emtpy_web_data_list should NOT be None")
+    #     return self.emtpy_web_data_list
 
 
     @property
-    def EmptyWebDataList(self):
-        if self.emtpy_web_data_list is None:
-            raise ValueError("self.emtpy_web_data_list should NOT be None")
-        return self.emtpy_web_data_list
+    def NoScrapyCSVFound(self):
+        return True if self.csv_file_check_status_record_string_dict is not None else False
 
 
     @staticmethod
@@ -329,14 +371,14 @@ class WebSracpyMgrBase(object):
         raise NotImplementedError
 
 
-    @abstractmethod
-    def check_scrapy(self):
-        raise NotImplementedError
+    # @abstractmethod
+    # def check_scrapy(self):
+    #     raise NotImplementedError
 
 
-    @abstractmethod
-    def check_scrapy_to_string(self):
-        raise NotImplementedError
+    # @abstractmethod
+    # def check_scrapy_to_string(self):
+    #     raise NotImplementedError
 
 
     # @abstractmethod

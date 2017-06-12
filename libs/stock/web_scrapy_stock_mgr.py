@@ -96,9 +96,6 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
                     continue
 # update the time range of each source type of comapny from config files
-                # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
-                # for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
-                #     csv_time_duration_list[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START] = time_duration_tuple
                 source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_dict
         return source_type_csv_time_duration_dict if source_type_csv_time_duration_dict else None
 
@@ -122,10 +119,6 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #                     g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
 #                     continue
 # # update the time range of each source type of comapny from config files
-#                 # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
-#                 # for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
-#                 #     csv_time_duration_list[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START] = time_duration_tuple
-#                 self.source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_dict
         source_type_csv_time_duration_dict = self.__parse_csv_time_duration_cfg()
         if source_type_csv_time_duration_dict is not None:
             self.source_type_csv_time_duration_dict = source_type_csv_time_duration_dict
@@ -377,71 +370,71 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 web_scrapy_class.show_statement_field_dimension()
 
 
-    def check_scrapy(self):
-        file_not_found_list = []
-        file_is_empty_list = []
-        for source_type_time_duration in self.source_type_time_duration_list:
-            for company_group_number, company_code_number_list in self.company_group_set.items():
-                for company_code_number in company_code_number_list:
-                    csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_time_duration.source_type_index, company_code_number, company_group_number)
-# Check if the file exists
-                    if not os.path.exists(csv_filepath):
-                        file_not_found_list.append(
-                            {
-                                "company_code_number": company_code_number,
-                                "index": source_type_time_duration.source_type_index,
-                                "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
-                            }
-                        )
-                    elif os.path.getsize(csv_filepath) == 0:
-                        file_is_empty_list.append(
-                            {
-                                "company_code_number": company_code_number,
-                                "index": source_type_time_duration.source_type_index,
-                                "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
-                            }
-                        )
-# Output the missing CSV to the file if necessary
-        if not self.xcfg["disable_output_missing_csv"]:
-            file_not_found_list_len = len(file_not_found_list)
-            file_is_empty_list_len = len(file_is_empty_list)  
-            if file_not_found_list_len != 0 or file_is_empty_list_len != 0:
-                missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_MISSING_CSV_STOCK_FILENAME)
-                g_logger.debug("Write missing CSVs to the file: %s......" % missing_csv_filepath)
-                with open(missing_csv_filepath, 'wb') as fp:
-                    try:
-# Output the file not found list
-                        if file_not_found_list_len != 0:
-                            fp.write("[FileNotFound]\n") 
-                            for file_not_found in file_not_found_list[:-1]:
-                                fp.write("%s:%d;" % (file_not_found["company_code_number"], file_not_found["index"]))
-                            fp.write("%s:%d\n" % (file_not_found_list[-1]["company_code_number"], file_not_found_list[-1]["index"]))
-# Output the file is empty list
-                        if file_is_empty_list_len != 0:
-                            fp.write("[FileIsEmpty]\n")
-                            for file_is_empty in file_is_empty_list[:-1]:
-                                fp.write("%s:%d;" % (file_is_empty["company_code_number"], file_is_empty["index"]))
-                            fp.write("%s:%d\n" % (file_is_empty_list[-1]["company_code_number"], file_is_empty_list[-1]["index"]))
-                    except Exception as e:
-                        g_logger.error(u"Fail to write data to missing CSV file, due to %s" %str(e))
-                        # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
-                        raise e
-        return (file_not_found_list, file_is_empty_list)
+#     def check_scrapy(self):
+#         file_not_found_list = []
+#         file_is_empty_list = []
+#         for source_type_time_duration in self.source_type_time_duration_list:
+#             for company_group_number, company_code_number_list in self.company_group_set.items():
+#                 for company_code_number in company_code_number_list:
+#                     csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_time_duration.source_type_index, company_code_number, company_group_number)
+# # Check if the file exists
+#                     if not os.path.exists(csv_filepath):
+#                         file_not_found_list.append(
+#                             {
+#                                 "company_code_number": company_code_number,
+#                                 "index": source_type_time_duration.source_type_index,
+#                                 "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
+#                             }
+#                         )
+#                     elif os.path.getsize(csv_filepath) == 0:
+#                         file_is_empty_list.append(
+#                             {
+#                                 "company_code_number": company_code_number,
+#                                 "index": source_type_time_duration.source_type_index,
+#                                 "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
+#                             }
+#                         )
+# # Output the missing CSV to the file if necessary
+#         if not self.xcfg["disable_output_missing_csv"]:
+#             file_not_found_list_len = len(file_not_found_list)
+#             file_is_empty_list_len = len(file_is_empty_list)  
+#             if file_not_found_list_len != 0 or file_is_empty_list_len != 0:
+#                 missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_MISSING_CSV_STOCK_FILENAME)
+#                 g_logger.debug("Write missing CSVs to the file: %s......" % missing_csv_filepath)
+#                 with open(missing_csv_filepath, 'wb') as fp:
+#                     try:
+# # Output the file not found list
+#                         if file_not_found_list_len != 0:
+#                             fp.write("[FileNotFound]\n") 
+#                             for file_not_found in file_not_found_list[:-1]:
+#                                 fp.write("%s:%d;" % (file_not_found["company_code_number"], file_not_found["index"]))
+#                             fp.write("%s:%d\n" % (file_not_found_list[-1]["company_code_number"], file_not_found_list[-1]["index"]))
+# # Output the file is empty list
+#                         if file_is_empty_list_len != 0:
+#                             fp.write("[FileIsEmpty]\n")
+#                             for file_is_empty in file_is_empty_list[:-1]:
+#                                 fp.write("%s:%d;" % (file_is_empty["company_code_number"], file_is_empty["index"]))
+#                             fp.write("%s:%d\n" % (file_is_empty_list[-1]["company_code_number"], file_is_empty_list[-1]["index"]))
+#                     except Exception as e:
+#                         g_logger.error(u"Fail to write data to missing CSV file, due to %s" %str(e))
+#                         # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
+#                         raise e
+#         return (file_not_found_list, file_is_empty_list)
 
 
-    def check_scrapy_to_string(self):
-        (file_not_found_list, file_is_empty_list) = self.check_scrapy()
-        error_msg = None
-        error_msg_list = []
-        for file_not_found in file_not_found_list:
-            error_msg = u"FileNotFound: %s, %s/%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['company_code_number'], file_not_found['filename'])
-            error_msg_list.append(error_msg)
-        for file_is_empty in file_is_empty_list:
-            error_msg = u"FileIsEmpty: %s, %s/%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_not_found['company_code_number'], file_is_empty['filename'])
-            error_msg_list.append(error_msg)
-        if len(error_msg_list) != 0:
-            error_msg = "\n".join(error_msg_list)
-        return error_msg
+#     def check_scrapy_to_string(self):
+#         (file_not_found_list, file_is_empty_list) = self.check_scrapy()
+#         error_msg = None
+#         error_msg_list = []
+#         for file_not_found in file_not_found_list:
+#             error_msg = u"FileNotFound: %s, %s/%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['company_code_number'], file_not_found['filename'])
+#             error_msg_list.append(error_msg)
+#         for file_is_empty in file_is_empty_list:
+#             error_msg = u"FileIsEmpty: %s, %s/%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_not_found['company_code_number'], file_is_empty['filename'])
+#             error_msg_list.append(error_msg)
+#         if len(error_msg_list) != 0:
+#             error_msg = "\n".join(error_msg_list)
+#         return error_msg
 
 
     def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, source_type_index, company_code_number):
@@ -498,10 +491,6 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 new_source_type_csv_time_duration[company_code_number] = new_source_type_csv_time_duration_for_one_company
         # import pdb; pdb.set_trace()
         self.__write_new_csv_time_duration_to_cfg(finance_folderpath_dst, new_source_type_csv_time_duration, company_group_set_dst)
-
-
-    # def enable_multithread(self, thread_amount):
-    #     self.multi_thread_amount = thread_amount
 
 
     def count_scrapy_amount(self):

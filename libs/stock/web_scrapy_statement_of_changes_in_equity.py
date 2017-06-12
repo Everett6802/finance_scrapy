@@ -124,11 +124,15 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
 
     @classmethod
     def _customized_select_web_data(cls, url_data, url_parsing_cfg):
+        # import pdb; pdb.set_trace()
         url_data.encoding = url_parsing_cfg["url_encoding"]
         soup = BeautifulSoup(url_data.text)
         table_list = soup.select('table')
         if len(table_list) != 3:
-            raise CMN.EXCEPTION.WebScrapyServerBusyException("The len of the table_list should be 3, not %d. Server is probably busy, need retry" % len(table_list))
+            if re.search(r"查無資料", soup.text.encode(CMN.DEF.URL_ENCODING_UTF8), re.U):
+                return None
+            else:
+                raise CMN.EXCEPTION.WebScrapyServerBusyException("The len of the table_list should be 3, not %d. Server is probably busy, need retry" % len(table_list))
             # raise ValueError("The len of the table_list should be 3, not %d" % len(table_list))
         return table_list[1].select('tr')
 

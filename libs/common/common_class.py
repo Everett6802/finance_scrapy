@@ -11,8 +11,8 @@ SourceTypeCompanyTimeDurationTuple = collections.namedtuple('SourceTypeCompanyTi
 import common_definition as CMN_DEF
 import common_function as CMN_FUNC
 
-
 singleton_thread_lock = threading.Lock()
+
 
 class Singleton:
     """
@@ -39,7 +39,6 @@ class Singleton:
         On all subsequent calls, the already created instance is returned.
 
         """
-        # import pdb; pdb.set_trace()
         try:
             return self._instance
         except AttributeError:
@@ -167,6 +166,7 @@ class FinanceTimeBase(object):
 class FinanceDate(FinanceTimeBase):
 
     today_finance_date = None
+    last_finance_date = None
     def __init__(self, *args):
         super(FinanceDate, self).__init__()
         self.month = None # range: 1 - 12
@@ -232,6 +232,15 @@ class FinanceDate(FinanceTimeBase):
         return cls.today_finance_date
 
 
+    @classmethod
+    def get_last_finance_date(cls):
+        if cls.last_finance_date is None:
+            today_data_exist_hour = CMN_DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR if CMN_DEF.IS_FINANCE_MARKET_MODE else CMN_DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
+            today_data_exist_minute = CMN_DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE if CMN_DEF.IS_FINANCE_MARKET_MODE else CMN_DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
+            cls.last_finance_date = CMN_FUNC.get_last_url_data_date(today_data_exist_hour, today_data_exist_minute) 
+        return cls.last_finance_date
+
+
     def __add__(self, day_delta):
         # if not isinstance(delta, timedelta):
         #     raise TypeError('The type[%s] of the other variable is NOT timedelta' % type(delta))
@@ -268,16 +277,24 @@ class FinanceDate(FinanceTimeBase):
         return self.datetime_cfg
 
 
-    def get_finance_month_object(self):
-        return FinanceMonth(self.year, self.month)
-
-
     @staticmethod
     def is_same_month(finance_date1, finance_date2):
         return (True if FinanceMonth(finance_date1.year, finance_date1.month) == FinanceMonth(finance_date2.year, finance_date2.month) else False)
 
 
 class FinanceMonth(FinanceTimeBase):
+
+    @classmethod
+    def get_finance_month_from_date(cls, *date_args):
+        """ Find the finance month due to the specific finance date"""
+        
+        finance_date = None
+        if isinstance(date_args[0], FinanceDate):
+            finance_date = date_args[0]
+        else:
+            finance_date = FinanceDate(*date_args)
+        return cls(finance_date.year, finance_date.month)
+
 
     def __init__(self, *args):
         super(FinanceMonth, self).__init__()

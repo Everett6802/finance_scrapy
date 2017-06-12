@@ -144,7 +144,7 @@ DEF_SCRAPY_RETRY_TIMES = 3
 DEF_COMMA_DATA_SPLIT = ",";
 DEF_SPACE_DATA_SPLIT = " ";
 DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG = "===== Column Field Start =====" # Caution: Can't start with '#' which is ignored while reading config file
-DEF_CUR_TIMESTAMP_STRING_PREFIX = "# time@"
+DEF_CONFIG_TIMESTAMP_STRING_PREFIX = "#time@"
 
 DEF_DATA_SOURCE_INDEX_MAPPING = [
 # Market Start

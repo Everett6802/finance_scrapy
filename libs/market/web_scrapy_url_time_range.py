@@ -51,7 +51,7 @@ class WebScrapyURLTimeRange(object):
     def get_time_range_end(self, source_type_index):
         CMN.FUNC.check_source_type_index_in_range(source_type_index)
         if self.last_url_data_date is None:
-            self.last_url_data_date = CMN.FUNC.get_last_url_data_date(CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR, CMN.DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE)
+            self.last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         return self.last_url_data_date
 
 

@@ -12,6 +12,9 @@ from libs import base as BASE
 g_mgr = None
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
+# import libs.stock.web_scrapy_company_profile as CompanyProfile
+# company_profile_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
+import libs.stock.web_scrapy_url_time_range as URLTimeRange
 
 param_cfg = {}
 
@@ -26,7 +29,7 @@ def show_usage_and_exit():
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
     print "--no_scrap\nDescription: Don't scrap Web data"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrap flag is NOT set"
-    print "--no_check\nDescription: Don't check the CSV files after scraping Web data"
+    # print "--no_check\nDescription: Don't check the CSV files after scraping Web data"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check is set"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
@@ -101,7 +104,9 @@ def snapshot_result(run_result_str):
         fp.write(run_result_str.encode('utf8'))
     datetime_now = datetime.today()
     snapshot_filename = CMN.DEF.SNAPSHOT_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
-    subprocess.call(["tar", "cvzf", snapshot_filename, CMN.DEF.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, CMN.WSL.LOG_FILE_PATH])
+# -v is for verbose. If you don't use it then it won't display
+    # subprocess.call(["tar", "cvzf", snapshot_filename, CMN.DEF.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, CMN.WSL.LOG_FILE_PATH])
+    subprocess.call(["tar", "czf", snapshot_filename, CMN.DEF.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, CMN.WSL.LOG_FILE_PATH])
     subprocess.call(["mv", snapshot_filename, CMN.DEF.DEF_SNAPSHOT_FOLDER])
     subprocess.call(["rm", CMN.DEF.RUN_RESULT_FILENAME])
 
@@ -193,7 +198,7 @@ def init_param():
     param_cfg["silent"] = False
     param_cfg["no_scrap"] = False
     param_cfg["show_progress"] = False
-    param_cfg["no_check"] = False
+    # param_cfg["no_check"] = False
     param_cfg["clone"] = False
     param_cfg["reserve_old"] = False
     param_cfg["dry_run"] = False
@@ -252,9 +257,9 @@ def parse_param():
         elif re.match("--show_progress", sys.argv[index]):
             param_cfg["show_progress"] = True
             index_offset = 1
-        elif re.match("--no_check", sys.argv[index]):
-            param_cfg["no_check"] = True
-            index_offset = 1
+        # elif re.match("--no_check", sys.argv[index]):
+        #     param_cfg["no_check"] = True
+        #     index_offset = 1
         elif re.match("--clone", sys.argv[index]):
             param_cfg["clone"] = True
             index_offset = 1
@@ -406,7 +411,9 @@ def check_param():
     if param_cfg["show_progress"] and param_cfg["no_scrap"]:
         param_cfg["show_progress"] = False
         show_warn("Set the 'show_progress' argument to False since 'no_scrap' is set")
-
+    if param_cfg["clone"] and param_cfg["no_scrap"]:
+        param_cfg["clone"] = False
+        show_warn("Set the 'clone' argument to False since 'no_scrap' is set")
 
 def setup_param():
 # Set source type and time range
@@ -463,10 +470,10 @@ def setup_param():
                 if time_duration_range_list_len == 2:
                     if not param_cfg["time_duration_range"].startswith(","):
 # For time range
-                        time_range_start = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[0])
-                    time_range_end = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[1])
+                        time_range_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
+                    time_range_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_range_list[1])
                 elif time_duration_range_list_len == 1:
-                    time_range_start = CMN.CLS.FinanceTimeBase.from_string(time_duration_range_list[0])
+                    time_range_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
                 else:
                     errmsg = "Incorrect time range format: %s" % param_cfg["time_duration_range"]
                     show_error_and_exit(errmsg)
@@ -509,27 +516,22 @@ def do_scrap():
     show_info("* Scrap the data from the website......")
     g_mgr.do_scrapy()
     show_info("* Scrap the data from the website...... DONE!!!")
-    if g_mgr.EmptyWebDataFound:
+    if g_mgr.NoScrapyCSVFound:
         show_warn("No Web Data while scraping:")
-        # import pdb; pdb.set_trace()
-        for empty_web_data_info in g_mgr.EmptyWebDataList:
-            if CMN.DEF.IS_FINANCE_MARKET_MODE:
-                show_warn("source_type_index: %d, time range: %s - %s" % (empty_web_data_info.source_type_index, empty_web_data_info.time_duration_start, empty_web_data_info.time_duration_end))
-            else:
-                show_warn("source_type_index: %d, company: %s, time range: %s - %s" % (empty_web_data_info.source_type_index, empty_web_data_info.company_code_number, empty_web_data_info.time_duration_start, empty_web_data_info.time_duration_end))
+        g_mgr.show_no_scrapy()
 
 
-@record_exe_time("CHECK")
-def do_check():
-    show_info("* Check errors in finance folder: %s" % g_mgr.FinanceRootFolderPath)
-    error_msg = g_mgr.check_scrapy_to_string()
-    if error_msg is not None:
-        show_error(error_msg)
-        # run_result_str = time_lapse_msg + error_msg
-        snapshot_result(error_msg)
-    else:
-        show_debug("Not errors found")
-    return True if error_msg is not None else False
+# @record_exe_time("CHECK")
+# def do_check():
+#     show_info("* Check errors in finance folder: %s" % g_mgr.FinanceRootFolderPath)
+#     error_msg = g_mgr.check_scrapy_to_string()
+#     if error_msg is not None:
+#         show_error(error_msg)
+#         # run_result_str = time_lapse_msg + error_msg
+#         snapshot_result(error_msg)
+#     else:
+#         show_debug("Not errors found")
+#     return True if error_msg is not None else False
 
 
 @record_exe_time("CLONE")
@@ -541,228 +543,7 @@ def do_clone():
     subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
 
 
-# def insert_not_exist_element(dst_list, src_list):
-#     dst_index = 0
-#     src_index = 0
-#     dst_list_len = len(dst_list)
-#     # import pdb; pdb.set_trace()
-#     for src_data in src_list:
-#         data_found = False
-#         try:
-#             cur_offset = (dst_list[dst_index:]).index(src_data)
-#             dst_index = dst_index + cur_offset + 1
-#             # data_found = True
-#         except ValueError:
-# # New element, insert the data into the list
-#             if dst_index == dst_list_len:
-#                 dst_list.append(src_data)
-#             else:
-#                 dst_list.insert(dst_index, src_data)
-#             dst_index += 1
-#             dst_list_len += 1
-#         print "FUNC: %s" % dst_list
-
-
-# class TestBase(object):
-#     TEST_VALUE = 0
-#     def __init__(self):
-#         pass
-
-#     @classmethod
-#     def show(cls):
-#         print cls.TEST_VALUE
-
-
-# class TestDerived1(TestBase):
-#     TEST_VALUE = 1
-#     def __init__(self):
-#         super(TestDerived1, self).__init__()
-#         if self.TEST_VALUE is None:
-#             print "TEST_VALUE init"
-#             self.TEST_VALUE = 1
-
-#     @property
-#     def value(self):
-#         return self.TEST_VALUE
-#     @value.setter
-#     def value(self, val):
-#         self.TEST_VALUE = val
-
-
-# class TestDerived2(TestBase):
-#     # TEST_VALUE = 2
-#     def __init__(self):
-#         super(TestDerived2, self).__init__()
-#         if self.TEST_VALUE is None:
-#             print "TEST_VALUE init"
-#             self.TEST_VALUE = 2
-
-class TestClass(object):
-    FUCK = "Fuck You"
-    SHOW_FUNC_PTR = None
-    # def __new__(cls):
-    #     print "fuck you"
-    @classmethod
-    def show1(cls):
-        print "one"
-    @classmethod
-    def show2(cls):
-        print "two"
-    @classmethod
-    def show3(cls):
-        print "three"
-    @classmethod
-    def show(cls, method):
-        if cls.SHOW_FUNC_PTR is None:
-            print "Initialize"
-            cls.SHOW_FUNC_PTR = [cls.show1, cls.show2, cls.show3,]
-        return (cls.SHOW_FUNC_PTR[method])()
-    @classmethod
-    def get_parent_class(cls):
-        assert len(cls.__bases__) == 1, "Only support single inheritance"
-        return cls.__bases__[0]
-    @classmethod
-    def get_class_name(cls):
-        return cls.__name__
-    @classmethod
-    def fuck(cls):
-        print "FUCK !!!"
-    def shit(self):
-        print self.FUCK
-
-
-class TestClass1(TestClass):
-    @classmethod
-    def fuck(cls):
-        print "FUCK111 !!!"
-
-class TestClass2(TestClass):
-    @classmethod
-    def show(cls, method):
-        pass
-
-class TestClass11(TestClass1):
-    @classmethod
-    def show(cls, method):
-        TestClass.show(method)
-
-
 if __name__ == "__main__":
-    # TestClass1.get_instance()
-    # import pdb; pdb.set_trace()
-    # company_group_set = web_scrapy_company_group_set.WebScrapyCompanyGroupSet()
-    # company_list = ["1101", "1102", "1103", "1104", "1108", "1109", "1110"]
-    # company_group_set.add_company_list(company_list)
-    # sub_company_group_list = company_group_set.get_sub_company_group_set_list(3)
-    # for company_group, company_number_list in sub_company_group_list[2].items():
-    #     print "group: %s, number_list: %s" % (company_group, company_number_list)
-    # test_object = TestClass1()
-    # print test_object.__dict__
-    # print test_object.test2
-    # print test_object.__dict__
-    # # test = TestClass.get_instance()
-    # test_class = TestClass1()
-    # getattr(test_class, "test1")()
-    # print "True" if isinstance(test_class, TestClass1) else "False"
-    # print "True" if isinstance(test_class, TestClass) else "False"
-    # g_logger.debug("fuck you1, go to hell")
-    # time.sleep(1)
-    # g_logger.debug("fuck you2, go to hell")
-    # time.sleep(1)
-    # g_logger.debug("fuck you3, go to hell")
-    # time.sleep(1)
-    # g_logger.debug("fuck you4, go to hell")
-    # time.sleep(1)
-    # g_logger.debug("fuck you5, go to hell")
-    # time.sleep(1)
-    # it = my_coroutine()
-    # print next(it)
-    # print it.send("fuck")
-    # print it.send("shit")
-    # g_logger.debug("fuck you6, go to hell")
-    # timer_thread = CMN.CLS.FinanceTimerThread(interval=6)
-    # # timer_thread.start_timer(print_fuck, "fuck you")
-    # # time.sleep(15)
-    # # timer_thread.stop_timer()
-    # # time.sleep(8)
-    # def test_func(pair):
-    #     a, b = pair
-    #     return a+b
-    # numbers = [(1,2),]
-    # print map(test_func, numbers)
-    # start_finance_quarter = CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(2017, 3, 31)
-    # end_finance_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(2017, 3, 31)
-    # print "Start: %s, End: %s" % (start_finance_quarter, end_finance_quarter)
-    # try:
-    #     raise CMN.EXCEPTION.WebScrapyException()
-    # except CMN.EXCEPTION.WebScrapyException as e:
-    #     print e
-    # dst_list = [1,2,4,5,7,9]
-    # print dst_list
-    # import copy
-    # old_dst_list = copy.deepcopy(dst_list)
-    # src_list = [0,1,2,3,5,6,7,8]
-    # print src_list
-    # insert_not_exist_element(dst_list, src_list)
-    # print dst_list
-    # print list(set(dst_list) - set(dst_list))
-    # dst_list.insert(len(dst_list), -1)
-    # print dst_list
-    # dst_list.append(-2)
-    # print dst_list
-    # test_derived1 = TestDerived1()
-    # test_derived1.show()
-    # test_derived2 = TestDerived2()
-    # test_derived2.show()
-    # test_derived1 = TestDerived1()
-    # test_derived1.show()
-    # test_derived2 = TestDerived2()
-    # test_derived2.show()
-
-    # import pdb; pdb.set_trace()
-    # print TestBase.TEST_VALUE    
-    # print TestDerived1.TEST_VALUE
-    # print TestDerived2.TEST_VALUE
-    # test_derived1 = TestDerived1()
-    # test_derived11 = TestDerived1()
-    # print test_derived1.TEST_VALUE
-    # print test_derived11.TEST_VALUE
-    # test_derived1.value = 2
-    # print test_derived1.value
-    # print test_derived11.value
-    # date1 = CMN.CLS.FinanceDate(2016, 12, 31)
-    # print date1.check_continous_time_duration(CMN.CLS.FinanceDate(2016, 11, 30))
-    # print date1.check_continous_time_duration(CMN.CLS.FinanceDate(2016, 12, 30))
-    # print date1.check_continous_time_duration(CMN.CLS.FinanceDate(2017, 1, 1))
-    # print date1.check_continous_time_duration(CMN.CLS.FinanceDate(2017, 4, 25))
-    # month1 = CMN.CLS.FinanceMonth(2016, 12)
-    # print month1.check_continous_time_duration(CMN.CLS.FinanceMonth(2016, 1))
-    # print month1.check_continous_time_duration(CMN.CLS.FinanceMonth(2016, 12))
-    # print month1.check_continous_time_duration(CMN.CLS.FinanceMonth(2017, 1))
-    # print month1.check_continous_time_duration(CMN.CLS.FinanceMonth(2017, 4))
-    # quarter1 = CMN.CLS.FinanceQuarter(2016, 4)
-    # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2016, 1))
-    # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2016, 3))
-    # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2017, 1))
-    # print quarter1.check_continous_time_duration(CMN.CLS.FinanceQuarter(2017, 4))
-
-    # TestClass1.show(0)
-    # TestClass1.show(1)
-    # TestClass1.show(2)
-    # TestClass11.show(0)
-    # TestClass11.show(1)
-    # TestClass11.show(2)
-    # TestClass.fuck()
-    # TestClass1.get_parent_class().fuck()
-    # print TestClass.get_class_name()
-    # print TestClass1.get_class_name()
-    # test_object1 = TestClass1()
-    # test_object1.shit()
-    # # # test_object11 = TestClass11()
-    # web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(9)
-
-    # sys.exit(0)
-
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
@@ -825,13 +606,13 @@ if __name__ == "__main__":
 # Try to scrap the web data
     if not param_cfg["no_scrap"]:
         do_scrap()
-    error_found = False
-# Check if all the csv files are created
-    if not param_cfg["no_check"]:
-        error_found = do_check()
+    # error_found = False
+# # Check if all the csv files are created
+#     if not param_cfg["no_check"]:
+#         error_found = do_check()
 # Clone the csv files if necessary
     if param_cfg["clone"]:
-        if not error_found:
+        if not g_mgr.NoScrapyCSVFound:
             do_clone()
         else:
-            show_error("Find errors while checking... Stop the Clone action")
+            show_error("Find errors while scarping... Stop the Clone action")

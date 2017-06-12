@@ -62,6 +62,7 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
 
     @staticmethod
     def do_debug(silent_mode=False):
+        # import pdb; pdb.set_trace()
         # res = requests.get("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
         res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
         res.encoding = 'big5'
