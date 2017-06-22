@@ -111,13 +111,13 @@ class WebScrapyBase(object):
 
 
         def backup_old_csv_if_necessary(self, csv_filepath):
-            if self.append_direction == WEB2CSV_APPEND_FRONT: #BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
+            if self.append_direction == self.WEB2CSV_APPEND_FRONT: #BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
                 g_logger.debug("Need add the new data in front of the old CSV data, rename the file: %s" % (csv_filepath + ".old"))
                 CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
 
 
         def append_old_csv_if_necessary(self, csv_filepath):
-            if self.append_direction == WEB2CSV_APPEND_FRONT: #BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
+            if self.append_direction == self.WEB2CSV_APPEND_FRONT: #BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_FRONT:
                 g_logger.debug("Append the old CSV data to the file: %s" % csv_filepath)
                 CMN.FUNC.append_data_into_file(csv_filepath + ".old", csv_filepath)
                 CMN.FUNC.remove_file_if_exist(csv_filepath + ".old") 
@@ -208,14 +208,14 @@ class WebScrapyBase(object):
 # args[2]: company code number
             need_flush = False
             if args[0] is None:
-                if self.web_data_emtpy_time_start is not None:
+                if self.web_data_not_found_time_start is not None:
                     need_flush = True
             else:
-                if self.web_data_emtpy_time_start is None:
-                    self.web_data_emtpy_time_start = self.web_data_emtpy_time_end = args[0]
+                if self.web_data_not_found_time_start is None:
+                    self.web_data_not_found_time_start = self.web_data_not_found_time_end = args[0]
                 else:
-                    if self.web_data_emtpy_time_end.check_continous_time_duration(args[0]):
-                        self.web_data_emtpy_time_end = args[0]
+                    if self.web_data_not_found_time_end.check_continous_time_duration(args[0]):
+                        self.web_data_not_found_time_end = args[0]
                     else:
                         need_flush = True
 # Keep track of the time range in which the web data is empty
@@ -232,9 +232,9 @@ class WebScrapyBase(object):
 # args_new[2]: empty time start
 # args_new[3]: empty time end
                 args_new = copy.deepcopy(args)
-                args_new.append(self.web_data_emtpy_time_start)
-                args_new.append(self.web_data_emtpy_time_end)
-                self.web_data_emtpy_time_start = self.web_data_emtpy_time_end = None
+                args_new.append(self.web_data_not_found_time_start)
+                args_new.append(self.web_data_not_found_time_end)
+                self.web_data_not_found_time_start = self.web_data_not_found_time_end = None
                 self.__add_record("WebDataNotFound", *args_new)
 
 
@@ -527,7 +527,6 @@ class WebScrapyBase(object):
 # args[0]: source_type_index
 # args[1]: company_code_number
 # Define the suitable time range
-        # import pdb; pdb.set_trace()
 # define the function for transforming the time unit
         def transfrom_time_duration_start_time_unit_from_date(time_duration_start):
             assert isinstance(time_duration_start, CMN.CLS.FinanceDate), "The input start time duration time unit is %s, not FinanceDate" % type(time_duration_start)
@@ -546,6 +545,7 @@ class WebScrapyBase(object):
                 return  CMN.CLS.FinanceMonth.get_finance_month_from_date(time_duration_end)
             raise ValueError("Unsupported URL time unit in end time: %d" % self.URL_TIME_UNIT)
 # Transform the time unit
+        # import pdb; pdb.set_trace()
         time_duration_start = None
         time_duration_end = None
         if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
@@ -558,28 +558,37 @@ class WebScrapyBase(object):
             time_duration_end = transfrom_time_duration_end_time_unit_from_date(time_duration_end)
         elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
             (time_duration_start_from_lookup_table, time_duration_end_from_lookup_table) = self._get_url_time_range().get_time_range(*args)
+            time_start_from_table = False
             if self.xcfg["time_duration_start"] is None:
                 time_duration_start = time_duration_start_from_lookup_table
+                time_start_from_table = True
             else:
 # Trasform the start time unit
-                self.xcfg["time_duration_start"] = transfrom_time_duration_start_time_unit_from_date(self.xcfg["time_duration_start"])
-                assert self.xcfg["time_duration_start"].get_time_unit_type() == time_duration_start_from_lookup_table.get_time_unit_type() , "The time duration start time unit is NOT identical, %d, %d" % (self.xcfg["time_duration_start"].get_time_unit_type(), time_duration_start_from_lookup_table.get_time_unit_type()) 
+                time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.xcfg["time_duration_start"])
+                assert time_duration_start.get_time_unit_type() == time_duration_start_from_lookup_table.get_time_unit_type() , "The time duration start time unit is NOT identical, %d, %d" % (time_duration_start.get_time_unit_type(), time_duration_start_from_lookup_table.get_time_unit_type()) 
+            time_end_from_table = False
             if self.xcfg["time_duration_end"] is None:
                 time_duration_end = time_duration_end_from_lookup_table
+                time_end_from_table = True
             else:
 # Trasform the end time unit
-                self.xcfg["time_duration_end"] = transfrom_time_duration_end_time_unit_from_date(self.xcfg["time_duration_end"])
-                assert self.xcfg["time_duration_end"].get_time_unit_type() == time_duration_end_from_lookup_table.get_time_unit_type() , "The time duration end time unit is NOT identical, %d, %d" % (self.xcfg["time_duration_end"].get_time_unit_type(), time_duration_end_from_lookup_table.get_time_unit_type())     
+                time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.xcfg["time_duration_end"])
+                assert time_duration_end.get_time_unit_type() == time_duration_end_from_lookup_table.get_time_unit_type() , "The time duration end time unit is NOT identical, %d, %d" % (time_duration_end.get_time_unit_type(), time_duration_end_from_lookup_table.get_time_unit_type())     
+            need_check_overlap = not (time_start_from_table or time_end_from_table)
 # Check the time duration is in the range of table
-            if not CMN.FUNC.is_time_range_overlap(time_duration_start_from_lookup_table, time_duration_end_from_lookup_table, self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]):
-                g_logger.debug("The time range[%s-%s] for searching is Out of Range of the table[%s-%s]" % (self.xcfg["time_duration_start"], self.xcfg["time_duration_end"], time_duration_start_from_lookup_table, time_duration_end_from_lookup_table))
-                return None
-            time_duration_start = time_duration_start_from_lookup_table if (self.xcfg["time_duration_start"] < time_duration_start_from_lookup_table) else self.xcfg["time_duration_start"]
-            time_duration_end = time_duration_end_from_lookup_table if (self.xcfg["time_duration_end"] > time_duration_end_from_lookup_table) else self.xcfg["time_duration_end"]
+            if need_check_overlap:
+                if not CMN.FUNC.is_time_range_overlap(time_duration_start_from_lookup_table, time_duration_end_from_lookup_table, time_duration_start, time_duration_end):
+                    g_logger.debug("The time range[%s-%s] for searching is Out of Range of the table[%s-%s]" % (time_duration_start, time_duration_end, time_duration_start_from_lookup_table, time_duration_end_from_lookup_table))
+                    return None
+            if (not time_start_from_table) and (time_duration_start < time_duration_start_from_lookup_table):
+                time_duration_start = time_duration_start_from_lookup_table
+            if (not time_end_from_table) and (time_duration_end > time_duration_end_from_lookup_table):
+                time_duration_end = time_duration_end_from_lookup_table
         else:
             raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
+        # import pdb; pdb.set_trace()
+        assert time_duration_start.get_time_unit_type() == self.URL_TIME_UNIT, "The time unit shold be: %d, NOT: %d" % (self.URL_TIME_UNIT, time_duration_start.get_time_unit_type())
         assert time_duration_start.get_time_unit_type() == time_duration_end.get_time_unit_type(), "The time unit is NOT identical, start: %d, end: %d" % (time_duration_start.get_time_unit_type(), time_duration_end.get_time_unit_type())
-        assert time_duration_start.get_time_unit_type() == self.URL_TIME_UNIT, "The time unit is NOT identical, expected: %d, actual: %d" % (self.URL_TIME_UNIT, time_duration_start.get_time_unit_type())
         return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
 
 

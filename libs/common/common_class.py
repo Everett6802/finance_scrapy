@@ -503,7 +503,7 @@ class FinanceQuarter(FinanceTimeBase):
 
     @staticmethod
     def get_time_unit_type():
-        return CMN_DEF.DATA_TIME_UNIT_YEAR
+        return CMN_DEF.DATA_TIME_UNIT_QUARTER
 
 
     @classmethod

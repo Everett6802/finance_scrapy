@@ -50,11 +50,11 @@ class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase)
 
 
     def _parse_web_statement_field_data(self, web_data):
-        return super(WebScrapyCashFlowStatement, self)._parse_web_statement_field_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
+        return self._parse_web_statement_field_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
     def _parse_web_data(self, web_data):
-        return super(WebScrapyCashFlowStatement, self)._parse_web_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
+        return self._parse_web_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
     @staticmethod

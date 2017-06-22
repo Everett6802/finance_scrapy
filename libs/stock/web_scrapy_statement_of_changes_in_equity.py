@@ -138,15 +138,16 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
 
 
     def _parse_web_statement_field_data(self, web_data):
-        return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_statement_field_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
+        return self._parse_web_statement_field_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
     def _parse_web_statement_column_field_data(self, web_data):
-        return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_statement_column_field_data_internal(web_data, self.TABLE_COLUMN_FIELD_TITLE_INDEX)
+        return self._parse_web_statement_column_field_data_internal(web_data, self.TABLE_COLUMN_FIELD_TITLE_INDEX)
 
 
     def _parse_web_data(self, web_data):
-        return super(WebScrapyStatementOfChangesInEquity, self)._parse_web_data_internal(web_data, self.TABLE_COLUMN_FIELD_TITLE_INDEX, self.TABLE_FIELD_END_INDEX)
+        # import pdb; pdb.set_trace()
+        return self._parse_web_data_internal(web_data, self.TABLE_COLUMN_FIELD_TITLE_INDEX, self.TABLE_FIELD_END_INDEX)
 
 
     @staticmethod

@@ -18,6 +18,10 @@ g_profile_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
 @CMN.CLS.Singleton
 class WebScrapyURLTimeRange(object):
 
+    DEF_STATEMENT_START_YEAR = 2013
+    DEF_STATEMENT_START_QUARTER = 1
+    DEF_STATEMENT_START_QUARTER_STR = "%dq%d" % (DEF_STATEMENT_START_YEAR, DEF_STATEMENT_START_QUARTER)
+
     def __init__(self):
         # import pdb; pdb.set_trace()
         self.TIME_RANGE_ROOT_FOLDERPATH = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_TIME_RANGE_FOLDERNAME)
@@ -32,10 +36,10 @@ class WebScrapyURLTimeRange(object):
         # self.stock_offset_source_type_index_list = [source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START for source_type_index in self.source_type_index_list]
         self.DEF_DATA_SOURCE_START_SCAN_TIME_CFG = [
             CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -1)),
-            CMN.CLS.FinanceQuarter("2013q1"),
-            CMN.CLS.FinanceQuarter("2013q1"),
-            CMN.CLS.FinanceQuarter("2013q1"),
-            CMN.CLS.FinanceQuarter("2013q1"),
+            CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
         ]
         last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)
@@ -139,7 +143,7 @@ class WebScrapyURLTimeRange(object):
 # The start time already exist, no need to search
             if company_time_range_start_ordereddict.has_key(source_type_index):
                 continue
-            import pdb;pdb.set_trace()
+            # import pdb;pdb.set_trace()
             stock_source_type_index_offset = source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START
 # Get the web scrapy class
             web_scrapy_class = self.web_scrapy_class_list[stock_source_type_index_offset]

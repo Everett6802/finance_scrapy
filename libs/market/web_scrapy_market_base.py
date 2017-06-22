@@ -48,11 +48,11 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
             if csv_time_duration_table.get(source_type_index, None) is None:
                 return False 
             return True
-
-        time_duration_after_lookup_time = arg[0]
+        assert len(args) == 1, "The argument length should be 1, NOT %d" % len(args)
+        time_duration_after_lookup_time = args[0]
 # Determine the CSV/Web time duration
         web2csv_time_duration_update = None
-        if check_old_csv_time_duration_exist(source_type_index, self.xcfg["csv_time_duration_table"]):
+        if check_old_csv_time_duration_exist(self.SOURCE_TYPE_INDEX, self.xcfg["csv_time_duration_table"]):
             web2csv_time_duration_update = self._get_overlapped_web2csv_time_duration_update_cfg(
                 self.xcfg["csv_time_duration_table"][self.SOURCE_TYPE_INDEX], 
                 time_duration_after_lookup_time.time_duration_start, 
@@ -149,7 +149,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         if len(csv_data_list_each_year) > 0:
             self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
 # Append the old CSV data after the new web data if necessary
-        web2csv_time_duration_update.restore_old_csv_if_necessary(csv_filepath)
+        web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 # parse csv file status
         self._parse_csv_file_status_to_string_list()
 

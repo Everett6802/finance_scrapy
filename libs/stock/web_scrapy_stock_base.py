@@ -7,6 +7,7 @@ import requests
 import csv
 import time
 import copy
+import collections
 from abc import ABCMeta, abstractmethod
 from random import randint
 from bs4 import BeautifulSoup
@@ -73,12 +74,12 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             if company_csv_time_duration_table.get(source_type_index, None) is None:
                 return False
             return True
-
-        time_duration_after_lookup_time = arg[0]
-        company_code_number = arg[1]
+        assert len(args) == 2, "The argument length should be 2, NOT %d" % len(args)
+        time_duration_after_lookup_time = args[0]
+        company_code_number = args[1]
 # Determine the CSV/Web time duration
         web2csv_time_duration_update = None
-        if check_old_csv_time_duration_exist(source_type_index, company_code_number, self.xcfg["csv_time_duration_table"]):
+        if check_old_csv_time_duration_exist(self.SOURCE_TYPE_INDEX, company_code_number, self.xcfg["csv_time_duration_table"]):
             web2csv_time_duration_update = self._get_overlapped_web2csv_time_duration_update_cfg(
                 self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX], 
                 time_duration_after_lookup_time.time_duration_start, 
@@ -178,6 +179,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                         cur_year = timeslice.year
                     url = self.prepare_for_scrapy(timeslice, company_code_number)
                     # import pdb;pdb.set_trace()
+                    print "URL: %s" % url
                     csv_data_list = self._parse_web_data(self.try_get_web_data(url))
                     if csv_data_list is None:
 # Keep track of the time range in which the web data is empty
@@ -190,7 +192,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 if len(csv_data_list_each_year) > 0:
                     self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
 # Append the old CSV data after the new web data if necessary
-                web2csv_time_duration_update.restore_old_csv_if_necessary(csv_filepath)
+                web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 # Increase the progress count
                 self.scrapy_company_progress_count += 1
 # Parse csv file status
@@ -266,6 +268,12 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         else:
             table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
         cls.TABLE_FIELD_INTEREST_TITLE_LIST = [title for title in table_field_title_list if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST]
+        # for title in table_field_title_list:
+        #     if title not in cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST:
+        #         print "Interested title: %s" % title
+        #     else:
+        #         print "Non-Interested title: %s" % title
+        # import pdb; pdb.set_trace()
         # cls.TABLE_FIELD_INTEREST_TITLE_INDEX_DICT = {title: title_index for title_index, title in enumerate(cls.TABLE_FIELD_INTEREST_TITLE_LIST)}
         cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_NOT_INTEREST_TITLE_LIST)
         cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
@@ -653,7 +661,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 continue
 # Parse the content of this entry, and the interested field into data structure
             entry_list_entry = table_column_field_index_list if self.TABLE_COLUMN_FIELD_EXIST else self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[title]
-            # print "data_index: %d, title: [%s]" % (data_index, title)
+            # print "data_index: %d, data_title: [%s], table_title: [%s]" % (data_index, title, self.TABLE_FIELD_INTEREST_TITLE_LIST[data_index])
             # import pdb;pdb.set_trace()
             field_index_list = None
             if isinstance(entry_list_entry, list):
