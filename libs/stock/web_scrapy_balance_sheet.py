@@ -16,21 +16,21 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 資產負債表
 class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
 
-    TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
-        u"　流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #0
-        u"　非流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #14
-        u"　流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #23
-        u"　非流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #33
-        u"　歸屬於母公司業主之權益".encode(CMN.DEF.URL_ENCODING_UTF8), #40
-        u"　　股本".encode(CMN.DEF.URL_ENCODING_UTF8), #41
-        u"　　資本公積".encode(CMN.DEF.URL_ENCODING_UTF8), #45
-        u"　　保留盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), #54
-        u"　　其他權益".encode(CMN.DEF.URL_ENCODING_UTF8), #59
-        u"　待註銷股本股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #69
-        u"　預收股款（權益項下）之約當發行股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #70
-    ]
+    # TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
+    #     u"　流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #0
+    #     u"　非流動資產".encode(CMN.DEF.URL_ENCODING_UTF8), #14
+    #     u"　流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #23
+    #     u"　非流動負債".encode(CMN.DEF.URL_ENCODING_UTF8), #33
+    #     u"　歸屬於母公司業主之權益".encode(CMN.DEF.URL_ENCODING_UTF8), #40
+    #     u"　　股本".encode(CMN.DEF.URL_ENCODING_UTF8), #41
+    #     u"　　資本公積".encode(CMN.DEF.URL_ENCODING_UTF8), #45
+    #     u"　　保留盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), #54
+    #     u"　　其他權益".encode(CMN.DEF.URL_ENCODING_UTF8), #59
+    #     u"　待註銷股本股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #69
+    #     u"　預收股款（權益項下）之約當發行股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8), #70
+    # ]
     TABLE_FIELD_INTEREST_TITLE_LIST = None
-    TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
+    # TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN = 1 #2

@@ -16,13 +16,13 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 現金流量表
 class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 
-    TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
-        u"營業活動之現金流量－間接法".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"投資活動之現金流量".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"籌資活動之現金流量".encode(CMN.DEF.URL_ENCODING_UTF8), 
-    ]
+    # TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
+    #     u"營業活動之現金流量－間接法".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"投資活動之現金流量".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"籌資活動之現金流量".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    # ]
     TABLE_FIELD_INTEREST_TITLE_LIST = None
-    TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
+    # TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN = 1

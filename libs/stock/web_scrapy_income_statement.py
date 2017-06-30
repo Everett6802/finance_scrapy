@@ -16,18 +16,18 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 損益表
 class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
 
-    TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
-        u"營業費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"其他收益及費損淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
-        u"營業外收入及支出".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"不重分類至損益之項目：".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"停業單位損益".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"後續可能重分類至損益之項目：".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
-        u"稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
-    ]
+    # TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
+    #     u"營業費用".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"其他收益及費損淨額".encode(CMN.DEF.URL_ENCODING_UTF8),
+    #     u"營業外收入及支出".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"不重分類至損益之項目：".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"停業單位損益".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"後續可能重分類至損益之項目：".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    #     u"稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8), 
+    # ]
     TABLE_FIELD_INTEREST_TITLE_LIST = None
-    TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
+    # TABLE_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN = 1 #2

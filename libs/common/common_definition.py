@@ -104,10 +104,10 @@ DEF_WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
 DEF_COMPANY_PROFILE_CONF_FILENAME = ".company_profile.conf"
 DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME = ".company_profile_change_list.conf"
 DEF_COMPANY_GROUP_CONF_FILENAME = ".company_group.conf"
-DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME = ".balance_sheet_field_name.conf"
-DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME = ".income_statement_field_name.conf"
-DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME = ".cash_flow_statement_field_name.conf"
-DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME = ".statement_of_changes_in_equity_field_name.conf"
+DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME = "balance_sheet_field_name.conf"
+DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME = "income_statement_field_name.conf"
+DEF_CASH_FLOW_STATEMENT_FIELD_NAME_CONF_FILENAME = "cash_flow_statement_field_name.conf"
+DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME = "statement_of_changes_in_equity_field_name.conf"
 DEF_STATEMENT_FIELD_NAME_CONF_FILENAME = [
     DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME,
     DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME,
@@ -141,8 +141,9 @@ DEF_SNAPSHOT_FOLDER = "snapshot"
 DEF_UNICODE_ENCODING_IN_FILE = "utf-8"
 DEF_SCRAPY_WAIT_TIMEOUT = 8
 DEF_SCRAPY_RETRY_TIMES = 3
-DEF_COMMA_DATA_SPLIT = ",";
-DEF_SPACE_DATA_SPLIT = " ";
+DEF_COMMA_DATA_SPLIT = ","
+DEF_SPACE_DATA_SPLIT = " "
+DEF_COLON_DATA_SPLIT = ":"
 DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG = "===== Column Field Start =====" # Caution: Can't start with '#' which is ignored while reading config file
 DEF_CONFIG_TIMESTAMP_STRING_PREFIX = "#time@"
 
