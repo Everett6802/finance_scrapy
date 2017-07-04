@@ -34,6 +34,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN = 1 #2
+    TABLE_FIELD_INTEREST_ALIAS_TITLE_DICT = None
     TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = None
     TABLE_FIELD_START_INDEX = 7
     TABLE_FIELD_END_INDEX = None
@@ -44,7 +45,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
         # cls.get_parent_class().init_class_variables() # Caution: This class function should NOT be called by the parent class
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
             cls._init_statement_field_class_variables(CMN.DEF.DEF_BALANCE_SHEET_FIELD_NAME_CONF_FILENAME)
-            cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
+            # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
         # for interest_title in cls.TABLE_FIELD_INTEREST_TITLE_LIST:
         #     print "%s" % interest_title
 

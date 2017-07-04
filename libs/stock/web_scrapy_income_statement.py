@@ -31,6 +31,7 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
     TABLE_FIELD_INTEREST_TITLE_LIST_LEN = None
     TABLE_FIELD_INTEREST_ENTRY_START_INDEX = 1
     TABLE_FIELD_INTEREST_ENTRY_LEN = 1 #2
+    TABLE_FIELD_INTEREST_ALIAS_TITLE_DICT = None
     TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = None
     TABLE_FIELD_START_INDEX = 7
     TABLE_FIELD_END_INDEX = None
@@ -41,10 +42,10 @@ class WebScrapyIncomeStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
         # cls.get_parent_class().init_class_variables() # Caution: This class function should NOT be called by the parent class
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
             cls._init_statement_field_class_variables(CMN.DEF.DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME)
-            cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　　繼續營業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
-            cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
-            cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　　停業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
-            cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
+            # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　　繼續營業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
+            # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
+            # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　　停業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
+            # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
 
 
     @classmethod

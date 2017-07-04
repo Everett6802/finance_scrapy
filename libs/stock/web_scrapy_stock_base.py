@@ -226,6 +226,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 
     __metaclass__ = ABCMeta
     TABLE_COLUMN_FIELD_EXIST = False
+    DEF_ALIAS_DATA_SPLIT = ":ALIAS:"
 
 
     @classmethod
@@ -294,7 +295,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         if cls.TABLE_COLUMN_FIELD_EXIST:
             total_table_field_data_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
             try:
-                column_field_start_flag_index = total_table_field_title_list.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+                column_field_start_flag_index = total_table_field_data_list.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
                 table_field_data_list = copy.deepcopy(total_table_field_data_list[0:column_field_start_flag_index])
                 table_column_field_data_list = copy.deepcopy(total_table_field_data_list[column_field_start_flag_index + 1:])
             except ValueError:
@@ -303,16 +304,25 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
             table_field_data_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
 # Parse the config content
         cls.TABLE_FIELD_INTEREST_TITLE_LIST = []
+        cls.TABLE_FIELD_INTEREST_ALIAS_TITLE_DICT = {}
         cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_ENTRY_LEN)
         for table_field_data in table_field_data_list:
-            data_array = table_field_data.split(CMN.DEF.DEF_COLON_DATA_SPLIT)
-            field_title = data_array[0]
-            cls.TABLE_FIELD_INTEREST_TITLE_LIST.append(field_title)
-            if len(data_array) == 2:
-                field_interest_entry = [int(field_index) for field_index in data_array[1].split(CMN.DEF.DEF_COMMA_DATA_SPLIT)]
-                cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[field_title] = field_interest_entry
-            elif len(data_array) > 2:
-                raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("Incorrect field config format: %s" % table_field_data)
+            if table_field_data.find(cls.DEF_ALIAS_DATA_SPLIT) == -1:
+# Normal type title
+                data_array = table_field_data.split(CMN.DEF.DEF_COLON_DATA_SPLIT)
+                field_title = data_array[0]
+                cls.TABLE_FIELD_INTEREST_TITLE_LIST.append(field_title)
+                if len(data_array) == 2:
+                    field_interest_entry = [int(field_index) for field_index in data_array[1].split(CMN.DEF.DEF_COMMA_DATA_SPLIT)]
+                    cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[field_title] = field_interest_entry
+                elif len(data_array) > 2:
+                    raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("Incorrect field config format: %s" % table_field_data)
+            else:
+# Alias type title
+                data_array = table_field_data.split(cls.DEF_ALIAS_DATA_SPLIT)
+                if len(data_array) != 2:
+                    raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("Incorrect field config format: %s" % table_field_data)
+                cls.TABLE_FIELD_INTEREST_ALIAS_TITLE_DICT[data_array[0]] = data_array[1]
         cls.TABLE_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_FIELD_INTEREST_TITLE_LIST)
 # Initialize the column field title if required
         if cls.TABLE_COLUMN_FIELD_EXIST:
@@ -795,7 +805,16 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
                 data_index = self.TABLE_FIELD_INTEREST_TITLE_LIST.index(title)
             except ValueError:
-                continue
+# Check if this title is alias
+                if self.TABLE_FIELD_INTEREST_ALIAS_TITLE_DICT.has_key(title):
+                    title_alias = self.TABLE_FIELD_INTEREST_ALIAS_TITLE_DICT[title]
+                    try:
+                        # g_logger.error(u"Search for the index of the title[%s] ......" % td[0].text)
+                        data_index = self.TABLE_FIELD_INTEREST_TITLE_LIST.index(title_alias)
+                    except ValueError:
+                        raise CMN.EXCEPTION.WebScrapyNotFoundException(u"The title[%s, Alias: %s] is NOT found in the interest title list" % (title_alias, title))                  
+                else:
+                    continue
 # Parse the content of this entry, and the interested field into data structure
             entry_list_entry = table_column_field_index_list if self.TABLE_COLUMN_FIELD_EXIST else self.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[title]
             # print "data_index: %d, data_title: [%s], table_title: [%s]" % (data_index, title, self.TABLE_FIELD_INTEREST_TITLE_LIST[data_index])
