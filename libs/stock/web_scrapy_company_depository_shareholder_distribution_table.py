@@ -66,8 +66,6 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 
 
     def _parse_web_data(self, web_data):
-        if len(web_data) == 0:
-            return None
         # import pdb; pdb.set_trace()
         data_list = []
         data_list.append(self.date_cur_string)

@@ -179,12 +179,14 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                         cur_year = timeslice.year
                     url = self.prepare_for_scrapy(timeslice, company_code_number)
                     # import pdb;pdb.set_trace()
-                    print "URL: %s" % url
-                    csv_data_list = self._parse_web_data(self.try_get_web_data(url))
-                    if csv_data_list is None:
+                    web_data = self.try_get_web_data(url)
+                    if len(web_data) == 0:
 # Keep track of the time range in which the web data is empty
                         self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SOURCE_TYPE_INDEX, company_code_number)
                     else:
+                        csv_data_list = self._parse_web_data(web_data)
+                        if len(csv_data_list) == 0:
+                            raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
                         csv_data_list_each_year.append(csv_data_list)
 # Flush the last data into the list if required
                 self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SOURCE_TYPE_INDEX, company_code_number)
@@ -331,7 +333,14 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST.append(table_column_field_data)
             cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST_LEN = len(cls.TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST)
 
-            
+
+    @classmethod
+    def post_check_web_data(cls, web_data):
+        for entry in web_data:
+            if re.search(r"查詢過於頻繁,請稍後再試", entry.text.encode(CMN.DEF.URL_ENCODING_UTF8), re.U):
+                raise CMN.EXCEPTION.WebScrapyServerBusyException("Server is busy... try again later on !!!")
+
+
     @classmethod
     def _show_statement_field_dimension_internal(cls, interest_conf_filename, auto_gen_sql_element):
         # import pdb; pdb.set_trace()
@@ -563,11 +572,8 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 
     def _parse_web_statement_field_data_internal(self, web_data, web_data_start_index, web_data_end_index=None):
         # import pdb; pdb.set_trace()
-        web_data_len = len(web_data)
-        if web_data_len == 0:
-            return None
         if web_data_end_index is None:
-            web_data_end_index = web_data_len
+            web_data_end_index = len(web_data)
         data_list = []
 # Filter the data which is NOT interested in
         for tr in web_data[web_data_start_index:web_data_end_index]:
@@ -582,9 +588,6 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 
 
     def _parse_web_statement_column_field_data_internal(self, web_data, web_column_data_start_index):
-        web_data_len = len(web_data)
-        if web_data_len == 0:
-            return None
         data_list = []
 # Filter the data which is NOT interested in
         td = web_data[web_column_data_start_index].select('td')
@@ -760,11 +763,8 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
 #         # import pdb;pdb.set_trace()
 #         return data_list
     def _parse_web_data_internal(self, web_data, web_data_start_index, web_data_end_index=None):
-        web_data_len = len(web_data)
-        if web_data_len == 0:
-            return None
         if web_data_end_index is None:
-            web_data_end_index = web_data_len
+            web_data_end_index = len(web_data)
         # import pdb; pdb.set_trace()
         table_column_field_index_list = None
         table_column_field_index_mapping_list = None
@@ -841,7 +841,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 data_is_empty = False
                 break
         if data_is_empty:
-            # import pdb;pdb.set_trace()
+            import pdb;pdb.set_trace()
             raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
 # Transforms the table into the 1-Dimension list
         # import pdb;pdb.set_trace()

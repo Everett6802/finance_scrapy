@@ -779,7 +779,7 @@ def try_to_request_from_url_and_check_return(url, timeout=None):
             req = request_from_url_and_check_return(url, timeout)
         except requests.exceptions.Timeout as ex:
             # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
-            time.sleep(randint(3,9))
+            time.sleep(randint(3, 9))
         else:
             return req
     errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.DEF_SCRAPY_RETRY_TIMES)

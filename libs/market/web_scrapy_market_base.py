@@ -137,11 +137,14 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
                 cur_year = timeslice.year
             url = self.prepare_for_scrapy(timeslice)
             # import pdb;pdb.set_trace()
-            csv_data_list = self._parse_web_data(self.try_get_web_data(url))
-            if csv_data_list is  is None:
+            web_data = self.try_get_web_data(url)
+            if len(web_data) == 0:
 # Keep track of the time range in which the web data is empty
                 self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SOURCE_TYPE_INDEX)
             else:
+                csv_data_list = self._parse_web_data(web_data)
+                if len(csv_data_list) == 0:
+                    raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
                 csv_data_list_each_year.append(csv_data_list)
 # Flush the last data into the list if required
             self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SOURCE_TYPE_INDEX)

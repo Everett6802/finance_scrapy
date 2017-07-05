@@ -44,8 +44,6 @@ class WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary(web_scrapy_base.WebScr
 
 
     def _parse_web_data(self, web_data):
-        if len(web_data) == 0:
-            return None
         data_list = []
         element_list = []
         for tr in web_data[2:]:

@@ -38,9 +38,6 @@ class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_bas
 
     def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
-        if len(web_data) == 0:
-            return None
-
         data_list = []
         for data in web_data:
             element_list = []

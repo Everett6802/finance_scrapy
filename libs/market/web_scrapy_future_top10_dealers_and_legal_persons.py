@@ -63,8 +63,6 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
 
     def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
-        if len(web_data) == 0:
-            return None
         data_list = [self.cur_date_str,]
         if self.need_check_everytime:
             if self.cur_date <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:

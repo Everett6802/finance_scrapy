@@ -43,8 +43,6 @@ class WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary(web_scrapy_base.WebScra
 
 
     def _parse_web_data(self, web_data):
-        if len(web_data) == 0:
-            return None
         data_list = []
         for tr in web_data[2:]:
             td = tr.select('td')

@@ -65,11 +65,8 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
 
     def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
-        web_data_len = len(web_data)
-        if web_data_len == 0:
-            return None
         data_list = []
-        
+        web_data_len = len(web_data)
         # print "len: %d" % data_len
         for tr in web_data[web_data_len - 1 : 0 : -1]:
             td = tr.select('td')

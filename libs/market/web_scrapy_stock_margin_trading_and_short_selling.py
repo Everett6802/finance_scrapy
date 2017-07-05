@@ -39,8 +39,6 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
 
     def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
-        if len(web_data) == 0:
-            return None
         data_list = [self.cur_date_str,]
         for tr in web_data[2:]:
             td = tr.select('td')

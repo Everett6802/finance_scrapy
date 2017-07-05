@@ -31,8 +31,6 @@ class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(WebScrapyMarke
 
 
     def _parse_web_data(self, web_data):
-        if len(web_data) == 0:
-            return None
         data_list = [self.cur_date_str,]
         # start_index_list = [4, 1, 1, 2, 1, 1]
         # column_num = 12

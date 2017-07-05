@@ -65,7 +65,7 @@ def show_usage_and_exit():
         print "--multi_thread\nDescription: Scrape web data in multi-thread"
         print "  Format: multi-thread number (ex. 4)"
         print "--renew_statement_field\nDescription: Renew the statment field\nCaution: Exit after renewing the statement field"
-    print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder cant NOT be duplicate. If so, the merge progress aborts"
+    print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder can NOT be duplicate. If so, the merge progress aborts"
     print "  Format 1 (folderpath): /var/tmp/finance"
     print "  Format 2 (folderpath1,folderpath2,folderpath3): /var/tmp/finance1,/var/tmp/finance2,/var/tmp/finance3"
     print "--merge_finance_folderpath_dst\nDescription: The destination folderpath after merging\nDefault: %s" % CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH
@@ -401,7 +401,7 @@ def check_param():
                 param_cfg["company"] = None
                 show_warn("The 'company' argument is ignored since 'company_from_file' is set")
         if param_cfg["multi_thread"] is not None:
-            if mparam_cfg["renew_statement_field"]:
+            if param_cfg["renew_statement_field"]:
                 param_cfg["multi_thread"] = None
                 show_warn("The 'multi_thread' argument is invalid when the 'renew_statement_field' argument is true")
 

@@ -31,8 +31,6 @@ class WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.We
 
 
     def _parse_web_data(self, web_data):
-        if len(web_data) == 0:
-            return None
         data_list = [self.cur_date_str,]
         for tr in web_data[12:15]:
             td = tr.select('td')

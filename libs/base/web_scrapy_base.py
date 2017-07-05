@@ -344,12 +344,19 @@ class WebScrapyBase(object):
 
 
     @classmethod
+    def post_check_web_data(cls, web_data):
+        pass
+
+
+    @classmethod
     def try_get_web_data(cls, url):
         g_logger.debug("Scrape web data from URL: %s" % url)
         web_data = None
         try:
 # Grab the data from website and assemble the data to the entry of CSV
             web_data = cls.get_web_data(url)
+            assert (web_data is not None), "web_data should NOT be None"
+            cls.post_check_web_data(web_data)
         except CMN.EXCEPTION.WebScrapyNotFoundException as e:
             errmsg = None
             if isinstance(e.message, str):
@@ -371,6 +378,8 @@ class WebScrapyBase(object):
                 time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
                 try:
                     web_data = cls.get_web_data(url)
+                    assert (web_data is not None), "web_data should NOT be None"
+                    cls.post_check_web_data(web_data)
                 except CMN.EXCEPTION.WebScrapyServerBusyException as e:
                     pass
                 else:
