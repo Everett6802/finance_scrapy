@@ -50,7 +50,7 @@ class WebScrapyThreadPool(object):
     def wait_completion(self):
         """Wait for completion of all the tasks in the queue"""
         self.tasks.join()
-        print "[%s] All threads are dead" % datetime.strftime(datetime.now(), '%H:%M:%S')
+        g_logger.debug("[%s] All threads are dead" % datetime.strftime(datetime.now(), '%H:%M:%S'))
 # Update result
         errmsg = ""
         errmsg_traceback = ""

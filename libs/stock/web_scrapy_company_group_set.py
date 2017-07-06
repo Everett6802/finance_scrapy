@@ -208,7 +208,7 @@ class WebScrapyCompanyGroupSet(object):
             sub_company_amount = 1
             rest_company_amount = 0
             sub_company_group_set_amount = self.CompanyAmount
-            g_logger.debug("The company amount is less than sub company group set amount. Set the sub company group set amount to %d" % self.CompanyAmount)
+            g_logger.debug("The company amount is less equal than sub company group set amount. Set the sub company group set amount to %d" % self.CompanyAmount)
         else:            
             sub_company_amount = self.CompanyAmount / sub_company_group_set_amount
             rest_company_amount = self.CompanyAmount % sub_company_group_set_amount
