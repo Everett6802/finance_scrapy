@@ -47,7 +47,7 @@ class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase)
 
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
-        super(WebScrapyCashFlowStatement, self).__init__(__file__, **kwargs)
+        super(WebScrapyCashFlowStatement, self).__init__(**kwargs)
 
 
     def _parse_web_statement_field_data(self, web_data):

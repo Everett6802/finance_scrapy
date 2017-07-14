@@ -28,7 +28,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
 
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
-        super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(__file__, **kwargs)
+        super(WebScrapyFutureTop10DealersAndLegalPersons, self).__init__(**kwargs)
         self.need_check_everytime = False
         self.data_row_start_index = WebScrapyFutureTop10DealersAndLegalPersons.NEW_FORMAT_ROW_START
         self.data_row_end_index = WebScrapyFutureTop10DealersAndLegalPersons.NEW_FORMAT_ROW_END
@@ -39,8 +39,10 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
         self.cur_date_str = None
 
 
-    def _adjust_time_duration_from_lookup_table(self):
-        super(WebScrapyFutureTop10DealersAndLegalPersons, self)._adjust_time_duration_from_lookup_table()
+    def _adjust_time_range_from_web(self, *args):
+        time_duration_after_lookup_time = super(WebScrapyFutureTop10DealersAndLegalPersons, self)._adjust_time_range_from_web()
+        assert isinstance(self.xcfg["time_duration_start"], CMN.CLS.FinanceDate), "The input start time duration time unit is %s, not FinanceDate" % type(self.xcfg["time_duration_start"])
+        assert isinstance(self.xcfg["time_duration_end"], CMN.CLS.FinanceDate), "The input end time duration time unit is %s, not FinanceDate" % type(self.xcfg["time_duration_end"])
         if self.xcfg["time_duration_start"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT and self.xcfg["time_duration_end"] > WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
             self.need_check_everytime = True
             self.data_row_start_index = None
@@ -50,6 +52,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
             self.data_row_start_index = WebScrapyFutureTop10DealersAndLegalPersons.OLD_FORMAT_ROW_START
             self.data_row_end_index = WebScrapyFutureTop10DealersAndLegalPersons.OLD_FORMAT_ROW_END  
             self.start_index_list = [2, 1] 
+        return time_duration_after_lookup_time
 
 
     def prepare_for_scrapy(self, timeslice):

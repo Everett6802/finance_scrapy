@@ -247,25 +247,26 @@ class WebScrapyBase(object):
     PARSE_URL_DATA_FUNC_PTR = None
 # Find corresponding config of the module
     SOURCE_TYPE_INDEX = None
-    SOURCE_URL_PARSING_CFG = None
-    TIMESLICE_GENERATE_METHOD = None
+    CONSTANT_CFG = None
+    URL_TIME_UNIT = None
     URL_FORMAT = None
     URL_PARSING_METHOD = None
-    URL_TIME_UNIT = None
+    TIMESLICE_GENERATE_METHOD = None
+    TIMESLICE_TIME_UNIT = None
 
     @classmethod
     def __select_web_data_by_bs4(cls, url_data, parse_url_data_type_cfg):
-        g_logger.debug("Parse URL data by BS4, Encoding:%s, Selector: %s" % (parse_url_data_type_cfg["url_encoding"], parse_url_data_type_cfg["url_css_selector"]))
+        g_logger.debug("Parse URL data by BS4, Encoding:%s, Selector: %s" % (parse_url_data_type_cfg["url_encoding"], parse_url_data_type_cfg["url_data_selector"]))
         url_data.encoding = parse_url_data_type_cfg["url_encoding"]
         soup = BeautifulSoup(url_data.text)
-        return soup.select(parse_url_data_type_cfg["url_css_selector"])
+        return soup.select(parse_url_data_type_cfg["url_data_selector"])
 
 
     @classmethod
     def __select_web_data_by_json(cls, url_data, parse_url_data_type_cfg):
-        g_logger.debug("Parse URL data by JSON, Selector: %s" % parse_url_data_type_cfg["url_css_selector"])
+        g_logger.debug("Parse URL data by JSON, Selector: %s" % parse_url_data_type_cfg["url_data_selector"])
         json_url_data = json.loads(url_data.text)
-        return json_url_data[parse_url_data_type_cfg["url_css_selector"]]
+        return json_url_data[parse_url_data_type_cfg["url_data_selector"]]
 
 
     @classmethod
@@ -277,10 +278,10 @@ class WebScrapyBase(object):
 
 
     @classmethod
-    def _write_to_csv(cls, csv_filepath, csv_data_list, multi_data_one_page):
+    def _write_to_csv(cls, csv_filepath, csv_data_list):
         # import pdb; pdb.set_trace()
-        if multi_data_one_page:
-            g_logger.debug("Multi-data in one page, need to transform data")
+        if cls.TIMESLICE_TIME_UNIT != cls.URL_TIME_UNIT:
+            g_logger.debug("Multi-data in one page, need to transform data structure")
             csv_data_list_tmp = csv_data_list
             csv_data_list = []
             for csv_data_tmp in csv_data_list_tmp:
@@ -304,7 +305,7 @@ class WebScrapyBase(object):
 
 
     @classmethod
-    def init_class_common_variables(cls):
+    def init_class_common_variables(cls, designated_source_type_index=None):
 # CAUTION: This function MUST be called by the LEAF derived class
         if cls.PARSE_URL_DATA_FUNC_PTR is None:
             cls.PARSE_URL_DATA_FUNC_PTR = [
@@ -316,18 +317,24 @@ class WebScrapyBase(object):
 # Caution: Can NOT be called here !!! 
 # Since this function is probably called by the class which is NOT a leaf derived class
         if cls.SOURCE_TYPE_INDEX is None:
-            cls.SOURCE_TYPE_INDEX = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index(cls.__name__)
+            if designated_source_type_index is not None:
+                assert designated_source_type_index >= 0 and designated_source_type_index < CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN, "source type index is Out-of-Range [0, %d)" % CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN
+                cls.SOURCE_TYPE_INDEX = designated_source_type_index
+            else:
+                cls.SOURCE_TYPE_INDEX = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index(cls.__name__)
 # Find corresponding config of the module
-        if cls.SOURCE_URL_PARSING_CFG is None:
-            cls.SOURCE_URL_PARSING_CFG = CMN.DEF.DEF_SOURCE_URL_PARSING[cls.SOURCE_TYPE_INDEX]
-        if cls.TIMESLICE_GENERATE_METHOD is None:
-            cls.TIMESLICE_GENERATE_METHOD = cls.SOURCE_URL_PARSING_CFG["url_timeslice"]
+        if cls.CONSTANT_CFG is None:
+            cls.CONSTANT_CFG = CMN.DEF.DEF_SOURCE_CONSTANT_CFG[cls.SOURCE_TYPE_INDEX]
         if cls.URL_FORMAT is None:
-            cls.URL_FORMAT = cls.SOURCE_URL_PARSING_CFG["url_format"]
-        if cls.URL_PARSING_METHOD is None:
-            cls.URL_PARSING_METHOD = cls.SOURCE_URL_PARSING_CFG["url_parsing_method"]
+            cls.URL_FORMAT = cls.CONSTANT_CFG["url_format"]
         if cls.URL_TIME_UNIT is None:
-            cls.URL_TIME_UNIT = CMN.DEF.TIMESLICE_TO_TIME_UNIT_MAPPING[cls.TIMESLICE_GENERATE_METHOD]
+            cls.URL_TIME_UNIT = cls.CONSTANT_CFG["url_time_unit"]
+        if cls.URL_PARSING_METHOD is None:
+            cls.URL_PARSING_METHOD = cls.CONSTANT_CFG["url_parsing_method"]
+        if cls.TIMESLICE_GENERATE_METHOD is None:
+            cls.TIMESLICE_GENERATE_METHOD = cls.CONSTANT_CFG["timeslice_generate_method"]
+        if cls.TIMESLICE_TIME_UNIT is None:
+            cls.TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[cls.TIMESLICE_GENERATE_METHOD]
 
 
     @classmethod
@@ -338,8 +345,9 @@ class WebScrapyBase(object):
 
     @classmethod
     def get_web_data(cls, url):
-        req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
-        web_data = (cls.PARSE_URL_DATA_FUNC_PTR[cls.URL_PARSING_METHOD])(req, cls.SOURCE_URL_PARSING_CFG)
+        # req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
+        req = CMN.FUNC.request_from_url_and_check_return(url)
+        web_data = (cls.PARSE_URL_DATA_FUNC_PTR[cls.URL_PARSING_METHOD])(req, cls.CONSTANT_CFG)
         return web_data
 
 
@@ -401,7 +409,7 @@ class WebScrapyBase(object):
         return True if (web_data is not None and len(web_data) > 0) else False
 
 
-    def __init__(self, cur_file_path, **kwargs):
+    def __init__(self, **kwargs):
         self.xcfg = {
             "time_duration_type": CMN.DEF.DATA_TIME_DURATION_TODAY,
             "time_duration_start": None,
@@ -540,19 +548,23 @@ class WebScrapyBase(object):
         def transfrom_time_duration_start_time_unit_from_date(time_duration_start):
             assert isinstance(time_duration_start, CMN.CLS.FinanceDate), "The input start time duration time unit is %s, not FinanceDate" % type(time_duration_start)
 # Trasform the start time unit
-            if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
-                return CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(time_duration_start)
+            if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_DAY:
+                return time_duration_start
             elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_MONTH:
                 return CMN.CLS.FinanceMonth.get_finance_month_from_date(time_duration_start)
-            raise ValueError("Unsupported URL time unit in start time: %d" % self.URL_TIME_UNIT)
+            elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+                return CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(time_duration_start)
+            raise ValueError("Unsupported URL time unit in start time: %d" % self.TIMESLICE_TIME_UNIT)
         def transfrom_time_duration_end_time_unit_from_date(time_duration_end):
             assert isinstance(time_duration_end, CMN.CLS.FinanceDate), "The input end time duration time unit is %s, not FinanceDate" % type(time_duration_end)
 # Trasform the end time unit
-            if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
-                return  CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(time_duration_end)
+            if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_DAY:
+                return time_duration_end
             elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_MONTH:
                 return  CMN.CLS.FinanceMonth.get_finance_month_from_date(time_duration_end)
-            raise ValueError("Unsupported URL time unit in end time: %d" % self.URL_TIME_UNIT)
+            elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+                return  CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(time_duration_end)
+            raise ValueError("Unsupported URL time unit in end time: %d" % self.TIMESLICE_TIME_UNIT)
 # Transform the time unit
         # import pdb; pdb.set_trace()
         time_duration_start = None
@@ -596,18 +608,19 @@ class WebScrapyBase(object):
         else:
             raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
         # import pdb; pdb.set_trace()
-        assert time_duration_start.get_time_unit_type() == self.URL_TIME_UNIT, "The time unit shold be: %d, NOT: %d" % (self.URL_TIME_UNIT, time_duration_start.get_time_unit_type())
+        assert time_duration_start.get_time_unit_type() == self.URL_TIME_UNIT, "The time unit shold be: %d, NOT: %d" % (self.TIMESLICE_TIME_UNIT, time_duration_start.get_time_unit_type())
         assert time_duration_start.get_time_unit_type() == time_duration_end.get_time_unit_type(), "The time unit is NOT identical, start: %d, end: %d" % (time_duration_start.get_time_unit_type(), time_duration_end.get_time_unit_type())
         return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
 
 
     def _get_timeslice_iterable(self, **kwargs):
         # import pdb;pdb.set_trace()
-        # assert kwargs["time_duration_start"].get_time_unit_type() == kwargs["time_duration_end"].get_time_unit_type(), "The time unit of start and end time is NOT identical; Start: %s, End: %s" % (type(kwargs["time_duration_start"]), type(kwargs["time_duration_end"]))
-        # if self.URL_TIME_UNIT != kwargs["time_duration_start"].get_time_unit_type():
-        #     (new_finance_time_start, new_finance_time_end) = self._modify_time_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
-        #     kwargs["time_duration_start"] = new_finance_time_start
-        #     kwargs["time_duration_end"] = new_finance_time_end
+        if self.TIMESLICE_TIME_UNIT != self.URL_TIME_UNIT:
+            assert kwargs["time_duration_start"].get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The time unit shold be: %d, NOT: %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, kwargs["time_duration_start"].get_time_unit_type())
+            assert kwargs["time_duration_start"].get_time_unit_type() == kwargs["time_duration_end"].get_time_unit_type(), "The time unit of start and end time is NOT identical; Start: %s, End: %s" % (type(kwargs["time_duration_start"]), type(kwargs["time_duration_end"]))
+            (new_finance_time_start, new_finance_time_end) = self.__change_time_unit_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
+            kwargs["time_duration_start"] = new_finance_time_start
+            kwargs["time_duration_end"] = new_finance_time_end
 # Generate the time slice
         if self.timeslice_generator is None:
             self.timeslice_generator = TimeSliceGenerator.WebScrapyTimeSliceGenerator.Instance()
@@ -615,10 +628,20 @@ class WebScrapyBase(object):
         return timeslice_iterable
 
 
-    # def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
-    #     # """IMPORTANT: This function should NOT be implemented and called unless the time unit is NOT date !"""
-    #     raise RuntimeError("This %s function should NOT be called !!!" % sys._getframe(0).f_code.co_name)
-
+    def __change_time_unit_for_timeslice_generator(self, finance_time_start, finance_time_end):
+        # """IMPORTANT: This function should NOT be implemented and called unless the time unit is NOT date !"""
+        # raise RuntimeError("This %s function should NOT be called !!!" % sys._getframe(0).f_code.co_name)
+        if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_DAY:
+            if self.TIMESLICE_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_MONTH:
+                time_duration_start = CMN.CLS.FinanceMonth.get_finance_month_from_date(finance_time_start)
+                time_duration_end = CMN.CLS.FinanceMonth.get_finance_month_from_date(finance_time_end)
+                return (time_duration_start, time_duration_end)
+            elif self.TIMESLICE_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+                time_duration_start = CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(finance_time_start)
+                time_duration_end = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(finance_time_end)
+                return (time_duration_start, time_duration_end)
+        raise ValueError("Unsupported timeslice time unit: %d" % self.TIMESLICE_TIME_UNIT)
+ 
 
     # @property
     # def EmptyWebDataFound(self):

@@ -20,7 +20,7 @@ class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(WebScrapyMarke
 
 
     def __init__(self, **kwargs):
-        super(WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(__file__, **kwargs)
+        super(WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest, self).__init__(**kwargs)
         self.cur_date_str = None
 
 

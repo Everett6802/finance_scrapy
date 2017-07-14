@@ -101,8 +101,8 @@ class WebScrapyTimeSliceGenerator(object):
             raise ConnectionError
         req.encoding = source_url_parsing_cfg["url_encoding"]
         soup = BeautifulSoup(req.text)
-        url_css_selector = source_url_parsing_cfg["url_css_selector"] + ' option'
-        company_foreign_investors_shareholder_url_data = soup.select(url_css_selector)
+        url_data_selector = source_url_parsing_cfg["url_data_selector"] + ' option'
+        company_foreign_investors_shareholder_url_data = soup.select(url_data_selector)
         return company_foreign_investors_shareholder_url_data
 
 

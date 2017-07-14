@@ -20,8 +20,8 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
     # url_date_range = None
     # TIME_SLICE_GENERATOR = None
-    def __init__(self, cur_file_path, **kwargs):
-        super(WebScrapyMarketBase, self).__init__(cur_file_path, **kwargs)
+    def __init__(self, **kwargs):
+        super(WebScrapyMarketBase, self).__init__(**kwargs)
         # import pdb; pdb.set_trace()
         # self.web2csv_time_duration_update = None
         self.new_csv_time_duration = None
@@ -69,24 +69,25 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     def _parse_csv_file_status_to_string_list(self):
+        # import pdb; pdb.set_trace()
         record_type_dict = self.csv_file_no_scrapy_record.record_type_dict
         # record_type_description_dict = self.csv_file_no_scrapy_record.record_type_description_dict
 # Type: "TimeRangeNotOverlap"    
-        record_type = WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST[WebScrapyBase.CSVFileNoScrapyRecord.TIME_RANGE_NOT_OVERLAP_RECORD_INDEX]
+        record_type = BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST[BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.TIME_RANGE_NOT_OVERLAP_RECORD_INDEX]
         if len(record_type_dict[record_type]) != 0:
 # args[0]: source type index
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
                 self.csv_file_no_scrapy_record_string_dict[record_type].append(CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[args[0]])
 # Type: "CSVFileAlreadyExist"
-        record_type = WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST[WebScrapyBase.CSVFileNoScrapyRecord.CSV_FILE_ALREADY_EXIST_RECORD_INDEX]
+        record_type = BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST[BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.CSV_FILE_ALREADY_EXIST_RECORD_INDEX]
         if len(record_type_dict[record_type]) != 0:
 # args[0]: source type index
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
                 self.csv_file_no_scrapy_record_string_dict[record_type].append(CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[args[0]])
 # Type: "WebDataNotFound"
-        record_type = WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST[WebScrapyBase.CSVFileNoScrapyRecord.WEB_DATA_NOT_FOUND_RECORD_INDEX]
+        record_type = BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST[BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.WEB_DATA_NOT_FOUND_RECORD_INDEX]
         if len(record_type_dict[record_type]) != 0:
 # args[0]: time slice
 # args[1]: source type index
@@ -112,14 +113,14 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
             self.csv_file_no_scrapy_record.add_csv_file_already_exist_record(self.SOURCE_TYPE_INDEX)
             g_logger.debug("[%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewCSVStart, web2csv_time_duration_update.NewCSVEnd))
             return
+# Find the file path for writing data into csv
+        csv_filepath = self.assemble_csv_filepath(self.SOURCE_TYPE_INDEX)
         scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
         g_logger.debug(scrapy_msg)
 # Check if only dry-run
         if self.xcfg["dry_run_only"]:
             print scrapy_msg
             return
-# Find the file path for writing data into csv
-        csv_filepath = self.assemble_csv_filepath(self.SOURCE_TYPE_INDEX)
 # If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
         web2csv_time_duration_update.backup_old_csv_if_necessary(csv_filepath)
 # Create the time slice iterator due to correct time range
@@ -132,7 +133,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # Write the data into csv year by year
             if timeslice.year != cur_year:
                 if len(csv_data_list_each_year) > 0:
-                    self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
+                    self._write_to_csv(csv_filepath, csv_data_list_each_year)
                     csv_data_list_each_year = []
                 cur_year = timeslice.year
             url = self.prepare_for_scrapy(timeslice)
@@ -150,7 +151,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
             self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SOURCE_TYPE_INDEX)
 # Write the data of last year into csv
         if len(csv_data_list_each_year) > 0:
-            self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
+            self._write_to_csv(csv_filepath, csv_data_list_each_year)
 # Append the old CSV data after the new web data if necessary
         web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 # parse csv file status
@@ -161,6 +162,20 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # No matter the csv time range would be updated, the new time duration is required to re-write into the config file
         assert self.new_csv_time_duration is not None, "self.new_csv_time_duration should NOT be None"
         return self.new_csv_time_duration
+
+
+    @classmethod
+    def _get_date_not_whole_month_list(self, date_duration_start, date_duration_end):
+        data_not_whole_month_list = []
+        if CMN.CLS.FinanceDate.is_same_month(date_duration_start, date_duration_end):
+            if date_duration_start.day > 1 or date_duration_end.day < CMN.FUNC.get_month_last_day(date_duration_end.year, date_duration_end.month):
+                data_not_whole_month_list.append(CMN.CLS.FinanceMonth(date_duration_end.year, date_duration_end.month))
+        else:
+            if date_duration_start.day > 1:
+                data_not_whole_month_list.append(CMN.CLS.FinanceMonth(date_duration_start.year, date_duration_start.month))
+            if date_duration_end.day < CMN.FUNC.get_month_last_day(date_duration_end.year, date_duration_end.month):
+                data_not_whole_month_list.append(CMN.CLS.FinanceMonth(date_duration_end.year, date_duration_end.month))
+        return data_not_whole_month_list
 
 
     @classmethod

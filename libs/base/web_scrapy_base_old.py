@@ -40,7 +40,7 @@ class WebScrapyBase(object):
         # self.url_timeslice = source_url_parsing_cfg.get("url_timeslice", None)
         # self.url_encoding = source_url_parsing_cfg.get("url_encoding", None)
         # self.url_parsing_method = source_url_parsing_cfg.get("url_parsing_method", None)
-        # self.url_css_selector = source_url_parsing_cfg.get("url_css_selector", None)
+        # self.url_data_selector = source_url_parsing_cfg.get("url_data_selector", None)
 
         # self.parse_url_data_type_obj = source_url_parsing_cfg["parse_url_data_obj"]
         self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]

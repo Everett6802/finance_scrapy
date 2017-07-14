@@ -4,7 +4,8 @@ import os
 import sys
 import re
 import requests
-import shutil
+import json
+# import shutil
 from bs4 import BeautifulSoup
 # from datetime import datetime, timedelta
 import libs.common as CMN
@@ -14,15 +15,28 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 @CMN.CLS.Singleton
 class WebScrapyWorkdayCanlendar(object):
 
+    # TODAY_WORKDAY_DATA_EXIST_HOUR = 14
+    # TODAY_WORKDAY_DATA_EXIST_MINUTE = 30
+    WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG = CMN.DEF.DEF_SOURCE_CONSTANT_CFG[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
+    WORKDAY_CANLENDAR_SCRAPY_URL_FORMAT = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_format"]
+    WORKDAY_CANLENDAR_SCRAPY_URL_ENCODING = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_encoding"]
+    WORKDAY_CANLENDAR_SCRAPY_URL_DATA_SELECTOR = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_data_selector"]
+
+    # WORKDAY_CANLENDAR_SCRAPY_URL_TIME_UNIT = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_time_unit"]
+    # WORKDAY_CANLENDAR_SCRAPY_URL_PARSING_METHOD = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_parsing_method"]
+    # WORKDAY_CANLENDAR_SCRAPY_TIMESLICE_GENERATE_METHOD = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["timeslice_generate_method"]
+    # WORKDAY_CANLENDAR_SCRAPY_TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[TIMESLICE_GENERATE_METHOD]
+
     def __init__(self, date_start=None, date_end=None):
-        self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
-        self.url_format = self.source_url_parsing_cfg["url_format"]
-        self.encoding = self.source_url_parsing_cfg["url_encoding"]
-        self.select_flag = self.source_url_parsing_cfg["url_css_selector"]
+        # self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
+        # self.url_format = self.source_url_parsing_cfg["url_format"]
+        # self.encoding = self.source_url_parsing_cfg["url_encoding"]
+        # self.select_flag = self.source_url_parsing_cfg["url_data_selector"]
 ###############################################################################################
 # Caution: The types of the following member variabiles are FinanceDate
         self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_START_DATE_STR) if date_start is None else date_start 
         self.date_end = CMN.CLS.FinanceDate.get_last_finance_date()
+        # self.date_end = CMN.FUNC.get_last_url_data_date(self.TODAY_WORKDAY_DATA_EXIST_HOUR, self.TODAY_WORKDAY_DATA_EXIST_MINUTE)
 # The start/end time of scrapying data from the web
         self.date_start_from_web = self.date_start
         self.date_end_from_web = self.date_end
@@ -193,49 +207,44 @@ class WebScrapyWorkdayCanlendar(object):
         if end_day is None: end_day = CMN.FUNC.get_month_last_day(year, month)
         if start_day == 1 and end_day == CMN.FUNC.get_month_last_day(year, month):
             whole_month_data = True
-        url = self.url_format.format(*(year, month, start_day, end_day))
+        url = self.WORKDAY_CANLENDAR_SCRAPY_URL_FORMAT.format(*(year, month, start_day, end_day))
 # Scrap the web data
-        # try:
-        #     # g_logger.debug("Try to Scrap data [%s]" % url)
-        #     res = CMN.FUNC.request_from_url_and_check_return(url)
-        # except requests.exceptions.Timeout as e:
-        #     # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
-        #     fail_to_scrap = False
-        #     for index in range(self.SCRAPY_RETRY_TIMES):
-        #         time.sleep(randint(1,3))
-        #         try:
-        #             res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
-        #         except requests.exceptions.Timeout as ex:
-        #             fail_to_scrap = True
-        #         if not fail_to_scrap:
-        #             break
-        #     if fail_to_scrap:
-        #         g_logger.error("Fail to scrap workday list data even retry for %d times !!!!!!" % self.SCRAPY_RETRY_TIMES)
-        #         raise e
         req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
 # Select the section we are interested in
-        req.encoding = self.encoding
-        # print res.text
-        soup = BeautifulSoup(req.text)
-        web_data = soup.select(self.select_flag)
+        req.encoding = self.WORKDAY_CANLENDAR_SCRAPY_URL_ENCODING
+#         # print res.text
+        web_data = json.loads(req.text)[self.WORKDAY_CANLENDAR_SCRAPY_URL_DATA_SELECTOR]
         workday_list = []
-        web_data_len = len(web_data)
-# Parse the web data and obtain the workday list
-        if web_data_len != 0:
-        # print "len: %d" % data_len
-#***************************************************
-            # for tr in web_data[2:]:
-#***************************************************
-            for tr in web_data[web_data_len - 1 : 0 : -1]:
-                td = tr.select('td')
-                date_list = td[0].text.split('/')
-                if len(date_list) != 3:
-                    raise RuntimeError("The date format is NOT as expected: %s", date_list)
-                cur_day = int(date_list[2])
-                if not whole_month_data and cur_day < start_day:
-# Caution: It's NO need to consider the end date since the last data is always today
-                    continue
-                workday_list.append(cur_day)
+        for entry in web_data:
+            date_list = str(entry[0]).split('/')
+            if len(date_list) != 3:
+                raise RuntimeError("The date format is NOT as expected: %s", date_list)
+            cur_day = int(date_list[2])
+            if not whole_month_data and cur_day < start_day:
+                continue
+            if not whole_month_data and cur_day > end_day:
+                break
+            workday_list.append(cur_day)
+#         soup = BeautifulSoup(req.text)
+#         web_data = soup.select(self.select_flag)
+#         workday_list = []
+#         web_data_len = len(web_data)
+# # Parse the web data and obtain the workday list
+#         if web_data_len != 0:
+#         # print "len: %d" % data_len
+# #***************************************************
+#             # for tr in web_data[2:]:
+# #***************************************************
+#             for tr in web_data[web_data_len - 1 : 0 : -1]:
+#                 td = tr.select('td')
+#                 date_list = td[0].text.split('/')
+#                 if len(date_list) != 3:
+#                     raise RuntimeError("The date format is NOT as expected: %s", date_list)
+#                 cur_day = int(date_list[2])
+#                 if not whole_month_data and cur_day < start_day:
+# # Caution: It's NO need to consider the end date since the last data is always today
+#                     continue
+#                 workday_list.append(cur_day)
         # import pdb; pdb.set_trace()
         self.__set_canlendar_each_month(year, month, workday_list)
 # # Find the workday list

@@ -730,17 +730,6 @@ def assemble_csv_month_time_str(timeslice_list):
             raise ValueError("The time[%s] is NOT in the month: %04d-%02d" % (to_date_only_str(timeslice_list[index]), datetime_cfg_start.year, datetime_cfg_start.month))
     return "%04d%02d" % (datetime_cfg_start.year, datetime_cfg_start.month)
 
-# DEF_SCRAPY_WAIT_TIMEOUT = 8
-def request_from_url_and_check_return(url, timeout=None):
-    if timeout is None:
-        timeout = CMN_DEF.DEF_SCRAPY_WAIT_TIMEOUT
-    res = requests.get(url, timeout=timeout)
-    if res.status_code != 200:
-        errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
-        g_logger.error(errmsg)
-        raise RuntimeError(errmsg)
-    return res
-
 
 def get_filename_from_filepath(filepath):
     return filepath.rsplit("/", 1)[-1]
@@ -771,6 +760,21 @@ def assemble_stock_csv_filepath(finance_root_folderpath, source_type_index, comp
     return csv_filepath
 
 
+# DEF_SCRAPY_WAIT_TIMEOUT = 8
+def request_from_url_and_check_return(url, timeout=None):
+    if timeout is None:
+        timeout = CMN_DEF.DEF_SCRAPY_WAIT_TIMEOUT
+    res = requests.get(url, timeout=timeout)
+    if res.status_code != 200:
+        if res.status_code == 503:
+            raise CMN_EXCEPTION.WebScrapyServerBusyException("Fail to scrape URL[%s] due to Server is busy......")
+        else:
+            errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
+            g_logger.error(errmsg)
+            raise RuntimeError(errmsg)
+    return res
+
+
 def try_to_request_from_url_and_check_return(url, timeout=None):
     req = None
     for index in range(CMN_DEF.DEF_SCRAPY_RETRY_TIMES):
@@ -781,7 +785,7 @@ def try_to_request_from_url_and_check_return(url, timeout=None):
             # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
             time.sleep(randint(3, 9))
         else:
-            return req
+            return req            
     errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.DEF_SCRAPY_RETRY_TIMES)
     g_logger.error(errmsg)
     raise RuntimeError(errmsg)
@@ -817,3 +821,19 @@ def is_continous_time_duration(time_duration1, time_duration2):
 
 def get_year_offset_datetime_cfg(datetime_cfg, year_offset):
     return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
+
+
+def get_data_not_whole_month_list(date_duration_start, date_duration_end):
+    assert isinstance(date_duration_start, CMN_CLS.FinanceDate), "The input start date duration time unit is %s, not FinanceDate" % type(date_duration_start)
+    assert isinstance(date_duration_end, CMN_CLS.FinanceDate), "The input end date duration time unit is %s, not FinanceDate" % type(date_duration_end)
+    data_not_whole_month_list = []
+# Find the month which data does NOT contain the whole month
+    if CMN_CLS.FinanceDate.is_same_month(date_duration_start, date_duration_end):
+        if date_duration_start.day > 1 or date_duration_end.day < get_month_last_day(date_duration_end.year, date_duration_end.month):
+            data_not_whole_month_list.append(CMN_CLS.FinanceMonth(date_duration_end.year, date_duration_end.month))
+    else:
+        if date_duration_start.day > 1:
+            data_not_whole_month_list.append(CMN_CLS.FinanceMonth(date_duration_start.year, date_duration_start.month))
+        if date_duration_end.day < get_month_last_day(date_duration_end.year, date_duration_end.month):
+            data_not_whole_month_list.append(CMN_CLS.FinanceMonth(date_duration_end.year, date_duration_end.month))
+    return data_not_whole_month_list

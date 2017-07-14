@@ -12,8 +12,7 @@ from libs import base as BASE
 g_mgr = None
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
-# import libs.stock.web_scrapy_company_profile as CompanyProfile
-# company_profile_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
+
 import libs.stock.web_scrapy_url_time_range as URLTimeRange
 
 param_cfg = {}
@@ -170,6 +169,7 @@ def renew_statement_field_and_exit():
     g_mgr.renew_statement_field()
     sys.exit(0)
 
+
 # def switch_mode(mode):
 # # MARKET: 0
 # # STOCK: 1
@@ -186,6 +186,7 @@ def renew_statement_field_and_exit():
 #         raise ValueError("Unknown mode: %d", mode)
 #     p = subprocess.Popen(cmd, shell=True)
 #     os.waitpid(p.pid, 0)
+
 
 def init_param():
     # import pdb; pdb.set_trace()
@@ -414,6 +415,7 @@ def check_param():
     if param_cfg["clone"] and param_cfg["no_scrap"]:
         param_cfg["clone"] = False
         show_warn("Set the 'clone' argument to False since 'no_scrap' is set")
+
 
 def setup_param():
 # Set source type and time range

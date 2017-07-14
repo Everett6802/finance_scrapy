@@ -35,7 +35,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
-        super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(__file__, **kwargs)
+        super(WebScrapyDepositoryShareholderDistributionTable, self).__init__(**kwargs)
         self.date_cur_string = None
         self.last_finance_date = None
         self.__update_last_finance_date()

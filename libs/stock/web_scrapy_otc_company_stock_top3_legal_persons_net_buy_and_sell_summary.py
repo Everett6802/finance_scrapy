@@ -28,7 +28,7 @@ class WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_bas
 
 
     def __init__(self, **kwargs):
-        super(WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(__file__, **kwargs)
+        super(WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(**kwargs)
 
 
     def prepare_for_scrapy(self, timeslice, company_code_number):

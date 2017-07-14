@@ -26,7 +26,7 @@ class WebScrapyCompanyDealersNetBuyOrSellSummary(WebScrapyMarketBase.WebScrapyMa
 
 
     def __init__(self, **kwargs):
-        super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(__file__, **kwargs)
+        super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(**kwargs)
 
 
     def prepare_for_scrapy(self, timeslice):

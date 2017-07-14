@@ -57,7 +57,7 @@ class WebScrapyBalanceSheet(WebScrapyStockBase.WebScrapyStockStatementBase):
 
 
     def __init__(self, **kwargs):
-        super(WebScrapyBalanceSheet, self).__init__(__file__, **kwargs)
+        super(WebScrapyBalanceSheet, self).__init__(**kwargs)
 
 
     def _parse_web_statement_field_data(self, web_data):

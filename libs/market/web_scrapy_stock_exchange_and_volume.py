@@ -3,7 +3,8 @@
 import re
 import requests
 import csv
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
+import json
 from datetime import datetime, timedelta
 import libs.common as CMN
 import web_scrapy_market_base as WebScrapyMarketBase
@@ -15,30 +16,28 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
 
     @classmethod
     def assemble_web_url(cls, timeslice, *args):
-        url = self.self.URL_FORMAT.format(*(timeslice.year, timeslice.month))
+        url = cls.URL_FORMAT.format(*(timeslice.year, timeslice.month))
         return url
 
 
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
-        super(WebScrapyStockExchangeAndVolume, self).__init__(__file__, **kwargs)
+        super(WebScrapyStockExchangeAndVolume, self).__init__(**kwargs)
         self.whole_month_data = True
-        self.data_not_whole_month_list = []
+        self.data_not_whole_month_list = None
 
 
-    def _adjust_time_duration_from_lookup_table(self):
-        super(WebScrapyStockExchangeAndVolume, self)._adjust_time_duration_from_lookup_table()
-        if CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]):
-            if self.xcfg["time_duration_start"].day > 1 or self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
-        else:
-            if self.xcfg["time_duration_start"].day > 1:
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_start"].year, self.xcfg["time_duration_start"].month))
-            if self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
+    def _adjust_time_range_from_web(self, *args):
+        # import pdb; pdb.set_trace()
+        time_duration_after_lookup_time = super(WebScrapyStockExchangeAndVolume, self)._adjust_time_range_from_web(*args)
+# Find the month which data does NOT contain the whole month
+        self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"])
+        return time_duration_after_lookup_time
 
 
     def prepare_for_scrapy(self, timeslice):
+        # import pdb; pdb.set_trace()
+        assert isinstance(timeslice, CMN.CLS.FinanceMonth), "The input time duration time unit is %s, not FinanceMonth" % type(timeslice)
         url = self.assemble_web_url(timeslice)
 # Check if it's no need to acquire the whole month data in this month
         try:
@@ -52,14 +51,18 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
     def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
         data_list = []
-
         # print "len: %d" % data_len
-        for tr in web_data[2:]:
-            td = tr.select('td')
-            date_list = td[0].text.split('/')
+        # for tr in web_data[2:]:
+        #     td = tr.select('td')
+        #     date_list = td[0].text.split('/')
+        #     if len(date_list) != 3:
+        #         raise RuntimeError("The date format is NOT as expected: %s", date_list)
+        #     entry = [CMN.FUNC.transform_date_str(int(date_list[0]) + CMN.DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET, int(date_list[1]), int(date_list[2])),]
+        for data_entry in web_data:
+            date_list = str(data_entry[0]).split('/')
             if len(date_list) != 3:
                 raise RuntimeError("The date format is NOT as expected: %s", date_list)
-            entry = [CMN.FUNC.transform_date_str(int(date_list[0]) + CMN.DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET, int(date_list[1]), int(date_list[2])),]
+            entry = [CMN.FUNC.transform_date_str(int(date_list[0]), int(date_list[1]), int(date_list[2])),]
             if not self.whole_month_data:
                 date_cur = CMN.CLS.FinanceDate.from_string(entry[0])
                 if date_cur < self.xcfg["time_duration_start"]:
@@ -67,7 +70,7 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
                 elif date_cur > self.xcfg["time_duration_end"]:
                     break
             for index in range(1, 6):
-                entry.append(str(td[index].text).replace(',', ''))
+                entry.append(str(data_entry[index]).replace(',', ''))
             data_list.append(entry)
         return data_list
 # "日期",
@@ -80,25 +83,32 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
 
     @staticmethod
     def do_debug(silent_mode=False):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         # res = requests.get("http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report201511/201511_F3_1_2.php?STK_NO=&myear=2015&mmon=11")
         # res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report201511/201511_F3_1_2.php?STK_NO=&myear=2015&mmon=11")
         # res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/exchange/FMTQIK/FMTQIK.php?download=&query_year=2017&query_month=3")
-        res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/indices/MI_5MINS_HIST/MI_5MINS_HIST.php?myear=104&mmon=10")
+        # res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/indices/MI_5MINS_HIST/MI_5MINS_HIST.php?myear=104&mmon=10")
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/exchangeReport/FMTQIK?response=json&date=20160301")
         # print res.text
-        res.encoding = 'big5'
-        soup = BeautifulSoup(res.text)
-        # print soup
-        # g_data = soup.select('.board_trad tr')
-        g_data = soup.findAll('table')[7].findAll('tr')
+        res.encoding = 'utf-8'
+        # soup = BeautifulSoup(res.text)
+        # # print soup
+        # # g_data = soup.select('.board_trad tr')
+        # g_data = soup.findAll('table')[7].findAll('tr')
         # print g_data
-        for tr in g_data[2:]:
-            td = tr.select('td')
-            date_list = td[0].text.split('/')
+        # for tr in g_data[2:]:
+        #     td = tr.select('td')
+        #     date_list = td[0].text.split('/')
+            #     raise RuntimeError("The date format is NOT as expected: %s", date_list)
+            # date_str = CMN.FUNC.transform_date_str(int(date_list[0]), int(date_list[1]), int(date_list[2]))
+            # if not silent_mode: print date_str, td[1].text, td[2].text, td[3].text , td[4].text#, td[5].text
+        g_data = json.loads(res.text)['data']
+        for entry in g_data:
+            date_list = str(entry[0]).split('/')
             if len(date_list) != 3:
                 raise RuntimeError("The date format is NOT as expected: %s", date_list)
             date_str = CMN.FUNC.transform_date_str(int(date_list[0]), int(date_list[1]), int(date_list[2]))
-            if not silent_mode: print date_str, td[1].text, td[2].text, td[3].text , td[4].text#, td[5].text
+            if not silent_mode: print date_str, entry[1], entry[2], entry[3], entry[4], entry[5]
 # 2015/10/1 469,154 363,160 129.19 528,800 444,977 118.84
 # 2015/10/2 227,935 188,407 120.98 566,471 460,938 122.90
 # 2015/10/5 313,428 294,016 106.60 604,928 497,533 121.59

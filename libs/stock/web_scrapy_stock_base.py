@@ -22,8 +22,8 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 
 class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
-    def __init__(self, cur_file_path, **kwargs):
-        super(WebScrapyStockBase, self).__init__(cur_file_path, **kwargs)
+    def __init__(self, **kwargs):
+        super(WebScrapyStockBase, self).__init__(**kwargs)
         self.company_group_set = None
         if kwargs.get("company_group_set", None) is None:
             self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
@@ -174,7 +174,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     if timeslice.year != cur_year:
                         if len(csv_data_list_each_year) > 0:
                             # import pdb; pdb.set_trace()
-                            self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
+                            self._write_to_csv(csv_filepath, csv_data_list_each_year)
                             csv_data_list_each_year = []
                         cur_year = timeslice.year
                     url = self.prepare_for_scrapy(timeslice, company_code_number)
@@ -192,7 +192,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SOURCE_TYPE_INDEX, company_code_number)
 # Write the data of last year into csv
                 if len(csv_data_list_each_year) > 0:
-                    self._write_to_csv(csv_filepath, csv_data_list_each_year, self.SOURCE_URL_PARSING_CFG["url_multi_data_one_page"])
+                    self._write_to_csv(csv_filepath, csv_data_list_each_year)
 # Append the old CSV data after the new web data if necessary
                 web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 # Increase the progress count
@@ -244,8 +244,8 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         return url
 
 
-    def __init__(self, cur_file_path, **kwargs):
-        super(WebScrapyStockStatementBase, self).__init__(cur_file_path, **kwargs)
+    def __init__(self, **kwargs):
+        super(WebScrapyStockStatementBase, self).__init__(**kwargs)
         # import pdb;pdb.set_trace()
         if not kwargs.get("renew_statement_field", False):
             if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:

@@ -64,7 +64,6 @@ class WebScrapyURLTimeRange(object):
         return self.timeslice_generator
 
 
-
     def __get_company_group_time_range_folderpath(self, company_group):
         return self.TIME_RANGE_COMPANY_GROUP_FOLDERPATH_FORMAT % company_group
 

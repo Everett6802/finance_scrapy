@@ -20,21 +20,17 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
 
 
     def __init__(self, **kwargs):
-        super(WebScrapyOptionPutCallRatio, self).__init__(__file__, **kwargs)
+        super(WebScrapyOptionPutCallRatio, self).__init__(**kwargs)
         self.whole_month_data = True
-        self.data_not_whole_month_list = []
+        self.data_not_whole_month_list = None
 
 
-    def _adjust_time_duration_from_lookup_table(self):
-        super(WebScrapyOptionPutCallRatio, self)._adjust_time_duration_from_lookup_table()
-        if CMN.CLS.FinanceDate.is_same_month(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"]):
-            if self.xcfg["time_duration_start"].day > 1 or self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
-        else:
-            if self.xcfg["time_duration_start"].day > 1:
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_start"].year, self.xcfg["time_duration_start"].month))
-            if self.xcfg["time_duration_end"].day < CMN.FUNC.get_month_last_day(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month):
-                self.data_not_whole_month_list.append(CMN.CLS.FinanceMonth(self.xcfg["time_duration_end"].year, self.xcfg["time_duration_end"].month))
+    def _adjust_time_range_from_web(self, *args):
+        # import pdb; pdb.set_trace()
+        time_duration_after_lookup_time = super(WebScrapyOptionPutCallRatio, self)._adjust_time_range_from_web(*args)
+# Find the month which data does NOT contain the whole month
+        self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"])
+        return time_duration_after_lookup_time
 
 
     # def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
@@ -45,6 +41,7 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
 
     def prepare_for_scrapy(self, timeslice):
 # Check if it's no need to acquire the whole month data in this month
+        assert isinstance(timeslice, CMN.CLS.FinanceMonth), "The input time duration time unit is %s, not FinanceMonth" % type(timeslice)
         try:
             index = self.data_not_whole_month_list.index(timeslice)
             if len(self.data_not_whole_month_list) == 1:
