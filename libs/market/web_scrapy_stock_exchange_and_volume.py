@@ -2,7 +2,7 @@
 
 import re
 import requests
-import csv
+# import csv
 # from bs4 import BeautifulSoup
 import json
 from datetime import datetime, timedelta

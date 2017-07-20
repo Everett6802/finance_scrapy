@@ -2,8 +2,9 @@
 
 import re
 import requests
-import csv
-from bs4 import BeautifulSoup
+# import csv
+# from bs4 import BeautifulSoup
+import json
 from datetime import datetime, timedelta
 import libs.common as CMN
 import web_scrapy_market_base as WebScrapyMarketBase
@@ -15,13 +16,8 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
 
     @classmethod
     def assemble_web_url(cls, timeslice, *args):
-        url = self.URL_FORMAT.format(
-            *(
-                timeslice.year - 1911, 
-                "%02d" % timeslice.month,
-                "%02d" % timeslice.day
-            )
-        )
+        # import pdb; pdb.set_trace()
+        url = cls.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
         return url
 
 
@@ -37,11 +33,16 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
 
 
     def _parse_web_data(self, web_data):
+        # import pdb; pdb.set_trace()
         data_list = [self.cur_date_str,]
-        for tr in web_data[2:6]:
-            td = tr.select('td')
+        # for tr in web_data[2:6]:
+        #     td = tr.select('td')
+        #     for i in range(1, 4):
+        #         element = str(td[i].text).replace(',', '')
+        #         data_list.append(element)
+        for entry in web_data[:-1]:
             for i in range(1, 4):
-                element = str(td[i].text).replace(',', '')
+                element = str(entry[i]).replace(',', '')
                 data_list.append(element)
         return data_list
 # 自營商(自行買賣)_買進金額
@@ -61,16 +62,22 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
     @staticmethod
     def do_debug(silent_mode=False):
         # import pdb; pdb.set_trace()
-        # res = requests.get("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
-        res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
-        res.encoding = 'big5'
-        soup = BeautifulSoup(res.text)
-        # print soup
-        for tr in soup.select('.board_trad tr')[2:6]:
-            td = tr.select('td')
-            if not silent_mode: print td[0].text, td[1].text, td[2].text, td[3].text 
+        # # res = requests.get("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
+        # res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date=104%2F09%2F08&mSubmit=%ACd%B8%DF&yr=2015&w_date=19790904&m_date=19790904")
+        # res.encoding = 'big5'
+        # soup = BeautifulSoup(res.text)
+        # # print soup
+        # for tr in soup.select('.board_trad tr')[2:6]:
+        #     td = tr.select('td')
+        #     if not silent_mode: print td[0].text, td[1].text, td[2].text, td[3].text 
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/fund/BFI82U?response=json&dayDate=20170601&type=day")
+        res.encoding = 'utf-8'
+        g_data = json.loads(res.text)['data']
+        for entry in g_data:
+            if not silent_mode: print entry[0], entry[1], entry[2], entry[3]
 # ==== result: ====
-# 自營商(自行買賣) 976,637,210 830,450,307 146,186,903
-# 自營商(避險) 4,858,793,774 5,360,634,883 -501,841,109
-# 投信 842,037,060 1,269,238,502 -427,201,442
-# 外資及陸資 12,382,715,256 15,582,342,791 -3,199,627,535
+# 自營商(自行買賣) 1,145,643,710 1,160,896,650 -15,252,940
+# 自營商(避險) 4,252,785,932 3,252,168,465 1,000,617,467
+# 投信 843,775,750 1,234,385,726 -390,609,976
+# 外資及陸資 25,127,388,391 22,560,979,224 2,566,409,167
+# 合計 31,369,593,783 28,208,430,065 3,161,163,718
