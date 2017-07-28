@@ -24,15 +24,26 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
         # import pdb; pdb.set_trace()
         super(WebScrapyStockExchangeAndVolume, self).__init__(**kwargs)
         self.whole_month_data = True
+        self.time_duration_start_after_adjustment = self.xcfg["time_duration_start"]
+        self.time_duration_end_after_adjustment = self.xcfg["time_duration_end"]
         self.data_not_whole_month_list = None
 
 
-    def _adjust_time_range_from_web(self, *args):
+#     def _adjust_time_range_from_web(self, *args):
+#         # import pdb; pdb.set_trace()
+#         time_duration_after_lookup_time = super(WebScrapyStockExchangeAndVolume, self)._adjust_time_range_from_web(*args)
+# # Find the month which data does NOT contain the whole month
+#         self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(time_duration_after_lookup_time.time_duration_start, time_duration_after_lookup_time.time_duration_end)
+
+
+    def _adjust_config_before_scrapy(self, *args):
         # import pdb; pdb.set_trace()
-        time_duration_after_lookup_time = super(WebScrapyStockExchangeAndVolume, self)._adjust_time_range_from_web(*args)
-# Find the month which data does NOT contain the whole month
-        self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"])
-        return time_duration_after_lookup_time
+# args[0]: time duration start
+# args[1]: time duration end
+        web2csv_time_duration_update = args[0]
+        self.time_duration_start_after_adjustment = web2csv_time_duration_update.NewWebStart
+        self.time_duration_end_after_adjustment = web2csv_time_duration_update.NewWebEnd
+        self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(self.time_duration_start_after_adjustment, self.time_duration_end_after_adjustment)
 
 
     def prepare_for_scrapy(self, timeslice):
@@ -65,9 +76,9 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
             entry = [CMN.FUNC.transform_date_str(int(date_list[0]), int(date_list[1]), int(date_list[2])),]
             if not self.whole_month_data:
                 date_cur = CMN.CLS.FinanceDate.from_string(entry[0])
-                if date_cur < self.xcfg["time_duration_start"]:
+                if date_cur < self.time_duration_start_after_adjustment:
                     continue
-                elif date_cur > self.xcfg["time_duration_end"]:
+                elif date_cur > self.time_duration_end_after_adjustment:
                     break
             for index in range(1, 6):
                 entry.append(str(data_entry[index]).replace(',', ''))

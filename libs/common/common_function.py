@@ -497,8 +497,8 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as
             if param_list_len != 3:
                 raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
             source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
-            time_range_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
-            time_range_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
+            time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(param_list[1])
+            time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(param_list[2])
             csv_time_duration_dict[source_type_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
     except ValueError as e:
         csv_time_duration_dict = None
@@ -791,6 +791,33 @@ def try_to_request_from_url_and_check_return(url, timeout=None):
     raise RuntimeError(errmsg)
 
 
+def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_time):
+    if finance_time_range_start <= finance_time_range_end:
+        return (True if (finance_time_range_start <= finance_time <= finance_time_range_end) else False)
+    else:
+        return (True if (finance_time_range_start >= finance_time >= finance_time_range_end) else False)
+
+
+def get_time_range_overlap_case(new_finance_time_start, new_finance_time_end, orig_finance_time_start, orig_finance_time_end):
+    assert new_finance_time_start <= new_finance_time_end, "The new start time[%s] should be smaller than the end time[%s]" % (new_finance_time_start.to_string(), new_finance_time_end.to_string())
+    assert orig_finance_time_start <= orig_finance_time_end, "The original start time[%s] should be smaller than the end time[%s]" % (orig_finance_time_start.to_string(), orig_finance_time_end.to_string())
+    if new_finance_time_end < orig_finance_time_start or new_finance_time_start > orig_finance_time_end:
+        return CMN_DEF.TIME_OVERLAP_NONE
+    else:
+        new_start_time_in_range = is_time_in_range(orig_finance_time_start, orig_finance_time_end, new_finance_time_start)
+        new_end_time_in_range = is_time_in_range(orig_finance_time_start, orig_finance_time_end, new_finance_time_end)
+        if new_start_time_in_range and new_end_time_in_range:
+            return CMN_DEF.TIME_OVERLAP_COVERED
+        elif (not new_start_time_in_range) and new_end_time_in_range:
+            return CMN_DEF.TIME_OVERLAP_BEFORE
+        elif new_start_time_in_range and (not new_end_time_in_range):
+            return CMN_DEF.TIME_OVERLAP_AFTER
+        elif (not new_start_time_in_range) and (not new_end_time_in_range):
+            return CMN_DEF.TIME_OVERLAP_COVER
+    raise CMN_EXCEPTION.WebScrapyUnDefiedCaseException("Un-Defined case !!!")
+
+
+
 def is_time_range_overlap(finance_time1_start, finance_time1_end, finance_time2_start, finance_time2_end):
     check_overlap1 = True
     if finance_time1_start is not None and finance_time2_end is not None:
@@ -800,12 +827,6 @@ def is_time_range_overlap(finance_time1_start, finance_time1_end, finance_time2_
         check_overlap2 = (finance_time2_start <= finance_time1_end)  
     return (check_overlap1 and check_overlap2)
 
-
-def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_time):
-    if finance_time_range_start <= finance_time_range_end:
-        return (True if (finance_time_range_start <= finance_time <= finance_time_range_end) else False)
-    else:
-        return (True if (finance_time_range_start >= finance_time >= finance_time_range_end) else False)
 
 def is_continous_time_duration(time_duration1, time_duration2):
     assert type(time_duration1) == type(time_duration2), "The time types[%s, %s] are NOT identical" % (type(time_duration1), type(time_duration2))  

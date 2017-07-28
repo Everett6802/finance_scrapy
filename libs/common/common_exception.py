@@ -34,3 +34,8 @@ class WebScrapyServerBusyException(WebScrapyException):
 class WebScrapyIncorrectValueException(WebScrapyException):
     """Class for incorrect value exceptions"""
     pass
+
+
+class WebScrapyUnDefiedCaseException(WebScrapyException):
+    """Class for undefied case exceptions"""
+    pass

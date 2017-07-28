@@ -24,6 +24,12 @@ FINANCE_MODE_DESCRIPTION = ["Market", "Stock",]
 DEF_PROJECT_FOLDERPATH = CMN_FUNC.get_project_folderpath()
 DEF_PROJECT_LIB_FOLDERPATH = "%s/libs" % DEF_PROJECT_FOLDERPATH
 
+TIME_OVERLAP_NONE = 0 # The new and original time range does NOT overlap
+TIME_OVERLAP_BEFORE = 1 # The new time range overlaps the original one
+TIME_OVERLAP_AFTER = 2 # The new time range overlaps the original one
+TIME_OVERLAP_COVER = 3 # The new time range covers the original one
+TIME_OVERLAP_COVERED = 4 # The new time range is covered by the original one
+
 #################################################################################
 # Return Value
 RET_SUCCESS = 0
