@@ -254,8 +254,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         scrapy_obj_cfg["company_group_set"] = self.company_group_set
 # Create the scrapy object
         # import pdb; pdb.set_trace()
-        web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_time_duration.source_type_index, False)
-        web_scrapy_class.init_class_common_variables() # Caution
+        web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_time_duration.source_type_index, True)
+        # web_scrapy_class.init_class_common_variables() # Caution
         scrapy_obj_cfg["renew_statement_field"] = True
         web_scrapy_obj = CMN.FUNC.get_web_scrapy_object(web_scrapy_class, **scrapy_obj_cfg)
         if web_scrapy_obj is None:

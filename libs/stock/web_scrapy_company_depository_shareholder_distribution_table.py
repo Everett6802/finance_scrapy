@@ -18,7 +18,6 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
 
     TABLE_SUM_FLAG = u'\u5408\u3000\u8a08' # "合　計"
 
-
     @classmethod
     def assemble_web_url(cls, timeslice, company_code_number, *args):
 # CAUTION: This function MUST be called by the LEAF derived class

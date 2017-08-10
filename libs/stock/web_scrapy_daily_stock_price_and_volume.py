@@ -14,10 +14,43 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 個股日股價及成交量
 class WebScrapyDailyStockPriceAndVolume(WebScrapyStockBase.WebScrapyStockBase):
 
+    URL_DATA_STAT_SELECTOR = None
+
     @classmethod
-    def assemble_web_url(cls, timeslice, *args):
-        url = cls.URL_FORMAT.format(*(timeslice.year, timeslice.month))
+    def init_class_customized_variables(cls):
+        # import pdb; pdb.set_trace()
+# CAUTION: This function MUST be called by the LEAF derived class
+        if cls.URL_DATA_STAT_SELECTOR is None:
+            cls.URL_DATA_STAT_SELECTOR = cls.CONSTANT_CFG["url_data_stat_selector"]
+
+
+    @classmethod
+    def assemble_web_url(cls, timeslice, company_code_number, *args):
+        url = cls.URL_FORMAT.format(*(timeslice.year, timeslice.month, company_code_number))
         return url
+
+
+    @classmethod
+    def pre_check_web_data(cls, req):
+        json_url_data = json.loads(req.text)
+        json_url_stat_data = json_url_data[cls.URL_DATA_STAT_SELECTOR]
+        if not re.search(r"OK", json_url_stat_data, re.U):
+            # import pdb; pdb.set_trace()
+            if re.search(r"沒有符合條件的資料", json_url_stat_data.encode(CMN.DEF.URL_ENCODING_UTF8), re.U):
+                raise CMN.EXCEPTION.WebScrapyNotFoundException("The data does NOT exist on the web")
+            else:
+                raise CMN.EXCEPTION.WebScrapyIncorrectValueException("Unkown JSON URL data state: %s" % json_url_stat_data)
+
+
+    @classmethod
+    def get_first_web_data_time(cls, web_data):
+        # import pdb; pdb.set_trace()
+        assert len(web_data) != 0, "The web_data shuld NOT be empty"
+        first_web_data_entry = web_data[0]
+        date_list = str(first_web_data_entry[0]).split('/')
+        if len(date_list) != 3:
+            raise RuntimeError("The date format is NOT as expected: %s", date_list)
+        return CMN.FUNC.transform_date_str(int(date_list[0]), int(date_list[1]), int(date_list[2]))
 
 
     def __init__(self, **kwargs):

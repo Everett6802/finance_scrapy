@@ -408,12 +408,13 @@ DEF_SOURCE_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
-    {# 個股日股價及成交量
+    {# 日股價及成交量
         "url_format": "http://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date={0}{1:02d}01&stockNo={2}", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
         "url_data_selector": 'data',
+        "url_data_stat_selector": 'stat',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },

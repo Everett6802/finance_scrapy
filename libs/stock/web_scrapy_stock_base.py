@@ -248,16 +248,6 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
         )
         return url
 
-
-    def __init__(self, **kwargs):
-        super(WebScrapyStockStatementBase, self).__init__(**kwargs)
-        # import pdb;pdb.set_trace()
-        if not kwargs.get("renew_statement_field", False):
-            if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-                raise ValueError("TABLE_FIELD_INTEREST_TITLE_LIST is None")
-        self.cur_quarter_str = None
-
-
     # @classmethod
     # def _init_statement_field_class_variables(cls, conf_filename):
     #     # import pdb; pdb.set_trace()
@@ -495,6 +485,15 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                     table_field_element_definition = u"\"%s:%s\", // FinanceField_LONG" % (re.sub(r"\s+", "", title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE), re.sub(r"\s+", "", column_title.decode(CMN.DEF.URL_ENCODING_UTF8), flags=re.UNICODE))
                     table_field_interest_description_list.append(table_field_element_definition.encode(CMN.DEF.URL_ENCODING_UTF8))
         CMN.FUNC.write_config_file_lines_ex(table_field_interest_description_list, interest_conf_filename, "wb")
+
+
+    def __init__(self, **kwargs):
+        super(WebScrapyStockStatementBase, self).__init__(**kwargs)
+        # import pdb;pdb.set_trace()
+        if not kwargs.get("renew_statement_field", False):
+            if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+                raise ValueError("TABLE_FIELD_INTEREST_TITLE_LIST is None")
+        self.cur_quarter_str = None
 
 
     def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):

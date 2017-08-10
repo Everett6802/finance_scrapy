@@ -21,6 +21,7 @@ class WebScrapyURLTimeRange(object):
     DEF_STATEMENT_START_YEAR = 2013
     DEF_STATEMENT_START_QUARTER = 1
     DEF_STATEMENT_START_QUARTER_STR = "%dq%d" % (DEF_STATEMENT_START_YEAR, DEF_STATEMENT_START_QUARTER)
+    DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR = "2010-01-01"
 
     def __init__(self):
         # import pdb; pdb.set_trace()
@@ -40,6 +41,7 @@ class WebScrapyURLTimeRange(object):
             CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
             CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
             CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceDate(self.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
         ]
         last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)
@@ -49,11 +51,12 @@ class WebScrapyURLTimeRange(object):
             last_url_data_quarter,
             last_url_data_quarter,
             last_url_data_quarter,
+            last_url_data_date,
         ]
         self.whole_company_group_set = None
         self.timeslice_generator = None
         self.source_type_index_list = None
-        self.web_scrapy_class_list = None
+        self.web_scrapy_class_dict = None
         self.company_data_source_start_time_dict = {}
         self.auto_update = True
 
@@ -133,6 +136,19 @@ class WebScrapyURLTimeRange(object):
         CMN.FUNC.write_file_lines_ex(line_list, company_number_time_range_filepath, "w")
 
 
+    def __get_web_scrapy_class(self, source_type_index):
+        # import pdb;pdb.set_trace()
+        if self.web_scrapy_class_dict is None:
+            self.web_scrapy_class_dict = {}
+        if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
+            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("Incorrect source type index: %d" % source_type_index)
+        if not self.web_scrapy_class_dict.has_key(source_type_index):
+            web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_index)
+            # web_scrapy_class.init_class_common_variables()
+            self.web_scrapy_class_dict[source_type_index] = web_scrapy_class
+        return self.web_scrapy_class_dict[source_type_index]
+
+
     def __scan_company_time_range_start(self, company_number, company_group=None):
         # import pdb; pdb.set_trace()
         company_time_range_start_ordereddict = self.__read_company_time_range_start_from_config(company_number, company_group)
@@ -145,14 +161,17 @@ class WebScrapyURLTimeRange(object):
             # import pdb;pdb.set_trace()
             stock_source_type_index_offset = source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START
 # Get the web scrapy class
-            web_scrapy_class = self.web_scrapy_class_list[stock_source_type_index_offset]
+#             web_scrapy_class = self.web_scrapy_class_dict[stock_source_type_index_offset]
+            web_scrapy_class = self.__get_web_scrapy_class(source_type_index)
 # Define the time range for scanning the start time
             time_slice_generator_cfg = {
                 "company_code_number": company_number, 
                 "time_duration_start": self.DEF_DATA_SOURCE_START_SCAN_TIME_CFG[stock_source_type_index_offset], 
                 "time_duration_end": self.DEF_DATA_SOURCE_END_TIME_CFG[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START],
             }
+            # import pdb; pdb.set_trace()
 # Generate the time slice
+            time_slice_generator_cfg["time_duration_start"], time_slice_generator_cfg["time_duration_end"] = web_scrapy_class.get_time_unit_for_timeslice_iterable(**time_slice_generator_cfg)
             timeslice_iterable = self.__get_timeslice_generator().generate_time_slice(web_scrapy_class.TIMESLICE_GENERATE_METHOD, **time_slice_generator_cfg)
 # Scan the start time
             data_exist = False
@@ -160,32 +179,17 @@ class WebScrapyURLTimeRange(object):
             for timeslice in timeslice_iterable:
                 url = web_scrapy_class.assemble_web_url(timeslice, company_number)
                 g_logger.debug("Check the data exist from URL: %s" % url)
-                try:
-# Grab the data from website and assemble the data to the entry of CSV
+                if web_scrapy_class.NEED_FIRST_WEB_DATA_TIME:
+                    web_data = web_scrapy_class.try_get_web_data(url)
+                    if web_data is not None:
+                        first_web_data_time_str = web_scrapy_class.get_first_web_data_time(web_data)
+                        company_time_range_start_ordereddict[source_type_index] = CMN.CLS.FinanceTimeBase.from_time_string(first_web_data_time_str)
+                        data_exist = True
+                else:
                     data_exist = web_scrapy_class.check_web_data_exist(url)
-                except CMN.EXCEPTION.WebScrapyServerBusyException as e:
-                    RETRY_TIMES = 5
-                    SLEEP_TIME_BEFORE_RETRY = 15
-                    for retry_times in range(1, RETRY_TIMES + 1):
-                        if data_exist:
-                            break
-                        g_logger.warn("Server is busy, let's retry...... %d", retry_times)
-                        time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
-                        try:
-# Grab the data from website and assemble the data to the entry of CSV
-                            data_exist = web_scrapy_class.check_web_data_exist(url)
-                        except CMN.EXCEPTION.WebScrapyServerBusyException as e:
-                            pass
-                    if not data_exist:
-                        raise CMN.EXCEPTION.WebScrapyServerBusyException("Fail to scrap URL[%s] after retry for %d times" % (url, RETRY_TIMES))
-                except Exception as e:
-                    # import pdb;pdb.set_trace()
-                    if isinstance(e.message, str):
-                        g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, e.message))
-                    else:
-                        g_logger.warn(u"Fail to scrap URL[%s], due to: %s" % (url, e.message))
+                    if data_exist:
+                        company_time_range_start_ordereddict[source_type_index] = timeslice
                 if data_exist:
-                    company_time_range_start_ordereddict[source_type_index] = timeslice
                     break
             if not data_exist:
                 raise CMN.EXCEPTION.WebScrapyNotFoundException("Fail to check if the data[%s:%d] exist" % (company_number, source_type_index))
@@ -204,11 +208,6 @@ class WebScrapyURLTimeRange(object):
         # import pdb; pdb.set_trace()
         self.whole_company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
         self.source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
-        self.web_scrapy_class_list = []
-        for source_type_index in self.source_type_index_list:
-            web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_index, False)
-            web_scrapy_class.init_class_common_variables()
-            self.web_scrapy_class_list.append(web_scrapy_class)
         self.company_listing_date_dict = {}
 
 

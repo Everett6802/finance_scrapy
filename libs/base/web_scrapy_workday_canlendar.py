@@ -28,10 +28,10 @@ class WebScrapyWorkdayCanlendar(object):
     # WORKDAY_CANLENDAR_SCRAPY_TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[TIMESLICE_GENERATE_METHOD]
 
     def __init__(self, date_start=None, date_end=None):
-        # self.source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_URL_PARSING[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
-        # self.url_format = self.source_url_parsing_cfg["url_format"]
-        # self.encoding = self.source_url_parsing_cfg["url_encoding"]
-        # self.select_flag = self.source_url_parsing_cfg["url_data_selector"]
+        # self.source_constant_cfg = CMN.DEF.DEF_SOURCE_CONSTANT_CFG[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
+        # self.url_format = self.source_constant_cfg["url_format"]
+        # self.encoding = self.source_constant_cfg["url_encoding"]
+        # self.select_flag = self.source_constant_cfg["url_data_selector"]
 ###############################################################################################
 # Caution: The types of the following member variabiles are FinanceDate
         self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_START_DATE_STR) if date_start is None else date_start 
