@@ -108,7 +108,6 @@ class WebScrapyCompanyProfile(object):
             if need_check_company_diff and need_update_from_web:
                 g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
                 need_check_company_diff = False
-
 # It's required to update the new data
         if need_update_from_web:
             old_company_profile_list = None
@@ -386,12 +385,10 @@ class WebScrapyCompanyProfile(object):
             if COMPANY_GROUP_EXCEPTION_DICT.get(mobj.group(1), None) is not None:
                 assert (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u""), u"The company[%s] Industry is NOT Empty: %s" % (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY])
                 element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] = COMPANY_GROUP_EXCEPTION_DICT[mobj.group(1)]
-
             # if re.match(self.ETF_COMPANY_CODE_NUMBER_PATTERN, element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], re.U):
             #     # import pdb; pdb.set_trace()
             #     assert (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u""), u"The company[%s] Industry is NOT Empty: %s" % (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY])
             #     element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] = COMPANY_GROUP_EXCEPTION_DICT[COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT]
-
             self.company_profile_list.append(element_list)
 # 有價證券代號及名稱
 # 國際證券辨識號碼(ISIN Code) 

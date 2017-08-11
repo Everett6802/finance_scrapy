@@ -410,6 +410,18 @@ class WebScrapyBase(object):
                     web_data = cls.get_web_data(url)
                     assert (web_data is not None), "web_data should NOT be None"
                     cls.post_check_web_data(web_data)
+                except CMN.EXCEPTION.WebScrapyNotFoundException as e:
+                    if not ignore_data_not_found_exception:
+                        errmsg = None
+                        if isinstance(e.message, str):
+                            errmsg = "RETRY[%d]! WebScrapyNotFoundException occurs while scraping URL[%s], due to: %s" % (retry_times, url, e.message)
+                        else:
+                            errmsg = u"RETRY[%d]! WebScrapyNotFoundException occurs while scraping URL[%s], due to: %s" % (retry_times, url, e.message)
+                        CMN.FUNC.try_print(errmsg)
+                        g_logger.error(errmsg)
+                        raise e
+                    else:
+                        scrapy_success = True
                 except CMN.EXCEPTION.WebScrapyServerBusyException as e:
                     pass
                 else:

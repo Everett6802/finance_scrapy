@@ -73,9 +73,8 @@ class WebScrapyURLTimeRange(object):
 
     def __get_company_number_time_range_filepath(self, company_number, company_group=None):
         if company_group is None:
-            company_group_unicode = g_profile_lookup.lookup_company_group_number(company_number)
-            company_group = int(company_group_unicode)
-        return self.__get_company_group_time_range_folderpath(company_group) + "/%s" % company_number
+            company_group = g_profile_lookup.lookup_company_group_number(company_number)
+        return self.__get_company_group_time_range_folderpath(int(company_group)) + "/%s" % company_number
 
 
     def __create_time_range_folder_if_not_exist(self):
@@ -180,7 +179,7 @@ class WebScrapyURLTimeRange(object):
                 url = web_scrapy_class.assemble_web_url(timeslice, company_number)
                 g_logger.debug("Check the data exist from URL: %s" % url)
                 if web_scrapy_class.NEED_FIRST_WEB_DATA_TIME:
-                    web_data = web_scrapy_class.try_get_web_data(url)
+                    web_data = web_scrapy_class.try_get_web_data(url, True)
                     if web_data is not None:
                         first_web_data_time_str = web_scrapy_class.get_first_web_data_time(web_data)
                         company_time_range_start_ordereddict[source_type_index] = CMN.CLS.FinanceTimeBase.from_time_string(first_web_data_time_str)
@@ -199,7 +198,12 @@ class WebScrapyURLTimeRange(object):
 
     def __scan_time_range_start(self):
 # Update the time range of time slice
-        for company_group, company_number_list in self.whole_company_group_set.items():
+        # import pdb; pdb.set_trace()
+        company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
+        company_group_set.add_company("1256")
+        company_group_set.add_done()
+        for company_group, company_number_list in company_group_set.items():
+        # for company_group, company_number_list in self.whole_company_group_set.items():
             for company_number in company_number_list:
                 self.__scan_company_time_range_start(company_number, company_group)
 
