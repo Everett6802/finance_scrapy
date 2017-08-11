@@ -256,6 +256,7 @@ class WebScrapyBase(object):
     TIMESLICE_GENERATE_METHOD = None
     TIMESLICE_TIME_UNIT = None
     NEED_FIRST_WEB_DATA_TIME = None
+    CAN_FIND_TIME_RANGE_START = None
 
     @classmethod
     def __select_web_data_by_bs4(cls, url_data, parse_url_data_type_cfg):
@@ -340,6 +341,8 @@ class WebScrapyBase(object):
                 cls.TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[cls.TIMESLICE_GENERATE_METHOD]
             if cls.NEED_FIRST_WEB_DATA_TIME is None:
                 cls.NEED_FIRST_WEB_DATA_TIME = hasattr(cls, "get_first_web_data_time")
+            if cls.CAN_FIND_TIME_RANGE_START is None:
+                cls.CAN_FIND_TIME_RANGE_START = hasattr(cls, "find_time_range_start")
 
             g_logger.info(
                 u"*****The constants are initialized in %s ***** URL_FORMAT: %s; URL_TIME_UNIT: %d; URL_PARSING_METHOD: %d; TIMESLICE_GENERATE_METHOD: %d; TIMESLICE_TIME_UNIT: %d",

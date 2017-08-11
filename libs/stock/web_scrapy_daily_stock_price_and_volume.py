@@ -7,6 +7,7 @@ import requests
 import json
 from datetime import datetime, timedelta
 import libs.common as CMN
+import web_scrapy_company_profile as CompanyProfile
 import web_scrapy_stock_base as WebScrapyStockBase
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
@@ -15,6 +16,7 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebScrapyDailyStockPriceAndVolume(WebScrapyStockBase.WebScrapyStockBase):
 
     URL_DATA_STAT_SELECTOR = None
+    DEF_START_DATE_OBJ = None
 
     @classmethod
     def init_class_customized_variables(cls):
@@ -22,6 +24,8 @@ class WebScrapyDailyStockPriceAndVolume(WebScrapyStockBase.WebScrapyStockBase):
 # CAUTION: This function MUST be called by the LEAF derived class
         if cls.URL_DATA_STAT_SELECTOR is None:
             cls.URL_DATA_STAT_SELECTOR = cls.CONSTANT_CFG["url_data_stat_selector"]
+        if cls.DEF_START_DATE_OBJ is None:
+            cls.DEF_START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
 
 
     @classmethod
@@ -51,6 +55,21 @@ class WebScrapyDailyStockPriceAndVolume(WebScrapyStockBase.WebScrapyStockBase):
         if len(date_list) != 3:
             raise RuntimeError("The date format is NOT as expected: %s", date_list)
         return CMN.FUNC.transform_date_str(int(date_list[0]), int(date_list[1]), int(date_list[2]))
+
+
+    @classmethod
+    def find_time_range_start(cls, company_code_number):
+        # import pdb; pdb.set_trace()
+        profile_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
+        listing_date_str = None
+        try:
+            listing_date_unicode = profile_lookup.lookup_company_listing_date(company_code_number)
+            listing_date_str = str(listing_date_unicode)
+            if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.DEF_START_DATE_OBJ:
+                listing_date_str = CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
+        except ValueError:
+            g_logger.debug("The profile of the company code number does NOT exist")
+        return listing_date_str
 
 
     def __init__(self, **kwargs):

@@ -18,11 +18,6 @@ g_profile_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
 @CMN.CLS.Singleton
 class WebScrapyURLTimeRange(object):
 
-    DEF_STATEMENT_START_YEAR = 2013
-    DEF_STATEMENT_START_QUARTER = 1
-    DEF_STATEMENT_START_QUARTER_STR = "%dq%d" % (DEF_STATEMENT_START_YEAR, DEF_STATEMENT_START_QUARTER)
-    DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR = "2010-01-01"
-
     def __init__(self):
         # import pdb; pdb.set_trace()
         self.TIME_RANGE_ROOT_FOLDERPATH = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_TIME_RANGE_FOLDERNAME)
@@ -37,11 +32,11 @@ class WebScrapyURLTimeRange(object):
         # self.stock_offset_source_type_index_list = [source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START for source_type_index in self.source_type_index_list]
         self.DEF_DATA_SOURCE_START_SCAN_TIME_CFG = [
             CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -1)),
-            CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(self.DEF_STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceDate(self.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
+            CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceDate(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
         ]
         last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)
@@ -162,6 +157,13 @@ class WebScrapyURLTimeRange(object):
 # Get the web scrapy class
 #             web_scrapy_class = self.web_scrapy_class_dict[stock_source_type_index_offset]
             web_scrapy_class = self.__get_web_scrapy_class(source_type_index)
+            if web_scrapy_class.CAN_FIND_TIME_RANGE_START:
+# Find the start time from company profile..., .etc
+                first_web_data_time_str = web_scrapy_class.find_time_range_start(company_number)
+                if first_web_data_time_str is not None:
+                    company_time_range_start_ordereddict[source_type_index] = CMN.CLS.FinanceTimeBase.from_time_string(first_web_data_time_str)
+                    continue
+# Scan to find the start time from the web
 # Define the time range for scanning the start time
             time_slice_generator_cfg = {
                 "company_code_number": company_number, 
@@ -199,11 +201,11 @@ class WebScrapyURLTimeRange(object):
     def __scan_time_range_start(self):
 # Update the time range of time slice
         # import pdb; pdb.set_trace()
-        company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
-        company_group_set.add_company("1256")
-        company_group_set.add_done()
-        for company_group, company_number_list in company_group_set.items():
-        # for company_group, company_number_list in self.whole_company_group_set.items():
+        # company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
+        # company_group_set.add_company("1256")
+        # company_group_set.add_done()
+        # for company_group, company_number_list in company_group_set.items():
+        for company_group, company_number_list in self.whole_company_group_set.items():
             for company_number in company_number_list:
                 self.__scan_company_time_range_start(company_number, company_group)
 

@@ -34,7 +34,7 @@ class WebScrapyWorkdayCanlendar(object):
         # self.select_flag = self.source_constant_cfg["url_data_selector"]
 ###############################################################################################
 # Caution: The types of the following member variabiles are FinanceDate
-        self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_START_DATE_STR) if date_start is None else date_start 
+        self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_WORKDAY_CANLENDAR_START_DATE_STR) if date_start is None else date_start 
         self.date_end = CMN.CLS.FinanceDate.get_last_finance_date()
         # self.date_end = CMN.FUNC.get_last_url_data_date(self.TODAY_WORKDAY_DATA_EXIST_HOUR, self.TODAY_WORKDAY_DATA_EXIST_MINUTE)
 # The start/end time of scrapying data from the web
@@ -116,7 +116,7 @@ class WebScrapyWorkdayCanlendar(object):
                         date_end_from_file = CMN.CLS.FinanceDate(mobj.group(2))
                         g_logger.debug("Original Date Range in Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
                         if date_start_from_file > self.date_start:
-                            raise RuntimeError("Incorrect start date; File: %s, Expected: %s", date_start_from_file, self.date_start)
+                            raise RuntimeError("Incorrect start date; File: %s, Expected: %s", date_start_from_file.to_string(), self.date_start.to_string())
 # Check the time range in the file and adjust the range of scrapying data from the web
                         if date_end_from_file >= self.date_end:
                             g_logger.debug("The last data has already existed in the file. It's no need to scrap data from the web")
