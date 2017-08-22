@@ -173,6 +173,10 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         return finance_folder_index
 
 
+    def _increment_scrapy_source_type_progress_count(self, source_type_index):
+        self.scrapy_source_type_progress_count += 1
+
+
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
 # Check the source folder exist
         self._check_merge_finance_folder_exist(finance_folderpath_src_list, finance_folderpath_dst)

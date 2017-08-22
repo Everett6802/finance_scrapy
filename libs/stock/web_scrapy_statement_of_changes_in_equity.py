@@ -133,6 +133,11 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockState
         return table_list[1].select('tr')
 
 
+    def _scrape_web_data(self, timeslice, company_code_number):
+        # import pdb; pdb.set_trace()
+        return self._scrape_web_data_internal(timeslice, company_code_number)
+
+
     def _parse_web_statement_field_data(self, web_data):
         return self._parse_web_statement_field_data_internal(web_data, self.TABLE_FIELD_START_INDEX, self.TABLE_FIELD_END_INDEX)
 

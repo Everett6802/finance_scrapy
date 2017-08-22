@@ -46,17 +46,18 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
         self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(self.time_duration_start_after_adjustment, self.time_duration_end_after_adjustment)
 
 
-    def prepare_for_scrapy(self, timeslice):
+    def _scrape_web_data(self, timeslice):
         # import pdb; pdb.set_trace()
         assert isinstance(timeslice, CMN.CLS.FinanceMonth), "The input time duration time unit is %s, not FinanceMonth" % type(timeslice)
-        url = self.assemble_web_url(timeslice)
 # Check if it's no need to acquire the whole month data in this month
         try:
             index = self.data_not_whole_month_list.index(timeslice)
             self.whole_month_data = False
         except ValueError:
             self.whole_month_data = True
-        return url
+        url = self.assemble_web_url(timeslice)
+        web_data = self.try_get_web_data(url)
+        return web_data
 
 
     def _parse_web_data(self, web_data):

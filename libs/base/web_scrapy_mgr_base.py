@@ -160,7 +160,7 @@ class WebSracpyMgrBase(object):
                 # print total_errmsg
                 if not self.xcfg["try_to_scrap_all"]:
                     break
-            self.scrapy_source_type_progress_count += 1
+            self._increment_scrapy_source_type_progress_count(source_type_time_duration.source_type_index)
         if self.xcfg["show_progress"]:
             show_progress_timer_thread.stop_timer()
         if total_errmsg:
@@ -327,6 +327,10 @@ class WebSracpyMgrBase(object):
         g_logger.info(progress_string)
         if CMN.DEF.CAN_PRINT_CONSOLE:
             print progress_string
+
+
+    def _increment_scrapy_source_type_progress_count(self, source_type_index):
+        raise NotImplementedError
 
 
     @abstractmethod

@@ -34,13 +34,13 @@ class WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary(web_scrapy_base.W
         super(WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary, self).__init__(**kwargs)
 
 
-    def prepare_for_scrapy(self, timeslice, company_code_number):
-        url = self.assemble_web_url(timeslice, company_code_number)
+    def _scrape_web_data(self, timeslice, company_code_number):
         if not self.new_format_table:
             if datetime_cfg >= NEW_FORAMT_START_DATE_CFG:
                 self.new_format = True
-
-        return url
+        url = self.assemble_web_url(timeslice, company_code_number)
+        web_data = self.try_get_web_data(url)
+        return web_data
 
 
     def _parse_web_data(self, web_data):

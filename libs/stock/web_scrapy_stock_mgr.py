@@ -23,8 +23,30 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def __init__(self, **cfg):
         super(WebSracpyStockMgr, self).__init__(**cfg)
+        self.is_whole_company_group_set = False
         self.company_group_set = None
         self.source_type_csv_time_duration_dict = None
+        self.market_type_company_group_set_dict = None
+
+
+    def __get_market_type_company_group_set(self, market_type=CMN.DEF.MARKET_TYPE_NONE):
+# Initialization
+        if self.market_type_company_group_set_dict is None:
+            self.market_type_company_group_set_dict = {}
+            if self.company_group_set is None:
+                self.is_whole_company_group_set = True
+# Update the company group set if necessary
+        if self.is_whole_company_group_set:
+            if not self.market_type_company_group_set_dict.has_key(market_type):
+                self.market_type_company_group_set_dict[market_type] = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict(market_type)
+        else:
+            if market_type == CMN.DEF.MARKET_TYPE_NONE:
+                if not self.market_type_company_group_set_dict.has_key(CMN.DEF.MARKET_TYPE_NONE): 
+                    self.market_type_company_group_set_dict[CMN.DEF.MARKET_TYPE_NONE] = self.company_group_set
+            else:
+                if not self.market_type_company_group_set_dict.has_key(market_type):
+                    self.market_type_company_group_set_dict[market_type] = self.company_group_set.get_sub_company_group_set_in_market_type(market_type)
+        return self.market_type_company_group_set_dict[market_type]
 
 
     @classmethod
@@ -64,9 +86,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         # import pdb; pdb.set_trace()
         assert self.source_type_csv_time_duration_dict is None, "self.source_type_csv_time_duration_dict should be None"
         if company_group_set is None:
-            company_group_set = self.company_group_set
-        if company_group_set is None:
-            company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+            company_group_set = self.__get_market_type_company_group_set()
+        # if company_group_set is None:
+        #     company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
         self.source_type_csv_time_duration_dict = {}
         for company_group_number, company_code_number_list in company_group_set.items():
             for company_code_number in company_code_number_list:
@@ -78,9 +100,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         # whole_company_number_in_group_dict = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
         folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
         if company_group_set is None:
-            company_group_set = self.company_group_set
-        if company_group_set is None:
-            company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+            company_group_set = self.__get_market_type_company_group_set()
+        # if company_group_set is None:
+        #     company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
         source_type_csv_time_duration_dict = {}
         # for company_group_number, company_code_number_list in whole_company_number_in_group_dict:
         for company_group_number, company_code_number_list in company_group_set.items():
@@ -139,9 +161,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if source_type_csv_time_duration_dict is None:
             source_type_csv_time_duration_dict = self.source_type_csv_time_duration_dict
         if company_group_set is None:
-            company_group_set = self.company_group_set
-        if company_group_set is None:
-            company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+            company_group_set = self.__get_market_type_company_group_set()
+        # if company_group_set is None:
+        #     company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
         for company_group_number, company_code_number_list in company_group_set.items():
             folderpath_in_group = folderpath_format % int(company_group_number)
             for company_code_number in company_code_number_list:
@@ -217,19 +239,22 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #         self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
 
 
+
     def _scrap_single_source_data(self, source_type_time_duration):
         # import pdb;pdb.set_trace()
-        if self.company_group_set is None:
-            self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
+        # if self.company_group_set is None:
+        #     self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
 # Setup the time duration configuration for the scrapy object
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
+# Market type
+        market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
 # Create the scrapy object to transform the data from Web to CSV
         if self.xcfg["multi_thread_amount"] is not None:
             g_logger.debug("Scrap %s in %d threads" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], self.xcfg["multi_thread_amount"]))
 # Run in multi-threads
             sub_scrapy_obj_cfg_list = []
-            sub_company_group_list = self.company_group_set.get_sub_company_group_set_list(self.xcfg["multi_thread_amount"])
+            sub_company_group_list = self.__get_market_type_company_group_set(market_type).get_sub_company_group_set_list(self.xcfg["multi_thread_amount"])
 # Perpare the config for each thread
             for sub_company_group in sub_company_group_list:
                 sub_scrapy_obj_cfg = copy.deepcopy(scrapy_obj_cfg)
@@ -238,7 +263,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 # Start the thread to scrap data
             self._multi_thread_scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, sub_scrapy_obj_cfg_list)
         else:
-            scrapy_obj_cfg["company_group_set"] = self.company_group_set
+            scrapy_obj_cfg["company_group_set"] = self.__get_market_type_company_group_set(market_type)
             self._scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
 
 
@@ -246,12 +271,12 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if not CMN.FUNC.check_statement_source_type_index_in_range(source_type_time_duration.source_type_index):
             raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (source_type_time_duration.source_type_index, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_END))
         # import pdb;pdb.set_trace()
-        if self.company_group_set is None:
-            self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
+        # if self.company_group_set is None:
+        #     self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
 # Setup the time duration configuration for the scrapy object
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         # scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
-        scrapy_obj_cfg["company_group_set"] = self.company_group_set
+        scrapy_obj_cfg["company_group_set"] = self.__get_market_type_company_group_set()
 # Create the scrapy object
         # import pdb; pdb.set_trace()
         web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_time_duration.source_type_index, True)
@@ -454,6 +479,11 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         return finance_folder_index
 
 
+    def _increment_scrapy_source_type_progress_count(self, source_type_index):
+        market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_index]["company_group_market_type"]
+        self.scrapy_source_type_progress_count += self.__get_market_type_company_group_set(market_type).CompanyAmount
+
+
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
         self._check_merge_finance_folder_exist(finance_folderpath_src_list, finance_folderpath_dst)
         if CMN.FUNC.check_file_exist(finance_folderpath_dst):
@@ -495,7 +525,10 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def count_scrapy_amount(self):
         if self.scrapy_amount is None:
-            self.scrapy_amount = len(self.source_type_time_duration_list) * self.company_group_set.CompanyAmount
+            self.scrapy_amount = 0
+            for source_type_time_duration in self.source_type_time_duration_list:
+                market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+                self.scrapy_amount += self.__get_market_type_company_group_set(market_type).CompanyAmount
         g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
         return self.scrapy_amount
 
@@ -509,7 +542,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 for web_scrapy_obj in self.web_scrapy_obj_list:
                     # import pdb; pdb.set_trace()
                     company_progress_count += web_scrapy_obj.CompanyProgressCount
-        progress_count = self.scrapy_source_type_progress_count * self.company_group_set.CompanyAmount + company_progress_count
+        progress_count = self.scrapy_source_type_progress_count + company_progress_count
         return (float(progress_count) / self.scrapy_amount * 100.0) 
 
 

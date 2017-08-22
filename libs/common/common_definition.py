@@ -60,6 +60,7 @@ PARSE_URL_DATA_BY_CUSTOMIZATION = 2
 URL_ENCODING_BIG5 = 'big5'
 URL_ENCODING_UTF8 = 'utf-8'
 
+MARKET_TYPE_NONE = -1
 MARKET_TYPE_STOCK_EXCHANGE = 0
 MARKET_TYPE_OVER_THE_COUNTER = 1
 
@@ -156,135 +157,13 @@ DEF_COLON_DATA_SPLIT = ":"
 DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG = "===== Column Field Start =====" # Caution: Can't start with '#' which is ignored while reading config file
 DEF_CONFIG_TIMESTAMP_STRING_PREFIX = "#time@"
 
-DEF_DATA_SOURCE_INDEX_MAPPING = [
-# Market Start
-    u'臺股指數及成交量',
-    u'三大法人現貨買賣超',
-    u'現貨融資融券餘額',
-    u'三大法人期貨和選擇權留倉淨額',
-    u'三大法人期貨或選擇權留倉淨額',
-    u'三大法人選擇權買賣權留倉淨額',
-    u'三大法人選擇權賣權買權比',
-    u'十大交易人及特定法人期貨資訊',
-# Market End
-###############################################################################
-# Stock Start
-    u'個股集保戶股權分散表',
-    u'資產負債表',
-    u'損益表',
-    u'現金流量表',
-    u'股東權益變動表',
-    u'個股日股價及成交量',
-    # u'三大法人上市個股買賣超彙總',
-    # u'三大法人上櫃個股買賣超彙總',
-    # u'外資及陸資上市個股投資持股統計',
-    # u'外資及陸資買賣超彙總',
-    # u'投信買賣超彙總',
-    # u'自營商買賣超彙總',
-# Stock End
-]
-DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
-
-DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
-DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [
-# Market Start
-    "stock_exchange_and_volume",
-    "stock_top3_legal_persons_net_buy_or_sell",
-    "stock_margin_trading_and_short_selling",
-    "future_and_option_top3_legal_persons_open_interest",
-    "future_or_option_top3_legal_persons_open_interest",
-    "option_top3_legal_persons_buy_and_sell_option_open_interest",
-    "option_put_call_ratio",
-    "future_top10_dealers_and_legal_persons",
-# Market End
-###############################################################################
-# Stock Start
-    "company_depository_shareholder_distribution_table",
-    "balance_sheet",
-    "income_statement",
-    "cash_flow_statement",
-    "statement_of_changes_in_equity",
-    "daily_stock_price_and_volume",
-    # "company_stock_top3_legal_persons_net_buy_and_sell_summary",
-    # "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
-    # "company_foreign_investors_shareholder",
-    # "company_foreign_investors_net_buy_and_sell_summary",
-    # "company_investment_trust_net_buy_and_sell_summary",
-    # "company_dealers_net_buy_and_sell_summary",
-# Stock End
-]
-DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
-
-DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING = [
-    "market",
-    "market",
-    "market",
-    "market",
-    "market",
-    "market",
-    "market",
-    "market",
-    "stock",
-    "stock",
-    "stock",
-    "stock",
-    "stock",
-    "stock",
-]
-# Semi-open interval
-DEF_DATA_SOURCE_MARKET_START = 0
-DEF_DATA_SOURCE_MARKET_END = DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING.index("stock")
-DEF_DATA_SOURCE_STOCK_START = DEF_DATA_SOURCE_MARKET_END
-DEF_DATA_SOURCE_STOCK_END = len(DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING)
-DEF_DATA_SOURCE_MARKET_SIZE = DEF_DATA_SOURCE_MARKET_END - DEF_DATA_SOURCE_MARKET_START
-DEF_DATA_SOURCE_STOCK_SIZE = DEF_DATA_SOURCE_STOCK_END - DEF_DATA_SOURCE_STOCK_START
-
-DEF_DATA_SOURCE_STOCK_STATMENT_START = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("balance_sheet")
-DEF_DATA_SOURCE_STOCK_STATMENT_END = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity") + 1
-
-# DEF_DATA_SOURCE_STATEMENT_OF_CHANGES_IN_EQUITY_INDEX = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity")
-
-DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [
-# Market Start
-    "WebScrapyStockExchangeAndVolume",
-    "WebScrapyStockTop3LegalPersonsNetBuyOrSell",
-    "WebScrapyStockMarginTradingAndShortSelling",
-    "WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest",
-    "WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest",
-    "WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
-    "WebScrapyOptionPutCallRatio",
-    "WebScrapyFutureTop10DealersAndLegalPersons",
-# Market End
-###############################################################################
-# Stock Start
-    "WebScrapyDepositoryShareholderDistributionTable",
-    "WebScrapyBalanceSheet",
-    "WebScrapyIncomeStatement",
-    "WebScrapyCashFlowStatement",
-    "WebScrapyStatementOfChangesInEquity",
-    "WebScrapyDailyStockPriceAndVolume",
-    # "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
-    # "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
-    # "WebScrapyCompanyForeignInvestorsShareholder",
-    # "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
-    # "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
-    # "WebScrapyCompanyDealersNetBuyOrSellSummary",
-# Stock End
-]
-
-DEF_WORKDAY_CANLENDAR_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
-# DEF_WORKDAY_CANLENDAR_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyOptionPutCallRatio")
-DEF_DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyDepositoryShareholderDistributionTable")
-
-DEF_SOURCE_CONSTANT_CFG = [
+DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG = [
 # Market Start
     {# 臺股指數及成交量
-    #     "url_format": "http://www.twse.com.tw/ch/trading/exchange/FMTQIK/genpage/Report{0}{1:02d}/{0}{1:02d}_F3_1_2.php?STK_NO=&myear={0}&mmon={1:02d}", 
-    #     "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
-    #     "url_encoding": URL_ENCODING_BIG5,
-    #     "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
-    #     "url_data_selector": '.board_trad tr',
-    #     "url_multi_data_one_page": True,
+        "description": u'臺股指數及成交量',
+        "module_name": "stock_exchange_and_volume",
+        "module_folder": "market",
+        "class_name": "WebScrapyStockExchangeAndVolume",
         "url_format": "http://www.twse.com.tw/exchangeReport/FMTQIK?response=json&date={0}{1:02d}01", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -294,12 +173,10 @@ DEF_SOURCE_CONSTANT_CFG = [
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 三大法人買賣金額統計表
-        # "url_format": "http://www.twse.com.tw/ch/trading/fund/BFI82U/BFI82U.php?report1=day&input_date={0}%2F{1}%2F{2}&mSubmit=%ACd%B8%DF&yr=1979&w_date=19790904&m_date=19790904", 
-        # "url_time_unit": DATA_TIME_UNIT_DAY,
-        # "url_encoding": URL_ENCODING_BIG5,
-        # "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
-        # "url_data_selector": '.board_trad tr',
-        # "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
+        "description": u'三大法人現貨買賣超',
+        "module_name": "stock_top3_legal_persons_net_buy_or_sell",
+        "module_folder": "market",
+        "class_name": "WebScrapyStockTop3LegalPersonsNetBuyOrSell",
         "url_format": "http://www.twse.com.tw/fund/BFI82U?response=json&dayDate={0}{1:02d}{2:02d}&type=day", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -309,6 +186,10 @@ DEF_SOURCE_CONSTANT_CFG = [
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 融資融券餘額統計表
+        "description": u'現貨融資融券餘額',
+        "module_name": "stock_margin_trading_and_short_selling",
+        "module_folder": "market",
+        "class_name": "WebScrapyStockMarginTradingAndShortSelling",
         "url_format": "http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -319,6 +200,10 @@ DEF_SOURCE_CONSTANT_CFG = [
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', 'tr'),
     },
     {# 期貨和選擇權未平倉口數與契約金額
+        "description": u'三大法人期貨和選擇權留倉淨額',
+        "module_name": "future_and_option_top3_legal_persons_open_interest",
+        "module_folder": "market",
+        "class_name": "WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest",
         "url_format": "http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -328,6 +213,10 @@ DEF_SOURCE_CONSTANT_CFG = [
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_c tr'), 
     },
     {# 期貨或選擇權未平倉口數與契約金額
+        "description": u'三大法人期貨或選擇權留倉淨額',
+        "module_name": "future_or_option_top3_legal_persons_open_interest",
+        "module_folder": "market",
+        "class_name": "WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest",
         "url_format": "http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -337,6 +226,10 @@ DEF_SOURCE_CONSTANT_CFG = [
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
     },
     {# 臺指選擇權買賣權未平倉口數與契約金額
+        "description": u'三大法人選擇權買賣權留倉淨額',
+        "module_name": "option_top3_legal_persons_buy_and_sell_option_open_interest",
+        "module_folder": "market",
+        "class_name": "WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
         "url_format": "http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -346,6 +239,10 @@ DEF_SOURCE_CONSTANT_CFG = [
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),  
     },
     {# 臺指選擇權賣權買權比
+        "description": u'三大法人選擇權賣權買權比',
+        "module_name": "option_put_call_ratio",
+        "module_folder": "market",
+        "class_name": "WebScrapyOptionPutCallRatio",
         "url_format": "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={0}%2F{1}%2F{3}", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -355,6 +252,10 @@ DEF_SOURCE_CONSTANT_CFG = [
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),    
     },
     {# 期貨大額交易人未沖銷部位結構表 : 臺股期貨
+        "description": u'十大交易人及特定法人期貨資訊',
+        "module_name": "future_top10_dealers_and_legal_persons",
+        "module_folder": "market",
+        "class_name": "WebScrapyFutureTop10DealersAndLegalPersons",
         "url_format": "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -367,58 +268,103 @@ DEF_SOURCE_CONSTANT_CFG = [
 ###############################################################################
 # Stock Start
     {# 集保戶股權分散表
+        "description": u'個股集保戶股權分散表',
+        "module_name": "company_depository_shareholder_distribution_table",
+        "module_folder": "stock",
+        "class_name": "WebScrapyDepositoryShareholderDistributionTable",
         "url_format": "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1}{2}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_BIG5,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_data_selector": 'table tbody tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER,
+        "company_group_market_type": MARKET_TYPE_NONE,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 資產負債表
+        "description": u'資產負債表',
+        "module_name": "balance_sheet",
+        "module_folder": "stock",
+        "class_name": "WebScrapyBalanceSheet",
         "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb03?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
         "url_time_unit": DATA_TIME_UNIT_QUARTER,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_data_selector": 'table tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
+        "company_group_market_type": MARKET_TYPE_NONE,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 損益表
+        "description": u'損益表',
+        "module_name": "income_statement",
+        "module_folder": "stock",
+        "class_name": "WebScrapyIncomeStatement",
         "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb04?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
         "url_time_unit": DATA_TIME_UNIT_QUARTER,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_data_selector": 'table tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
+        "company_group_market_type": MARKET_TYPE_NONE,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 現金流量表
+        "description": u'現金流量表',
+        "module_name": "cash_flow_statement",
+        "module_folder": "stock",
+        "class_name": "WebScrapyCashFlowStatement",
         "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb05?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
         "url_time_unit": DATA_TIME_UNIT_QUARTER,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
         "url_data_selector": 'table tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
+        "company_group_market_type": MARKET_TYPE_NONE,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 股東權益變動表
+        "description": u'股東權益變動表',
+        "module_name": "statement_of_changes_in_equity",
+        "module_folder": "stock",
+        "class_name": "WebScrapyStatementOfChangesInEquity",
         "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
         "url_time_unit": DATA_TIME_UNIT_QUARTER,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_CUSTOMIZATION, 
         "url_data_selector": '', # Useless when url_parsing_method is PARSE_URL_DATA_BY_CUSTOMIZATION
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
+        "company_group_market_type": MARKET_TYPE_NONE,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
-    {# 日股價及成交量
+    {# 上市日股價及成交量
+        "description": u'上市個股日股價及成交量',
+        "module_name": "daily_stock_price_and_volume",
+        "module_folder": "stock",
+        "class_name": "WebScrapyDailyStockPriceAndVolume",
         "url_format": "http://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date={0}{1:02d}01&stockNo={2}", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
         "url_data_selector": 'data',
-        "url_data_stat_selector": 'stat',
+        "url_data_exist_selector": 'stat',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
+        "company_group_market_type": MARKET_TYPE_STOCK_EXCHANGE,
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
+    },
+    {# 上櫃日股價及成交量
+        "description": u'上櫃個股日股價及成交量',
+        "module_name": "otc_daily_stock_price_and_volume",
+        "module_folder": "stock",
+        "class_name": "WebScrapyOTCDailyStockPriceAndVolume",
+        "url_format": "http://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php?l=zh-tw&d={0}/{1:02d}&stkno={2}", 
+        "url_time_unit": DATA_TIME_UNIT_DAY,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
+        "url_data_selector": 'aaData',
+        "url_data_exist_selector": 'iTotalRecords',
+        "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
+        "company_group_market_type": MARKET_TYPE_OVER_THE_COUNTER,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     # {# 三大法人上市個股買賣超日報
@@ -440,6 +386,69 @@ DEF_SOURCE_CONSTANT_CFG = [
     # },
 # Stock End
 ]
+
+DEF_DATA_SOURCE_INDEX_MAPPING = [cfg["description"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG
+# Market Start
+# Market End
+###############################################################################
+# Stock Start    
+    # u'三大法人上市個股買賣超彙總',
+    # u'三大法人上櫃個股買賣超彙總',
+    # u'外資及陸資上市個股投資持股統計',
+    # u'外資及陸資買賣超彙總',
+    # u'投信買賣超彙總',
+    # u'自營商買賣超彙總',
+# Stock End
+]
+DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
+
+DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
+DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [cfg["module_name"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG
+# Market Start
+# Market End
+###############################################################################
+# Stock Start
+    # "company_stock_top3_legal_persons_net_buy_and_sell_summary",
+    # "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
+    # "company_foreign_investors_shareholder",
+    # "company_foreign_investors_net_buy_and_sell_summary",
+    # "company_investment_trust_net_buy_and_sell_summary",
+    # "company_dealers_net_buy_and_sell_summary",
+# Stock End
+]
+DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
+
+DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING = [cfg["module_folder"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG]
+# Semi-open interval
+DEF_DATA_SOURCE_MARKET_START = 0
+DEF_DATA_SOURCE_MARKET_END = DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING.index("stock")
+DEF_DATA_SOURCE_STOCK_START = DEF_DATA_SOURCE_MARKET_END
+DEF_DATA_SOURCE_STOCK_END = len(DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING)
+DEF_DATA_SOURCE_MARKET_SIZE = DEF_DATA_SOURCE_MARKET_END - DEF_DATA_SOURCE_MARKET_START
+DEF_DATA_SOURCE_STOCK_SIZE = DEF_DATA_SOURCE_STOCK_END - DEF_DATA_SOURCE_STOCK_START
+
+DEF_DATA_SOURCE_STOCK_STATMENT_START = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("balance_sheet")
+DEF_DATA_SOURCE_STOCK_STATMENT_END = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity") + 1
+
+# DEF_DATA_SOURCE_STATEMENT_OF_CHANGES_IN_EQUITY_INDEX = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity")
+
+DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [cfg["class_name"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG
+# Market Start
+# Market End
+###############################################################################
+# Stock Start
+    # "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+    # "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+    # "WebScrapyCompanyForeignInvestorsShareholder",
+    # "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
+    # "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
+    # "WebScrapyCompanyDealersNetBuyOrSellSummary",
+# Stock End
+]
+
+DEF_WORKDAY_CANLENDAR_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
+# DEF_WORKDAY_CANLENDAR_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyOptionPutCallRatio")
+DEF_DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyDepositoryShareholderDistributionTable")
 
 DEF_MIN_DATE_STRING_LENGTH = 8
 DEF_MAX_DATE_STRING_LENGTH = 10

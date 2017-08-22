@@ -37,9 +37,10 @@ class WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary(web_scrapy_base.WebScra
         )
 
 
-    def prepare_for_scrapy(self, timeslice, company_code_number):
+    def _scrape_web_data(self, timeslice, company_code_number):
         url = self.assemble_web_url(timeslice, company_code_number)
-        return url
+        web_data = self.try_get_web_data(url)
+        return web_data
 
 
     def _parse_web_data(self, web_data):

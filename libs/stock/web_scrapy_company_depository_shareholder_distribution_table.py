@@ -57,11 +57,12 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
     #     return (finance_time_start, finance_time_end)
 
 
-    def prepare_for_scrapy(self, timeslice, company_code_number):
+    def _scrape_web_data(self, timeslice, company_code_number):
         # import pdb; pdb.set_trace()
-        url = self.assemble_web_url(timeslice, company_code_number)
         self.date_cur_string = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
-        return url
+        url = self.assemble_web_url(timeslice, company_code_number)
+        web_data = self.try_get_web_data(url)
+        return web_data
 
 
     def _parse_web_data(self, web_data):

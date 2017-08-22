@@ -17,18 +17,17 @@ class WebScrapyWorkdayCanlendar(object):
 
     # TODAY_WORKDAY_DATA_EXIST_HOUR = 14
     # TODAY_WORKDAY_DATA_EXIST_MINUTE = 30
-    WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG = CMN.DEF.DEF_SOURCE_CONSTANT_CFG[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
-    WORKDAY_CANLENDAR_SCRAPY_URL_FORMAT = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_format"]
-    WORKDAY_CANLENDAR_SCRAPY_URL_ENCODING = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_encoding"]
-    WORKDAY_CANLENDAR_SCRAPY_URL_DATA_SELECTOR = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_data_selector"]
-
-    # WORKDAY_CANLENDAR_SCRAPY_URL_TIME_UNIT = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_time_unit"]
-    # WORKDAY_CANLENDAR_SCRAPY_URL_PARSING_METHOD = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["url_parsing_method"]
-    # WORKDAY_CANLENDAR_SCRAPY_TIMESLICE_GENERATE_METHOD = WORKDAY_CANLENDAR_SCRAPY_CONSTANT_CFG["timeslice_generate_method"]
-    # WORKDAY_CANLENDAR_SCRAPY_TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[TIMESLICE_GENERATE_METHOD]
+    WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
+    URL_FORMAT = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["url_format"]
+    URL_ENCODING = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["url_encoding"]
+    URL_DATA_SELECTOR = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["url_data_selector"]
+    # WORKDAY_CANLENDAR_CLASS_URL_TIME_UNIT = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["url_time_unit"]
+    # WORKDAY_CANLENDAR_CLASS_URL_PARSING_METHOD = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["url_parsing_method"]
+    # WORKDAY_CANLENDAR_CLASS_TIMESLICE_GENERATE_METHOD = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["timeslice_generate_method"]
+    # WORKDAY_CANLENDAR_CLASS_TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[TIMESLICE_GENERATE_METHOD]
 
     def __init__(self, date_start=None, date_end=None):
-        # self.source_constant_cfg = CMN.DEF.DEF_SOURCE_CONSTANT_CFG[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
+        # self.source_constant_cfg = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
         # self.url_format = self.source_constant_cfg["url_format"]
         # self.encoding = self.source_constant_cfg["url_encoding"]
         # self.select_flag = self.source_constant_cfg["url_data_selector"]
@@ -207,13 +206,13 @@ class WebScrapyWorkdayCanlendar(object):
         if end_day is None: end_day = CMN.FUNC.get_month_last_day(year, month)
         if start_day == 1 and end_day == CMN.FUNC.get_month_last_day(year, month):
             whole_month_data = True
-        url = self.WORKDAY_CANLENDAR_SCRAPY_URL_FORMAT.format(*(year, month, start_day, end_day))
+        url = self.URL_FORMAT.format(*(year, month, start_day, end_day))
 # Scrap the web data
         req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
 # Select the section we are interested in
-        req.encoding = self.WORKDAY_CANLENDAR_SCRAPY_URL_ENCODING
+        req.encoding = self.URL_ENCODING
 #         # print res.text
-        web_data = json.loads(req.text)[self.WORKDAY_CANLENDAR_SCRAPY_URL_DATA_SELECTOR]
+        web_data = json.loads(req.text)[self.URL_DATA_SELECTOR]
         workday_list = []
         for entry in web_data:
             date_list = str(entry[0]).split('/')

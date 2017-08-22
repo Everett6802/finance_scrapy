@@ -24,16 +24,22 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
     def __init__(self, **kwargs):
         super(WebScrapyStockBase, self).__init__(**kwargs)
-        self.company_group_set = None
-        if kwargs.get("company_group_set", None) is None:
-            self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
-        else:
-            self.company_group_set = kwargs["company_group_set"]
+        # self.is_whole_company_group_set = False
+# CAUTION: The company group set should be determined outside the class, including
+# the market type, and the companies belong to the specific market type
+        self.company_group_set = kwargs.get("company_group_set", None)
+        if self.company_group_set is None:
+            raise ValueError("The company_group_set should NOT be None")
+        # if kwargs.get("company_group_set", None) is None:
+        #     # self.is_whole_company_group_set = True
+        #     self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set(self.COMPANY_MARKET_TYPE)
+        # else:
+        #     self.company_group_set = kwargs["company_group_set"]
         # self.time_slice_kwargs["company_code_number"] = None
         self.new_csv_time_duration_dict = None
         self.scrapy_company_progress_count = 0
         self.company_profile = None
-        self.cur_company_code_number = None # Caution: This value is updated every time when prepare_for_scrapy() is called
+        self.cur_company_code_number = None # Caution: This value is updated every time when _scrape_web_data() is called
 
 
     def __get_company_profile(self):
@@ -139,6 +145,10 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
                 # import pdb; pdb.set_trace()
+# We assume the market type of all the companies in the Company Group Set are correct before trasverse
+                # if self.COMPANY_MARKET_TYPE != CMN.DEF.MARKET_TYPE_NONE and (not self.is_whole_company_group_set):
+                #     if not CompanyGroupSet.WebScrapyCompanyGroupSet.check_company_market_type(company_code_number, self.COMPANY_MARKET_TYPE):
+                #         continue
 # Limit the searching time range from the web site
                 time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SOURCE_TYPE_INDEX, company_code_number)
                 if time_duration_after_lookup_time is None:
@@ -182,9 +192,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                                 self._write_to_csv(csv_filepath, csv_data_list_each_year)
                                 csv_data_list_each_year = []
                             cur_year = timeslice.year
-                        url = self.prepare_for_scrapy(timeslice, company_code_number)
-                        # import pdb;pdb.set_trace()
-                        web_data = self.try_get_web_data(url)
+                        web_data = self._scrape_web_data(timeslice, company_code_number)
                         if len(web_data) == 0:
 # Keep track of the time range in which the web data is empty
                             self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SOURCE_TYPE_INDEX, company_code_number)
@@ -212,11 +220,6 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         return self.new_csv_time_duration_dict
 
 
-    def prepare_for_scrapy(self, timeslice, company_code_number):
-        # raise NotImplementedError
-        self.cur_company_code_number = company_code_number
-
-
     @property
     def CompanyProgressCount(self):
         return self.scrapy_company_progress_count
@@ -225,6 +228,10 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     @abstractmethod
     def assemble_web_url(cls, timeslice, company_code_number, *args):
 # CAUTION: This function MUST be called by the LEAF derived class
+        raise NotImplementedError
+
+
+    def _scrape_web_data(self, timeslice, company_code_number):
         raise NotImplementedError
 
 ##########################################################################
@@ -549,7 +556,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 timeslice_generator_cfg = {"company_code_number": company_code_number, "time_duration_start": time_duration_after_lookup_time.time_duration_start, "time_duration_end": time_duration_after_lookup_time.time_duration_end,}
                 timeslice_iterable = self._get_timeslice_iterable(**timeslice_generator_cfg)      
                 for timeslice in timeslice_iterable:
-                    url = self.prepare_for_scrapy(timeslice, company_code_number)
+                    url = self._scrape_web_data(timeslice, company_code_number)
                     g_logger.debug("Get the statement data from URL: %s" % url)
                     web_data = self.try_get_web_data(url)
 # Find the statement field
@@ -566,12 +573,13 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                         self._insert_not_exist_statement_element(dst_statement_column_field_list, company_statement_column_field_list)
 
 
-    def prepare_for_scrapy(self, timeslice, company_code_number):
+    def _scrape_web_data_internal(self, timeslice, company_code_number):
         # import pdb; pdb.set_trace()
-        super(WebScrapyStockStatementBase, self).prepare_for_scrapy(timeslice, company_code_number)
-        url = self.assemble_web_url(timeslice, company_code_number)
+        self.cur_company_code_number = company_code_number
         self.cur_quarter_str = CMN.FUNC.transform_quarter_str(timeslice.year, timeslice.quarter)
-        return url
+        url = self.assemble_web_url(timeslice, company_code_number)
+        web_data = self.try_get_web_data(url)
+        return web_data
 
 
     def _parse_web_statement_field_data_internal(self, web_data, web_data_start_index, web_data_end_index=None):
@@ -845,7 +853,7 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 data_is_empty = False
                 break
         if data_is_empty:
-            import pdb;pdb.set_trace()
+            # import pdb;pdb.set_trace()
             raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
 # Transforms the table into the 1-Dimension list
         # import pdb;pdb.set_trace()

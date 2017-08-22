@@ -12,11 +12,17 @@ from bs4 import BeautifulSoup
 import libs.common as CMN
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
+COMPANY_MARKET_TYPE_STOCK_EXCHANGE = u"上市"
+COMPANY_MARKET_TYPE_OVER_THE_COUNTER = u"上櫃"
+COMPANY_MARKET_TYPE_DICT = {
+    COMPANY_MARKET_TYPE_STOCK_EXCHANGE: CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE,
+    COMPANY_MARKET_TYPE_OVER_THE_COUNTER: CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER,
+}
 
 COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER = 0
 COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_NAME = 1
 COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE = 3
-COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET = 4
+COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET_TYPE = 4
 COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY = 5
 COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME = 7
 COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER = 8
@@ -274,7 +280,7 @@ class WebScrapyCompanyProfile(object):
             else:
                 company_group_name = company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
                 if company_group_name in LARGE_INDUSTRY_COMPANY_GROUP_LIST:
-                    company_group_name = u"%s-%s" % (company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET])
+                    company_group_name = u"%s-%s" % (company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET_TYPE])
             return company_group_name
 
         str_mode = None
@@ -579,7 +585,7 @@ class WebScrapyCompanyProfile(object):
             else:
                 company_group_name = company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY]
                 if company_group_name in LARGE_INDUSTRY_COMPANY_GROUP_LIST:
-                    company_group_name = u"%s-%s" % (company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET])
+                    company_group_name = u"%s-%s" % (company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY], company_profile[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET_TYPE])
             return company_group_name
 
         group_dict = {}
@@ -644,6 +650,19 @@ class WebScrapyCompanyProfile(object):
     def lookup_company_listing_date(self, company_number):
         COMPANY_PROFILE = self.lookup_company_profile(company_number)
         return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE]
+
+
+    def lookup_company_market_type(self, company_number):
+        COMPANY_PROFILE = self.lookup_company_profile(company_number)
+        return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET_TYPE]
+
+
+    def lookup_company_market_type_index(self, company_number):
+        company_market_type = self.lookup_company_market_type(company_number)
+        company_market_type_index = COMPANY_MARKET_TYPE_DICT.get(company_market_type, None)
+        if company_market_type_index is None:
+            raise ValueError(u"Unknown Company[%s] Market Type: %d", company_number, company_market_type)
+        return company_market_type_index
 
 
     def lookup_company_group_name(self, company_number):

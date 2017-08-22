@@ -29,8 +29,10 @@ class WebScrapyCompanyDealersNetBuyOrSellSummary(WebScrapyMarketBase.WebScrapyMa
         super(WebScrapyCompanyDealersNetBuyOrSellSummary, self).__init__(**kwargs)
 
 
-    def prepare_for_scrapy(self, timeslice):
-        return self.assemble_web_url(timeslice)
+    def _scrape_web_data(self, timeslice):
+        url = self.assemble_web_url(timeslice)
+        web_data = self.try_get_web_data(url)
+        return web_data
 
 
     def _parse_web_data(self, web_data):

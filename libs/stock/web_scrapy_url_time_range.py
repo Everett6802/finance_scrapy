@@ -37,6 +37,7 @@ class WebScrapyURLTimeRange(object):
             CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
             CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
             CMN.CLS.FinanceDate(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
+            CMN.CLS.FinanceDate(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
         ]
         last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)
@@ -46,6 +47,7 @@ class WebScrapyURLTimeRange(object):
             last_url_data_quarter,
             last_url_data_quarter,
             last_url_data_quarter,
+            last_url_data_date,
             last_url_data_date,
         ]
         self.whole_company_group_set = None
@@ -225,12 +227,20 @@ class WebScrapyURLTimeRange(object):
 
 
     def __update_company_time_range(self, company_number, company_group):
+        need_scan = False
         company_time_range_start_ordereddict = self.__read_company_time_range_start_from_config(company_number, company_group)
         if company_time_range_start_ordereddict is None:
             if self.auto_update:
-                company_time_range_start_ordereddict = self.__scan_company_time_range_start(company_number, company_group)
+                need_scan = True
             else:
                 raise CMN.EXCEPTION.WebScrapyNotFoundException("Fail to find the time range in company[%s]" % company_number)
+        else:
+            for source_type_index in self.source_type_index_list:
+                if not company_time_range_start_ordereddict.has_key(source_type_index):
+                    need_scan = True
+                    break
+        if need_scan:
+            company_time_range_start_ordereddict = self.__scan_company_time_range_start(company_number, company_group)
         self.company_data_source_start_time_dict[company_number] = company_time_range_start_ordereddict
 
 
@@ -243,6 +253,7 @@ class WebScrapyURLTimeRange(object):
 
 
     def get_time_range_start_all_dict(self, company_number, company_group=None):
+        # import pdb; pdb.set_trace()
         if not self.company_data_source_start_time_dict.has_key(company_number):
             self.__update_company_time_range(company_number, company_group)
         return  self.company_data_source_start_time_dict[company_number]

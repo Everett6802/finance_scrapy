@@ -55,13 +55,14 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
         return time_duration_after_lookup_time
 
 
-    def prepare_for_scrapy(self, timeslice):
+    def _scrape_web_data(self, timeslice):
         # import pdb; pdb.set_trace()
-        url = self.assemble_web_url(timeslice)
         self.cur_date_str = CMN.FUNC.transform_date_str(timeslice.year, timeslice.month, timeslice.day)
         if self.need_check_everytime:
             self.cur_date = timeslice
-        return url
+        url = self.assemble_web_url(timeslice)
+        web_data = self.try_get_web_data(url)
+        return web_data
 
 
     def _parse_web_data(self, web_data):

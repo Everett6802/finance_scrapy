@@ -79,8 +79,8 @@ class WebScrapyTimeSliceGenerator(object):
 
 
     def __find_company_foreign_investors_shareholder_url_data(self, date_str_for_financial_statement, company_code_number):
-        source_url_parsing_cfg = CMN.DEF.DEF_SOURCE_CONSTANT_CFG[CMN.DEF.DEF_DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SOURCE_INDEX]
-        url = source_url_parsing_cfg["url_format"].format(*(date_str_for_financial_statement[0:4], date_str_for_financial_statement[4:6], date_str_for_financial_statement[6:8], company_code_number))
+        class_constant_cfg = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEF_DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SOURCE_INDEX]
+        url = class_constant_cfg["url_format"].format(*(date_str_for_financial_statement[0:4], date_str_for_financial_statement[4:6], date_str_for_financial_statement[6:8], company_code_number))
         req = None
         exception_for_url = None
         for retry in range(5):
@@ -99,9 +99,9 @@ class WebScrapyTimeSliceGenerator(object):
         if req is None:
             g_logger.error("Fail to get depository shareholder time table, due to: %s" % str(exception_for_url))
             raise ConnectionError
-        req.encoding = source_url_parsing_cfg["url_encoding"]
+        req.encoding = class_constant_cfg["url_encoding"]
         soup = BeautifulSoup(req.text)
-        url_data_selector = source_url_parsing_cfg["url_data_selector"] + ' option'
+        url_data_selector = class_constant_cfg["url_data_selector"] + ' option'
         company_foreign_investors_shareholder_url_data = soup.select(url_data_selector)
         return company_foreign_investors_shareholder_url_data
 

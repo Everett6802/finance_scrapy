@@ -1,9 +1,11 @@
 # -*- coding: utf8 -*-
 
 import collections
+import threading
 import libs.common as CMN
 import web_scrapy_company_profile as CompanyProfile
 g_logger = CMN.WSL.get_web_scrapy_logger()
+g_lock = threading.Lock()
 
 
 class WebScrapyCompanyGroupSet(object):
@@ -11,6 +13,10 @@ class WebScrapyCompanyGroupSet(object):
     company_profile = None
     whole_company_number_in_group_dict = None
     whole_company_number_list = None
+    whole_stock_exchange_company_number_in_group_dict = None
+    whole_stock_exchange_company_number_list = None
+    whole_over_the_counter_company_number_in_group_dict = None
+    whole_over_the_counter_company_number_list = None
 
     def __init__(self):
         self.company_number_in_group_dict = None
@@ -18,6 +24,7 @@ class WebScrapyCompanyGroupSet(object):
         self.is_add_done = False
         self.check_company_exist = True
         self.company_amount = None
+        self.market_type = CMN.DEF.MARKET_TYPE_NONE
 
 
     @classmethod
@@ -28,43 +35,114 @@ class WebScrapyCompanyGroupSet(object):
 
 
     @classmethod
-    def __init_whole_company_number_in_group_dict(cls):
-        assert (cls.whole_company_number_in_group_dict == None), "whole_company_number_in_group_dict is NOT None"
-
-        if cls.whole_company_number_in_group_dict is None:
-            cls.whole_company_number_in_group_dict = {}
-            company_group_size = cls.__get_company_profile().CompanyGroupSize;
-            for company_group_index in range(company_group_size):
-                company_number_list = []
-                for entry in cls.__get_company_profile().group_iterator(company_group_index):
-                    company_number_list.append(entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
-                cls.whole_company_number_in_group_dict[company_group_index] = company_number_list
-        return cls.whole_company_number_in_group_dict
+    def check_company_market_type(cls, company_code_number, market_type):
+        return (True if (cls.__get_company_profile().lookup_company_market_type_index(company_code_number) == market_type) else False)
 
 
     @classmethod
-    def __init_whole_company_number_list(cls):
-        assert (cls.whole_company_number_list == None), "whole_company_number_list is NOT None"
+    def __init_whole_company_number_in_group_dict(cls, market_type=CMN.DEF.MARKET_TYPE_NONE):
+        whole_company_number_in_group_dict = None
+        if market_type == CMN.DEF.MARKET_TYPE_NONE:
+            assert (cls.whole_company_number_in_group_dict == None), "whole_company_number_in_group_dict is NOT None"
+            whole_company_number_in_group_dict = cls.whole_company_number_in_group_dict = {}
+        elif market_type == CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE:
+            assert (cls.whole_stock_exchange_company_number_in_group_dict == None), "whole_company_number_in_group_dict is NOT None"
+            whole_company_number_in_group_dict = cls.whole_stock_exchange_company_number_in_group_dict = {}
+        elif market_type == CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER:
+            assert (cls.whole_over_the_counter_company_number_in_group_dict == None), "whole_company_number_in_group_dict is NOT None"
+            whole_company_number_in_group_dict = cls.whole_over_the_counter_company_number_in_group_dict = {}
+        else:
+            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("Unknown market type: %d" % market_type)
+#Traverse the whole company
+        company_group_size = cls.__get_company_profile().CompanyGroupSize;
+        for company_group_index in range(company_group_size):
+            company_number_list = []
+            for entry in cls.__get_company_profile().group_iterator(company_group_index):
+                company_code_number = entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]
+                if market_type != CMN.DEF.MARKET_TYPE_NONE:
+                    if not self.check_company_market_type(company_code_number, market_type):
+                    # if self.__get_company_profile().lookup_company_market_type_index(company_code_number) != market_type:
+                        continue
+                company_number_list.append(company_code_number)
+            whole_company_number_in_group_dict[company_group_index] = company_number_list
 
-        cls.whole_company_number_list = [];
+
+    @classmethod
+    def __init_whole_company_number_list(cls, market_type=CMN.DEF.MARKET_TYPE_NONE):
+        whole_company_number_list = None
+        if market_type == CMN.DEF.MARKET_TYPE_NONE:
+            assert (cls.whole_company_number_list == None), "whole_company_number_list is NOT None"
+            whole_company_number_list = cls.whole_company_number_list = []
+        elif market_type == CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE:
+            assert (cls.whole_stock_exchange_company_number_list == None), "whole_company_number_list is NOT None"
+            whole_company_number_list = cls.whole_stock_exchange_company_number_list = []
+        elif market_type == CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER:
+            assert (cls.whole_over_the_counter_company_number_list == None), "whole_company_number_in_group_dict is NOT None"
+            whole_company_number_list = cls.whole_over_the_counter_company_number_list = []
+        else:
+            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("Unknown market type: %d" % market_type)
+#Traverse the whole company
         for entry in cls.__get_company_profile().iterator():
-            cls.whole_company_number_list.append(entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER])
+            company_code_number = entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]
+            if market_type != CMN.DEF.MARKET_TYPE_NONE:
+                if not self.check_company_market_type(company_code_number, market_type):
+                # if self.__get_company_profile().lookup_company_market_type_index(company_code_number) != market_type:
+                    continue
+            whole_company_number_list.append(company_code_number)
 
 
     @classmethod
-    def get_whole_company_number_in_group_dict(cls):
+    def get_whole_company_number_in_group_dict(cls, market_type=CMN.DEF.MARKET_TYPE_NONE):
         # import pdb; pdb.set_trace()
-        if cls.whole_company_number_in_group_dict is None:
-            cls.__init_whole_company_number_in_group_dict()
-        return cls.whole_company_number_in_group_dict
+        whole_company_number_in_group_dict = None
+        if market_type == CMN.DEF.MARKET_TYPE_NONE:
+            if cls.whole_company_number_in_group_dict is None:
+                with g_lock:
+                    if cls.whole_company_number_in_group_dict is None:
+                        cls.__init_whole_company_number_in_group_dict(market_type)
+            whole_company_number_in_group_dict = cls.whole_company_number_in_group_dict
+        elif market_type == CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE:
+            if cls.whole_stock_exchange_company_number_in_group_dict is None:
+                with g_lock:
+                    if cls.whole_stock_exchange_company_number_in_group_dict is None:
+                        cls.__init_whole_company_number_in_group_dict(market_type)
+            whole_company_number_in_group_dict = cls.whole_stock_exchange_company_number_in_group_dict
+        elif market_type == CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER:
+            if cls.whole_over_the_counter_company_number_in_group_dict is None:
+                with g_lock:
+                    if cls.whole_over_the_counter_company_number_in_group_dict is None:
+                        cls.__init_whole_company_number_in_group_dict(market_type)
+            whole_company_number_in_group_dict = cls.whole_over_the_counter_company_number_in_group_dict
+        else:
+            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("Unknown market type: %d" % market_type)
+        return whole_company_number_in_group_dict
 
 
     @classmethod
-    def get_whole_company_number_list(cls):
+    def get_whole_company_number_list(cls, market_type=CMN.DEF.MARKET_TYPE_NONE):
         # import pdb; pdb.set_trace()
-        if cls.whole_company_number_list is None:
-            cls.__init_whole_company_number_list()
-        return cls.whole_company_number_list
+        whole_company_number_list = None
+        if market_type == CMN.DEF.MARKET_TYPE_NONE:
+            if cls.whole_company_number_list is None:
+                with g_lock:
+                    if cls.whole_company_number_list is None:
+                        self.__init_whole_company_number_list(market_type)
+            whole_company_number_list = cls.whole_company_number_list
+        elif market_type == CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE:
+            if cls.whole_stock_exchange_company_number_list is None:
+                with g_lock:
+                    if cls.whole_stock_exchange_company_number_list is None:
+                        self.__init_whole_company_number_list(market_type)
+            whole_company_number_list = cls.whole_stock_exchange_company_number_list
+        elif market_type == CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER:
+            if cls.whole_over_the_counter_company_number_list is None:
+                with g_lock:
+                    if cls.whole_over_the_counter_company_number_list is None:
+                        self.__init_whole_company_number_list(market_type)
+            whole_company_number_list = cls.whole_over_the_counter_company_number_in_group_dict
+        else:
+            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("Unknown market type: %d" % market_type)
+        return whole_company_number_list
 
 
     @classmethod
@@ -81,6 +159,25 @@ class WebScrapyCompanyGroupSet(object):
         return self.altered_company_number_in_group_dict.items()
 
 
+    def set_market_type(self, new_market_type):
+        if self.is_add_done:
+            g_logger.error("The add_done flag has already been set to True");
+            raise RuntimeError("The add_done flag has already been set to True")
+        self.market_type = new_market_type
+        g_logger.debug("Switch the market type: %d" % self.market_type)
+
+
+    def get_market_type(self):
+        if not self.is_add_done:
+            g_logger.error("The add_done flag is NOT set to True");
+            raise RuntimeError("The add_done flag is NOT set to True")
+        return self.market_type
+
+
+    def disable_market_type(self):
+        self.set_market_type(CMN.DEF.MARKET_TYPE_NONE)
+
+
     def add_company_in_group_list(self, company_group_number, company_code_number_in_group_list):
         if self.is_add_done:
             g_logger.error("The add_done flag has already been set to True");
@@ -93,7 +190,6 @@ class WebScrapyCompanyGroupSet(object):
             if self.company_number_in_group_dict[company_group_number] is None:
                 g_logger.error("The company group[%d] has already been set to NULL" % company_group_number)
                 raise ValueError("The company group[%d] has already been set to NULL" % company_group_number)
-
         for company_code_number in company_code_number_in_group_list:
             # import pdb; pdb.set_trace()
             if self.check_company_exist:
@@ -103,6 +199,11 @@ class WebScrapyCompanyGroupSet(object):
             if company_code_number in self.company_number_in_group_dict[company_group_number]:
                 g_logger.warn("The company code number[%s] has already been added to the group[%s]" % (str(company_code_number), str(company_group_number)))
                 continue
+            if self.market_type != CMN.DEF.MARKET_TYPE_NONE:
+                if not self.check_company_market_type(company_code_number, self.market_type):
+                # if self.__get_company_profile().lookup_company_market_type_index(company_code_number) != self.market_type:
+                    g_logger.warn("The market type of company code number[%s] is NOT %d" % (str(company_code_number), self.market_type))
+                    continue
             self.company_number_in_group_dict[company_group_number].append(company_code_number)
 
 
@@ -145,7 +246,6 @@ class WebScrapyCompanyGroupSet(object):
         if self.is_add_done:
             g_logger.error("The add_done flag has already been set to True");
             raise RuntimeError("The add_done flag has already been set to True")
-
         self.__setup_for_traverse()
         self.is_add_done = True
 
@@ -162,11 +262,11 @@ class WebScrapyCompanyGroupSet(object):
 
     def __setup_for_traverse(self):
         if self.company_number_in_group_dict is None:
-            self.altered_company_number_in_group_dict = self.get_whole_company_number_in_group_dict()
+            self.altered_company_number_in_group_dict = self.get_whole_company_number_in_group_dict(self.market_type)
         else:
             self.altered_company_number_in_group_dict = {}
             for key, value in self.company_number_in_group_dict.items():
-                self.altered_company_number_in_group_dict[key] = value if (value is not None) else (self.get_whole_company_number_in_group_dict())[key]
+                self.altered_company_number_in_group_dict[key] = value if (value is not None) else (self.get_whole_company_number_in_group_dict(self.market_type))[key]
 
 
     @property
@@ -191,6 +291,28 @@ class WebScrapyCompanyGroupSet(object):
                 for company_number in company_number_list:
                     company_amount += 1
         return company_amount
+
+
+    def get_sub_company_group_set_in_market_type(self, market_type):
+        if not self.is_add_done:
+            g_logger.error("The add_done flag is NOT set to True");
+            raise RuntimeError("The add_done flag is NOT set to True")
+        if self.market_type != CMN.DEF.MARKET_TYPE_NONE:
+            raise ValueError("The type of the company group set should be MARKET_TYPE_NODE")
+        if market_type == CMN.DEF.MARKET_TYPE_NONE:
+            raise ValueError("The type of the sub company group set should be NOT MARKET_TYPE_NODE")  
+        sub_company_group_set = WebScrapyCompanyGroupSet()
+        for company_group_number, company_code_number_list in self.altered_company_number_in_group_dict.items():
+            company_code_number_in_group_array = [] 
+            for company_code_number in company_code_number_list:
+                if not self.check_company_market_type(company_code_number, market_type):
+                    continue
+                company_code_number_in_group_array.append(company_code_number)
+            sub_company_group_set.add_company_in_group_list(company_group_number, company_code_number_in_group_array)
+# No need to set market type, since all the companies of a specific market type are selected 
+        # sub_company_group_set.set_market_type(market_type)
+        sub_company_group_set.add_done()
+        return sub_company_group_set
 
 
     def get_sub_company_group_set_list(self, sub_company_group_set_amount):

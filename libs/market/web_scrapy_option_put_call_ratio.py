@@ -39,7 +39,7 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
     #     return (finance_time_start.get_finance_month_object(), finance_time_end.get_finance_month_object())
 
 
-    def prepare_for_scrapy(self, timeslice):
+    def _scrape_web_data(self, timeslice):
 # Check if it's no need to acquire the whole month data in this month
         assert isinstance(timeslice, CMN.CLS.FinanceMonth), "The input time duration time unit is %s, not FinanceMonth" % type(timeslice)
         try:
@@ -57,7 +57,8 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
             end_day_in_month = CMN.FUNC.get_month_last_day(timeslice.year, timeslice.month)
             url = self.assemble_web_url(timeslice, 1, end_day_in_month)
             self.whole_month_data = True
-        return url
+        web_data = self.try_get_web_data(url)
+        return web_data
 
 
     def _parse_web_data(self, web_data):

@@ -249,7 +249,7 @@ class WebScrapyBase(object):
     PARSE_URL_DATA_FUNC_PTR = None
 # Find corresponding config of the module
     SOURCE_TYPE_INDEX = None
-    CONSTANT_CFG = None
+    CLASS_CONSTANT_CFG = None
     URL_TIME_UNIT = None
     URL_FORMAT = None
     URL_PARSING_METHOD = None
@@ -257,6 +257,7 @@ class WebScrapyBase(object):
     TIMESLICE_TIME_UNIT = None
     NEED_FIRST_WEB_DATA_TIME = None
     CAN_FIND_TIME_RANGE_START = None
+    COMPANY_MARKET_TYPE = None
 
     @classmethod
     def __select_web_data_by_bs4(cls, url_data, parse_url_data_type_cfg):
@@ -327,22 +328,24 @@ class WebScrapyBase(object):
             else:
                 cls.SOURCE_TYPE_INDEX = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index(cls.__name__)
 # Find corresponding config of the module
-            if cls.CONSTANT_CFG is None:
-                cls.CONSTANT_CFG = CMN.DEF.DEF_SOURCE_CONSTANT_CFG[cls.SOURCE_TYPE_INDEX]
+            if cls.CLASS_CONSTANT_CFG is None:
+                cls.CLASS_CONSTANT_CFG = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[cls.SOURCE_TYPE_INDEX]
             if cls.URL_FORMAT is None:
-                cls.URL_FORMAT = cls.CONSTANT_CFG["url_format"]
+                cls.URL_FORMAT = cls.CLASS_CONSTANT_CFG["url_format"]
             if cls.URL_TIME_UNIT is None:
-                cls.URL_TIME_UNIT = cls.CONSTANT_CFG["url_time_unit"]
+                cls.URL_TIME_UNIT = cls.CLASS_CONSTANT_CFG["url_time_unit"]
             if cls.URL_PARSING_METHOD is None:
-                cls.URL_PARSING_METHOD = cls.CONSTANT_CFG["url_parsing_method"]
+                cls.URL_PARSING_METHOD = cls.CLASS_CONSTANT_CFG["url_parsing_method"]
             if cls.TIMESLICE_GENERATE_METHOD is None:
-                cls.TIMESLICE_GENERATE_METHOD = cls.CONSTANT_CFG["timeslice_generate_method"]
+                cls.TIMESLICE_GENERATE_METHOD = cls.CLASS_CONSTANT_CFG["timeslice_generate_method"]
             if cls.TIMESLICE_TIME_UNIT is None:
                 cls.TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[cls.TIMESLICE_GENERATE_METHOD]
             if cls.NEED_FIRST_WEB_DATA_TIME is None:
                 cls.NEED_FIRST_WEB_DATA_TIME = hasattr(cls, "get_first_web_data_time")
             if cls.CAN_FIND_TIME_RANGE_START is None:
                 cls.CAN_FIND_TIME_RANGE_START = hasattr(cls, "find_time_range_start")
+            if cls.COMPANY_MARKET_TYPE:
+                cls.COMPANY_MARKET_TYPE = cls.CLASS_CONSTANT_CFG.get("company_group_market_type", None)
 
             g_logger.info(
                 u"*****The constants are initialized in %s ***** URL_FORMAT: %s; URL_TIME_UNIT: %d; URL_PARSING_METHOD: %d; TIMESLICE_GENERATE_METHOD: %d; TIMESLICE_TIME_UNIT: %d",
@@ -376,7 +379,7 @@ class WebScrapyBase(object):
         # req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
         req = CMN.FUNC.request_from_url_and_check_return(url)
         cls.pre_check_web_data(req)
-        web_data = (cls.PARSE_URL_DATA_FUNC_PTR[cls.URL_PARSING_METHOD])(req, cls.CONSTANT_CFG)
+        web_data = (cls.PARSE_URL_DATA_FUNC_PTR[cls.URL_PARSING_METHOD])(req, cls.CLASS_CONSTANT_CFG)
         assert (web_data is not None), "web_data should NOT be None"
         cls.post_check_web_data(web_data)
         return web_data

@@ -11,11 +11,8 @@ from libs import common as CMN
 from libs import base as BASE
 g_mgr = None
 g_logger = CMN.WSL.get_web_scrapy_logger()
-
-
-import libs.stock.web_scrapy_url_time_range as URLTimeRange
-
 param_cfg = {}
+
 
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
@@ -608,10 +605,6 @@ if __name__ == "__main__":
 # Try to scrap the web data
     if not param_cfg["no_scrap"]:
         do_scrap()
-    # error_found = False
-# # Check if all the csv files are created
-#     if not param_cfg["no_check"]:
-#         error_found = do_check()
 # Clone the csv files if necessary
     if param_cfg["clone"]:
         if not g_mgr.NoScrapyCSVFound:

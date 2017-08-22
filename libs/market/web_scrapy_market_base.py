@@ -143,9 +143,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
                         self._write_to_csv(csv_filepath, csv_data_list_each_year)
                         csv_data_list_each_year = []
                     cur_year = timeslice.year
-                url = self.prepare_for_scrapy(timeslice)
-                # import pdb;pdb.set_trace()
-                web_data = self.try_get_web_data(url)
+                web_data = self._scrape_web_data(timeslice)
                 if len(web_data) == 0:
 # Keep track of the time range in which the web data is empty
                     self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SOURCE_TYPE_INDEX)
@@ -191,5 +189,5 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         raise NotImplementedError
 
 
-    def prepare_for_scrapy(self, timeslice):
+    def _scrape_web_data(self, timeslice):
         raise NotImplementedError
