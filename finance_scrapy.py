@@ -13,7 +13,6 @@ g_mgr = None
 g_logger = CMN.WSL.get_web_scrapy_logger()
 param_cfg = {}
 
-
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
@@ -30,21 +29,24 @@ def show_usage_and_exit():
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
-    print "--source_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/source_from_xxx_file/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
-    print "--source_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
-    print "--source_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
-    print "--source_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
-    print "-s --source\nDescription: The list of the finance data sources\nDefault: All finance data sources\nCaution: Only work when source_from_file is NOT set"
-    source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
-    for source_type_index in source_type_index_list:
-        print "  %d: %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index])
-    print "  Format 1: Source type (ex. 1,3,5)"
-    print "  Format 2: Source type range (ex. 2-6)"
-    print "  Format 3: Source type/type range hybrid (ex. 1,3-4,6)"
-    print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
-    print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
-    print "--time_duration_range_all\nDescription: The data in the all time range of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
-    print "--time_duration_range\nDescription: The data in the time range of the selected finance data source\nCaution: Only work when source_from_file is NOT set"
+    print "--method_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/source_from_xxx_file/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
+    print "--method_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
+    print "--method_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
+    print "--method_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
+    print "--method\nDescription: The list of the finance data sources\nDefault: All finance data sources\nCaution: Only work when method_from_file is NOT set"
+    # source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
+    # for source_type_index in source_type_index_list:
+    #     print "  %d: %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index])
+    method_index_list = CMN.FUNC.get_method_index_range_list()
+    for method_index in method_index_list:
+        print "  %d: %s" % (method_index, CMN.DEF.DEF_WEB_SCRAPY_METHOD_DESCRIPTION[method_index])
+    print "  Format 1: Method (ex. 1,3,5)"
+    print "  Format 2: Method range (ex. 2-6)"
+    print "  Format 3: Method/Method range hybrid (ex. 1,3-4,6)"
+    print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only work when method_from_file is NOT set"
+    print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only work when method_from_file is NOT set"
+    print "--time_duration_range_all\nDescription: The data in the all time range of the selected finance data source\nCaution: Only work when method_from_file is NOT set"
+    print "--time_duration_range\nDescription: The data in the time range of the selected finance data source\nCaution: Only work when method_from_file is NOT set"
     print "  Format 1 (start_time): 2015-01-01"
     print "  Format 2 (,end_time): ,2015-01-01"
     print "  Format 3 (start_time,end_time): 2015-01-01,2015-09-04"
@@ -201,11 +203,11 @@ def init_param():
     param_cfg["reserve_old"] = False
     param_cfg["dry_run"] = False
     param_cfg["finance_folderpath"] = None
-    param_cfg['source_from_all_time_range_default_file'] = False
-    param_cfg["source"] = None
+    param_cfg['method_from_all_time_range_default_file'] = False
+    param_cfg["method_from_file"] = None
+    param_cfg["method"] = None
     param_cfg["time_duration_type"] = None # Should be check in check_param()
     param_cfg["time_duration_range"] = None
-    param_cfg["source_from_file"] = None
     param_cfg["company_list_in_default_folderpath"] = False
     param_cfg["company_list_in_folderpath"] = None
     param_cfg["company"] = None
@@ -270,25 +272,24 @@ def parse_param():
         elif re.match("--finance_folderpath", sys.argv[index]):
             param_cfg["finance_folderpath"] = sys.argv[index + 1]
             index_offset = 2
-        elif re.match("--source_from_all_time_range_default_file", sys.argv[index]):
-            param_cfg["source_from_all_time_range_default_file"] = True
+        elif re.match("--method_from_all_time_range_default_file", sys.argv[index]):
+            param_cfg["method_from_all_time_range_default_file"] = True
             param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 1
-        elif re.match("--source_from_today_file", sys.argv[index]):
-            param_cfg["source_from_file"] = sys.argv[index + 1]
+        elif re.match("--method_from_today_file", sys.argv[index]):
+            param_cfg["method_from_file"] = sys.argv[index + 1]
             param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
             index_offset = 2
-        elif re.match("--source_from_last_file", sys.argv[index]):
-            param_cfg["source_from_file"] = sys.argv[index + 1]
+        elif re.match("--method_from_last_file", sys.argv[index]):
+            param_cfg["method_from_file"] = sys.argv[index + 1]
             param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
             index_offset = 2
-        elif re.match("--source_from_time_range_file", sys.argv[index]):
-            param_cfg["source_from_file"] = sys.argv[index + 1]
+        elif re.match("--method_from_time_range_file", sys.argv[index]):
+            param_cfg["method_from_file"] = sys.argv[index + 1]
             param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 2
-        elif re.match("(-s|--source)", sys.argv[index]):
-            param_cfg["source"] = sys.argv[index + 1]
-            g_logger.debug("Param source: %s", param_cfg["source"])
+        elif re.match("--method", sys.argv[index]):
+            param_cfg["method"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--time_today", sys.argv[index]):
             if param_cfg["time_duration_type"] is not None:
@@ -352,20 +353,20 @@ def parse_param():
 
 
 def check_param():
-    if param_cfg["source_from_all_time_range_default_file"]:
-        if param_cfg["source_from_file"] is not None:
-            show_warn("The 'source_from_file' argument is ignored since 'source_from_all_time_range_default_file' is set")
+    if param_cfg["method_from_all_time_range_default_file"]:
+        if param_cfg["method_from_file"] is not None:
+            show_warn("The 'method_from_file' argument is ignored since 'method_from_all_time_range_default_file' is set")
         if CMN.DEF.IS_FINANCE_MARKET_MODE:
-            param_cfg["source_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
+            param_cfg["method_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
         elif CMN.DEF.IS_FINANCE_STOCK_MODE:
-            param_cfg["source_from_file"] = CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
-    if param_cfg["source_from_file"] is not None:
-        if param_cfg["source"] is not None:
-            param_cfg["source"] = None
-            show_warn("The 'source' argument is ignored since 'source_from_file' is set")
+            param_cfg["method_from_file"] = CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
+    if param_cfg["method_from_file"] is not None:
+        if param_cfg["method"] is not None:
+            param_cfg["method"] = None
+            show_warn("The 'method' argument is ignored since 'method_from_file' is set")
         # if param_cfg["time_duration_type"] is not None:
         #     param_cfg["time_duration_type"] = None
-        #     show_warn("The 'time_duration' argument is ignored since 'source_from_file' is set")
+        #     show_warn("The 'time_duration' argument is ignored since 'method_from_file' is set")
     if param_cfg["time_duration_type"] is None:
         param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
         show_warn("Set the 'time_duration_type' argument to DATA_TIME_DURATION_TODAY as default")        
@@ -415,20 +416,23 @@ def check_param():
 
 
 def setup_param():
+    # import pdb; pdb.set_trace()
 # Set source type and time range
-    if param_cfg["source_from_file"] is not None:
-        g_mgr.set_source_type_time_duration_from_file(param_cfg["source_from_file"], param_cfg["time_duration_type"])
+    if param_cfg["method_from_file"] is not None:
+        g_mgr.set_source_type_time_duration_from_file(param_cfg["method_from_file"], param_cfg["time_duration_type"])
     else:
 # Set source type
-        source_type_index_list = None
-        if param_cfg["source"] is not None:
-            source_type_index_str_list = param_cfg["source"].split(",")
-            source_type_index_list = []
+        method_index_list = None
+        if param_cfg["method"] is not None:
+            method_index_str_list = param_cfg["method"].split(",")
+            total_source_type_index_list = []
             # import pdb; pdb.set_trace()
-            for source_type_index_str in source_type_index_str_list:
-                mobj = re.match("([\d]+)-([\d]+)", source_type_index_str)
+            for method_index_str in method_index_str_list:
+                mobj = re.match("([\d]+)-([\d]+)", method_index_str)
                 if mobj is not None:
-                    source_type_start_index = int(mobj.group(1))
+                    method_start_index = int(mobj.group(1))
+                    source_type_start_index_list = CMN.FUNC.get_source_type_index_list_from_method_index(method_start_index)
+                    source_type_start_index = min(source_type_start_index_list)
                     start_index_in_range = False
                     if param_cfg["renew_statement_field"]:
                         start_index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_start_index)
@@ -437,7 +441,9 @@ def setup_param():
                     if not start_index_in_range:
                         errmsg = "Unsupported source type index: %d" % source_type_start_index
                         show_error_and_exit(errmsg)
-                    source_type_end_index = int(mobj.group(2))
+                    method_end_index = int(mobj.group(2))
+                    source_type_end_index_list = CMN.FUNC.get_source_type_index_list_from_method_index(method_end_index)
+                    source_type_end_index = max(source_type_end_index_list)
                     end_index_in_range = False
                     if param_cfg["renew_statement_field"]:
                         end_index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_end_index)
@@ -447,18 +453,19 @@ def setup_param():
                         errmsg = "Unsupported source type index: %d" % source_type_end_index
                         show_error_and_exit(errmsg)
                     for source_type_index in range(source_type_start_index, source_type_end_index + 1):
-                        source_type_index_list.append(source_type_index)
+                        total_source_type_index_list.append(source_type_index)
                 else:
-                    source_type_index = int(source_type_index_str)
-                    index_in_range = False
-                    if param_cfg["renew_statement_field"]:
-                        index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_index)
-                    else:
-                        index_in_range = CMN.FUNC.check_source_type_index_in_range(source_type_index)
-                    if not index_in_range:
-                        errmsg = "Unsupported source type index: %d" % source_type_index
-                        show_error_and_exit(errmsg)
-                    source_type_index_list.append(source_type_index)
+                    source_type_index_list = CMN.FUNC.get_source_type_index_list_from_method_index(int(method_index_str))
+                    for source_type_index in source_type_index_list:
+                        index_in_range = False
+                        if param_cfg["renew_statement_field"]:
+                            index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_index)
+                        else:
+                            index_in_range = CMN.FUNC.check_source_type_index_in_range(source_type_index)
+                        if not index_in_range:
+                            errmsg = "Unsupported source type index: %d" % source_type_index
+                            show_error_and_exit(errmsg)
+                        total_source_type_index_list.append(source_type_index)
 # Set time range
         time_range_start = None
         time_range_end = None
@@ -477,7 +484,7 @@ def setup_param():
                     errmsg = "Incorrect time range format: %s" % param_cfg["time_duration_range"]
                     show_error_and_exit(errmsg)
         # import pdb; pdb.set_trace()
-        g_mgr.set_source_type_time_duration(source_type_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
+        g_mgr.set_source_type_time_duration(total_source_type_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
 
     if CMN.DEF.IS_FINANCE_STOCK_MODE:
 # Set company list. For stock mode only
@@ -543,16 +550,14 @@ def do_clone():
 
 
 if __name__ == "__main__":
-    # import pdb; pdb.set_trace()
+#    import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
     parse_param()
-
     if param_cfg["update_workday_calendar"]:
         update_workday_calendar_and_exit()
     if param_cfg["show_command_example"]:
         show_command_example_and_exit()
-
 # Determine the mode and initialize the manager class
     if param_cfg["finance_mode"] is None:
         CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()

@@ -387,35 +387,40 @@ DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG = [
 # Stock End
 ]
 
-DEF_DATA_SOURCE_INDEX_MAPPING = [cfg["description"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG
+DEF_WEB_SCRAPY_MARKET_METHOD_DESCRIPTION = [
 # Market Start
+    u'臺股指數及成交量',
+    u'三大法人現貨買賣超',
+    u'現貨融資融券餘額',
+    u'三大法人期貨和選擇權留倉淨額',
+    u'三大法人期貨或選擇權留倉淨額',
+    u'三大法人選擇權買賣權留倉淨額',
+    u'三大法人選擇權賣權買權比',
+    u'十大交易人及特定法人期貨資訊',
 # Market End
-###############################################################################
-# Stock Start    
-    # u'三大法人上市個股買賣超彙總',
-    # u'三大法人上櫃個股買賣超彙總',
-    # u'外資及陸資上市個股投資持股統計',
-    # u'外資及陸資買賣超彙總',
-    # u'投信買賣超彙總',
-    # u'自營商買賣超彙總',
+]
+DEF_WEB_SCRAPY_STOCK_METHOD_DESCRIPTION = [
+# Stock Start
+    u'個股集保戶股權分散表',
+    u'資產負債表',
+    u'損益表',
+    u'現金流量表',
+    u'股東權益變動表',
+    u'個股日股價及成交量',
 # Stock End
 ]
+DEF_WEB_SCRAPY_METHOD_DESCRIPTION = DEF_WEB_SCRAPY_MARKET_METHOD_DESCRIPTION + DEF_WEB_SCRAPY_STOCK_METHOD_DESCRIPTION
+# Semi-open interval
+DEF_MARKET_METHOD_START = 0
+DEF_MARKET_METHOD_END = len(DEF_WEB_SCRAPY_MARKET_METHOD_DESCRIPTION)
+DEF_STOCK_METHOD_START = DEF_MARKET_METHOD_END
+DEF_STOCK_METHOD_END = len(DEF_WEB_SCRAPY_METHOD_DESCRIPTION)
+
+DEF_DATA_SOURCE_INDEX_MAPPING = [cfg["description"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG]
 DEF_DATA_SOURCE_INDEX_MAPPING_LEN = len(DEF_DATA_SOURCE_INDEX_MAPPING)
 
 DEF_WEB_SCRAPY_MODULE_NAME_PREFIX = "web_scrapy_"
-DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [cfg["module_name"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG
-# Market Start
-# Market End
-###############################################################################
-# Stock Start
-    # "company_stock_top3_legal_persons_net_buy_and_sell_summary",
-    # "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
-    # "company_foreign_investors_shareholder",
-    # "company_foreign_investors_net_buy_and_sell_summary",
-    # "company_investment_trust_net_buy_and_sell_summary",
-    # "company_dealers_net_buy_and_sell_summary",
-# Stock End
-]
+DEF_WEB_SCRAPY_MODULE_NAME_MAPPING = [cfg["module_name"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG]
 DEF_WEB_SCRAPY_MODULE_NAME_MAPPING_LEN = len(DEF_WEB_SCRAPY_MODULE_NAME_MAPPING)
 
 DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING = [cfg["module_folder"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG]
@@ -432,19 +437,7 @@ DEF_DATA_SOURCE_STOCK_STATMENT_END = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("s
 
 # DEF_DATA_SOURCE_STATEMENT_OF_CHANGES_IN_EQUITY_INDEX = DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity")
 
-DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [cfg["class_name"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG
-# Market Start
-# Market End
-###############################################################################
-# Stock Start
-    # "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
-    # "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
-    # "WebScrapyCompanyForeignInvestorsShareholder",
-    # "WebScrapyCompanyForeignInvestorsNetBuyOrSellSummary",
-    # "WebScrapyCompanyInvestmentTrustNetBuyOrSellSummary",
-    # "WebScrapyCompanyDealersNetBuyOrSellSummary",
-# Stock End
-]
+DEF_WEB_SCRAPY_CLASS_NAME_MAPPING = [cfg["class_name"] for cfg in DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG]
 
 DEF_WORKDAY_CANLENDAR_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
 # DEF_WORKDAY_CANLENDAR_SOURCE_INDEX = DEF_WEB_SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyOptionPutCallRatio")

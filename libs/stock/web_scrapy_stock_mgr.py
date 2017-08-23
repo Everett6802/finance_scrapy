@@ -242,8 +242,6 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def _scrap_single_source_data(self, source_type_time_duration):
         # import pdb;pdb.set_trace()
-        # if self.company_group_set is None:
-        #     self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
 # Setup the time duration configuration for the scrapy object
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
@@ -271,8 +269,6 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if not CMN.FUNC.check_statement_source_type_index_in_range(source_type_time_duration.source_type_index):
             raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (source_type_time_duration.source_type_index, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_END))
         # import pdb;pdb.set_trace()
-        # if self.company_group_set is None:
-        #     self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
 # Setup the time duration configuration for the scrapy object
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         # scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict

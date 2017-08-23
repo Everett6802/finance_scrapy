@@ -209,7 +209,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 # Append the old CSV data after the new web data if necessary
                     web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 # Increase the progress count
-            self.scrapy_company_progress_count += 1
+                self.scrapy_company_progress_count += 1
 # Parse csv file status
         self._parse_csv_file_status_to_string_list()
 

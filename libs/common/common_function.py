@@ -122,6 +122,14 @@ def get_source_type_index_range():
     raise RuntimeError("Unknown finance mode")
 
 
+def get_method_index_range():
+    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+        return (CMN_DEF.DEF_MARKET_METHOD_START, CMN_DEF.DEF_MARKET_METHOD_END)
+    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+        return (CMN_DEF.DEF_STOCK_METHOD_START, CMN_DEF.DEF_STOCK_METHOD_END)
+    raise RuntimeError("Unknown finance mode")
+
+
 def get_source_type_size():
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
         return CMN_DEF.DEF_DATA_SOURCE_MARKET_SIZE
@@ -141,6 +149,21 @@ def get_source_type_index_from_description(source_type_description, ignore_excep
     return source_type_index
 
 
+def get_source_type_index_list_from_method_description(method_description):
+    source_type_index_list = []
+    for source_type_index, class_constant_cfg in enumerate(CMN_DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG):
+        if re.search(method_description, class_constant_cfg["description"], re.U):
+            source_type_index_list.append(source_type_index)
+    if len(source_type_index_list) == 0:
+        raise ValueError("Unknown method description: %s" % method_description)
+    return source_type_index_list
+
+
+def get_source_type_index_list_from_method_index(method_index):
+    method_description = CMN_DEF.DEF_WEB_SCRAPY_METHOD_DESCRIPTION[method_index]
+    return get_source_type_index_list_from_method_description(method_description)
+
+
 def get_source_type_index_range_list():
     source_type_index_list = []
     (source_type_start_index, source_type_end_index) = get_source_type_index_range()
@@ -148,6 +171,15 @@ def get_source_type_index_range_list():
     for index in range(source_type_start_index, source_type_end_index):
         source_type_index_list.append(index)
     return source_type_index_list
+
+
+def get_method_index_range_list():
+    method_index_list = []
+    (method_start_index, method_end_index) = get_method_index_range()
+# Semi-open interval
+    for index in range(method_start_index, method_end_index):
+        method_index_list.append(index)
+    return method_index_list
 
 
 def is_republic_era_year(year_value):
@@ -470,7 +502,8 @@ def read_source_type_time_duration_config_file(conf_filename, time_duration_type
         param_list = line.split(' ')
         param_list_len = len(param_list)
         # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
-        source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
+        # source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
+        source_type_index_list = get_source_type_index_list_from_method_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
         time_duration_start = None
         if param_list_len >= 2:
             # time_duration_start = transform_string2datetime(param_list[1])
@@ -479,9 +512,10 @@ def read_source_type_time_duration_config_file(conf_filename, time_duration_type
         if param_list_len >= 3:
             # time_duration_end = transform_string2datetime(param_list[2])
             time_duration_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
-        source_type_time_duration_config_list.append(
-            CMN_CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
-        )
+        for source_type_index in source_type_index_list:
+            source_type_time_duration_config_list.append(
+                CMN_CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
+            )
     return source_type_time_duration_config_list
 
 
