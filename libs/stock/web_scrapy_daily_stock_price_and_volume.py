@@ -15,15 +15,15 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 # 個股日股價及成交量
 class WebScrapyDailyStockPriceAndVolume(WebScrapyStockBase.WebScrapyStockBase):
 
-    URL_DATA_STAT_SELECTOR = None
+    URL_DATA_EXIST_SELECTOR = None
     DEF_START_DATE_OBJ = None
 
     @classmethod
     def init_class_customized_variables(cls):
         # import pdb; pdb.set_trace()
 # CAUTION: This function MUST be called by the LEAF derived class
-        if cls.URL_DATA_STAT_SELECTOR is None:
-            cls.URL_DATA_STAT_SELECTOR = cls.CLASS_CONSTANT_CFG["url_data_exist_selector"]
+        if cls.URL_DATA_EXIST_SELECTOR is None:
+            cls.URL_DATA_EXIST_SELECTOR = cls.CLASS_CONSTANT_CFG["url_data_exist_selector"]
         if cls.DEF_START_DATE_OBJ is None:
             cls.DEF_START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
 
@@ -37,7 +37,7 @@ class WebScrapyDailyStockPriceAndVolume(WebScrapyStockBase.WebScrapyStockBase):
     @classmethod
     def pre_check_web_data(cls, req):
         json_url_data = json.loads(req.text)
-        json_url_stat_data = json_url_data[cls.URL_DATA_STAT_SELECTOR]
+        json_url_stat_data = json_url_data[cls.URL_DATA_EXIST_SELECTOR]
         if not re.search(r"OK", json_url_stat_data, re.U):
             # import pdb; pdb.set_trace()
             if re.search(r"沒有符合條件的資料", json_url_stat_data.encode(CMN.DEF.URL_ENCODING_UTF8), re.U):

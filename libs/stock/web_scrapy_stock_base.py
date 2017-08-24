@@ -556,9 +556,10 @@ class WebScrapyStockStatementBase(WebScrapyStockBase):
                 timeslice_generator_cfg = {"company_code_number": company_code_number, "time_duration_start": time_duration_after_lookup_time.time_duration_start, "time_duration_end": time_duration_after_lookup_time.time_duration_end,}
                 timeslice_iterable = self._get_timeslice_iterable(**timeslice_generator_cfg)      
                 for timeslice in timeslice_iterable:
-                    url = self._scrape_web_data(timeslice, company_code_number)
-                    g_logger.debug("Get the statement data from URL: %s" % url)
-                    web_data = self.try_get_web_data(url)
+                    # url = self._scrape_web_data(timeslice, company_code_number)
+                    # g_logger.debug("Get the statement data from URL: %s" % url)
+                    # web_data = self.try_get_web_data(url)
+                    web_data = self._scrape_web_data(timeslice, company_code_number)
 # Find the statement field
                     company_statement_field_list = self._parse_web_statement_field_data(web_data)
                     assert (company_statement_field_list is not None), "Fail to get company statement field from: %s" % url
