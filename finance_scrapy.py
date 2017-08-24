@@ -22,6 +22,10 @@ def show_usage_and_exit():
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
     print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
+    source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
+    for source_type_index in source_type_index_list:
+        print "  %d: %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index])
+    print "  Format: Source Type (ex. 1)"
     print "--no_scrap\nDescription: Don't scrap Web data"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrap flag is NOT set"
     # print "--no_check\nDescription: Don't check the CSV files after scraping Web data"
@@ -34,9 +38,6 @@ def show_usage_and_exit():
     print "--method_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
     print "--method_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
     print "--method\nDescription: The list of the finance data sources\nDefault: All finance data sources\nCaution: Only work when method_from_file is NOT set"
-    # source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
-    # for source_type_index in source_type_index_list:
-    #     print "  %d: %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index])
     method_index_list = CMN.FUNC.get_method_index_range_list()
     for method_index in method_index_list:
         print "  %d: %s" % (method_index, CMN.DEF.DEF_WEB_SCRAPY_METHOD_DESCRIPTION[method_index])

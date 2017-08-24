@@ -104,6 +104,7 @@ DEF_END_MONTH = 12
 DEF_START_DAY = 1
 DEF_STATEMENT_START_QUARTER_STR = "2013q1"
 DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR = "2010-01-01"
+DEF_COMPANY_STOCK_TOP3_LEGAL_PERSONS_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR = "2014-12-01"
 # Config filename
 # DEF_WEB_SCRAPY_BEGIN_DATE_STR = DEF_START_DATE_STR
 # DEF_MARKET_LAST_CONFIG_FILENAME = "def_market_last.conf"
@@ -367,23 +368,36 @@ DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG = [
         "company_group_market_type": MARKET_TYPE_OVER_THE_COUNTER,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
-    # {# 三大法人上市個股買賣超日報
-    #     "url_format": "http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date={0}%2F{1}%2F{2}&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+", 
-    #     "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
-    #     "url_encoding": URL_ENCODING_BIG5,
-    #     "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
-    #     "url_data_selector": '.board_trad tr',
-    #     "url_multi_data_one_page": False,
-    #     # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
-    # },
-    # {# 三大法人上櫃個股買賣超日報
-    #     "url_format": "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1}/{2}&_=1460104675945", 
-    #     "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
-    #     "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
-    #     "url_data_selector": 'aaData',
-    #     "url_multi_data_one_page": False,
-    #     # "parse_url_data_obj": CMN_CLS.ParseURLDataByJSON('aaData'),    
-    # },
+    {# 上市三大法人個股買賣超日報
+        "description": u'上市三大法人個股買賣超日報',
+        "module_name": "company_stock_top3_legal_persons_net_buy_and_sell_summary",
+        "module_folder": "stock",
+        "class_name": "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+        "url_format": "http://www.twse.com.tw/fund/T86?response=json&date={0}{1:02d}{2:02d}&selectType=ALL", 
+        "url_time_unit": DATA_TIME_UNIT_DAY,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
+        "url_data_selector": 'data',
+        "url_data_exist_selector": 'stat',
+        "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
+        "company_group_market_type": MARKET_TYPE_STOCK_EXCHANGE,
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
+    },
+    {# 上櫃三大法人個股買賣超日報
+        "description": u'上櫃三大法人個股買賣超日報',
+        "module_name": "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
+        "module_folder": "stock",
+        "class_name": "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+        "url_format": "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1:02d}/{2:02d}", 
+        "url_time_unit": DATA_TIME_UNIT_DAY,
+        "url_encoding": URL_ENCODING_UTF8,
+        "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
+        "url_data_selector": 'aaData',
+        "url_data_exist_selector": 'iTotalRecords',
+        "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
+        "company_group_market_type": MARKET_TYPE_OVER_THE_COUNTER,
+        # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
+    },
 # Stock End
 ]
 
@@ -407,6 +421,7 @@ DEF_WEB_SCRAPY_STOCK_METHOD_DESCRIPTION = [
     u'現金流量表',
     u'股東權益變動表',
     u'個股日股價及成交量',
+    u'三大法人個股買賣超日報',
 # Stock End
 ]
 DEF_WEB_SCRAPY_METHOD_DESCRIPTION = DEF_WEB_SCRAPY_MARKET_METHOD_DESCRIPTION + DEF_WEB_SCRAPY_STOCK_METHOD_DESCRIPTION
