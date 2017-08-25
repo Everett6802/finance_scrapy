@@ -38,8 +38,8 @@ class WebScrapyURLTimeRange(object):
             CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
             CMN.CLS.FinanceDate(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
             CMN.CLS.FinanceDate(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.DEF_COMPANY_STOCK_TOP3_LEGAL_PERSONS_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.DEF_COMPANY_STOCK_TOP3_LEGAL_PERSONS_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
+            CMN.CLS.FinanceDate(CMN.DEF.DEF_TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
+            CMN.CLS.FinanceDate(CMN.DEF.DEF_TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
         ]
         last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)

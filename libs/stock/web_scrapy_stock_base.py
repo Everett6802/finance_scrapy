@@ -235,4 +235,3 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     @abstractmethod
     def _scrape_web_data(self, timeslice, company_code_number):
         raise NotImplementedError
-

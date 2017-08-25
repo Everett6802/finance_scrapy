@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import libs.common as CMN
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
+
 COMPANY_MARKET_TYPE_STOCK_EXCHANGE = u"上市"
 COMPANY_MARKET_TYPE_OVER_THE_COUNTER = u"上櫃"
 COMPANY_MARKET_TYPE_DICT = {

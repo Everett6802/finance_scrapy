@@ -14,6 +14,8 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.WebScrapyStockBase):
 
     __metaclass__ = ABCMeta
+    CSV_DATA_BUF_SIZE = 20
+    WEB_DATA_ENTRY_COMPANY_CODE_NUMBER = 0
 
     # @classmethod
     # def assemble_web_url(cls, timeslice, company_code_number, *args):
@@ -29,6 +31,9 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
 
     def __init__(self, **kwargs):
         super(WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase, self).__init__(**kwargs)
+        self.company_number_csv_time_range_dict = None
+        self.company_group_out_of_csv_time_range_set = None
+        self.time_duration_after_lookup_time = None
 
 
     def _scrape_web_data(self, timeslice, company_code_number):
@@ -75,6 +80,98 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
 # 自營商賣出股數(自行買賣) + 自營商賣出股數(避險)
 # 自營商(自行買賣)淨買股數 + 自營商(避險)淨買股數
 # 三大法人買賣超股數
+
+
+    def __write_each_company_to_csv(self, csv_data_list_buf):
+        for csv_data_list_one_workday in csv_data_list_buf:
+            for csv_data_entry in csv_data_list_one_workday:
+                company_code_number = csv_data_entry[self.WEB_DATA_ENTRY_COMPANY_CODE_NUMBER]
+# Find the csv time range in the initail update
+# If time range is out of the csv data range....
+                if self.company_group_out_of_csv_time_range_set.is_current_company_exist(company_code_number):
+                    continue
+                if not self.company_number_csv_time_range_dict.has_key(company_code_number):
+# Limit the searching time range from the local CSV data
+                    web2csv_time_duration_update_tuple = self._adjust_time_range_from_csv(self.time_duration_after_lookup_time, company_code_number)
+                    if web2csv_time_duration_update_tuple is None:
+                        self.csv_file_no_scrapy_record.add_csv_file_already_exist_record(self.SOURCE_TYPE_INDEX, company_code_number)
+                        g_logger.debug("[%s:%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX].time_duration_end))
+                        self.company_group_out_of_csv_time_range_set.add_company(company_code_number)
+                        continue
+                    self.company_number_csv_time_range_dict[company_code_number] = web2csv_time_duration_update_tuple
+
+
+    def scrap_web_to_csv(self):
+        # import pdb; pdb.set_trace()
+# Create the time slice iterator due to correct time range
+# Limit the searching time range from the web site
+        time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SOURCE_TYPE_INDEX, None)
+        if time_duration_after_lookup_time is None:
+            # self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SOURCE_TYPE_INDEX, company_code_number)
+            g_logger.debug("[%s:%s] %s => The searching time range is NOT in the time range of web data !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
+            return
+        csv_data_list_buf = []
+        csv_data_list_buf_count = 0
+        self.company_number_csv_time_range_dict = {}
+        self.company_group_out_of_csv_time_range_set = WebScrapyCompanyGroupSet.CompanyGroupSet()
+        timeslice_generator_cfg = {"time_duration_start": time_duration_after_lookup_time.time_duration_end, "time_duration_end": time_duration_after_lookup_time.time_duration_end,}
+        timeslice_iterable = self._get_timeslice_iterable(**timeslice_generator_cfg)
+        for timeslice in timeslice_iterable:
+# Write the data into csv year by year
+            if csv_data_list_buf_count == self.CSV_DATA_BUF_SIZE:
+                    # import pdb; pdb.set_trace()
+                self._write_to_csv(csv_filepath, csv_data_list_buf)
+                csv_data_list_buf = []
+                csv_data_list_buf_count = 0
+            web_data = self._scrape_web_data(timeslice, None)
+            if len(web_data) == 0:
+# Keep track of the time range in which the web data is empty
+                self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SOURCE_TYPE_INDEX, company_code_number)
+            else:
+                csv_data_list = self._parse_web_data(web_data)
+                if len(csv_data_list) == 0:
+                    raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
+                csv_data_list_buf.append(csv_data_list)
+                csv_data_list_buf_count += 1
+# Flush the last data into the list if required
+            self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SOURCE_TYPE_INDEX, company_code_number)
+# Write the last data in the buf
+        if len(csv_data_list_buf) > 0:
+            self._write_to_csv(csv_filepath, csv_data_list_buf)
+# Append the old CSV data after the new web data if necessary
+        web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
+# Increase the progress count
+        self.scrapy_company_progress_count += 1
+####################################################################
+        self.new_csv_time_duration_dict = {}
+        self.scrapy_company_progress_count = 0
+        for company_group_number, company_code_number_list in self.company_group_set.items():
+            for company_code_number in company_code_number_list:
+                # import pdb; pdb.set_trace()
+# We assume the market type of all the companies in the Company Group Set are correct before trasverse
+                # if self.COMPANY_MARKET_TYPE != CMN.DEF.MARKET_TYPE_NONE and (not self.is_whole_company_group_set):
+                #     if not CompanyGroupSet.WebScrapyCompanyGroupSet.check_company_market_type(company_code_number, self.COMPANY_MARKET_TYPE):
+                #         continue
+
+# Create a folder for a specific company
+                csv_company_folderpath = self.assemble_csv_company_folderpath(company_code_number, company_group_number)
+                CMN.FUNC.create_folder_if_not_exist(csv_company_folderpath)
+# Find the file path for writing data into csv
+                csv_filepath = self.assemble_csv_filepath(self.SOURCE_TYPE_INDEX, company_code_number, company_group_number)
+                scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.new_csv_extension_time_duration.time_duration_start, self.new_csv_extension_time_duration.time_duration_end, csv_filepath)
+                g_logger.debug(scrapy_msg)
+# Check if only dry-run
+                if self.xcfg["dry_run_only"]:
+                    print scrapy_msg
+                    continue
+# Scrape the web data from each time duration
+                for web2csv_time_duration_update in web2csv_time_duration_update_tuple: 
+# Adjust the config if necessary
+                    self._adjust_config_before_scrapy(web2csv_time_duration_update)
+# If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
+                    web2csv_time_duration_update.backup_old_csv_if_necessary(csv_filepath)
+# Parse csv file status
+            self._parse_csv_file_status_to_string_list()
 
 #####################################################################
 
