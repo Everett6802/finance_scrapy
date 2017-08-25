@@ -8,13 +8,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
-import web_scrapy_stock_base as WebScrapyStockBase
+import web_scrapy_statement_base as WebScrapyStatementBase
 g_logger = CMN.WSL.get_web_scrapy_logger()
 # g_lock =  threading.Lock()
 
 
 # 現金流量表
-class WebScrapyCashFlowStatement(WebScrapyStockBase.WebScrapyStockStatementBase):
+class WebScrapyCashFlowStatement(WebScrapyStatementBase.WebScrapyStatementBase):
 
     # TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
     #     u"營業活動之現金流量－間接法".encode(CMN.DEF.URL_ENCODING_UTF8), 

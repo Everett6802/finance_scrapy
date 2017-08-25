@@ -8,13 +8,13 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
-import web_scrapy_stock_base as WebScrapyStockBase
+import web_scrapy_statement_base as WebScrapyStatementBase
 g_logger = CMN.WSL.get_web_scrapy_logger()
 # g_lock =  threading.Lock()
 
 
 # 股東權益變動表
-class WebScrapyStatementOfChangesInEquity(WebScrapyStockBase.WebScrapyStockStatementBase):
+class WebScrapyStatementOfChangesInEquity(WebScrapyStatementBase.WebScrapyStatementBase):
 
     # TABLE_FIELD_NOT_INTEREST_TITLE_LIST = [
     #     u"　追溯適用及追溯重編之影響數".encode(CMN.DEF.URL_ENCODING_UTF8),

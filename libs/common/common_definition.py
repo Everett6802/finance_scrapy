@@ -355,7 +355,7 @@ DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG = [
     },
     {# 上櫃日股價及成交量
         "description": u'上櫃個股日股價及成交量',
-        "module_name": "otc_daily_stock_price_and_volume",
+        "module_name": "daily_stock_price_and_volume",
         "module_folder": "stock",
         "class_name": "WebScrapyOTCDailyStockPriceAndVolume",
         "url_format": "http://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php?l=zh-tw&d={0}/{1:02d}&stkno={2}", 
@@ -370,9 +370,9 @@ DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG = [
     },
     {# 上市三大法人個股買賣超日報
         "description": u'上市三大法人個股買賣超日報',
-        "module_name": "company_stock_top3_legal_persons_net_buy_and_sell_summary",
+        "module_name": "top3_legal_persons_stock_net_buy_and_sell_summary",
         "module_folder": "stock",
-        "class_name": "WebScrapyCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+        "class_name": "WebScrapyTop3LegalPersonsStockNetBuyOrSellSummary",
         "url_format": "http://www.twse.com.tw/fund/T86?response=json&date={0}{1:02d}{2:02d}&selectType=ALL", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
@@ -385,9 +385,9 @@ DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG = [
     },
     {# 上櫃三大法人個股買賣超日報
         "description": u'上櫃三大法人個股買賣超日報',
-        "module_name": "otc_company_stock_top3_legal_persons_net_buy_and_sell_summary",
+        "module_name": "top3_legal_persons_stock_net_buy_and_sell_summary",
         "module_folder": "stock",
-        "class_name": "WebScrapyOTCCompanyStockTop3LegalPersonsNetBuyOrSellSummary",
+        "class_name": "WebScrapyOTCTop3LegalPersonsStockNetBuyOrSellSummary",
         "url_format": "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1:02d}/{2:02d}", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
