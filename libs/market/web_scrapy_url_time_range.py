@@ -13,13 +13,13 @@ class WebScrapyURLTimeRange(object):
 
     def __init__(self):
         # import pdb; pdb.set_trace()
-        self.DEF_DATA_SOURCE_START_DATE_LIST = None
-        # self.DEF_DATA_SOURCE_START_DATE_LIST_LEN = 0
+        self.DATA_SOURCE_START_DATE_LIST = None
+        # self.DATA_SOURCE_START_DATE_LIST_LEN = 0
         self.last_url_data_date = None
 
 
     def initialize(self):
-        self.DEF_DATA_SOURCE_START_DATE_LIST = [
+        self.DATA_SOURCE_START_DATE_LIST = [
             CMN.CLS.FinanceDate("2001-01-01"),
             CMN.CLS.FinanceDate("2004-04-07"),
             CMN.CLS.FinanceDate("2001-01-01"),
@@ -36,7 +36,7 @@ class WebScrapyURLTimeRange(object):
             # transform_string2datetime("2004-12-17"),
             # transform_string2datetime("2004-12-17"),
         ]
-        # self.DEF_DATA_SOURCE_START_DATE_LIST_LEN = len(self.DEF_DATA_SOURCE_START_DATE_LIST)
+        # self.DATA_SOURCE_START_DATE_LIST_LEN = len(self.DATA_SOURCE_START_DATE_LIST)
 
 
     # def __get_year_offset_datetime_cfg(self, datetime_cfg, year_offset):
@@ -45,7 +45,7 @@ class WebScrapyURLTimeRange(object):
 
     def get_time_range_start(self, source_type_index):
         CMN.FUNC.check_source_type_index_in_range(source_type_index)
-        return self.DEF_DATA_SOURCE_START_DATE_LIST[source_type_index]
+        return self.DATA_SOURCE_START_DATE_LIST[source_type_index]
 
 
     def get_time_range_end(self, source_type_index):

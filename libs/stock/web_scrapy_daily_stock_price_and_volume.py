@@ -19,7 +19,7 @@ class WebScrapyDailyStockPriceAndVolumeBase(WebScrapyStockBase.WebScrapyStockBas
     __metaclass__ = ABCMeta
 
     URL_DATA_EXIST_SELECTOR = None
-    DEF_START_DATE_OBJ = None
+    START_DATE_OBJ = None
 
 #     @classmethod
 #     def init_class_customized_variables(cls):
@@ -27,8 +27,8 @@ class WebScrapyDailyStockPriceAndVolumeBase(WebScrapyStockBase.WebScrapyStockBas
 # # CAUTION: This function MUST be called by the LEAF derived class
 #         if cls.URL_DATA_EXIST_SELECTOR is None:
 #             cls.URL_DATA_EXIST_SELECTOR = cls.CLASS_CONSTANT_CFG["url_data_exist_selector"]
-#         if cls.DEF_START_DATE_OBJ is None:
-#             cls.DEF_START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
+#         if cls.START_DATE_OBJ is None:
+#             cls.START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
 
 
     # @classmethod
@@ -68,8 +68,8 @@ class WebScrapyDailyStockPriceAndVolumeBase(WebScrapyStockBase.WebScrapyStockBas
         try:
             listing_date_unicode = profile_lookup.lookup_company_listing_date(company_code_number)
             listing_date_str = str(listing_date_unicode)
-            if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.DEF_START_DATE_OBJ:
-                listing_date_str = CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
+            if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.START_DATE_OBJ:
+                listing_date_str = CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
         except ValueError:
             g_logger.debug("The profile of the company code number does NOT exist")
         return listing_date_str
@@ -142,7 +142,7 @@ class WebScrapyDailyStockPriceAndVolumeBase(WebScrapyStockBase.WebScrapyStockBas
 class WebScrapyDailyStockPriceAndVolume(WebScrapyDailyStockPriceAndVolumeBase):
 
     # URL_DATA_EXIST_SELECTOR = None
-    # DEF_START_DATE_OBJ = None
+    # START_DATE_OBJ = None
 
     @classmethod
     def init_class_customized_variables(cls):
@@ -150,8 +150,8 @@ class WebScrapyDailyStockPriceAndVolume(WebScrapyDailyStockPriceAndVolumeBase):
 # CAUTION: This function MUST be called by the LEAF derived class
         if cls.URL_DATA_EXIST_SELECTOR is None:
             cls.URL_DATA_EXIST_SELECTOR = cls.CLASS_CONSTANT_CFG["url_data_exist_selector"]
-        if cls.DEF_START_DATE_OBJ is None:
-            cls.DEF_START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
+        if cls.START_DATE_OBJ is None:
+            cls.START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
 
 
     @classmethod
@@ -191,8 +191,8 @@ class WebScrapyDailyStockPriceAndVolume(WebScrapyDailyStockPriceAndVolumeBase):
     #     try:
     #         listing_date_unicode = profile_lookup.lookup_company_listing_date(company_code_number)
     #         listing_date_str = str(listing_date_unicode)
-    #         if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.DEF_START_DATE_OBJ:
-    #             listing_date_str = CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
+    #         if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.START_DATE_OBJ:
+    #             listing_date_str = CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
     #     except ValueError:
     #         g_logger.debug("The profile of the company code number does NOT exist")
     #     return listing_date_str
@@ -300,7 +300,7 @@ class WebScrapyDailyStockPriceAndVolume(WebScrapyDailyStockPriceAndVolumeBase):
 class WebScrapyOTCDailyStockPriceAndVolume(WebScrapyDailyStockPriceAndVolumeBase):
 
     # URL_DATA_EXIST_SELECTOR = None
-    # DEF_START_DATE_OBJ = None
+    # START_DATE_OBJ = None
 
     @classmethod
     def init_class_customized_variables(cls):
@@ -308,8 +308,8 @@ class WebScrapyOTCDailyStockPriceAndVolume(WebScrapyDailyStockPriceAndVolumeBase
 # CAUTION: This function MUST be called by the LEAF derived class
         if cls.URL_DATA_EXIST_SELECTOR is None:
             cls.URL_DATA_EXIST_SELECTOR = cls.CLASS_CONSTANT_CFG["url_data_exist_selector"]
-        if cls.DEF_START_DATE_OBJ is None:
-            cls.DEF_START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
+        if cls.START_DATE_OBJ is None:
+            cls.START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
 
 
     @classmethod
@@ -345,8 +345,8 @@ class WebScrapyOTCDailyStockPriceAndVolume(WebScrapyDailyStockPriceAndVolumeBase
     #     try:
     #         listing_date_unicode = profile_lookup.lookup_company_listing_date(company_code_number)
     #         listing_date_str = str(listing_date_unicode)
-    #         if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.DEF_START_DATE_OBJ:
-    #             listing_date_str = CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
+    #         if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.START_DATE_OBJ:
+    #             listing_date_str = CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
     #     except ValueError:
     #         g_logger.debug("The profile of the company code number does NOT exist")
     #     return listing_date_str

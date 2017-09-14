@@ -40,7 +40,7 @@ def get_full_stack_traceback():
 
 def import_web_scrapy_module(module_folder, module_name):
     # import pdb; pdb.set_trace()
-    module_path = "%s/%s" % (CMN_DEF.DEF_PROJECT_LIB_FOLDERPATH, module_folder)
+    module_path = "%s/%s" % (CMN_DEF.PROJECT_LIB_FOLDERPATH, module_folder)
     sys.path.insert(0, module_path)
     module_file = '%s/%s.py' % (module_path, module_name)
     assert os.path.exists(module_file), "module file does not exist: %s" % module_file
@@ -71,9 +71,9 @@ def get_web_scrapy_class_for_name(module_folder, module_name, class_name):
 
 def get_web_scrapy_class(source_type_index, init_class_variables=True):
     # import pdb; pdb.set_trace()
-    module_folder = CMN_DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
-    module_name = CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]
-    class_name = CMN_DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[source_type_index]
+    module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
+    module_name = CMN_DEF.SCRAPY_MODULE_NAME_PREFIX + CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]
+    class_name = CMN_DEF.SCRAPY_CLASS_NAME_MAPPING[source_type_index]
     g_logger.debug("Try to instantiate %s.%s" % (module_name, class_name))
 # Find the module
     web_scrapy_class = get_web_scrapy_class_for_name(module_folder, module_name, class_name)
@@ -100,9 +100,9 @@ def instantiate_web_scrapy_object(source_type_index, **kwargs):
 
 def check_source_type_index_in_range(source_type_index):
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        return True if CMN_DEF.DEF_DATA_SOURCE_MARKET_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_MARKET_END else False
+        return True if CMN_DEF.DATA_SOURCE_MARKET_START <= source_type_index < CMN_DEF.DATA_SOURCE_MARKET_END else False
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return True if CMN_DEF.DEF_DATA_SOURCE_STOCK_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_STOCK_END else False
+        return True if CMN_DEF.DATA_SOURCE_STOCK_START <= source_type_index < CMN_DEF.DATA_SOURCE_STOCK_END else False
     raise RuntimeError("Unknown finance mode")
 
 
@@ -110,38 +110,38 @@ def check_statement_source_type_index_in_range(source_type_index):
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
         return False
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return True if CMN_DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START <= source_type_index < CMN_DEF.DEF_DATA_SOURCE_STOCK_STATMENT_END else False
+        return True if CMN_DEF.DATA_SOURCE_STOCK_STATMENT_START <= source_type_index < CMN_DEF.DATA_SOURCE_STOCK_STATMENT_END else False
     raise RuntimeError("Unknown finance mode")
 
 
 def get_source_type_index_range():
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        return (CMN_DEF.DEF_DATA_SOURCE_MARKET_START, CMN_DEF.DEF_DATA_SOURCE_MARKET_END)
+        return (CMN_DEF.DATA_SOURCE_MARKET_START, CMN_DEF.DATA_SOURCE_MARKET_END)
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return (CMN_DEF.DEF_DATA_SOURCE_STOCK_START, CMN_DEF.DEF_DATA_SOURCE_STOCK_END)
+        return (CMN_DEF.DATA_SOURCE_STOCK_START, CMN_DEF.DATA_SOURCE_STOCK_END)
     raise RuntimeError("Unknown finance mode")
 
 
 def get_method_index_range():
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        return (CMN_DEF.DEF_MARKET_METHOD_START, CMN_DEF.DEF_MARKET_METHOD_END)
+        return (CMN_DEF.SCRAPY_MARKET_METHOD_START, CMN_DEF.SCRAPY_MARKET_METHOD_END)
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return (CMN_DEF.DEF_STOCK_METHOD_START, CMN_DEF.DEF_STOCK_METHOD_END)
+        return (CMN_DEF.SCRAPY_STOCK_METHOD_START, CMN_DEF.SCRAPY_STOCK_METHOD_END)
     raise RuntimeError("Unknown finance mode")
 
 
 def get_source_type_size():
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        return CMN_DEF.DEF_DATA_SOURCE_MARKET_SIZE
+        return CMN_DEF.DATA_SOURCE_MARKET_SIZE
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return CMN_DEF.DEF_DATA_SOURCE_STOCK_SIZE
+        return CMN_DEF.DATA_SOURCE_STOCK_SIZE
     raise RuntimeError("Unknown finance mode")
 
 
 def get_source_type_index_from_description(source_type_description, ignore_exception=False):
     source_type_index = -1
     try:
-        source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(source_type_description)
+        source_type_index = CMN_DEF.DATA_SOURCE_INDEX_MAPPING.index(source_type_description)
     except ValueError as e:
         if not ignore_exception:
             raise e
@@ -151,7 +151,7 @@ def get_source_type_index_from_description(source_type_description, ignore_excep
 
 def get_source_type_index_list_from_method_description(method_description):
     source_type_index_list = []
-    for source_type_index, class_constant_cfg in enumerate(CMN_DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG):
+    for source_type_index, class_constant_cfg in enumerate(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG):
         if re.search(method_description, class_constant_cfg["description"], re.U):
             source_type_index_list.append(source_type_index)
     if len(source_type_index_list) == 0:
@@ -160,7 +160,7 @@ def get_source_type_index_list_from_method_description(method_description):
 
 
 def get_source_type_index_list_from_method_index(method_index):
-    method_description = CMN_DEF.DEF_WEB_SCRAPY_METHOD_DESCRIPTION[method_index]
+    method_description = CMN_DEF.SCRAPY_METHOD_DESCRIPTION[method_index]
     return get_source_type_index_list_from_method_description(method_description)
 
 
@@ -192,27 +192,27 @@ def is_republic_era_year(year_value):
 
 def check_year_range(year_value):
     if is_republic_era_year(year_value):
-        if not (CMN_DEF.DEF_REPUBLIC_ERA_START_YEAR <= int(year_value) <= CMN_DEF.DEF_REPUBLIC_ERA_END_YEAR):
-            raise ValueError("The republic era year[%d] is NOT in the range [%d, %d]" % (int(year_value), CMN_DEF.DEF_REPUBLIC_ERA_START_YEAR, CMN_DEF.DEF_REPUBLIC_ERA_END_YEAR))
+        if not (CMN_DEF.REPUBLIC_ERA_START_YEAR <= int(year_value) <= CMN_DEF.REPUBLIC_ERA_END_YEAR):
+            raise ValueError("The republic era year[%d] is NOT in the range [%d, %d]" % (int(year_value), CMN_DEF.REPUBLIC_ERA_START_YEAR, CMN_DEF.REPUBLIC_ERA_END_YEAR))
     else:
-        if not (CMN_DEF.DEF_START_YEAR <= int(year_value) <= CMN_DEF.DEF_END_YEAR):
-            raise ValueError("The year[%d] is NOT in the range [%d, %d]" % (int(year_value), CMN_DEF.DEF_START_YEAR, CMN_DEF.DEF_END_YEAR))
+        if not (CMN_DEF.START_YEAR <= int(year_value) <= CMN_DEF.END_YEAR):
+            raise ValueError("The year[%d] is NOT in the range [%d, %d]" % (int(year_value), CMN_DEF.START_YEAR, CMN_DEF.END_YEAR))
 
 
 def check_quarter_range(quarter_value):
-    if not (CMN_DEF.DEF_START_QUARTER <= int(quarter_value) <= CMN_DEF.DEF_END_QUARTER):
-        raise ValueError("The quarter[%d] is NOT in the range [%d, %d]" % (int(quarter_value), CMN_DEF.DEF_START_QUARTER, CMN_DEF.DEF_END_QUARTER))
+    if not (CMN_DEF.START_QUARTER <= int(quarter_value) <= CMN_DEF.END_QUARTER):
+        raise ValueError("The quarter[%d] is NOT in the range [%d, %d]" % (int(quarter_value), CMN_DEF.START_QUARTER, CMN_DEF.END_QUARTER))
 
 
 def check_month_range(month_value):
-    if not (CMN_DEF.DEF_START_MONTH <= int(month_value) <= CMN_DEF.DEF_END_MONTH):
-        raise ValueError("The month[%d] is NOT in the range [%d, %d]" % (int(month_value), CMN_DEF.DEF_START_MONTH, CMN_DEF.DEF_END_MONTH))
+    if not (CMN_DEF.START_MONTH <= int(month_value) <= CMN_DEF.END_MONTH):
+        raise ValueError("The month[%d] is NOT in the range [%d, %d]" % (int(month_value), CMN_DEF.START_MONTH, CMN_DEF.END_MONTH))
 
 
 def check_day_range(day_value, year_value, month_value):
     end_day_in_month = get_month_last_day(int(year_value), int(month_value))
-    if not (CMN_DEF.DEF_START_DAY <= int(day_value) <= end_day_in_month):
-        raise ValueError("The day[%d] is NOT in the range [%d, %d]" % (int(day_value), CMN_DEF.DEF_START_DAY, end_day_in_month))
+    if not (CMN_DEF.START_DAY <= int(day_value) <= end_day_in_month):
+        raise ValueError("The day[%d] is NOT in the range [%d, %d]" % (int(day_value), CMN_DEF.START_DAY, end_day_in_month))
 
 
 def check_date_str_format(date_string):
@@ -220,9 +220,9 @@ def check_date_str_format(date_string):
     if mobj is None:
         raise ValueError("The string[%s] is NOT date format" % date_string)
     date_string_len = len(date_string)
-    # if date_string_len < DEF_MIN_DATE_STRING_LENGTH or date_string_len > DEF_MAX_DATE_STRING_LENGTH:
-    if not (CMN_DEF.DEF_MIN_DATE_STRING_LENGTH <= date_string_len <= CMN_DEF.DEF_MAX_DATE_STRING_LENGTH):
-        raise ValueError("The date stirng[%s] length is NOT in the range [%d, %d]" % (date_string_len, CMN_DEF.DEF_MIN_DATE_STRING_LENGTH, CMN_DEF.DEF_MAX_DATE_STRING_LENGTH))
+    # if date_string_len < MIN_DATE_STRING_LENGTH or date_string_len > MAX_DATE_STRING_LENGTH:
+    if not (CMN_DEF.MIN_DATE_STRING_LENGTH <= date_string_len <= CMN_DEF.MAX_DATE_STRING_LENGTH):
+        raise ValueError("The date stirng[%s] length is NOT in the range [%d, %d]" % (date_string_len, CMN_DEF.MIN_DATE_STRING_LENGTH, CMN_DEF.MAX_DATE_STRING_LENGTH))
 # # Check Year Range
 #     check_year_range(mobj.group(1))
 # # Check Month Range
@@ -246,9 +246,9 @@ def check_month_str_format(month_string):
     if mobj is None:
         raise ValueError("The string[%s] is NOT month format" % month_string)
     month_string_len = len(month_string)
-    # if month_string_len < DEF_MIN_MONTH_STRING_LENGTH or month_string_len > DEF_MAX_MONTH_STRING_LENGTH:
-    if not (CMN_DEF.DEF_MIN_MONTH_STRING_LENGTH <= month_string_len <= CMN_DEF.DEF_MAX_MONTH_STRING_LENGTH):
-        raise ValueError("The month stirng[%s] length is NOT in the range [%d, %d]" % (month_string_len, CMN_DEF.DEF_MIN_MONTH_STRING_LENGTH, CMN_DEF.DEF_MAX_MONTH_STRING_LENGTH))
+    # if month_string_len < MIN_MONTH_STRING_LENGTH or month_string_len > MAX_MONTH_STRING_LENGTH:
+    if not (CMN_DEF.MIN_MONTH_STRING_LENGTH <= month_string_len <= CMN_DEF.MAX_MONTH_STRING_LENGTH):
+        raise ValueError("The month stirng[%s] length is NOT in the range [%d, %d]" % (month_string_len, CMN_DEF.MIN_MONTH_STRING_LENGTH, CMN_DEF.MAX_MONTH_STRING_LENGTH))
 # # Check Year Range
 #     check_year_range(mobj.group(1))
 # # Check Month Range
@@ -270,9 +270,9 @@ def check_quarter_str_format(quarter_string):
     if mobj is None:
         raise ValueError("The string[%s] is NOT quarter format" % quarter_string)
     quarter_string_len = len(quarter_string)
-    # if quarter_string_len < DEF_MIN_QUARTER_STRING_LENGTH or quarter_string_len > DEF_MAX_QUARTER_STRING_LENGTH:
-    if not (CMN_DEF.DEF_MIN_QUARTER_STRING_LENGTH <= quarter_string_len <= CMN_DEF.DEF_MAX_QUARTER_STRING_LENGTH):
-        raise ValueError("The quarter stirng[%s] length is NOT in the range [%d, %d]" % (quarter_string_len, CMN_DEF.DEF_MIN_QUARTER_STRING_LENGTH, CMN_DEF.DEF_MAX_QUARTER_STRING_LENGTH))
+    # if quarter_string_len < MIN_QUARTER_STRING_LENGTH or quarter_string_len > MAX_QUARTER_STRING_LENGTH:
+    if not (CMN_DEF.MIN_QUARTER_STRING_LENGTH <= quarter_string_len <= CMN_DEF.MAX_QUARTER_STRING_LENGTH):
+        raise ValueError("The quarter stirng[%s] length is NOT in the range [%d, %d]" % (quarter_string_len, CMN_DEF.MIN_QUARTER_STRING_LENGTH, CMN_DEF.MAX_QUARTER_STRING_LENGTH))
 # # Check Year Range
 #     check_year_range(mobj.group(1))
 # # Check Quarter Range
@@ -309,14 +309,14 @@ def generate_cur_timestamp_str():
     datetime_cur = datetime.today()
     date_str = transform_date_str(datetime_cur.year, datetime_cur.month, datetime_cur.day)
     time_str = transform_time_str(datetime_cur.hour, datetime_cur.minute, datetime_cur.second)
-    return "%s %s %s" % (CMN_DEF.DEF_CONFIG_TIMESTAMP_STRING_PREFIX, date_str, time_str)
+    return "%s %s %s" % (CMN_DEF.CONFIG_TIMESTAMP_STRING_PREFIX, date_str, time_str)
 
 
 # def transform_string2datetime(date_string, need_year_transform=False):
 #     element_arr = date_string.split('-')
 #     if len(element_arr) != 3:
 #         raise ValueError("Incorrect config date format: %s" % date_string)
-#     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET)), int(element_arr[1]), int(element_arr[2]))
+#     return datetime((int(element_arr[0]) if not need_year_transform else (int(element_arr[0]) + CMN_DEF.REPUBLIC_ERA_YEAR_OFFSET)), int(element_arr[1]), int(element_arr[2]))
 
 
 # def transform_datetime_cfg2string(datetime_cfg, need_year_transform=False):
@@ -324,7 +324,7 @@ def generate_cur_timestamp_str():
 
 
 # def transform_datetime2string(year, month, day, need_year_transform=False):
-#     year_transform = (int(year) + CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET) if need_year_transform else int(year)
+#     year_transform = (int(year) + CMN_DEF.REPUBLIC_ERA_YEAR_OFFSET) if need_year_transform else int(year)
 #     return DATE_STRING_FORMAT % (year_transform, int(month), int(day))
 
 
@@ -350,7 +350,7 @@ def get_config_filepath(conf_filename, conf_folderpath=None):
     # current_path = os.path.dirname(os.path.realpath(__file__))
     # [project_folder, lib_folder] = current_path.rsplit('/', 1)
     if conf_folderpath is None:
-        conf_filepath = "%s/%s/%s" % (CMN_DEF.DEF_PROJECT_FOLDERPATH, CMN_DEF.DEF_CONF_FOLDER, conf_filename)
+        conf_filepath = "%s/%s/%s" % (CMN_DEF.PROJECT_FOLDERPATH, CMN_DEF.CONF_FOLDER, conf_filename)
     else:
         conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
     # g_logger.debug("Parse the config file: %s" % conf_filepath)
@@ -358,14 +358,14 @@ def get_config_filepath(conf_filename, conf_folderpath=None):
 
 
 def get_finance_analysis_mode():
-    conf_line_list = read_config_file_lines(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+    conf_line_list = read_config_file_lines(CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
     if len(conf_line_list) != 1:
-        raise ValueError("Incorrect setting in %s" % CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+        raise ValueError("Incorrect setting in %s" % CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
     mode = int(conf_line_list[0])
     if mode not in [CMN_DEF.FINANCE_ANALYSIS_MARKET, CMN_DEF.FINANCE_ANALYSIS_STOCK]:
         raise ValueError("Unknown finance analysis mode: %d" % mode)
     return mode
-    # conf_filepath = get_config_filepath(CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+    # conf_filepath = get_config_filepath(CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
     # try:
     #     with open(conf_filepath, 'r') as fp:
     #         for line in fp:
@@ -374,7 +374,7 @@ def get_finance_analysis_mode():
     #                 raise ValueError("Unknown finance analysis mode: %d" % mode)
     #             return mode
     # except Exception as e:
-    #     g_logger.error("Error occur while parsing config file[%s], due to %s" % (CMN_DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME, str(e)))
+    #     g_logger.error("Error occur while parsing config file[%s], due to %s" % (CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME, str(e)))
     #     raise e
 
 
@@ -423,7 +423,7 @@ def read_config_file_lines(conf_filename, conf_folderpath=None):
 
 def unicode_read_config_file_lines_ex(conf_filename, conf_file_read_attribute, conf_folderpath=None, conf_unicode_encode=None):
     if conf_unicode_encode is None:
-        conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
+        conf_unicode_encode = CMN_DEF.UNICODE_ENCODING_IN_FILE
     conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
     conf_line_list = []
     try:
@@ -445,7 +445,7 @@ def unicode_read_config_file_lines_ex(conf_filename, conf_file_read_attribute, c
 
 def unicode_read_config_file_lines(conf_filename, conf_folderpath=None, conf_unicode_encode=None):
     if conf_unicode_encode is None:
-        conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
+        conf_unicode_encode = CMN_DEF.UNICODE_ENCODING_IN_FILE
     return unicode_read_config_file_lines_ex(conf_filename, 'rb', conf_folderpath, conf_unicode_encode)
 
 
@@ -473,7 +473,7 @@ def write_config_file_lines(conf_line_list, conf_filename, conf_folderpath=None)
 
 def unicode_write_config_file_lines_ex(conf_line_list, conf_filename, conf_file_write_attribute, conf_folderpath=None, conf_unicode_encode=None):
     if conf_unicode_encode is None:
-        conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
+        conf_unicode_encode = CMN_DEF.UNICODE_ENCODING_IN_FILE
     conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
     try:
         with open(conf_filepath, conf_file_write_attribute) as fp:
@@ -490,7 +490,7 @@ def unicode_write_config_file_lines_ex(conf_line_list, conf_filename, conf_file_
 
 def unicode_write_config_file_lines(conf_line_list, conf_filename, conf_folderpath=None, conf_unicode_encode=None):
     if conf_unicode_encode is None:
-        conf_unicode_encode = CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE
+        conf_unicode_encode = CMN_DEF.UNICODE_ENCODING_IN_FILE
     return unicode_write_config_file_lines_ex(conf_line_list, conf_filename, 'wb', conf_folderpath, conf_unicode_encode)
 
 
@@ -501,9 +501,9 @@ def read_source_type_time_duration_config_file(conf_filename, time_duration_type
     for line in conf_line_list:
         param_list = line.split(' ')
         param_list_len = len(param_list)
-        # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
-        # source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
-        source_type_index_list = get_source_type_index_list_from_method_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
+        # source_type_index = CMN_DEF.DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+        # source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+        source_type_index_list = get_source_type_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
         time_duration_start = None
         if param_list_len >= 2:
             # time_duration_start = transform_string2datetime(param_list[1])
@@ -527,10 +527,10 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as
         for line in conf_line_list:
             param_list = line.split(' ')
             param_list_len = len(param_list)
-            # source_type_index = CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
+            # source_type_index = CMN_DEF.DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             if param_list_len != 3:
                 raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
-            source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE))
+            source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(param_list[1])
             time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(param_list[2])
             csv_time_duration_dict[source_type_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
@@ -547,8 +547,8 @@ def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time
         time_duration_tuple = csv_time_duration_dict.get(source_type_index, None)
         if time_duration_tuple is None:
             continue
-        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
-        conf_line_list.append(csv_time_duration_entry_unicode.encode(CMN_DEF.DEF_UNICODE_ENCODING_IN_FILE) + "\n")
+        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DATA_SOURCE_INDEX_MAPPING[source_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
+        conf_line_list.append(csv_time_duration_entry_unicode.encode(CMN_DEF.UNICODE_ENCODING_IN_FILE) + "\n")
     write_config_file_lines_ex(conf_line_list, conf_filename, "wb", conf_folderpath)
 
 
@@ -557,7 +557,7 @@ def read_company_config_file(conf_filename):
     conf_line_list = read_config_file_lines(conf_filename)
     company_config_list = []
     for line in conf_line_list:
-        param_list = line.split(CMN_DEF.DEF_SPACE_DATA_SPLIT)
+        param_list = line.split(CMN_DEF.SPACE_DATA_SPLIT)
         for param in param_list:
             company_config_list.append(param)
     return company_config_list
@@ -770,34 +770,34 @@ def get_filename_from_filepath(filepath):
 
 
 def assemble_market_csv_folderpath(finance_root_folderpath):
-    csv_filepath = "%s/%s" % (finance_root_folderpath, CMN_DEF.DEF_CSV_MARKET_FOLDERNAME) 
+    csv_filepath = "%s/%s" % (finance_root_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME) 
     return csv_filepath
 
 
 def assemble_market_csv_filepath(finance_root_folderpath, source_type_index):
-    csv_filepath = "%s/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.DEF_CSV_MARKET_FOLDERNAME, CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+    csv_filepath = "%s/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME, CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
     return csv_filepath
 
 
 def assemble_stock_csv_group_filepath(finance_root_folderpath, company_group_number):
-    csv_filepath = "%s/%s%02d" % (finance_root_folderpath, CMN_DEF.DEF_CSV_STOCK_FOLDERNAME, int(company_group_number)) 
+    csv_filepath = "%s/%s%02d" % (finance_root_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number)) 
     return csv_filepath
 
 
 def assemble_stock_csv_folderpath(finance_root_folderpath, company_code_number, company_group_number):
-    csv_filepath = "%s/%s%02d/%s" % (finance_root_folderpath, CMN_DEF.DEF_CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number) 
+    csv_filepath = "%s/%s%02d/%s" % (finance_root_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number) 
     return csv_filepath
 
 
 def assemble_stock_csv_filepath(finance_root_folderpath, source_type_index, company_code_number, company_group_number):
-    csv_filepath = "%s/%s%02d/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.DEF_CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN_DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+    csv_filepath = "%s/%s%02d/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
     return csv_filepath
 
 
-# DEF_SCRAPY_WAIT_TIMEOUT = 8
+# SCRAPY_WAIT_TIMEOUT = 8
 def request_from_url_and_check_return(url, timeout=None):
     if timeout is None:
-        timeout = CMN_DEF.DEF_SCRAPY_WAIT_TIMEOUT
+        timeout = CMN_DEF.SCRAPY_WAIT_TIMEOUT
     res = requests.get(url, timeout=timeout)
     if res.status_code != 200:
         if res.status_code == 503:
@@ -811,7 +811,7 @@ def request_from_url_and_check_return(url, timeout=None):
 
 def try_to_request_from_url_and_check_return(url, timeout=None):
     req = None
-    for index in range(CMN_DEF.DEF_SCRAPY_RETRY_TIMES):
+    for index in range(CMN_DEF.SCRAPY_RETRY_TIMES):
         try:
             # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
             req = request_from_url_and_check_return(url, timeout)
@@ -820,7 +820,7 @@ def try_to_request_from_url_and_check_return(url, timeout=None):
             time.sleep(randint(3, 9))
         else:
             return req            
-    errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.DEF_SCRAPY_RETRY_TIMES)
+    errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.SCRAPY_RETRY_TIMES)
     g_logger.error(errmsg)
     raise RuntimeError(errmsg)
 

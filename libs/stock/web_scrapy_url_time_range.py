@@ -20,8 +20,8 @@ class WebScrapyURLTimeRange(object):
 
     def __init__(self):
         # import pdb; pdb.set_trace()
-        self.TIME_RANGE_ROOT_FOLDERPATH = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_TIME_RANGE_FOLDERNAME)
-        self.TIME_RANGE_COMPANY_GROUP_FOLDERPATH_FORMAT = ("%s/%s" % (self.TIME_RANGE_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_STOCK_FOLDERNAME)) + "%02d"
+        self.TIME_RANGE_ROOT_FOLDERPATH = CMN.FUNC.get_config_filepath(CMN.DEF.TIME_RANGE_FOLDERNAME)
+        self.TIME_RANGE_COMPANY_GROUP_FOLDERPATH_FORMAT = ("%s/%s" % (self.TIME_RANGE_ROOT_FOLDERPATH, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
 # Caution: 
 # Since WebScrapyCompanyProfile/WebScrapyURLTimeRange are the Singleton pattern.
 # In the current implementation, One Singleton object can't be instanitate 
@@ -29,21 +29,21 @@ class WebScrapyURLTimeRange(object):
 # is deadlock in this situation
         # g_profile_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
         self.COMPANY_GROUP_SIZE = g_profile_lookup.CompanyGroupSize
-        # self.stock_offset_source_type_index_list = [source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START for source_type_index in self.source_type_index_list]
-        self.DEF_DATA_SOURCE_START_SCAN_TIME_CFG = [
+        # self.stock_offset_source_type_index_list = [source_type_index - CMN.DEF.DATA_SOURCE_STOCK_START for source_type_index in self.source_type_index_list]
+        self.DATA_SOURCE_START_SCAN_TIME_CFG = [
             CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -1)),
-            CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(CMN.DEF.DEF_STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.DEF_DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.DEF_TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.DEF_TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
+            CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
+            CMN.CLS.FinanceDate(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
+            CMN.CLS.FinanceDate(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
+            CMN.CLS.FinanceDate(CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
+            CMN.CLS.FinanceDate(CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
         ]
         last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)
-        self.DEF_DATA_SOURCE_END_TIME_CFG = [
+        self.DATA_SOURCE_END_TIME_CFG = [
             last_url_data_date,
             last_url_data_quarter,
             last_url_data_quarter,
@@ -119,7 +119,7 @@ class WebScrapyURLTimeRange(object):
         company_time_range_start_ordereddict = collections.OrderedDict()
         line_list = CMN.FUNC.read_file_lines_ex(company_number_time_range_filepath, "r")
         for line in line_list:
-            [source_type_index_str, company_time_range_start_str] = line.split(CMN.DEF.DEF_SPACE_DATA_SPLIT)
+            [source_type_index_str, company_time_range_start_str] = line.split(CMN.DEF.SPACE_DATA_SPLIT)
             source_type_index = int(source_type_index_str)
             if company_time_range_start_ordereddict.has_key(source_type_index):
                 raise ValueError("Duplicate source type index: %d" % source_type_index)
@@ -131,7 +131,7 @@ class WebScrapyURLTimeRange(object):
         company_number_time_range_filepath = self.__get_company_number_time_range_filepath(company_number, company_group)
         line_list = []
         for source_type_index, company_time_range_start in company_time_range_start_ordereddict.items():
-            line = "%d%s%s" % (source_type_index, CMN.DEF.DEF_SPACE_DATA_SPLIT, company_time_range_start.to_string())
+            line = "%d%s%s" % (source_type_index, CMN.DEF.SPACE_DATA_SPLIT, company_time_range_start.to_string())
             line_list.append(line)
         CMN.FUNC.write_file_lines_ex(line_list, company_number_time_range_filepath, "w")
 
@@ -159,7 +159,7 @@ class WebScrapyURLTimeRange(object):
             if company_time_range_start_ordereddict.has_key(source_type_index):
                 continue
             # import pdb;pdb.set_trace()
-            stock_source_type_index_offset = source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START
+            stock_source_type_index_offset = source_type_index - CMN.DEF.DATA_SOURCE_STOCK_START
 # Get the web scrapy class
 #             web_scrapy_class = self.web_scrapy_class_dict[stock_source_type_index_offset]
             web_scrapy_class = self.__get_web_scrapy_class(source_type_index)
@@ -173,8 +173,8 @@ class WebScrapyURLTimeRange(object):
 # Define the time range for scanning the start time
             time_slice_generator_cfg = {
                 "company_code_number": company_number, 
-                "time_duration_start": self.DEF_DATA_SOURCE_START_SCAN_TIME_CFG[stock_source_type_index_offset], 
-                "time_duration_end": self.DEF_DATA_SOURCE_END_TIME_CFG[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START],
+                "time_duration_start": self.DATA_SOURCE_START_SCAN_TIME_CFG[stock_source_type_index_offset], 
+                "time_duration_end": self.DATA_SOURCE_END_TIME_CFG[source_type_index - CMN.DEF.DATA_SOURCE_STOCK_START],
             }
             # import pdb; pdb.set_trace()
 # Generate the time slice
@@ -271,7 +271,7 @@ class WebScrapyURLTimeRange(object):
 
     def get_time_range_end(self, source_type_index):
         CMN.FUNC.check_source_type_index_in_range(source_type_index)
-        return self.DEF_DATA_SOURCE_END_TIME_CFG[source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_START]
+        return self.DATA_SOURCE_END_TIME_CFG[source_type_index - CMN.DEF.DATA_SOURCE_STOCK_START]
 
 
     def get_time_range(self, source_type_index, company_number, company_group=None):

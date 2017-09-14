@@ -23,8 +23,8 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if finance_root_folderpath is None:
             finance_root_folderpath = self.xcfg["finance_root_folderpath"]
         if finance_root_folderpath is None:
-            finance_root_folderpath = CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
-    	return "%s/%s" % (finance_root_folderpath, CMN.DEF.DEF_CSV_MARKET_FOLDERNAME)
+            finance_root_folderpath = CMN.DEF.SCRAPY_METHOD_DESCRIPTIONCSV_ROOT_FOLDERPATH
+    	return "%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_MARKET_FOLDERNAME)
 
 
     def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
@@ -43,16 +43,16 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def _init_csv_time_duration(self):
         assert self.source_type_csv_time_duration is None, "self.source_type_csv_time_duration should be None"
-        # self.source_type_csv_time_duration = [None] * CMN.DEF.DEF_DATA_SOURCE_MARKET_SIZE
+        # self.source_type_csv_time_duration = [None] * CMN.DEF.DATA_SOURCE_MARKET_SIZE
         self.source_type_csv_time_duration = {}
 
 
     def __parse_csv_time_duration_cfg(self, finance_root_folderpath=None):
         csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
         g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
-        csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+        csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
         if csv_time_duration_dict is None:
-            g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
+            g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME)
 # # update the time range of each source type from config file
 #         for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
 #             self.source_type_csv_time_duration[source_type_index] = time_duration_tuple
@@ -80,7 +80,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if source_type_csv_time_duration is None:
             source_type_csv_time_duration = self.source_type_csv_time_duration
         g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
-        CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration)
+        CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration)
 
 
     def _write_new_csv_time_duration(self):
@@ -121,7 +121,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #             file_not_found_list_len = len(file_not_found_list)
 #             file_is_empty_list_len = len(file_is_empty_list)  
 #             if file_not_found_list_len != 0 or file_is_empty_list_len != 0:
-#                 missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_MISSING_CSV_MARKET_FILENAME)
+#                 missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.MISSING_CSV_MARKET_FILENAME)
 #                 g_logger.debug("Write missing CSVs to the file: %s......" % missing_csv_filepath)
 #                 with open(missing_csv_filepath, 'wb') as fp:
 #                     try:
@@ -149,10 +149,10 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #         error_msg = None
 #         error_msg_list = []
 #         for file_not_found in file_not_found_list:
-#             error_msg = u"FileNotFound: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['filename'])
+#             error_msg = u"FileNotFound: %s, %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[file_not_found['index']], file_not_found['filename'])
 #             error_msg_list.append(error_msg)
 #         for file_is_empty in file_is_empty_list:
-#             error_msg = u"FileIsEmpty: %s, %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_is_empty['filename'])
+#             error_msg = u"FileIsEmpty: %s, %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[file_is_empty['index']], file_is_empty['filename'])
 #             error_msg_list.append(error_msg)
 #         if len(error_msg_list) != 0:
 #             error_msg = "\n".join(error_msg_list)

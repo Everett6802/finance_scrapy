@@ -79,7 +79,7 @@ class WebScrapyTimeSliceGenerator(object):
 
 
     def __find_company_foreign_investors_shareholder_url_data(self, date_str_for_financial_statement, company_code_number):
-        class_constant_cfg = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEF_DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SOURCE_INDEX]
+        class_constant_cfg = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SOURCE_INDEX]
         url = class_constant_cfg["url_format"].format(*(date_str_for_financial_statement[0:4], date_str_for_financial_statement[4:6], date_str_for_financial_statement[6:8], company_code_number))
         req = None
         exception_for_url = None

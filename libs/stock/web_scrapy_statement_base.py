@@ -25,7 +25,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
 
     __metaclass__ = ABCMeta
     TABLE_COLUMN_FIELD_EXIST = False
-    DEF_ALIAS_DATA_SPLIT = ":ALIAS:"
+    ALIAS_DATA_SPLIT = ":ALIAS:"
 
 
     @classmethod
@@ -50,7 +50,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
     #     if cls.TABLE_COLUMN_FIELD_EXIST:
     #         total_table_field_title_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
     #         try:
-    #             column_field_start_flag_index = total_table_field_title_list.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+    #             column_field_start_flag_index = total_table_field_title_list.index(CMN.DEF.COLUMN_FIELD_START_FLAG_IN_CONFIG)
     #             table_field_title_list = copy.deepcopy(total_table_field_title_list[0:column_field_start_flag_index])
     #             table_column_field_title_list = copy.deepcopy(total_table_field_title_list[column_field_start_flag_index + 1:])
     #         except ValueError:
@@ -84,7 +84,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
         if cls.TABLE_COLUMN_FIELD_EXIST:
             total_table_field_data_list = CMN.FUNC.read_config_file_lines_ex(conf_filename, "rb")
             try:
-                column_field_start_flag_index = total_table_field_data_list.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+                column_field_start_flag_index = total_table_field_data_list.index(CMN.DEF.COLUMN_FIELD_START_FLAG_IN_CONFIG)
                 table_field_data_list = copy.deepcopy(total_table_field_data_list[0:column_field_start_flag_index])
                 table_column_field_data_list = copy.deepcopy(total_table_field_data_list[column_field_start_flag_index + 1:])
             except ValueError:
@@ -96,19 +96,19 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
         cls.TABLE_FIELD_INTEREST_ALIAS_TITLE_DICT = {}
         cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT = collections.defaultdict(lambda: cls.TABLE_FIELD_INTEREST_ENTRY_LEN)
         for table_field_data in table_field_data_list:
-            if table_field_data.find(cls.DEF_ALIAS_DATA_SPLIT) == -1:
+            if table_field_data.find(cls.ALIAS_DATA_SPLIT) == -1:
 # Normal type title
-                data_array = table_field_data.split(CMN.DEF.DEF_COLON_DATA_SPLIT)
+                data_array = table_field_data.split(CMN.DEF.COLON_DATA_SPLIT)
                 field_title = data_array[0]
                 cls.TABLE_FIELD_INTEREST_TITLE_LIST.append(field_title)
                 if len(data_array) == 2:
-                    field_interest_entry = [int(field_index) for field_index in data_array[1].split(CMN.DEF.DEF_COMMA_DATA_SPLIT)]
+                    field_interest_entry = [int(field_index) for field_index in data_array[1].split(CMN.DEF.COMMA_DATA_SPLIT)]
                     cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[field_title] = field_interest_entry
                 elif len(data_array) > 2:
                     raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("Incorrect field config format: %s" % table_field_data)
             else:
 # Alias type title
-                data_array = table_field_data.split(cls.DEF_ALIAS_DATA_SPLIT)
+                data_array = table_field_data.split(cls.ALIAS_DATA_SPLIT)
                 if len(data_array) != 2:
                     raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("Incorrect field config format: %s" % table_field_data)
                 cls.TABLE_FIELD_INTEREST_ALIAS_TITLE_DICT[data_array[0]] = data_array[1]
@@ -333,7 +333,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
                 if time_duration_after_lookup_time is None:
                     self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SOURCE_TYPE_INDEX, company_code_number)
                     continue
-                g_logger.debug("Update statement field => [%s:%s] %s:%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], company_code_number, time_duration_after_lookup_time.time_duration_start, time_duration_after_lookup_time.time_duration_end))
+                g_logger.debug("Update statement field => [%s:%s] %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], company_code_number, time_duration_after_lookup_time.time_duration_start, time_duration_after_lookup_time.time_duration_end))
 # Create the time slice iterator due to correct time range
                 # import pdb; pdb.set_trace()
                 company_statement_field_list = None
@@ -381,7 +381,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
             data_list.append(td[0].text)
         if len(data_list) == 0:
             # import pdb;pdb.set_trace()
-            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The field data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The field data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
         return data_list
 
 
@@ -395,7 +395,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
             data_list.append(td[i].text)
         if len(data_list) == 0:
             # import pdb;pdb.set_trace()
-            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The column field data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The column field data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
         return data_list
 
 
@@ -533,7 +533,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
 #                 break
 #         if data_is_empty:
 #             # import pdb;pdb.set_trace()
-#             raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
+#             raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
 # # Transforms the table into the 1-Dimension list
 #         # import pdb;pdb.set_trace()
 #         padding_entry = "0" 
@@ -640,7 +640,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
                 break
         if data_is_empty:
             # import pdb;pdb.set_trace()
-            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
 # Transforms the table into the 1-Dimension list
         # import pdb;pdb.set_trace()
         padding_entry = "0" 

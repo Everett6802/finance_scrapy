@@ -86,7 +86,7 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
     def __write_each_company_to_csv(self, company_code_number, csv_data_list, web2csv_time_duration_update, need_append_old_csv=True):
 # Find the file path for writing data into csv
         csv_filepath = self.assemble_csv_filepath(self.SOURCE_TYPE_INDEX, company_code_number)
-        scrapy_msg = "[%s:%s] %s %d => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], len(csv_data_list), csv_filepath)
+        scrapy_msg = "[%s:%s] %s %d => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], len(csv_data_list), csv_filepath)
         g_logger.debug(scrapy_msg)
 # If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
         web2csv_time_duration_update.backup_old_csv_if_necessary(csv_filepath, True)
@@ -115,7 +115,7 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
                 web2csv_time_duration_update_tuple = self._adjust_time_range_from_csv(self.time_duration_after_lookup_time, company_code_number)
                 if web2csv_time_duration_update_tuple is None:
                     self.csv_file_no_scrapy_record.add_csv_file_already_exist_record(self.SOURCE_TYPE_INDEX, company_code_number)
-                    g_logger.debug("[%s:%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX].time_duration_end))
+                    g_logger.debug("[%s:%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX].time_duration_end))
                     self.company_group_out_of_csv_time_range_set.add_company(company_code_number)
                     continue
                 self.company_number_csv_time_range_dict[company_code_number] = []
@@ -147,10 +147,6 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
                 self.company_number_csv_data_dict[company_code_number] = []
 
 
-    def _calculate_progress_amount(self):
-        
-
-
     def __update_each_company_last_csv_data(self):
 # Check the last data and write into CSV if necessary
         for company_code_number, csv_data_list in self.company_number_csv_data_dict.items():
@@ -173,7 +169,7 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
         self.time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SOURCE_TYPE_INDEX, None)
         if self.time_duration_after_lookup_time is None:
             # self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SOURCE_TYPE_INDEX, company_code_number)
-            g_logger.debug("[%s:%s] %s => The search time range is NOT in the time range of web data !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
+            g_logger.debug("[%s:%s] %s => The search time range is NOT in the time range of web data !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
             return
         self.company_number_csv_time_range_dict = {}
         self.company_number_csv_data_dict = {}
@@ -186,14 +182,14 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
             web_data = self._scrape_web_data(timeslice, None)
             if len(web_data) == 0:
 # Keep track of the time range in which the web data is empty
-                self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SOURCE_TYPE_INDEX, CMN.DEF.DEF_TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
+                self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SOURCE_TYPE_INDEX, CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
             else:
                 csv_data_list = self._parse_web_data(web_data)
                 if len(csv_data_list) == 0:
                     raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
                 self.__update_each_company_csv_data(timeslice, csv_data_list)
 # Flush the last data into the list if required
-            self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SOURCE_TYPE_INDEX, DEF_TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
+            self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SOURCE_TYPE_INDEX, TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
 # Write the last data in the buf
             self.__update_each_company_last_csv_data()
 # Increase the progress count

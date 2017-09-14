@@ -21,7 +21,7 @@ class WebSracpyMgrBase(object):
             "old_finance_folder_reservation": False,
             "try_to_scrap_all": True,
             "dry_run_only": False,
-            "finance_root_folderpath": CMN.DEF.DEF_CSV_ROOT_FOLDERPATH,
+            "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
             "multi_thread_amount": None,
             "show_progress": False,
             "need_estimate_complete_time": True,
@@ -143,17 +143,17 @@ class WebSracpyMgrBase(object):
                 self._scrap_single_source_data(source_type_time_duration)
             except CMN.EXCEPTION.WebScrapyException as e:
                 if isinstance(e.message, str):
-                    errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
+                    errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
                 else:
-                    errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
+                    errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
                 CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
                 g_logger.error(errmsg)
                 raise e
             except Exception as e:
                 if isinstance(e.message, str):
-                    errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
+                    errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
                 else:
-                    errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
+                    errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
                 CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
                 g_logger.error(errmsg)
                 total_errmsg += errmsg
@@ -201,7 +201,7 @@ class WebSracpyMgrBase(object):
             if not CMN.FUNC.check_source_type_index_in_range(source_type_time_duration.source_type_index):
                 raise ValueError("The source type index[%d] is NOT in %s mode" % (source_type_time_duration.source_type_index, CMN.DEF.FINANCE_MODE_DESCRIPTION[CMN.DEF.FINANCE_MODE]))
             g_logger.debug("[%s] %s-%s" % (
-                CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], 
+                CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], 
                 source_type_time_duration.time_duration_start, 
                 source_type_time_duration.time_duration_end
                 )

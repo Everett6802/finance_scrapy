@@ -41,12 +41,12 @@ class WebScrapyIncomeStatement(WebScrapyStatementBase.WebScrapyStatementBase):
     def show_statement_field_dimension(cls, auto_gen_sql_element=True):
         cls.init_class_customized_variables()        # cls.get_parent_class().init_class_variables() # Caution: This class function should NOT be called by the parent class
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-            cls._init_statement_field_class_variables(CMN.DEF.DEF_INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME)
+            cls._init_statement_field_class_variables(CMN.DEF.INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME)
             # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　　繼續營業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
             # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　基本每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
             # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　　停業單位淨利（淨損）".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
             # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　稀釋每股盈餘".encode(CMN.DEF.URL_ENCODING_UTF8)] = 1
-        cls._show_statement_field_dimension_internal(CMN.DEF.DEF_INCOME_STATEMENT_INTEREST_FIELD_METADATA_FILENAME, auto_gen_sql_element)
+        cls._show_statement_field_dimension_internal(CMN.DEF.INCOME_STATEMENT_INTEREST_FIELD_METADATA_FILENAME, auto_gen_sql_element)
 
 
     def __init__(self, **kwargs):

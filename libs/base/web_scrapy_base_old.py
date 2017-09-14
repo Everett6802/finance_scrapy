@@ -23,19 +23,19 @@ class WebScrapyBase(object):
         # self.scrap_web_to_csv_func_ptr = [self.__scrap_web_to_csv_one_month_per_file, self.__scrap_web_to_csv_one_day_per_file]
         # self.scrap_web_to_csv_func_ptr = [self.__scrap_multiple_web_data_to_single_csv_file, self.__scrap_single_web_data_to_single_csv_file]
 
-        cur_module_name = re.sub(CMN.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.get_cur_module_name(cur_file_path))
+        cur_module_name = re.sub(CMN.WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.get_cur_module_name(cur_file_path))
         # g_logger.debug("Current module name (w/o prefix): %s" % cur_module_name)
-        self.data_source_index = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
+        self.data_source_index = CMN.WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
 # # Check Start/End time range
 #         if kwargs.get("datetime_range_start", None) is None:
-#             datetime_range_start = CMN.DEF_DATA_SOURCE_START_DATE_CFG[self.data_source_index]
+#             datetime_range_start = CMN.DATA_SOURCE_START_DATE_CFG[self.data_source_index]
 #         if kwargs.get("datetime_range_end", None) is None:
 #             workday_canlendar_obj = WorkdayCanlendar.WebScrapyWorkdayCanlendar()
 #             datetime_range_end = workday_canlendar_obj.get_latest_workday()
         
         self.PARSE_URL_DATA_FUNC_PTR = [self.__select_web_data_by_bs4, self.__select_web_data_by_json]
 
-        self.source_url_parsing_cfg = CMN.DEF_SOURCE_URL_PARSING[self.data_source_index]
+        self.source_url_parsing_cfg = CMN.SOURCE_URL_PARSING[self.data_source_index]
         # self.url_format = source_url_parsing_cfg.get("url_format", None)
         # self.url_timeslice = source_url_parsing_cfg.get("url_timeslice", None)
         # self.url_encoding = source_url_parsing_cfg.get("url_encoding", None)
@@ -45,8 +45,8 @@ class WebScrapyBase(object):
         # self.parse_url_data_type_obj = source_url_parsing_cfg["parse_url_data_obj"]
         self.timeslice_generate_method = self.source_url_parsing_cfg["url_timeslice"]
         # self.select_web_data = self.__select_web_data_by_bs4
-        # source_data_time_unit_cfg = CMN.DEF_CSV_TIME_UNIT[self.data_source_index]
-        csv_time_unit = CMN.DEF_CSV_TIME_UNIT[self.data_source_index]
+        # source_data_time_unit_cfg = CMN.CSV_TIME_UNIT[self.data_source_index]
+        csv_time_unit = CMN.CSV_TIME_UNIT[self.data_source_index]
         url_time_unit = CMN.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
         self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file if url_time_unit == csv_time_unit self.__scrap_single_web_data_to_single_csv_file
         # if url_time_unit == csv_time_unit:
@@ -60,16 +60,16 @@ class WebScrapyBase(object):
         # self.workday_canlendar = WorkdayCanlendar.WebScrapyWorkdayCanlendar.Instance()
         self.description = None
 
-        # if CMN.DEF_DATA_SOURCE_WRITE2CSV_METHOD[self.data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
-        #     csv_filename_format = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s.csv"
+        # if CMN.DATA_SOURCE_WRITE2CSV_METHOD[self.data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
+        #     csv_filename_format = CMN.WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s.csv"
         #     self.csv_filename = csv_filename_format % self. __generate_time_string_filename(datetime_range_start)
-        #     self.csv_filepath = "%s/%s" % (CMN.DEF_CSV_FILE_PATH, self.csv_filename)
-        #     g_logger.debug("Write data[%s] to CSV file: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], self.csv_filepath))
-        # elif CMN.DEF_DATA_SOURCE_WRITE2CSV_METHOD[self.data_source_index] == CMN.WRITE2CSV_ONE_DAY_PER_FILE:
-        #     csv_foldername_format = CMN.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s"
+        #     self.csv_filepath = "%s/%s" % (CMN.CSV_FILE_PATH, self.csv_filename)
+        #     g_logger.debug("Write data[%s] to CSV file: %s" % (CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], self.csv_filepath))
+        # elif CMN.DATA_SOURCE_WRITE2CSV_METHOD[self.data_source_index] == CMN.WRITE2CSV_ONE_DAY_PER_FILE:
+        #     csv_foldername_format = CMN.WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s"
         #     self.csv_foldername = csv_foldername_format % self. __generate_time_string_filename(datetime_range_start)
-        #     self.csv_folderpath = "%s/%s" % (CMN.DEF_CSV_FILE_PATH, self.csv_foldername)
-        #     g_logger.debug("Write data[%s] to CSV folder: %s" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], self.csv_folderpath))
+        #     self.csv_folderpath = "%s/%s" % (CMN.CSV_FILE_PATH, self.csv_foldername)
+        #     g_logger.debug("Write data[%s] to CSV folder: %s" % (CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], self.csv_folderpath))
 
         # self.enable_time_range_mode = enable_time_range_mode
 
@@ -96,14 +96,14 @@ class WebScrapyBase(object):
 
         # if self.datetime_startday == self.datetime_endday:
         #     self.description = "%s[%04d%02d%02d]" % (
-        #         CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], 
+        #         CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], 
         #         self.datetime_startday.year, 
         #         self.datetime_startday.month, 
         #         self.datetime_startday.day
         #     )
         # else:
         #     self.description = "%s[%04d%02d%02d-%04d%02d%02d]" % (
-        #         CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], 
+        #         CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], 
         #         self.datetime_startday.year, 
         #         self.datetime_startday.month, 
         #         self.datetime_startday.day,
@@ -127,9 +127,9 @@ class WebScrapyBase(object):
             self.timeslice_cnt = len(timeslice_list)
             self.timeslice_list_generated = True
             if self.timeslice_start == self.timeslice_end:
-                msg = "%s: %04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], config['start'].year, config['start'].month, config['start'].day)
+                msg = "%s: %04d-%02d-%02d" % (CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], config['start'].year, config['start'].month, config['start'].day)
             else:
-                msg = "%s: %04d-%02d-%02d:%04d-%02d-%02d" % (CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], config['start'].year, config['start'].month, config['start'].day, config['end'].year, config['end'].month, config['end'].day)
+                msg = "%s: %04d-%02d-%02d:%04d-%02d-%02d" % (CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], config['start'].year, config['start'].month, config['start'].day, config['end'].year, config['end'].month, config['end'].day)
             g_logger.info(msg)
 
 
@@ -140,17 +140,17 @@ class WebScrapyBase(object):
                     self.__generate_timeslice_list()
                 if self.timeslice_start == self.timeslice_end:
                     self.description = "%s[%s]" % (
-                        CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], 
+                        CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], 
                         self.timeslice_start.to_string()
                     )
                 else:
                     self.description = "%s[%s-%s]" % (
-                        CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index], 
+                        CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], 
                         self.timeslice_start.to_string(), 
                         self.timeslice_end.to_string()
                     )
             else:
-                self.description = "%s" % CMN.DEF_DATA_SOURCE_INDEX_MAPPING[self.data_source_index]
+                self.description = "%s" % CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index]
         return self.description
 
 
@@ -184,15 +184,15 @@ class WebScrapyBase(object):
         # res = requests.get(url)
         try:
             # g_logger.debug("Try to Scrap data [%s]" % url)
-            res = requests.get(url, timeout=CMN.DEF_SCRAPY_WAIT_TIMEOUT)
+            res = requests.get(url, timeout=CMN.SCRAPY_WAIT_TIMEOUT)
         except requests.exceptions.Timeout as e:
             # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
             fail_to_scrap = False
-            for index in range(CMN.DEF_SCRAPY_RETRY_TIMES):
+            for index in range(CMN.SCRAPY_RETRY_TIMES):
                 time.sleep(randint(3,9))
                 try:
                     # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
-                    res = requests.get(url, timeout=CMN.DEF_SCRAPY_WAIT_TIMEOUT)
+                    res = requests.get(url, timeout=CMN.SCRAPY_WAIT_TIMEOUT)
                 except requests.exceptions.Timeout as ex:
                     # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
                     fail_to_scrap = True

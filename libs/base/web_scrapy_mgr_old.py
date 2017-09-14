@@ -79,7 +79,7 @@ class WebSracpyMgr(object):
 #                 g_logger.warn("Put %s in the re-try list" % web_scrapy_class_obj.get_description())
 #                 self.retry_config_list.append(
 #                     {
-#                         'index': CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING,
+#                         'index': CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING,
 #                         'start': time_start,
 #                         'end': time_end,
 #                     }
@@ -150,13 +150,13 @@ class WebSracpyMgr(object):
 #                     break
 
     # def __assemble_csv_filepath(self, datetime_cfg, data_source_index):
-    #     if CMN.DEF.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
-    #         file_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_cfg.year, datetime_cfg.month)
-    #         file_path = CMN.DEF.DEF_CSV_FILE_PATH + "/" + file_name
-    #     elif CMN.DEF.DEF_DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_DAY_PER_FILE:
-    #         folder_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d" % (datetime_cfg.year, datetime_cfg.month)
+    #     if CMN.DEF.DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
+    #         file_name = CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_cfg.year, datetime_cfg.month)
+    #         file_path = CMN.DEF.CSV_FILE_PATH + "/" + file_name
+    #     elif CMN.DEF.DATA_SOURCE_WRITE2CSV_METHOD[data_source_index] == CMN.WRITE2CSV_ONE_DAY_PER_FILE:
+    #         folder_name = CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d" % (datetime_cfg.year, datetime_cfg.month)
     #         file_name = (CMN.DATE_STRING_FORMAT + ".csv") % (datetime_cfg.year, datetime_cfg.month, datetime_cfg.day)
-    #         file_path = CMN.DEF.DEF_CSV_FILE_PATH + "/" + folder_name + "/" + file_name
+    #         file_path = CMN.DEF.CSV_FILE_PATH + "/" + folder_name + "/" + file_name
     #     else:
     #         raise RuntimeError("Unknown data source index: %d" % data_source_index)
     #     return (file_path, file_name)
@@ -172,8 +172,8 @@ class WebSracpyMgr(object):
 #             datetime_range_list = CMN.get_datetime_range_by_month_list(config['start'], config['end'])
 #             for datetime_range in datetime_range_list:
 #                 (file_path, file_name) = self.__assemble_csv_filepath(datetime_range['start'], data_source_index)
-#                 # file_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_range['start'].year, datetime_range['start'].month)
-#                 # file_path = CMN.DEF.DEF_CSV_FILE_PATH + "/" + file_name
+#                 # file_name = CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index] + "_%04d%02d.csv" % (datetime_range['start'].year, datetime_range['start'].month)
+#                 # file_path = CMN.DEF.CSV_FILE_PATH + "/" + file_name
 # # Check if the file exists
 #                 if not os.path.exists(file_path):
 #                     file_not_found_list.append(
@@ -202,9 +202,9 @@ class WebSracpyMgr(object):
         # import pdb; pdb.set_trace()
         for config in config_list:
             try:
-                module_folder = CMN.DEF.DEF_WEB_SCRAPY_MODULE_FOLDER_MAPPING[config['index']]
-                module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[config['index']]
-                class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[config['index']]
+                module_folder = CMN.DEF.WEB_SCRAPY_MODULE_FOLDER_MAPPING[config['index']]
+                module_name = CMN.DEF.WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[config['index']]
+                class_name = CMN.DEF.WEB_SCRAPY_CLASS_NAME_MAPPING[config['index']]
                 g_logger.debug("Try to initiate %s.%s" % (module_name, class_name))
                 if not multi_thread:
                     scrapy_obj_cfg = {"time_start": config['start'], "time_end": config['end']}
@@ -213,7 +213,7 @@ class WebSracpyMgr(object):
                     raise ValueError("Multi-thread mode is NOT supported")
                     # self.__do_scrapy_by_multithread(module_name, class_name, config['start'], config['end'])
             except Exception as e:
-                errmsg = u"Error occur while scraping %s data, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[config['index']], str(e))
+                errmsg = u"Error occur while scraping %s data, due to: %s" % (CMN.DEF.DATA_SOURCE_INDEX_MAPPING[config['index']], str(e))
                 g_logger.error(errmsg)
                 error_occur = True
                 if not try_to_run_all:
@@ -226,17 +226,17 @@ class WebSracpyMgr(object):
 #             g_logger.warn("Retry to scrap the web data due to some errors.......")
 #             for retry_config in self.retry_config_list:
 #                 try:
-#                     module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[retry_config['index']]
-#                     class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[retry_config['index']]
+#                     module_name = CMN.DEF.WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[retry_config['index']]
+#                     class_name = CMN.DEF.WEB_SCRAPY_CLASS_NAME_MAPPING[retry_config['index']]
 #                     g_logger.debug("Re-Try to initiate %s.%s" % (module_name, class_name))
 #                     self.__do_scrapy(module_name, class_name, retry_config['start'], retry_config['end'])
 #                 except Exception as e:
-#                     g_logger.error("Error occur while ReTrying to scrap %s data, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[retry_config['index']], str(e)))
+#                     g_logger.error("Error occur while ReTrying to scrap %s data, due to: %s" % (CMN.DEF.DATA_SOURCE_INDEX_MAPPING[retry_config['index']], str(e)))
 
 
     def do_debug(self, data_source_index):
-        module_name = CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index]
-        class_name = CMN.DEF.DEF_WEB_SCRAPY_CLASS_NAME_MAPPING[data_source_index]
+        module_name = CMN.DEF.WEB_SCRAPY_MODULE_NAME_PREFIX + CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[data_source_index]
+        class_name = CMN.DEF.WEB_SCRAPY_CLASS_NAME_MAPPING[data_source_index]
         g_logger.debug("Try to initiate %s.%s for debugging......" % (module_name, class_name))
         web_scrapy_class_obj = self.__create_web_scrapy_object(module_name, class_name)
         web_scrapy_class_obj.do_debug()

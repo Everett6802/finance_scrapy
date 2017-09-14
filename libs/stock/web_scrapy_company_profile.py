@@ -52,7 +52,7 @@ class WebScrapyCompanyProfile(object):
         # import pdb; pdb.set_trace()
         self.COMPANY_PROFILE_ELEMENT_LEN = 7
         self.COMPANY_PROFILE_ELEMENT_EX_LEN = self.COMPANY_PROFILE_ELEMENT_LEN + 2
-        self.UNICODE_ENCODING_IN_FILE = CMN.DEF.DEF_UNICODE_ENCODING_IN_FILE
+        self.UNICODE_ENCODING_IN_FILE = CMN.DEF.UNICODE_ENCODING_IN_FILE
         self.url_format = "http://isin.twse.com.tw/isin/C_public.jsp?strMode=%d"
         self.encoding = "big5"
         self.select_flag = "table tr"
@@ -113,7 +113,7 @@ class WebScrapyCompanyProfile(object):
         if not need_update_from_web:
             need_update_from_web = self.__update_company_profile_from_file()
             if need_check_company_diff and need_update_from_web:
-                g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+                g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
                 need_check_company_diff = False
 # It's required to update the new data
         if need_update_from_web:
@@ -144,16 +144,16 @@ class WebScrapyCompanyProfile(object):
     def __copy_company_profile_config_file(self):
         # import pdb; pdb.set_trace()
         # current_path = os.path.dirname(os.path.realpath(__file__))
-        [working_folder, project_name] = CMN.DEF.DEF_PROJECT_FOLDERPATH.rsplit('/', 1)
+        [working_folder, project_name] = CMN.DEF.PROJECT_FOLDERPATH.rsplit('/', 1)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.DEF_CONF_FOLDER),
-            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.CONF_FOLDER),
         ]
-        company_profile_src_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
-        company_group_src_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
+        company_profile_src_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+        company_group_src_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             # if os.path.exists(dst_folderpath):
-            #     g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
+            #     g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
             #     shutil.copy2(src_filepath, dst_folderpath)
             CMN.FUNC.copy_file_if_exist(company_profile_src_filepath, dst_folderpath)
             CMN.FUNC.copy_file_if_exist(company_group_src_filepath, dst_folderpath)
@@ -165,7 +165,7 @@ class WebScrapyCompanyProfile(object):
         need_update_from_web = False
         # current_path = os.path.dirname(os.path.realpath(__file__))
         # [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Try to Acquire the Company Code Number data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Company Code Number config file does NOT exist")
@@ -191,7 +191,7 @@ class WebScrapyCompanyProfile(object):
             #     self.__company_group_size = len(self.company_group_num2name_list)
             #     self.__company_amount = len(self.company_profile_list)
             #     self.__generate_company_group_profile_list()
-            line_unicode_list = CMN.FUNC.unicode_read_config_file_lines(CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+            line_unicode_list = CMN.FUNC.unicode_read_config_file_lines(CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
             for line_unicode in line_unicode_list:
                 element_list = re.split(r",", line_unicode, re.U)
                 if len(element_list) != self.COMPANY_PROFILE_ELEMENT_EX_LEN:
@@ -296,14 +296,14 @@ class WebScrapyCompanyProfile(object):
 # Scrap the web data
         # try:
         #     # g_logger.debug("Try to Scrap data [%s]" % url)
-        #     res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+        #     res = requests.get(url, timeout=CMN.DEF.SCRAPY_WAIT_TIMEOUT)
         # except requests.exceptions.Timeout as e:
         #     # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
         #     fail_to_scrap = False
         #     for index in range(self.SCRAPY_RETRY_TIMES):
         #         time.sleep(randint(1,3))
         #         try:
-        #             res = requests.get(url, timeout=CMN.DEF.DEF_SCRAPY_WAIT_TIMEOUT)
+        #             res = requests.get(url, timeout=CMN.DEF.SCRAPY_WAIT_TIMEOUT)
         #         except requests.exceptions.Timeout as ex:
         #             fail_to_scrap = True
         #         if not fail_to_scrap:
@@ -423,7 +423,7 @@ class WebScrapyCompanyProfile(object):
     def __write_company_profile_to_file(self, cur_timestamp_str=None):
         # import pdb; pdb.set_trace()
 # File for keeping track of the company code number info
-#         conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+#         conf_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
 #         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
 #         with open(conf_filepath, 'wb') as fp:
 #             try:
@@ -439,7 +439,7 @@ class WebScrapyCompanyProfile(object):
 #                 raise e
         if cur_timestamp_str is None:
             cur_timestamp_str = CMN.FUNC.generate_cur_timestamp_str()
-        g_logger.debug("Write the Company Code Number info to the file: %s......" % CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        g_logger.debug("Write the Company Code Number info to the file: %s......" % CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
         company_profile_unicode_list = []
 # Add the timestamp in the first line
         company_profile_unicode_list.append(cur_timestamp_str)
@@ -449,9 +449,9 @@ class WebScrapyCompanyProfile(object):
             company_profile_unicode_list.append(company_profile_unicode)
             # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
 # File for keeping track of the company group info
-#         conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
+#         conf_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
 #         g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
 #         with open(conf_filepath, 'wb') as fp:
 #             try:
@@ -463,14 +463,14 @@ class WebScrapyCompanyProfile(object):
 #                 g_logger.error(u"Error occur while writing Company Group into config file, due to %s" %str(e))
 #                 # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
 #                 raise e
-        g_logger.debug("Write the Company Group info to the file: %s......" % CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
+        g_logger.debug("Write the Company Group info to the file: %s......" % CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
         company_group_unicode_list = []
         company_group_unicode_list.append(cur_timestamp_str)
         for index, company_group in enumerate(self.company_group_num2name_list):
             company_group_unicode = u"%d %s" % (index, company_group)
             company_group_unicode_list.append(company_group_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-        CMN.FUNC.unicode_write_config_file_lines(company_group_unicode_list, CMN.DEF.DEF_COMPANY_GROUP_CONF_FILENAME)
+        CMN.FUNC.unicode_write_config_file_lines(company_group_unicode_list, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
 
 
     def __write_company_profile_change_list_to_file(self, old_lost_list=None, new_added_list=None, cur_timestamp_str=None):
@@ -480,25 +480,25 @@ class WebScrapyCompanyProfile(object):
         config_line_list = [cur_timestamp_str,]
         if old_lost_list is None and new_added_list is None:
 # Remove the old config file if exist
-            CMN.FUNC.remove_config_file_if_exist(CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
+            CMN.FUNC.remove_config_file_if_exist(CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
             config_line_list.append("Initial update")
-            CMN.FUNC.write_config_file_lines(config_line_list, CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
+            CMN.FUNC.write_config_file_lines(config_line_list, CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
         else:
 # Append the company change result
-            if not CMN.FUNC.check_config_file_exist(CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME):
-                raise ValueError("The config file[%s] does NOT exist" % CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
+            if not CMN.FUNC.check_config_file_exist(CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME):
+                raise ValueError("The config file[%s] does NOT exist" % CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
             company_change_str = ""
             if old_lost_list is not None:
                 company_change_str += "OldLost:" + ",".join(old_lost_list) + " "
             if new_added_list is not None:
                 company_change_str += "NewAdded:" + ",".join(new_added_list) + " "
             config_line_list.append(company_change_str)
-            CMN.FUNC.write_config_file_lines_ex(config_line_list, CMN.DEF.DEF_COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME, "a+")
+            CMN.FUNC.write_config_file_lines_ex(config_line_list, CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME, "a+")
 
 
     def __write_company_group_to_file(self):
         # import pdb; pdb.set_trace()
-#         conf_filepath = "%s/%s/%s" % (CMN.DEF.DEF_PROJECT_FOLDERPATH, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+#         conf_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
 #         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
 #         with open(conf_filepath, 'wb') as fp:
 #             try:
@@ -521,7 +521,7 @@ class WebScrapyCompanyProfile(object):
             company_profile_unicode_list.append(company_profile_unicode)
             # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.DEF_COMPANY_PROFILE_CONF_FILENAME)
+        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
 
 
     def __get_exceptional_company_industry_by_company_code_number_first_2_digit(self, company_code_number):

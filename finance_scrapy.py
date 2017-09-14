@@ -17,30 +17,30 @@ def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
-    print "--market_mode --stock_mode\nDescription: Switch the market/stock mode\nCaution: Read parameters from %s when NOT set" % CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME
+    print "--market_mode --stock_mode\nDescription: Switch the market/stock mode\nCaution: Read parameters from %s when NOT set" % CMN.DEF.MARKET_STOCK_SWITCH_CONF_FILENAME
     print "--silent\nDescription: Disable print log on console"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
-    print "--debug_source\nDescription: Debug a specific source type only\nCaution: Ignore other parameters when set"
+    print "--debug_scrapy\nDescription: Debug a specific scrapy class only\nCaution: Ignore other parameters when set"
     source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
     for source_type_index in source_type_index_list:
-        print "  %d: %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index])
+        print "  %d: %s" % (source_type_index, CMN.DEF.SCRAPY_CLASS_DESCRIPTION[source_type_index])
     print "  Format: Source Type (ex. 1)"
     print "--no_scrap\nDescription: Don't scrap Web data"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrap flag is NOT set"
     # print "--no_check\nDescription: Don't check the CSV files after scraping Web data"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check is set"
-    print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.DEF_CSV_ROOT_FOLDERPATH, CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
+    print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
-    print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s" % CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
-    print "--method_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/source_from_xxx_file/time_duration_range are ignored when set" % (CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
+    print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s" % CMN.DEF.CSV_ROOT_FOLDERPATH
+    print "--method_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/source_from_xxx_file/time_duration_range are ignored when set" % (CMN.DEF.MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
     print "--method_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
     print "--method_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
     print "--method_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
     print "--method\nDescription: The list of the finance data sources\nDefault: All finance data sources\nCaution: Only work when method_from_file is NOT set"
     method_index_list = CMN.FUNC.get_method_index_range_list()
     for method_index in method_index_list:
-        print "  %d: %s" % (method_index, CMN.DEF.DEF_WEB_SCRAPY_METHOD_DESCRIPTION[method_index])
+        print "  %d: %s" % (method_index, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
     print "  Format 1: Method (ex. 1,3,5)"
     print "  Format 2: Method range (ex. 2-6)"
     print "  Format 3: Method/Method range hybrid (ex. 1,3-4,6)"
@@ -67,7 +67,7 @@ def show_usage_and_exit():
     print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder can NOT be duplicate. If so, the merge progress aborts"
     print "  Format 1 (folderpath): /var/tmp/finance"
     print "  Format 2 (folderpath1,folderpath2,folderpath3): /var/tmp/finance1,/var/tmp/finance2,/var/tmp/finance3"
-    print "--merge_finance_folderpath_dst\nDescription: The destination folderpath after merging\nDefault: %s" % CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH
+    print "--merge_finance_folderpath_dst\nDescription: The destination folderpath after merging\nDefault: %s" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
     # print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
     print "============================================================="
     sys.exit(0)
@@ -97,8 +97,8 @@ def show_error_and_exit(errmsg):
 
 
 def snapshot_result(run_result_str):
-    if not os.path.exists(CMN.DEF.DEF_SNAPSHOT_FOLDER):
-        os.makedirs(CMN.DEF.DEF_SNAPSHOT_FOLDER)
+    if not os.path.exists(CMN.DEF.SNAPSHOT_FOLDER):
+        os.makedirs(CMN.DEF.SNAPSHOT_FOLDER)
     with open(CMN.DEF.RUN_RESULT_FILENAME, 'w') as fp:
         fp.write(run_result_str.encode('utf8'))
     datetime_now = datetime.today()
@@ -106,7 +106,7 @@ def snapshot_result(run_result_str):
 # -v is for verbose. If you don't use it then it won't display
     # subprocess.call(["tar", "cvzf", snapshot_filename, CMN.DEF.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, CMN.WSL.LOG_FILE_PATH])
     subprocess.call(["tar", "czf", snapshot_filename, CMN.DEF.RUN_RESULT_FILENAME, g_mgr.FinanceRootFolderPath, CMN.WSL.LOG_FILE_PATH])
-    subprocess.call(["mv", snapshot_filename, CMN.DEF.DEF_SNAPSHOT_FOLDER])
+    subprocess.call(["mv", snapshot_filename, CMN.DEF.SNAPSHOT_FOLDER])
     subprocess.call(["rm", CMN.DEF.RUN_RESULT_FILENAME])
 
 
@@ -118,9 +118,9 @@ def update_workday_calendar_and_exit():
 def show_command_example_and_exit():
     project_folderpath = CMN.FUNC.get_project_folderpath()
     # print project_folderpath
-    project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.DEF_CONF_FOLDER)
+    project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.CONF_FOLDER)
     os.chdir(project_config_folderpath)
-    cmd = "cat %s" % CMN.DEF.DEF_COMMAND_EXAMPLE_FILENAME
+    cmd = "cat %s" % CMN.DEF.COMMAND_EXAMPLE_FILENAME
     p = subprocess.Popen(cmd, shell=True)
     os.waitpid(p.pid, 0)
     sys.exit(0)
@@ -135,13 +135,13 @@ def check_url_and_exit():
             g_mgr.do_scrapy_debug(source_type_index, True)
         except Exception as e:
             error_found = True
-            errmsg += " %d: %s %s" % (source_type_index, CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_index], str(e))
+            errmsg += " %d: %s %s" % (source_type_index, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_index], str(e))
     if error_found:
         show_error_and_exit(errmsg)
     sys.exit(0)
 
 
-def debug_source_and_exit(source_type_index):
+def debug_scrapy_and_exit(source_type_index):
     if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
         errmsg = "Unsupported source type index: %d" % source_type_index
         show_error_and_exit(errmsg)
@@ -175,13 +175,13 @@ def renew_statement_field_and_exit():
 # # STOCK: 1
 #     project_folderpath = CMN.FUNC.get_project_folderpath()
 #     # print project_folderpath
-#     project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.DEF_CONF_FOLDER)
+#     project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.CONF_FOLDER)
 #     os.chdir(project_config_folderpath)
 #     cmd = None
 #     if mode == CMN.DEF.FINANCE_ANALYSIS_MARKET:
-#         cmd = "sed -i s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+#         cmd = "sed -i s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
 #     elif mode == CMN.DEF.FINANCE_ANALYSIS_STOCK:
-#         cmd = "sed -i s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.DEF_MARKET_STOCK_SWITCH_CONF_FILENAME)
+#         cmd = "sed -i s/%d/%d/g %s" % (CMN.DEF.FINANCE_ANALYSIS_MARKET, CMN.DEF.FINANCE_ANALYSIS_STOCK, CMN.DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
 #     else:
 #         raise ValueError("Unknown mode: %d", mode)
 #     p = subprocess.Popen(cmd, shell=True)
@@ -195,7 +195,7 @@ def init_param():
     param_cfg["finance_mode"] = None
     param_cfg["help"] = False
     param_cfg["check_url"] = False
-    param_cfg["debug_source"] = None
+    param_cfg["debug_scrapy"] = None
     param_cfg["silent"] = False
     param_cfg["no_scrap"] = False
     param_cfg["show_progress"] = False
@@ -245,8 +245,8 @@ def parse_param():
         elif re.match("--check_url", sys.argv[index]):
             param_cfg["check_url"] = True
             index_offset = 1 
-        elif re.match("--debug_source", sys.argv[index]):
-            param_cfg["debug_source"] = int(sys.argv[index + 1])
+        elif re.match("--debug_scrapy", sys.argv[index]):
+            param_cfg["debug_scrapy"] = int(sys.argv[index + 1])
             index_offset = 2 
         elif re.match("--silent", sys.argv[index]):
             param_cfg["silent"] = True
@@ -358,9 +358,9 @@ def check_param():
         if param_cfg["method_from_file"] is not None:
             show_warn("The 'method_from_file' argument is ignored since 'method_from_all_time_range_default_file' is set")
         if CMN.DEF.IS_FINANCE_MARKET_MODE:
-            param_cfg["method_from_file"] = CMN.DEF.DEF_MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
+            param_cfg["method_from_file"] = CMN.DEF.MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
         elif CMN.DEF.IS_FINANCE_STOCK_MODE:
-            param_cfg["method_from_file"] = CMN.DEF.DEF_STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
+            param_cfg["method_from_file"] = CMN.DEF.STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
     if param_cfg["method_from_file"] is not None:
         if param_cfg["method"] is not None:
             param_cfg["method"] = None
@@ -395,7 +395,7 @@ def check_param():
             if param_cfg["company_list_in_folderpath"] is not None:
                 show_warn("The 'company_list_in_folderpath' argument is ignored since 'company_list_in_default_folderpath' is set")
             else:
-                param_cfg["company_list_in_folderpath"] = CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
+                param_cfg["company_list_in_folderpath"] = CMN.DEF.CSV_ROOT_FOLDERPATH
         if param_cfg["company_from_file"] is not None:
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
@@ -406,8 +406,8 @@ def check_param():
                 show_warn("The 'multi_thread' argument is invalid when the 'renew_statement_field' argument is true")
 
     if param_cfg["merge_finance_folderpath_src_list"] is not None and param_cfg["merge_finance_folderpath_dst"] is None:
-        param_cfg["merge_finance_folderpath_dst"] = CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH
-        show_warn("Set the 'merge_finance_folderpath_dst' argument to default destination folderpath: %s" % CMN.DEF.DEF_CSV_DST_MERGE_ROOT_FOLDERPATH)
+        param_cfg["merge_finance_folderpath_dst"] = CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
+        show_warn("Set the 'merge_finance_folderpath_dst' argument to default destination folderpath: %s" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     if param_cfg["show_progress"] and param_cfg["no_scrap"]:
         param_cfg["show_progress"] = False
         show_warn("Set the 'show_progress' argument to False since 'no_scrap' is set")
@@ -590,8 +590,8 @@ if __name__ == "__main__":
 # RUN the argument that will return after the execution is done
     if param_cfg["check_url"]:
         check_url_and_exit()
-    if param_cfg["debug_source"] is not None:
-        debug_source_and_exit(param_cfg["debug_source"])
+    if param_cfg["debug_scrapy"] is not None:
+        debug_scrapy_and_exit(param_cfg["debug_scrapy"])
 # Check the parameters for the manager
     check_param()
     # import pdb; pdb.set_trace()

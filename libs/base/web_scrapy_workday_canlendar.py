@@ -17,7 +17,7 @@ class WebScrapyWorkdayCanlendar(object):
 
     # TODAY_WORKDAY_DATA_EXIST_HOUR = 14
     # TODAY_WORKDAY_DATA_EXIST_MINUTE = 30
-    WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
+    WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.WORKDAY_CANLENDAR_SOURCE_INDEX]
     URL_FORMAT = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["url_format"]
     URL_ENCODING = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["url_encoding"]
     URL_DATA_SELECTOR = WORKDAY_CANLENDAR_CLASS_CONSTANT_CFG["url_data_selector"]
@@ -27,13 +27,13 @@ class WebScrapyWorkdayCanlendar(object):
     # WORKDAY_CANLENDAR_CLASS_TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[TIMESLICE_GENERATE_METHOD]
 
     def __init__(self, date_start=None, date_end=None):
-        # self.source_constant_cfg = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEF_WORKDAY_CANLENDAR_SOURCE_INDEX]
+        # self.source_constant_cfg = CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.WORKDAY_CANLENDAR_SOURCE_INDEX]
         # self.url_format = self.source_constant_cfg["url_format"]
         # self.encoding = self.source_constant_cfg["url_encoding"]
         # self.select_flag = self.source_constant_cfg["url_data_selector"]
 ###############################################################################################
 # Caution: The types of the following member variabiles are FinanceDate
-        self.date_start = CMN.CLS.FinanceDate(CMN.DEF.DEF_WORKDAY_CANLENDAR_START_DATE_STR) if date_start is None else date_start 
+        self.date_start = CMN.CLS.FinanceDate(CMN.DEF.WORKDAY_CANLENDAR_START_DATE_STR) if date_start is None else date_start 
         self.date_end = CMN.CLS.FinanceDate.get_last_finance_date()
         # self.date_end = CMN.FUNC.get_last_url_data_date(self.TODAY_WORKDAY_DATA_EXIST_HOUR, self.TODAY_WORKDAY_DATA_EXIST_MINUTE)
 # The start/end time of scrapying data from the web
@@ -85,19 +85,19 @@ class WebScrapyWorkdayCanlendar(object):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.DEF_CONF_FOLDER),
-            "%s/%s/%s" % (working_folder, CMN.DEF.DEF_COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.DEF_CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.CONF_FOLDER),
         ]
-        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.DEF_CONF_FOLDER, CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.CONF_FOLDER, CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             if os.path.exists(dst_folderpath):
-                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
+                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
                 shutil.copy2(src_filepath, dst_folderpath)
 
 
     def __update_workday_from_file(self):
         need_update_from_web = True
-        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
         g_logger.debug("Try to Acquire the Workday Canlendar data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Workday Canlendar config file does NOT exist")
@@ -279,12 +279,12 @@ class WebScrapyWorkdayCanlendar(object):
 
     def __write_workday_canlendar_to_file(self):
         # import pdb; pdb.set_trace()
-        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
         g_logger.debug("Write the Workday Canlendar data to the file: %s......" % conf_filepath)
         try:
             date_range_str = None
             with open(conf_filepath, 'w') as fp:
-                g_logger.debug("Start to write workday into %s", CMN.DEF.DEF_WORKDAY_CANLENDAR_CONF_FILENAME)
+                g_logger.debug("Start to write workday into %s", CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
                 fp.write("%s %s\n" % (self.date_start, self.date_end))
                 # year_list = sorted(self.workday_canlendar)
                 for year in self.workday_year_list:

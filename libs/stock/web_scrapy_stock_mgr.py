@@ -60,8 +60,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if finance_root_folderpath is None:
             finance_root_folderpath = self.xcfg["finance_root_folderpath"]
         if finance_root_folderpath is None:
-            finance_root_folderpath = CMN.DEF.DEF_CSV_ROOT_FOLDERPATH
-        return ("%s/%s" % (finance_root_folderpath, CMN.DEF.DEF_CSV_STOCK_FOLDERNAME)) + "%02d"
+            finance_root_folderpath = CMN.DEF.CSV_ROOT_FOLDERPATH
+        return ("%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
 
 
     def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
@@ -92,7 +92,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self.source_type_csv_time_duration_dict = {}
         for company_group_number, company_code_number_list in company_group_set.items():
             for company_code_number in company_code_number_list:
-                # csv_time_duration_list = [None] * CMN.DEF.DEF_DATA_SOURCE_STOCK_SIZE
+                # csv_time_duration_list = [None] * CMN.DEF.DATA_SOURCE_STOCK_SIZE
                 self.source_type_csv_time_duration_dict[company_code_number] = {}
 
 
@@ -113,9 +113,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             for company_code_number in company_code_number_list:
                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
                 g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
-                csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+                csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
                 if csv_time_duration_dict is None:
-                    g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
+                    g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME)
                     continue
 # update the time range of each source type of comapny from config files
                 source_type_csv_time_duration_dict[company_code_number] = csv_time_duration_dict
@@ -136,9 +136,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #             for company_code_number in company_code_number_list:
 #                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
 #                 g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
-#                 csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+#                 csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
 #                 if csv_time_duration_dict is None:
-#                     g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME)
+#                     g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME)
 #                     continue
 # # update the time range of each source type of comapny from config files
         source_type_csv_time_duration_dict = self.__parse_csv_time_duration_cfg()
@@ -171,7 +171,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 # Create the folder for each company if not exist
                 CMN.FUNC.create_folder_if_not_exist(csv_data_folderpath)
                 g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
-                CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.DEF_CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration_dict[company_code_number])
+                CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration_dict[company_code_number])
 
 
     def _write_new_csv_time_duration(self):
@@ -245,16 +245,16 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
 # Market type
-        market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+        market_type = CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
         not_support_multithread = False
         try:
-            CMN.DEF.DEF_NO_SUPPORT_MULTITHREAD_WEB_SCRAPY_CLASS_INDEX.index(source_type_time_duration.source_type_index)
+            CMN.DEF.NO_SUPPORT_MULTITHREAD_WEB_SCRAPY_CLASS_INDEX.index(source_type_time_duration.source_type_index)
         except ValueError:
-            g_logger.warn(u"%s does NOT support multi-threads......." % CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_DESCRIPTION[source_type_time_duration.source_type_index])
+            g_logger.warn(u"%s does NOT support multi-threads......." % CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_DESCRIPTION[source_type_time_duration.source_type_index])
             not_support_multithread = True
 # Create the scrapy object to transform the data from Web to CSV
         if self.xcfg["multi_thread_amount"] is not None and (not not_support_multithread):
-            g_logger.debug("Scrape %s in %d threads" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], self.xcfg["multi_thread_amount"]))
+            g_logger.debug("Scrape %s in %d threads" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], self.xcfg["multi_thread_amount"]))
 # Run in multi-threads
             sub_scrapy_obj_cfg_list = []
             sub_company_group_list = self.__get_market_type_company_group_set(market_type).get_sub_company_group_set_list(self.xcfg["multi_thread_amount"])
@@ -272,7 +272,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def _renew_single_source_statement(self, source_type_time_duration, dst_statement_field_list, dst_statement_column_field_list):
         if not CMN.FUNC.check_statement_source_type_index_in_range(source_type_time_duration.source_type_index):
-            raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (source_type_time_duration.source_type_index, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START, CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_END))
+            raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (source_type_time_duration.source_type_index, CMN.DEF.DATA_SOURCE_STOCK_STATMENT_START, CMN.DEF.DATA_SOURCE_STOCK_STATMENT_END))
         # import pdb;pdb.set_trace()
 # Setup the time duration configuration for the scrapy object
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
@@ -320,7 +320,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         for source_type_time_duration in self.source_type_time_duration_list:
             web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_time_duration.source_type_index, False)
             table_column_field_exist = web_scrapy_class.TABLE_COLUMN_FIELD_EXIST
-            conf_filename = CMN.DEF.DEF_STATEMENT_FIELD_NAME_CONF_FILENAME[source_type_time_duration.source_type_index - CMN.DEF.DEF_DATA_SOURCE_STOCK_STATMENT_START]
+            conf_filename = CMN.DEF.STATEMENT_FIELD_NAME_CONF_FILENAME[source_type_time_duration.source_type_index - CMN.DEF.DATA_SOURCE_STOCK_STATMENT_START]
             dst_statement_field_list = None #[]
             dst_statement_column_field_list = None #([] if table_column_field_exist else None) 
             old_dst_statement_field_list = None #[]
@@ -334,7 +334,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     total_statement_field_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename)
                     try:
                         # import pdb; pdb.set_trace()
-                        column_field_start_flag_index = total_statement_field_list.index(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+                        column_field_start_flag_index = total_statement_field_list.index(CMN.DEF.COLUMN_FIELD_START_FLAG_IN_CONFIG)
                         dst_statement_field_list = copy.deepcopy(total_statement_field_list[0:column_field_start_flag_index])
                         dst_statement_column_field_list = copy.deepcopy(total_statement_field_list[column_field_start_flag_index + 1:])
                     except ValueError:
@@ -355,9 +355,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 self._renew_single_source_statement(source_type_time_duration, dst_statement_field_list, dst_statement_column_field_list)
             except Exception as e:
                 if isinstance(e.message, str):
-                    errmsg = "Renew %s statement fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
+                    errmsg = "Renew %s statement fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
                 else:
-                    errmsg = u"Renew %s statement fails, due to: %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], e.message)
+                    errmsg = u"Renew %s statement fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
                 CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
                 g_logger.error(errmsg)
                 raise e
@@ -367,7 +367,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             if config_file_exist:
                 new_statement_field_list = list(set(dst_statement_field_list) - set(old_dst_statement_field_list))
                 if len(new_statement_field_list) != 0:
-                    msg = u"***** Add new field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], source_type_time_duration.time_duration_start, source_type_time_duration.time_duration_end)
+                    msg = u"***** Add new field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], source_type_time_duration.time_duration_start, source_type_time_duration.time_duration_end)
                     for new_statement_field in new_statement_field_list:
                         msg += u"%s\n" % new_statement_field
                     CMN.FUNC.try_print(msg)
@@ -376,7 +376,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 if table_column_field_exist:
                     new_statement_column_field_list = list(set(dst_statement_column_field_list) - set(old_dst_statement_column_field_list))
                     if len(new_statement_column_field_list) != 0:
-                        msg = u"***** Add new column field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], source_type_time_duration.time_duration_start, source_type_time_duration.time_duration_end)
+                        msg = u"***** Add new column field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], source_type_time_duration.time_duration_start, source_type_time_duration.time_duration_end)
                         for new_statement_column_field in new_statement_column_field_list:
                             msg += u"%s\n" % new_statement_column_field
                         CMN.FUNC.try_print(msg)
@@ -388,7 +388,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             # import pdb; pdb.set_trace()
             if need_renew:
                 if table_column_field_exist:
-                    dst_statement_field_list.append(CMN.DEF.DEF_COLUMN_FIELD_START_FLAG_IN_CONFIG)
+                    dst_statement_field_list.append(CMN.DEF.COLUMN_FIELD_START_FLAG_IN_CONFIG)
                     dst_statement_field_list.extend(dst_statement_column_field_list)
                 CMN.FUNC.unicode_write_config_file_lines(dst_statement_field_list, conf_filename)
                 # CMN.FUNC.write_config_file_lines_ex(dst_statement_field_list, conf_filename, "wb")
@@ -425,7 +425,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #             file_not_found_list_len = len(file_not_found_list)
 #             file_is_empty_list_len = len(file_is_empty_list)  
 #             if file_not_found_list_len != 0 or file_is_empty_list_len != 0:
-#                 missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_MISSING_CSV_STOCK_FILENAME)
+#                 missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.MISSING_CSV_STOCK_FILENAME)
 #                 g_logger.debug("Write missing CSVs to the file: %s......" % missing_csv_filepath)
 #                 with open(missing_csv_filepath, 'wb') as fp:
 #                     try:
@@ -453,10 +453,10 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #         error_msg = None
 #         error_msg_list = []
 #         for file_not_found in file_not_found_list:
-#             error_msg = u"FileNotFound: %s, %s/%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_not_found['index']], file_not_found['company_code_number'], file_not_found['filename'])
+#             error_msg = u"FileNotFound: %s, %s/%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[file_not_found['index']], file_not_found['company_code_number'], file_not_found['filename'])
 #             error_msg_list.append(error_msg)
 #         for file_is_empty in file_is_empty_list:
-#             error_msg = u"FileIsEmpty: %s, %s/%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[file_is_empty['index']], file_not_found['company_code_number'], file_is_empty['filename'])
+#             error_msg = u"FileIsEmpty: %s, %s/%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[file_is_empty['index']], file_not_found['company_code_number'], file_is_empty['filename'])
 #             error_msg_list.append(error_msg)
 #         if len(error_msg_list) != 0:
 #             error_msg = "\n".join(error_msg_list)
@@ -481,7 +481,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     # def _increment_scrapy_source_type_progress_count(self, source_type_index):
-    #     market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_index]["company_group_market_type"]
+    #     market_type = CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_index]["company_group_market_type"]
     #     self.scrapy_source_type_progress_count += self.__get_market_type_company_group_set(market_type).CompanyAmount
 
 
@@ -528,7 +528,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #     if self.scrapy_amount is None:
     #         self.scrapy_amount = 0
     #         for source_type_time_duration in self.source_type_time_duration_list:
-    #             market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+    #             market_type = CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
     #             self.scrapy_amount += self.__get_market_type_company_group_set(market_type).CompanyAmount
     #         g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
     #     return self.scrapy_amount

@@ -101,10 +101,10 @@ class FinanceTimeBase(object):
     def setup_year_value(self, year_value):
         if CMN_FUNC.is_republic_era_year(year_value):
             self.republic_era_year = int(year_value)
-            self.year = self.republic_era_year + CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET
+            self.year = self.republic_era_year + CMN_DEF.REPUBLIC_ERA_YEAR_OFFSET
         else:
             self.year = int(year_value)
-            self.republic_era_year = self.year - CMN_DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET
+            self.republic_era_year = self.year - CMN_DEF.REPUBLIC_ERA_YEAR_OFFSET
 
 
     def check_continous_time_duration(self, another_time_duration):
@@ -235,8 +235,8 @@ class FinanceDate(FinanceTimeBase):
     @classmethod
     def get_last_finance_date(cls):
         if cls.last_finance_date is None:
-            today_data_exist_hour = CMN_DEF.DEF_TODAY_MARKET_DATA_EXIST_HOUR if CMN_DEF.IS_FINANCE_MARKET_MODE else CMN_DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
-            today_data_exist_minute = CMN_DEF.DEF_TODAY_MARKET_DATA_EXIST_MINUTE if CMN_DEF.IS_FINANCE_MARKET_MODE else CMN_DEF.DEF_TODAY_STOCK_DATA_EXIST_HOUR
+            today_data_exist_hour = CMN_DEF.TODAY_MARKET_DATA_EXIST_HOUR if CMN_DEF.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
+            today_data_exist_minute = CMN_DEF.TODAY_MARKET_DATA_EXIST_MINUTE if CMN_DEF.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
             cls.last_finance_date = CMN_FUNC.get_last_url_data_date(today_data_exist_hour, today_data_exist_minute) 
         return cls.last_finance_date
 

@@ -69,7 +69,7 @@ class WebScrapyStockExchangeAndVolume(WebScrapyMarketBase.WebScrapyMarketBase):
         #     date_list = td[0].text.split('/')
         #     if len(date_list) != 3:
         #         raise RuntimeError("The date format is NOT as expected: %s", date_list)
-        #     entry = [CMN.FUNC.transform_date_str(int(date_list[0]) + CMN.DEF.DEF_REPUBLIC_ERA_YEAR_OFFSET, int(date_list[1]), int(date_list[2])),]
+        #     entry = [CMN.FUNC.transform_date_str(int(date_list[0]) + CMN.DEF.REPUBLIC_ERA_YEAR_OFFSET, int(date_list[1]), int(date_list[2])),]
         for data_entry in web_data:
             date_list = str(data_entry[0]).split('/')
             if len(date_list) != 3:

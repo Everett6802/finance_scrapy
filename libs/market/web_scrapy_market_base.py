@@ -35,7 +35,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     def assemble_csv_filepath(self, source_type_index):
-        # csv_filepath = "%s/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.DEF_CSV_MARKET_FOLDERNAME, CMN.DEF.DEF_WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+        # csv_filepath = "%s/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
         # return csv_filepath
         return CMN.FUNC.assemble_market_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_index)
 
@@ -80,14 +80,14 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # args[0]: source type index
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
-                self.csv_file_no_scrapy_record_string_dict[record_type].append(CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[args[0]])
+                self.csv_file_no_scrapy_record_string_dict[record_type].append(CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[0]])
 # Type: "CSVFileAlreadyExist"
         record_type = BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST[BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.CSV_FILE_ALREADY_EXIST_RECORD_INDEX]
         if len(record_type_dict[record_type]) != 0:
 # args[0]: source type index
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
-                self.csv_file_no_scrapy_record_string_dict[record_type].append(CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[args[0]])
+                self.csv_file_no_scrapy_record_string_dict[record_type].append(CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[0]])
 # Type: "WebDataNotFound"
         record_type = BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.RECORD_TYPE_LIST[BASE.BASE.WebScrapyBase.CSVFileNoScrapyRecord.WEB_DATA_NOT_FOUND_RECORD_INDEX]
         if len(record_type_dict[record_type]) != 0:
@@ -97,7 +97,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 # args[3]: empty time end
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
-                record_string = "%s:%s-%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[args[1]], args[2].to_string(), args[3].to_string())
+                record_string = "%s:%s-%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[2].to_string(), args[3].to_string())
                 self.csv_file_no_scrapy_record_string_dict[record_type].append(record_string)
 
 
@@ -111,17 +111,17 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SOURCE_TYPE_INDEX)
         if time_duration_after_lookup_time is None:
             self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SOURCE_TYPE_INDEX)
-            g_logger.debug("[%s] %s => The searching time range is NOT in the time range of web data !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
+            g_logger.debug("[%s] %s => The searching time range is NOT in the time range of web data !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
             return
 # Limit the searching time range from the local CSV data
         web2csv_time_duration_update_tuple = self._adjust_time_range_from_csv(time_duration_after_lookup_time)
         if web2csv_time_duration_update_tuple is None:
             self.csv_file_no_scrapy_record.add_csv_file_already_exist_record(self.SOURCE_TYPE_INDEX)
-            g_logger.debug("[%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][self.SOURCE_TYPE_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][self.SOURCE_TYPE_INDEX].time_duration_end))
+            g_logger.debug("[%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][self.SOURCE_TYPE_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][self.SOURCE_TYPE_INDEX].time_duration_end))
             return
 # Find the file path for writing data into csv
         csv_filepath = self.assemble_csv_filepath(self.SOURCE_TYPE_INDEX)
-        scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[self.SOURCE_TYPE_INDEX], CMN.DEF.DEF_TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.new_csv_extension_time_duration.time_duration_start, self.new_csv_extension_time_duration.time_duration_end, csv_filepath)
+        scrapy_msg = "[%s] %s %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.new_csv_extension_time_duration.time_duration_start, self.new_csv_extension_time_duration.time_duration_end, csv_filepath)
         g_logger.debug(scrapy_msg)
 # Check if only dry-run
         if self.xcfg["dry_run_only"]:

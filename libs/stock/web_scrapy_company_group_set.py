@@ -375,7 +375,7 @@ class WebScrapyCompanyGroupSet(object):
             return False
 # Check if the company number exist
         try:
-            company_code_number_list.index(company_code_number):
+            company_code_number_list.index(company_code_number)
         except ValueError:
             return False
         return True
@@ -392,7 +392,7 @@ class WebScrapyCompanyGroupSet(object):
             return False
 # Check if the company number exist
         try:
-            company_code_number_list.index(company_code_number):
+            company_code_number_list.index(company_code_number)
         except ValueError:
             return False
         return True
