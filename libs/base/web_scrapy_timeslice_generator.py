@@ -338,6 +338,14 @@ class WebScrapyTimeSliceGenerator(object):
         return ret
 
 
+    def get_time_slice_len(self, time_slice_type, time_duration_start, time_duration_end, **kwargs):
+        timeslice_iterable = self.timeslice_generator.generate_time_slice(time_slice_type, time_duration_start, time_duration_end, **kwargs)
+        time_slice_iterable_len = 0
+        for timeslice in timeslice_iterable:
+            time_slice_iterable_len += 1
+        return time_slice_iterable_len
+
+
 #     def generate_source_time_slice(self, data_source_type, time_start, time_end, **kwargs):
 #         if self.date_today is None:
 #            self.date_today = CMN.CLS.FinanceDate(datetime.today())

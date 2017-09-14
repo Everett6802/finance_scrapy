@@ -239,7 +239,6 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #         self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
 
 
-
     def _scrap_single_source_data(self, source_type_time_duration):
         # import pdb;pdb.set_trace()
 # Setup the time duration configuration for the scrapy object
@@ -247,9 +246,15 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
 # Market type
         market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+        not_support_multithread = False
+        try:
+            CMN.DEF.DEF_NO_SUPPORT_MULTITHREAD_WEB_SCRAPY_CLASS_INDEX.index(source_type_time_duration.source_type_index)
+        except ValueError:
+            g_logger.warn(u"%s does NOT support multi-threads......." % CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_DESCRIPTION[source_type_time_duration.source_type_index])
+            not_support_multithread = True
 # Create the scrapy object to transform the data from Web to CSV
-        if self.xcfg["multi_thread_amount"] is not None:
-            g_logger.debug("Scrap %s in %d threads" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], self.xcfg["multi_thread_amount"]))
+        if self.xcfg["multi_thread_amount"] is not None and (not not_support_multithread):
+            g_logger.debug("Scrape %s in %d threads" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[source_type_time_duration.source_type_index], self.xcfg["multi_thread_amount"]))
 # Run in multi-threads
             sub_scrapy_obj_cfg_list = []
             sub_company_group_list = self.__get_market_type_company_group_set(market_type).get_sub_company_group_set_list(self.xcfg["multi_thread_amount"])
@@ -475,9 +480,9 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         return finance_folder_index
 
 
-    def _increment_scrapy_source_type_progress_count(self, source_type_index):
-        market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_index]["company_group_market_type"]
-        self.scrapy_source_type_progress_count += self.__get_market_type_company_group_set(market_type).CompanyAmount
+    # def _increment_scrapy_source_type_progress_count(self, source_type_index):
+    #     market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_index]["company_group_market_type"]
+    #     self.scrapy_source_type_progress_count += self.__get_market_type_company_group_set(market_type).CompanyAmount
 
 
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
@@ -519,34 +524,34 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self.__write_new_csv_time_duration_to_cfg(finance_folderpath_dst, new_source_type_csv_time_duration, company_group_set_dst)
 
 
-    def count_scrapy_amount(self):
-        if self.scrapy_amount is None:
-            self.scrapy_amount = 0
-            for source_type_time_duration in self.source_type_time_duration_list:
-                market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
-                self.scrapy_amount += self.__get_market_type_company_group_set(market_type).CompanyAmount
-        g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
-        return self.scrapy_amount
+    # def count_scrapy_amount(self):
+    #     if self.scrapy_amount is None:
+    #         self.scrapy_amount = 0
+    #         for source_type_time_duration in self.source_type_time_duration_list:
+    #             market_type = CMN.DEF.DEF_WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+    #             self.scrapy_amount += self.__get_market_type_company_group_set(market_type).CompanyAmount
+    #         g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
+    #     return self.scrapy_amount
 
 
-    def count_scrapy_progress(self):
-        if self.scrapy_amount is None:
-            raise ValueError("self.scrapy_amount shoudl NOT be None")
-        company_progress_count = 0
-        with self.web_scrapy_obj_list_thread_lock:
-            if self.web_scrapy_obj_list:
-                for web_scrapy_obj in self.web_scrapy_obj_list:
-                    # import pdb; pdb.set_trace()
-                    company_progress_count += web_scrapy_obj.CompanyProgressCount
-        progress_count = self.scrapy_source_type_progress_count + company_progress_count
-        return (float(progress_count) / self.scrapy_amount * 100.0) 
+    # def count_scrapy_progress(self):
+    #     if self.scrapy_amount is None:
+    #         raise ValueError("self.scrapy_amount shoudl NOT be None")
+    #     company_progress_count = 0
+    #     with self.web_scrapy_obj_list_thread_lock:
+    #         if self.web_scrapy_obj_list:
+    #             for web_scrapy_obj in self.web_scrapy_obj_list:
+    #                 # import pdb; pdb.set_trace()
+    #                 company_progress_count += web_scrapy_obj.CompanyProgressCount
+    #     progress_count = self.scrapy_source_type_progress_count + company_progress_count
+    #     return (float(progress_count) / self.scrapy_amount * 100.0) 
 
 
-    @property
-    def ScrapyAmount(self):
-        return self.count_scrapy_amount()
+    # @property
+    # def ScrapyAmount(self):
+    #     return self.count_scrapy_amount()
 
 
-    @property
-    def ScrapyProgress(self):
-        return self.count_scrapy_progress()
+    # @property
+    # def ScrapyProgress(self):
+    #     return self.count_scrapy_progress()

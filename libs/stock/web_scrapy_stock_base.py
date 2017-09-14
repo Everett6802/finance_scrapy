@@ -38,7 +38,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         #     self.company_group_set = kwargs["company_group_set"]
         # self.time_slice_kwargs["company_code_number"] = None
         self.new_csv_time_duration_dict = None
-        self.scrapy_company_progress_count = 0
+        # self.scrapy_company_progress_count = 0
         self.company_profile = None
         self.cur_company_code_number = None # Caution: This value is updated every time when _scrape_web_data() is called
 
@@ -135,14 +135,22 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 # args[4]: empty time end
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
-                record_string = "%s:%s:%s-%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[args[1]], args[2], args[3].to_string(), args[4].to_string())
+                record_string = None
+                if self.SOURCE_TYPE_INDEX in CMN.DEF.DEF_TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_WEB_SCRAPY_CLASS_INDEX:
+                    record_string = "%s:%s-%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[args[1]], args[3].to_string(), args[4].to_string())
+                else:
+                    record_string = "%s:%d:%s-%s" % (CMN.DEF.DEF_DATA_SOURCE_INDEX_MAPPING[args[1]], args[2], args[3].to_string(), args[4].to_string())
                 self.csv_file_no_scrapy_record_string_dict[record_type].append(record_string)
+
+
+    def _calculate_progress_amount(self, **kwargs):
+        self.progress_amount = self.company_group_set.CompanyAmount
 
 
     def scrap_web_to_csv(self):
         # import pdb; pdb.set_trace()
+        self._calculate_progress_amount()
         self.new_csv_time_duration_dict = {}
-        self.scrapy_company_progress_count = 0
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
                 # import pdb; pdb.set_trace()
@@ -210,7 +218,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 # Append the old CSV data after the new web data if necessary
                     web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 # Increase the progress count
-                self.scrapy_company_progress_count += 1
+                self.progress_count += 1
 # Parse csv file status
         self._parse_csv_file_status_to_string_list()
 
@@ -221,9 +229,9 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         return self.new_csv_time_duration_dict
 
 
-    @property
-    def CompanyProgressCount(self):
-        return self.scrapy_company_progress_count
+    # @property
+    # def CompanyProgressCount(self):
+    #     return self.scrapy_company_progress_count
 
 
     @abstractmethod

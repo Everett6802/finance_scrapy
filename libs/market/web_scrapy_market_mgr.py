@@ -173,8 +173,8 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         return finance_folder_index
 
 
-    def _increment_scrapy_source_type_progress_count(self, source_type_index):
-        self.scrapy_source_type_progress_count += 1
+    # def _increment_scrapy_source_type_progress_count(self, source_type_index):
+    #     self.scrapy_source_type_progress_count += 1
 
 
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
@@ -209,24 +209,24 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         raise ValueError("Multi-Thread is NOT supported in market mode")
 
 
-    def count_scrapy_amount(self):
-        if self.scrapy_amount is None:
-            self.scrapy_amount = len(self.source_type_time_duration_list)
-        g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
-        return self.scrapy_amount
+    # def count_scrapy_amount(self):
+    #     if self.scrapy_amount is None:
+    #         self.scrapy_amount = len(self.source_type_time_duration_list)
+    #     g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
+    #     return self.scrapy_amount
 
 
-    def count_scrapy_progress(self):
-        if self.scrapy_amount is None:
-            raise ValueError("self.scrapy_amount shoudl NOT be None")
-        return (float(self.scrapy_source_type_progress_count) / self.scrapy_amount * 100.0)
+    # def count_scrapy_progress(self):
+    #     if self.scrapy_amount is None:
+    #         raise ValueError("self.scrapy_amount shoudl NOT be None")
+    #     return (float(self.scrapy_source_type_progress_count) / self.scrapy_amount * 100.0)
 
 
-    @property
-    def ScrapyAmount(self):
-        return self.count_scrapy_amount()
+    # @property
+    # def ScrapyAmount(self):
+    #     return self.count_scrapy_amount()
 
 
-    @property
-    def ScrapyProgress(self):
-        return self.count_scrapy_progress()
+    # @property
+    # def ScrapyProgress(self):
+    #     return self.count_scrapy_progress()

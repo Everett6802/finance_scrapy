@@ -33,7 +33,7 @@ class WebSracpyMgrBase(object):
         self.source_type_time_duration_list = None
         # self.multi_thread_amount = None
         # self.xcfg["show_progress"] = False
-        self.scrapy_amount = None
+        self.scrapy_source_type_progress_amount = None
         self.scrapy_source_type_progress_count = 0
         self.web_scrapy_obj_list = None
         self.web_scrapy_obj_list_thread_lock = threading.Lock()
@@ -129,7 +129,8 @@ class WebSracpyMgrBase(object):
         show_progress_timer_thread = None
         if self.xcfg["show_progress"]:
             self.web_scrapy_start_datetime = datetime.now()
-            self.count_scrapy_amount()
+            # self.count_scrapy_amount()
+            self.scrapy_source_type_progress_amount = len(self.source_type_time_duration_list)
             progress_string = "Total Scrapy Times: %d" % self.ScrapyAmount
             g_logger.info(progress_string)
             if CMN.DEF.CAN_PRINT_CONSOLE:
@@ -137,7 +138,6 @@ class WebSracpyMgrBase(object):
             show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=30)
             show_progress_timer_thread.start_timer(WebSracpyMgrBase.show_scrapy_progress, self)
         # import pdb; pdb.set_trace()
-        # self.emtpy_web_data_list = []
         for source_type_time_duration in self.source_type_time_duration_list:
             try:
                 self._scrap_single_source_data(source_type_time_duration)
@@ -160,9 +160,13 @@ class WebSracpyMgrBase(object):
                 # print total_errmsg
                 if not self.xcfg["try_to_scrap_all"]:
                     break
-            self._increment_scrapy_source_type_progress_count(source_type_time_duration.source_type_index)
+            # self._increment_scrapy_source_type_progress_count(source_type_time_duration.source_type_index)
+            if self.xcfg["show_progress"]:
+                with self.web_scrapy_obj_list_thread_lock:
+                    self.scrapy_source_type_progress_count += 1
         if self.xcfg["show_progress"]:
-            show_progress_timer_thread.stop_timer()
+            with self.web_scrapy_obj_list_thread_lock:
+                show_progress_timer_thread.stop_timer()
         if total_errmsg:
             RuntimeError(total_errmsg)
 # Write the new CSV data time range into file
@@ -317,20 +321,25 @@ class WebSracpyMgrBase(object):
 
 
     @staticmethod
-    def show_scrapy_progress(obj_handle):
-        if not isinstance(obj_handle, WebSracpyMgrBase):
-            raise AttributeError("obj_handle should be the WebSracpyMgrBase instance")
-        scrapy_progress = obj_handle.ScrapyProgress
+    def show_scrapy_progress(mgr_obj_handle):
+        if not isinstance(mgr_obj_handle, WebSracpyMgrBase):
+            raise AttributeError("mgr_obj_handle should be the WebSracpyMgrBase instance")
+        scrapy_progress = None
+        with self.web_scrapy_obj_list_thread_lock:
+            progress_ratio_sum = 0.0
+            for web_scrapy_obj in self.web_scrapy_obj_list:
+                progress_ratio_sum += web_scrapy_obj.ProgressRatio
+            scrapy_progress = (self.scrapy_source_type_progress_count + progress_ratio_sum / len(self.web_scrapy_obj_list)) / self.scrapy_source_type_progress_amount
         progress_string = "[%s] Progress................... %03.1f" % (datetime.strftime(datetime.now(), '%H:%M:%S'), scrapy_progress)
-        if obj_handle.ScrapyProgress >= obj_handle.StartEstimateCompleteTimeThreshold:
-            progress_string += "  *Estimated Complete Time: %s" % obj_handle.estimate_complete_time(scrapy_progress)
+        if scrapy_progress >= mgr_obj_handle.StartEstimateCompleteTimeThreshold:
+            progress_string += "  *Estimated Complete Time: %s" % mgr_obj_handle.estimate_complete_time(scrapy_progress)
         g_logger.info(progress_string)
         if CMN.DEF.CAN_PRINT_CONSOLE:
             print progress_string
 
 
-    def _increment_scrapy_source_type_progress_count(self, source_type_index):
-        raise NotImplementedError
+    # def _increment_scrapy_source_type_progress_count(self, source_type_index):
+    #     raise NotImplementedError
 
 
     @abstractmethod
@@ -390,11 +399,11 @@ class WebSracpyMgrBase(object):
     #     raise NotImplementedError
 
 
-    @abstractmethod
-    def count_scrapy_amount(self):
-        raise NotImplementedError
+    # @abstractmethod
+    # def count_scrapy_amount(self):
+    #     raise NotImplementedError
 
 
-    @abstractmethod
-    def count_scrapy_progress(self):
-        raise NotImplementedError
+    # @abstractmethod
+    # def count_scrapy_progress(self):
+    #     raise NotImplementedError

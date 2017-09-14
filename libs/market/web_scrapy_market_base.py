@@ -101,6 +101,10 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
                 self.csv_file_no_scrapy_record_string_dict[record_type].append(record_string)
 
 
+    def _calculate_progress_amount(self, **kwargs):
+        self.progress_amount = 1
+
+
     def scrap_web_to_csv(self):
         # import pdb; pdb.set_trace()
 # Limit the searching time range from the web site
@@ -159,6 +163,8 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
                 self._write_to_csv(csv_filepath, csv_data_list_each_year)
 # Append the old CSV data after the new web data if necessary
             web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
+# Increase the progress count
+        self.progress_count = 1
 # parse csv file status
         self._parse_csv_file_status_to_string_list()
 

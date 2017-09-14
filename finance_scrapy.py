@@ -550,34 +550,7 @@ def do_clone():
     subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
 
 
-class my_class(object):
-    # @classmethod
-    # def func0(cls):
-    #     return 100
-    def __init__(self):
-        self.value = 10
-    def func1(self):
-        return 1
-    def func2(self):
-        def func3():
-            return value + func1()
-        value = 3
-        return 2 + func3()
-
-
-
-def func1():
-    def func2():
-        return a * b
-    a = 1
-    b = 2
-    return a + b + func2()
-
-
 if __name__ == "__main__":
-    my_obj = my_class()
-    print my_obj.func2()
-    sys.exit(0)
 #    import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()

@@ -111,10 +111,18 @@ class WebScrapyBase(object):
         #     self.new_csv_end = new_csv_end
 
 
-        def backup_old_csv_if_necessary(self, csv_filepath):
+        def backup_old_csv_if_necessary(self, csv_filepath, ignore_old_csv_exist=False):
+            backup_old_csv = False
             if self.append_direction == self.WEB2CSV_APPEND_BEFORE: #BASE.BASE.WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BEFORE:
-                g_logger.debug("Need add the new data in front of the old CSV data, rename the file: %s" % (csv_filepath + ".old"))
-                CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
+                old_csv_filepath = csv_filepath + ".old"
+                if CMN.FUNC.check_file_exist(old_csv_filepath):
+                    if not ignore_old_csv_exist:
+                        raise ValueError("The CSV file[%s] already exists !!!" % old_csv_filepath)
+                else:
+                    g_logger.debug("Need add the new data in front of the old CSV data, rename the file: %s" % (csv_filepath + ".old"))
+                    CMN.FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
+                    backup_old_csv = True
+            return backup_old_csv
 
 
         def append_old_csv_if_necessary(self, csv_filepath):
@@ -468,6 +476,8 @@ class WebScrapyBase(object):
         self.csv_file_no_scrapy_record = WebScrapyBase.CSVFileNoScrapyRecord.create_register_status_instance()
         self.csv_file_no_scrapy_record_string_dict = collections.OrderedDict()
         # self.emtpy_web_data_list = None
+        self.progress_amount = None
+        self.progress_count = 0
 
 
     @classmethod
@@ -746,7 +756,7 @@ class WebScrapyBase(object):
         return new_time_duration_start, new_time_duration_end
 
 
-    def _get_timeslice_iterable(self, **kwargs):
+    def _get_timeslice_generator(self):
         # import pdb;pdb.set_trace()
         # if self.TIMESLICE_TIME_UNIT != self.URL_TIME_UNIT:
         #     assert kwargs["time_duration_start"].get_time_unit_type() == CMN.DEF.DATA_TIME_UNIT_DAY, "The time unit shold be: %d, NOT: %d" % (CMN.DEF.DATA_TIME_UNIT_DAY, kwargs["time_duration_start"].get_time_unit_type())
@@ -754,12 +764,20 @@ class WebScrapyBase(object):
         #     (new_finance_time_start, new_finance_time_end) = self.__change_time_unit_for_timeslice_generator(kwargs["time_duration_start"], kwargs["time_duration_end"])
         #     kwargs["time_duration_start"] = new_finance_time_start
         #     kwargs["time_duration_end"] = new_finance_time_end
-        kwargs["time_duration_start"], kwargs["time_duration_end"] = self.get_time_unit_for_timeslice_iterable(**kwargs)
 # Generate the time slice
         if self.timeslice_generator is None:
             self.timeslice_generator = TimeSliceGenerator.WebScrapyTimeSliceGenerator.Instance()
-        timeslice_iterable = self.timeslice_generator.generate_time_slice(self.TIMESLICE_GENERATE_METHOD, **kwargs)
-        return timeslice_iterable
+        return self.timeslice_generator
+
+
+    def _get_timeslice_iterable(self, **kwargs):
+        kwargs["time_duration_start"], kwargs["time_duration_end"] = self.get_time_unit_for_timeslice_iterable(**kwargs)
+        return self._get_timeslice_generator().generate_time_slice(self.TIMESLICE_GENERATE_METHOD, **kwargs)
+
+
+    def _get_timeslice_iterable_len(self, **kwargs):
+        kwargs["time_duration_start"], kwargs["time_duration_end"] = self.get_time_unit_for_timeslice_iterable(**kwargs)
+        return self._get_timeslice_generator().get_time_slice_len(self.TIMESLICE_GENERATE_METHOD, **kwargs)
 
 
     def _adjust_config_before_scrapy(self, *args):
@@ -815,6 +833,20 @@ class WebScrapyBase(object):
     def CSVFileNoScrapyDescriptionDict(self):
         assert self.csv_file_no_scrapy_record_string_dict != None, "self.csv_file_no_scrapy_record_string_dict is None"
         return self.csv_file_no_scrapy_record_string_dict
+
+
+    @property
+    def ProgressRatio(self):
+        if self.progress_amount is None:
+            return 0.0
+            # self._calculate_progress_amount()
+            # assert self.progress_amount != 0, "self.progress_amount should NOT be 0"
+        return float(self.progress_count) / self.progress_amount
+
+
+    @abstractmethod
+    def _calculate_progress_amount(self, **kwargs):
+        raise NotImplementedError
 
 
     @abstractmethod
