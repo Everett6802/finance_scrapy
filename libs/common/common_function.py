@@ -141,7 +141,7 @@ def get_source_type_size():
 def get_source_type_index_from_description(source_type_description, ignore_exception=False):
     source_type_index = -1
     try:
-        source_type_index = CMN_DEF.DATA_SOURCE_INDEX_MAPPING.index(source_type_description)
+        source_type_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(source_type_description)
     except ValueError as e:
         if not ignore_exception:
             raise e
@@ -501,7 +501,7 @@ def read_source_type_time_duration_config_file(conf_filename, time_duration_type
     for line in conf_line_list:
         param_list = line.split(' ')
         param_list_len = len(param_list)
-        # source_type_index = CMN_DEF.DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+        # source_type_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
         # source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
         source_type_index_list = get_source_type_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
         time_duration_start = None
@@ -527,7 +527,7 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as
         for line in conf_line_list:
             param_list = line.split(' ')
             param_list_len = len(param_list)
-            # source_type_index = CMN_DEF.DATA_SOURCE_INDEX_MAPPING.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+            # source_type_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             if param_list_len != 3:
                 raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
             source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
@@ -547,7 +547,7 @@ def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time
         time_duration_tuple = csv_time_duration_dict.get(source_type_index, None)
         if time_duration_tuple is None:
             continue
-        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.DATA_SOURCE_INDEX_MAPPING[source_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
+        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.SCRAPY_CLASS_DESCRIPTION[source_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
         conf_line_list.append(csv_time_duration_entry_unicode.encode(CMN_DEF.UNICODE_ENCODING_IN_FILE) + "\n")
     write_config_file_lines_ex(conf_line_list, conf_filename, "wb", conf_folderpath)
 

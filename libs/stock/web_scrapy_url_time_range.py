@@ -275,6 +275,7 @@ class WebScrapyURLTimeRange(object):
 
 
     def get_time_range(self, source_type_index, company_number, company_group=None):
+        # import pdb;pdb.set_trace()
         return (self.get_time_range_start(source_type_index, company_number, company_group), self.get_time_range_end(source_type_index))
 
 

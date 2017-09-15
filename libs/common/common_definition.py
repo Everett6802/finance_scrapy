@@ -274,7 +274,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "module_name": "company_depository_shareholder_distribution_table",
         "module_folder": "stock",
         "class_name": "WebScrapyDepositoryShareholderDistributionTable",
-        "url_format": "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1}{2}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
+        "url_format": "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1:02d}{2:02d}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_BIG5,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
@@ -441,6 +441,9 @@ TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_SCRAPY_CLASS_INDEX = [
     SCRAPY_CLASS_DESCRIPTION.index(u'上櫃三大法人個股買賣超日報'),
 ]
 
+WORKDAY_CANLENDAR_SCRAPY_CLASS_INDEX = SCRAPY_CLASS_DESCRIPTION.index(u"臺股指數及成交量")
+DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SCRAPY_CLASS_INDEX = SCRAPY_CLASS_DESCRIPTION.index(u"個股集保戶股權分散表")
+
 NO_SUPPORT_MULTITHREAD_SCRAPY_CLASS_INDEX = []
 NO_SUPPORT_MULTITHREAD_SCRAPY_CLASS_INDEX.append(TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_SCRAPY_CLASS_INDEX)
 
@@ -463,10 +466,6 @@ DATA_SOURCE_STOCK_STATMENT_END = SCRAPY_MODULE_NAME_MAPPING.index("statement_of_
 # DATA_SOURCE_STATEMENT_OF_CHANGES_IN_EQUITY_INDEX = SCRAPY_MODULE_NAME_MAPPING.index("statement_of_changes_in_equity")
 
 SCRAPY_CLASS_NAME_MAPPING = [cfg["class_name"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
-
-WORKDAY_CANLENDAR_SOURCE_INDEX = SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyStockExchangeAndVolume")
-# WORKDAY_CANLENDAR_SOURCE_INDEX = SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyOptionPutCallRatio")
-DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SOURCE_INDEX = SCRAPY_CLASS_NAME_MAPPING.index("WebScrapyDepositoryShareholderDistributionTable")
 
 MIN_DATE_STRING_LENGTH = 8
 MAX_DATE_STRING_LENGTH = 10

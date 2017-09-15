@@ -40,7 +40,8 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
 
 
     def _adjust_time_range_from_web(self, *args):
-        time_duration_after_lookup_time = super(WebScrapyFutureTop10DealersAndLegalPersons, self)._adjust_time_range_from_web()
+        # import pdb; pdb.set_trace()
+        time_duration_after_lookup_time = super(WebScrapyFutureTop10DealersAndLegalPersons, self)._adjust_time_range_from_web(*args)
         assert isinstance(self.xcfg["time_duration_start"], CMN.CLS.FinanceDate), "The input start time duration time unit is %s, not FinanceDate" % type(self.xcfg["time_duration_start"])
         assert isinstance(self.xcfg["time_duration_end"], CMN.CLS.FinanceDate), "The input end time duration time unit is %s, not FinanceDate" % type(self.xcfg["time_duration_end"])
         if self.xcfg["time_duration_start"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT and self.xcfg["time_duration_end"] > WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:

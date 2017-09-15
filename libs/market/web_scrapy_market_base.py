@@ -35,7 +35,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
 
 
     def assemble_csv_filepath(self, source_type_index):
-        # csv_filepath = "%s/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+        # csv_filepath = "%s/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
         # return csv_filepath
         return CMN.FUNC.assemble_market_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_index)
 

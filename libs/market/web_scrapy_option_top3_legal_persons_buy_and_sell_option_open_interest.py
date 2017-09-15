@@ -15,7 +15,7 @@ class WebScrapyOptionTop3LegalPersonsBuyAndSellOptionOpenInterest(WebScrapyMarke
 
     @classmethod
     def assemble_web_url(cls, timeslice, *args):
-        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
+        url = cls.URL_FORMAT.format(*(timeslice.year, timeslice.month, timeslice.day))
         return url
 
 

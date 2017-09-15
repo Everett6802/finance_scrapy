@@ -65,7 +65,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
     def assemble_csv_filepath(self, source_type_index, company_code_number, company_group_number=-1):
         if company_group_number == -1:
             company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
-        # csv_filepath = "%s/%s%02d/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN.DEF.WEB_SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+        # csv_filepath = "%s/%s%02d/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN.DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
         # return csv_filepath
         return CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_index, company_code_number, company_group_number)
 
@@ -136,7 +136,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
                 record_string = None
-                if self.SOURCE_TYPE_INDEX in CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_WEB_SCRAPY_CLASS_INDEX:
+                if self.SOURCE_TYPE_INDEX in CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_SCRAPY_CLASS_INDEX:
                     record_string = "%s:%s-%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[3].to_string(), args[4].to_string())
                 else:
                     record_string = "%s:%d:%s-%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[2], args[3].to_string(), args[4].to_string())

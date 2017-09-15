@@ -17,17 +17,6 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
     CSV_DATA_BUF_SIZE = 20
     WEB_DATA_ENTRY_COMPANY_CODE_NUMBER = 0
 
-    # @classmethod
-    # def assemble_web_url(cls, timeslice, company_code_number, *args):
-    #     url = self.URL_FORMAT.format(
-    #         *(
-    #             timeslice.year, 
-    #             "%02d" % timeslice.month,
-    #             "%02d" % timeslice.day
-    #         )
-    #     )
-    #     return url
-
 
     def __init__(self, **kwargs):
         super(WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase, self).__init__(**kwargs)
@@ -204,11 +193,12 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummary(WebScrapyTop3LegalPerson
 
     @classmethod
     def assemble_web_url(cls, timeslice, company_code_number, *args):
-        url = self.URL_FORMAT.format(
+        # import pdb; pdb.set_trace()
+        url = cls.URL_FORMAT.format(
             *(
                 timeslice.year, 
-                "%02d" % timeslice.month,
-                "%02d" % timeslice.day
+                timeslice.month,
+                timeslice.day
             )
         )
         return url
@@ -307,11 +297,11 @@ class WebScrapyOTCTop3LegalPersonsStockNetBuyOrSellSummary(WebScrapyTop3LegalPer
 
     @classmethod
     def assemble_web_url(cls, timeslice, company_code_number, *args):
-        url = self.URL_FORMAT.format(
+        url = cls.URL_FORMAT.format(
             *(
                 timeslice.year - 1911, 
-                "%02d" % timeslice.month,
-                "%02d" % timeslice.day
+                timeslice.month,
+                timeslice.day
             )
         )
         return url

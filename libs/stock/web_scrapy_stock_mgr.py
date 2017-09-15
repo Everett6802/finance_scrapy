@@ -245,13 +245,14 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
 # Market type
-        market_type = CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+        market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
         not_support_multithread = False
-        try:
-            CMN.DEF.NO_SUPPORT_MULTITHREAD_WEB_SCRAPY_CLASS_INDEX.index(source_type_time_duration.source_type_index)
-        except ValueError:
-            g_logger.warn(u"%s does NOT support multi-threads......." % CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_DESCRIPTION[source_type_time_duration.source_type_index])
-            not_support_multithread = True
+        if self.xcfg["multi_thread_amount"] is not None:
+            try:
+                CMN.DEF.NO_SUPPORT_MULTITHREAD_SCRAPY_CLASS_INDEX.index(source_type_time_duration.source_type_index)
+            except ValueError:
+                g_logger.warn(u"%s does NOT support multi-threads......." % CMN.DEF.SCRAPY_CLASS_DESCRIPTION[source_type_time_duration.source_type_index])
+                not_support_multithread = True
 # Create the scrapy object to transform the data from Web to CSV
         if self.xcfg["multi_thread_amount"] is not None and (not not_support_multithread):
             g_logger.debug("Scrape %s in %d threads" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], self.xcfg["multi_thread_amount"]))
@@ -481,7 +482,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     # def _increment_scrapy_source_type_progress_count(self, source_type_index):
-    #     market_type = CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_index]["company_group_market_type"]
+    #     market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[source_type_index]["company_group_market_type"]
     #     self.scrapy_source_type_progress_count += self.__get_market_type_company_group_set(market_type).CompanyAmount
 
 
@@ -528,7 +529,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #     if self.scrapy_amount is None:
     #         self.scrapy_amount = 0
     #         for source_type_time_duration in self.source_type_time_duration_list:
-    #             market_type = CMN.DEF.WEB_SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+    #             market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
     #             self.scrapy_amount += self.__get_market_type_company_group_set(market_type).CompanyAmount
     #         g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
     #     return self.scrapy_amount

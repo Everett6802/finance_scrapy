@@ -15,7 +15,7 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
 
     @classmethod
     def assemble_web_url(cls, timeslice, *args):
-        url = self.URL_FORMAT.format(*(timeslice.year, timeslice.month, args[0], args[1]))
+        url = cls.URL_FORMAT.format(*(timeslice.year, timeslice.month, args[0], args[1]))
         return url
 
 

@@ -652,24 +652,24 @@ class WebScrapyBase(object):
 # args[1]: company_code_number
 # Define the suitable time range
 # define the function for transforming the time unit
-        def transfrom_time_duration_start_time_unit_from_date(time_duration_start):
+        def transfrom_time_duration_start_time_unit_from_date(url_time_unit, time_duration_start):
             assert isinstance(time_duration_start, CMN.CLS.FinanceDate), "The input start time duration time unit is %s, not FinanceDate" % type(time_duration_start)
 # Trasform the start time unit
-            if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_DAY:
+            if url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
                 return time_duration_start
-            elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_MONTH:
+            elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
                 return CMN.CLS.FinanceMonth.get_finance_month_from_date(time_duration_start)
-            elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+            elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
                 return CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(time_duration_start)
             raise ValueError("Unsupported URL time unit in start time: %d" % self.TIMESLICE_TIME_UNIT)
-        def transfrom_time_duration_end_time_unit_from_date(time_duration_end):
+        def transfrom_time_duration_end_time_unit_from_date(url_time_unit, time_duration_end):
             assert isinstance(time_duration_end, CMN.CLS.FinanceDate), "The input end time duration time unit is %s, not FinanceDate" % type(time_duration_end)
 # Trasform the end time unit
-            if self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_DAY:
+            if url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
                 return time_duration_end
-            elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_MONTH:
+            elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
                 return  CMN.CLS.FinanceMonth.get_finance_month_from_date(time_duration_end)
-            elif self.URL_TIME_UNIT == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+            elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
                 return  CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(time_duration_end)
             raise ValueError("Unsupported URL time unit in end time: %d" % self.TIMESLICE_TIME_UNIT)
 # Transform the time unit
@@ -678,12 +678,12 @@ class WebScrapyBase(object):
         time_duration_end = None
         if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
             time_duration_start = time_duration_end = CMN.CLS.FinanceDate.get_today_finance_date()
-            time_duration_start = transfrom_time_duration_start_time_unit_from_date(time_duration_start)
-            time_duration_end = transfrom_time_duration_end_time_unit_from_date(time_duration_end)
+            time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
+            time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
         elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
             time_duration_start = time_duration_end = CMN.CLS.FinanceDate.get_last_finance_date()
-            time_duration_start = transfrom_time_duration_start_time_unit_from_date(time_duration_start)
-            time_duration_end = transfrom_time_duration_end_time_unit_from_date(time_duration_end)
+            time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
+            time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
         elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
             (time_duration_start_from_lookup_table, time_duration_end_from_lookup_table) = self._get_url_time_range().get_time_range(*args)
             time_start_from_table = False
@@ -692,7 +692,7 @@ class WebScrapyBase(object):
                 time_start_from_table = True
             else:
 # Trasform the start time unit
-                time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.xcfg["time_duration_start"])
+                time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, self.xcfg["time_duration_start"])
                 assert time_duration_start.get_time_unit_type() == time_duration_start_from_lookup_table.get_time_unit_type() , "The time duration start time unit is NOT identical, %d, %d" % (time_duration_start.get_time_unit_type(), time_duration_start_from_lookup_table.get_time_unit_type()) 
             time_end_from_table = False
             if self.xcfg["time_duration_end"] is None:
@@ -700,7 +700,7 @@ class WebScrapyBase(object):
                 time_end_from_table = True
             else:
 # Trasform the end time unit
-                time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.xcfg["time_duration_end"])
+                time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, self.xcfg["time_duration_end"])
                 assert time_duration_end.get_time_unit_type() == time_duration_end_from_lookup_table.get_time_unit_type() , "The time duration end time unit is NOT identical, %d, %d" % (time_duration_end.get_time_unit_type(), time_duration_end_from_lookup_table.get_time_unit_type())     
             need_check_overlap = not (time_start_from_table or time_end_from_table)
 # Check the time duration is in the range of table

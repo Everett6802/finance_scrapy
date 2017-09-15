@@ -23,9 +23,9 @@ class WebScrapyBase(object):
         # self.scrap_web_to_csv_func_ptr = [self.__scrap_web_to_csv_one_month_per_file, self.__scrap_web_to_csv_one_day_per_file]
         # self.scrap_web_to_csv_func_ptr = [self.__scrap_multiple_web_data_to_single_csv_file, self.__scrap_single_web_data_to_single_csv_file]
 
-        cur_module_name = re.sub(CMN.WEB_SCRAPY_MODULE_NAME_PREFIX, "", CMN.get_cur_module_name(cur_file_path))
+        cur_module_name = re.sub(CMN.SCRAPY_MODULE_NAME_PREFIX, "", CMN.get_cur_module_name(cur_file_path))
         # g_logger.debug("Current module name (w/o prefix): %s" % cur_module_name)
-        self.data_source_index = CMN.WEB_SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
+        self.data_source_index = CMN.SCRAPY_MODULE_NAME_MAPPING.index(cur_module_name)
 # # Check Start/End time range
 #         if kwargs.get("datetime_range_start", None) is None:
 #             datetime_range_start = CMN.DATA_SOURCE_START_DATE_CFG[self.data_source_index]
@@ -61,12 +61,12 @@ class WebScrapyBase(object):
         self.description = None
 
         # if CMN.DATA_SOURCE_WRITE2CSV_METHOD[self.data_source_index] == CMN.WRITE2CSV_ONE_MONTH_PER_FILE:
-        #     csv_filename_format = CMN.WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s.csv"
+        #     csv_filename_format = CMN.SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s.csv"
         #     self.csv_filename = csv_filename_format % self. __generate_time_string_filename(datetime_range_start)
         #     self.csv_filepath = "%s/%s" % (CMN.CSV_FILE_PATH, self.csv_filename)
         #     g_logger.debug("Write data[%s] to CSV file: %s" % (CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], self.csv_filepath))
         # elif CMN.DATA_SOURCE_WRITE2CSV_METHOD[self.data_source_index] == CMN.WRITE2CSV_ONE_DAY_PER_FILE:
-        #     csv_foldername_format = CMN.WEB_SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s"
+        #     csv_foldername_format = CMN.SCRAPY_MODULE_NAME_MAPPING[self.data_source_index] + "_%s"
         #     self.csv_foldername = csv_foldername_format % self. __generate_time_string_filename(datetime_range_start)
         #     self.csv_folderpath = "%s/%s" % (CMN.CSV_FILE_PATH, self.csv_foldername)
         #     g_logger.debug("Write data[%s] to CSV folder: %s" % (CMN.SCRAPY_METHOD_DESCRIPTION[self.data_source_index], self.csv_folderpath))
