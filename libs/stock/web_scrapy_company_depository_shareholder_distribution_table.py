@@ -16,7 +16,7 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScrapyStockBase):
 
     TABLE_SUM_FLAG = u'\u5408\u3000\u8a08' # "合　計"
-
+    # TABLE_SUM_FLAG = u"合　計".encode(CMN.DEF.URL_ENCODING_BIG5)
     @classmethod
     def assemble_web_url(cls, timeslice, company_code_number, *args):
 # CAUTION: This function MUST be called by the LEAF derived class
@@ -58,24 +58,31 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
         # import pdb; pdb.set_trace()
         data_list = []
         data_list.append(self.date_cur_string)
-# Scrape the data of each stock interval
-        for tr in web_data[10:25]:
-            td = tr.select('td')
-            data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
-            data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
-            data_list.append(td[4].text)
-# Ignore the data which is NOT interesting... Scrape the data of sum
         sum_found = False
-        # import pdb; pdb.set_trace()
-        for tr in web_data[25:]:
+        index_list = range(10, 25)
+        index_last = index_list[-1]
+# Scrape the data of each stock interval
+        for index in index_list:
+            tr = web_data[index]
             td = tr.select('td')
-            if not re.match(self.TABLE_SUM_FLAG, td[1].text, re.U):
-                continue
             data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
             data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
             data_list.append(td[4].text)
-            sum_found = True
-            break
+            if index == index_last:
+                if re.match(self.TABLE_SUM_FLAG, td[1].text, re.U):
+                    sum_found = True
+# Ignore the data which is NOT interesting... Scrape the data of sum if necessary
+        # import pdb; pdb.set_trace()
+        if not sum_found:
+            for tr in web_data[25:]:
+                td = tr.select('td')
+                if not re.match(self.TABLE_SUM_FLAG, td[1].text, re.U):
+                    continue
+                data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
+                data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
+                data_list.append(td[4].text)
+                sum_found = True
+                break
         if not sum_found:
             raise ValueError("Fail to find the sum flag in the table");
         return data_list

@@ -239,23 +239,23 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #         self.xcfg["company_group_set"] = CompanyGroupSet.get_whole_company_group_set()
 
 
-    def _scrap_single_source_data(self, source_type_time_duration):
+    def _scrape_class_data(self, scrapy_class_time_duration):
         # import pdb;pdb.set_trace()
 # Setup the time duration configuration for the scrapy object
-        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
+        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(scrapy_class_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
 # Market type
-        market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+        market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_class_time_duration.scrapy_class_index]["company_group_market_type"]
         not_support_multithread = False
         if self.xcfg["multi_thread_amount"] is not None:
             try:
-                CMN.DEF.NO_SUPPORT_MULTITHREAD_SCRAPY_CLASS_INDEX.index(source_type_time_duration.source_type_index)
+                CMN.DEF.NO_SUPPORT_MULTITHREAD_SCRAPY_CLASS_INDEX.index(scrapy_class_time_duration.scrapy_class_index)
             except ValueError:
-                g_logger.warn(u"%s does NOT support multi-threads......." % CMN.DEF.SCRAPY_CLASS_DESCRIPTION[source_type_time_duration.source_type_index])
+                g_logger.warn(u"%s does NOT support multi-threads......." % CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index])
                 not_support_multithread = True
 # Create the scrapy object to transform the data from Web to CSV
         if self.xcfg["multi_thread_amount"] is not None and (not not_support_multithread):
-            g_logger.debug("Scrape %s in %d threads" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], self.xcfg["multi_thread_amount"]))
+            g_logger.debug("Scrape %s in %d threads" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], self.xcfg["multi_thread_amount"]))
 # Run in multi-threads
             sub_scrapy_obj_cfg_list = []
             sub_company_group_list = self.__get_market_type_company_group_set(market_type).get_sub_company_group_set_list(self.xcfg["multi_thread_amount"])
@@ -265,23 +265,23 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 sub_scrapy_obj_cfg["company_group_set"] = sub_company_group
                 sub_scrapy_obj_cfg_list.append(sub_scrapy_obj_cfg)
 # Start the thread to scrap data
-            self._multi_thread_scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, sub_scrapy_obj_cfg_list)
+            self._multi_thread_scrap_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, sub_scrapy_obj_cfg_list)
         else:
             scrapy_obj_cfg["company_group_set"] = self.__get_market_type_company_group_set(market_type)
-            self._scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
+            self._scrap_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
 
 
-    def _renew_single_source_statement(self, source_type_time_duration, dst_statement_field_list, dst_statement_column_field_list):
-        if not CMN.FUNC.check_statement_source_type_index_in_range(source_type_time_duration.source_type_index):
-            raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (source_type_time_duration.source_type_index, CMN.DEF.DATA_SOURCE_STOCK_STATMENT_START, CMN.DEF.DATA_SOURCE_STOCK_STATMENT_END))
+    def _renew_single_source_statement(self, scrapy_class_time_duration, dst_statement_field_list, dst_statement_column_field_list):
+        if not CMN.FUNC.check_statement_scrapy_class_index_in_range(scrapy_class_time_duration.scrapy_class_index):
+            raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (scrapy_class_time_duration.scrapy_class_index, CMN.DEF.SCRAPY_STOCK_CLASS_STATMENT_START, CMN.DEF.DATA_SOURCE_STOCK_STATMENT_END))
         # import pdb;pdb.set_trace()
 # Setup the time duration configuration for the scrapy object
-        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
+        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(scrapy_class_time_duration)
         # scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
         scrapy_obj_cfg["company_group_set"] = self.__get_market_type_company_group_set()
 # Create the scrapy object
         # import pdb; pdb.set_trace()
-        web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_time_duration.source_type_index, True)
+        web_scrapy_class = CMN.FUNC.get_web_scrapy_class(scrapy_class_time_duration.scrapy_class_index, True)
         # web_scrapy_class.init_class_common_variables() # Caution
         scrapy_obj_cfg["renew_statement_field"] = True
         web_scrapy_obj = CMN.FUNC.get_web_scrapy_object(web_scrapy_class, **scrapy_obj_cfg)
@@ -318,10 +318,12 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     def renew_statement_field(self):
         # import pdb; pdb.set_trace()
-        for source_type_time_duration in self.source_type_time_duration_list:
-            web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_time_duration.source_type_index, False)
+        for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
+            if not CMN.FUNC.check_statement_scrapy_class_index_in_range(scrapy_class_time_duration.scrapy_class_index):
+                continue
+            web_scrapy_class = CMN.FUNC.get_web_scrapy_class(scrapy_class_time_duration.scrapy_class_index, False)
             table_column_field_exist = web_scrapy_class.TABLE_COLUMN_FIELD_EXIST
-            conf_filename = CMN.DEF.STATEMENT_FIELD_NAME_CONF_FILENAME[source_type_time_duration.source_type_index - CMN.DEF.DATA_SOURCE_STOCK_STATMENT_START]
+            conf_filename = CMN.DEF.STATEMENT_FIELD_NAME_CONF_FILENAME[scrapy_class_time_duration.scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_STATMENT_START]
             dst_statement_field_list = None #[]
             dst_statement_column_field_list = None #([] if table_column_field_exist else None) 
             old_dst_statement_field_list = None #[]
@@ -353,12 +355,12 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     dst_statement_column_field_list = []              
             try:
 # Update the statement field
-                self._renew_single_source_statement(source_type_time_duration, dst_statement_field_list, dst_statement_column_field_list)
+                self._renew_single_source_statement(scrapy_class_time_duration, dst_statement_field_list, dst_statement_column_field_list)
             except Exception as e:
                 if isinstance(e.message, str):
-                    errmsg = "Renew %s statement fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
+                    errmsg = "Renew %s statement fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], e.message)
                 else:
-                    errmsg = u"Renew %s statement fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
+                    errmsg = u"Renew %s statement fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], e.message)
                 CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
                 g_logger.error(errmsg)
                 raise e
@@ -368,7 +370,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             if config_file_exist:
                 new_statement_field_list = list(set(dst_statement_field_list) - set(old_dst_statement_field_list))
                 if len(new_statement_field_list) != 0:
-                    msg = u"***** Add new field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], source_type_time_duration.time_duration_start, source_type_time_duration.time_duration_end)
+                    msg = u"***** Add new field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], scrapy_class_time_duration.time_duration_start, scrapy_class_time_duration.time_duration_end)
                     for new_statement_field in new_statement_field_list:
                         msg += u"%s\n" % new_statement_field
                     CMN.FUNC.try_print(msg)
@@ -377,7 +379,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 if table_column_field_exist:
                     new_statement_column_field_list = list(set(dst_statement_column_field_list) - set(old_dst_statement_column_field_list))
                     if len(new_statement_column_field_list) != 0:
-                        msg = u"***** Add new column field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], source_type_time_duration.time_duration_start, source_type_time_duration.time_duration_end)
+                        msg = u"***** Add new column field in statement[%s %s:%s] as below *****\n" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], scrapy_class_time_duration.time_duration_start, scrapy_class_time_duration.time_duration_end)
                         for new_statement_column_field in new_statement_column_field_list:
                             msg += u"%s\n" % new_statement_column_field
                         CMN.FUNC.try_print(msg)
@@ -400,16 +402,16 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #     def check_scrapy(self):
 #         file_not_found_list = []
 #         file_is_empty_list = []
-#         for source_type_time_duration in self.source_type_time_duration_list:
+#         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
 #             for company_group_number, company_code_number_list in self.company_group_set.items():
 #                 for company_code_number in company_code_number_list:
-#                     csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_time_duration.source_type_index, company_code_number, company_group_number)
+#                     csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], scrapy_class_time_duration.scrapy_class_index, company_code_number, company_group_number)
 # # Check if the file exists
 #                     if not os.path.exists(csv_filepath):
 #                         file_not_found_list.append(
 #                             {
 #                                 "company_code_number": company_code_number,
-#                                 "index": source_type_time_duration.source_type_index,
+#                                 "index": scrapy_class_time_duration.scrapy_class_index,
 #                                 "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
 #                             }
 #                         )
@@ -417,7 +419,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #                         file_is_empty_list.append(
 #                             {
 #                                 "company_code_number": company_code_number,
-#                                 "index": source_type_time_duration.source_type_index,
+#                                 "index": scrapy_class_time_duration.scrapy_class_index,
 #                                 "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath),
 #                             }
 #                         )
@@ -464,7 +466,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #         return error_msg
 
 
-    def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, source_type_index, company_code_number):
+    def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, scrapy_class_index, company_code_number):
 # Search for the index of the finance folder which the specific source type index exists
 # -1 if not found
 # Exception occur if the source type is found in more than one finance folder
@@ -473,17 +475,17 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             if not csv_time_duration_cfg.has_key(company_code_number):
                 continue
             # import pdb; pdb.set_trace()
-            if csv_time_duration_cfg[company_code_number].has_key(source_type_index):
+            if csv_time_duration_cfg[company_code_number].has_key(scrapy_class_index):
                 if finance_folder_index != -1:
-                    raise ValueError("The source type index[%d] in %s is duplicate" % (source_type_index, company_code_number))
+                    raise ValueError("The source type index[%d] in %s is duplicate" % (scrapy_class_index, company_code_number))
                 else:
                     finance_folder_index = index
         return finance_folder_index
 
 
-    # def _increment_scrapy_source_type_progress_count(self, source_type_index):
-    #     market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[source_type_index]["company_group_market_type"]
-    #     self.scrapy_source_type_progress_count += self.__get_market_type_company_group_set(market_type).CompanyAmount
+    # def _increment_scrapy_class_type_progress_count(self, scrapy_class_index):
+    #     market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_class_index]["company_group_market_type"]
+    #     self.scrapy_class_type_progress_count += self.__get_market_type_company_group_set(market_type).CompanyAmount
 
 
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
@@ -497,7 +499,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             csv_time_duration_cfg_list.append(self.__parse_csv_time_duration_cfg(finance_folderpath_src))
 # Merge the finance folder
 # Copy the CSV files from source folder to destiantion one
-        (source_type_index_start, source_type_index_end) = CMN.FUNC.get_source_type_index_range()
+        (scrapy_class_index_start, scrapy_class_index_end) = CMN.FUNC.get_scrapy_class_index_range()
         new_source_type_csv_time_duration = {}
         # import pdb; pdb.set_trace()
         company_group_set_dst = {}
@@ -505,13 +507,13 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         for company_group_number, company_code_number_list in whole_company_number_in_group_dict.items():
             for company_code_number in company_code_number_list:
                 new_source_type_csv_time_duration_for_one_company = {}           
-                for source_type_index in range(source_type_index_start, source_type_index_end):
-                    finance_folder_index = self._find_existing_source_type_finance_folder_index(csv_time_duration_cfg_list, source_type_index, company_code_number)
+                for scrapy_class_index in range(scrapy_class_index_start, scrapy_class_index_end):
+                    finance_folder_index = self._find_existing_source_type_finance_folder_index(csv_time_duration_cfg_list, scrapy_class_index, company_code_number)
                     if finance_folder_index == -1:
                         continue
-                    src_csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(finance_folderpath_src_list[finance_folder_index], source_type_index, company_code_number, company_group_number)
+                    src_csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(finance_folderpath_src_list[finance_folder_index], scrapy_class_index, company_code_number, company_group_number)
                     CMN.FUNC.create_folder_if_not_exist(CMN.FUNC.assemble_stock_csv_folderpath(finance_folderpath_dst, company_code_number, company_group_number))
-                    dst_csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(finance_folderpath_dst, source_type_index, company_code_number, company_group_number)
+                    dst_csv_filepath = CMN.FUNC.assemble_stock_csv_filepath(finance_folderpath_dst, scrapy_class_index, company_code_number, company_group_number)
                     CMN.FUNC.copy_file(src_csv_filepath, dst_csv_filepath)
 # Keep track of the company code number of exsiting data
                     if not company_group_set_dst.has_key(company_group_number):
@@ -519,7 +521,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     company_group_set_dst[company_group_number].add(company_code_number)
 # Update the new time duration config
                     # import pdb; pdb.set_trace()
-                    new_source_type_csv_time_duration_for_one_company[source_type_index] = csv_time_duration_cfg_list[finance_folder_index][company_code_number][source_type_index]
+                    new_source_type_csv_time_duration_for_one_company[scrapy_class_index] = csv_time_duration_cfg_list[finance_folder_index][company_code_number][scrapy_class_index]
                 new_source_type_csv_time_duration[company_code_number] = new_source_type_csv_time_duration_for_one_company
         # import pdb; pdb.set_trace()
         self.__write_new_csv_time_duration_to_cfg(finance_folderpath_dst, new_source_type_csv_time_duration, company_group_set_dst)
@@ -528,8 +530,8 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     # def count_scrapy_amount(self):
     #     if self.scrapy_amount is None:
     #         self.scrapy_amount = 0
-    #         for source_type_time_duration in self.source_type_time_duration_list:
-    #             market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[source_type_time_duration.source_type_index]["company_group_market_type"]
+    #         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
+    #             market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_class_time_duration.scrapy_class_index]["company_group_market_type"]
     #             self.scrapy_amount += self.__get_market_type_company_group_set(market_type).CompanyAmount
     #         g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
     #     return self.scrapy_amount
@@ -544,7 +546,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     #             for web_scrapy_obj in self.web_scrapy_obj_list:
     #                 # import pdb; pdb.set_trace()
     #                 company_progress_count += web_scrapy_obj.CompanyProgressCount
-    #     progress_count = self.scrapy_source_type_progress_count + company_progress_count
+    #     progress_count = self.scrapy_class_type_progress_count + company_progress_count
     #     return (float(progress_count) / self.scrapy_amount * 100.0) 
 
 

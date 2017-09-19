@@ -29,7 +29,7 @@ class WebScrapyURLTimeRange(object):
 # is deadlock in this situation
         # g_profile_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
         self.COMPANY_GROUP_SIZE = g_profile_lookup.CompanyGroupSize
-        # self.stock_offset_source_type_index_list = [source_type_index - CMN.DEF.DATA_SOURCE_STOCK_START for source_type_index in self.source_type_index_list]
+        # self.stock_offset_scrapy_class_index_list = [scrapy_class_index - CMN.DEF.DATA_SOURCE_STOCK_START for scrapy_class_index in self.scrapy_class_index_list]
         self.DATA_SOURCE_START_SCAN_TIME_CFG = [
             CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -1)),
             CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
@@ -56,7 +56,7 @@ class WebScrapyURLTimeRange(object):
         ]
         self.whole_company_group_set = None
         self.timeslice_generator = None
-        self.source_type_index_list = None
+        self.scrapy_class_index_list = None
         self.web_scrapy_class_dict = None
         self.company_data_source_start_time_dict = {}
         self.auto_update = True
@@ -119,34 +119,34 @@ class WebScrapyURLTimeRange(object):
         company_time_range_start_ordereddict = collections.OrderedDict()
         line_list = CMN.FUNC.read_file_lines_ex(company_number_time_range_filepath, "r")
         for line in line_list:
-            [source_type_index_str, company_time_range_start_str] = line.split(CMN.DEF.SPACE_DATA_SPLIT)
-            source_type_index = int(source_type_index_str)
-            if company_time_range_start_ordereddict.has_key(source_type_index):
-                raise ValueError("Duplicate source type index: %d" % source_type_index)
-            company_time_range_start_ordereddict[source_type_index] = CMN.CLS.FinanceTimeBase.from_time_string(company_time_range_start_str)
+            [scrapy_class_index_str, company_time_range_start_str] = line.split(CMN.DEF.SPACE_DATA_SPLIT)
+            scrapy_class_index = int(scrapy_class_index_str)
+            if company_time_range_start_ordereddict.has_key(scrapy_class_index):
+                raise ValueError("Duplicate source type index: %d" % scrapy_class_index)
+            company_time_range_start_ordereddict[scrapy_class_index] = CMN.CLS.FinanceTimeBase.from_time_string(company_time_range_start_str)
         return company_time_range_start_ordereddict
 
 
     def __write_company_time_range_start_to_config(self, company_time_range_start_ordereddict, company_number, company_group=None):
         company_number_time_range_filepath = self.__get_company_number_time_range_filepath(company_number, company_group)
         line_list = []
-        for source_type_index, company_time_range_start in company_time_range_start_ordereddict.items():
-            line = "%d%s%s" % (source_type_index, CMN.DEF.SPACE_DATA_SPLIT, company_time_range_start.to_string())
+        for scrapy_class_index, company_time_range_start in company_time_range_start_ordereddict.items():
+            line = "%d%s%s" % (scrapy_class_index, CMN.DEF.SPACE_DATA_SPLIT, company_time_range_start.to_string())
             line_list.append(line)
         CMN.FUNC.write_file_lines_ex(line_list, company_number_time_range_filepath, "w")
 
 
-    def __get_web_scrapy_class(self, source_type_index):
+    def __get_web_scrapy_class(self, scrapy_class_index):
         # import pdb;pdb.set_trace()
         if self.web_scrapy_class_dict is None:
             self.web_scrapy_class_dict = {}
-        if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
-            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("Incorrect source type index: %d" % source_type_index)
-        if not self.web_scrapy_class_dict.has_key(source_type_index):
-            web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_index)
+        if not CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index):
+            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("Incorrect source type index: %d" % scrapy_class_index)
+        if not self.web_scrapy_class_dict.has_key(scrapy_class_index):
+            web_scrapy_class = CMN.FUNC.get_web_scrapy_class(scrapy_class_index)
             # web_scrapy_class.init_class_common_variables()
-            self.web_scrapy_class_dict[source_type_index] = web_scrapy_class
-        return self.web_scrapy_class_dict[source_type_index]
+            self.web_scrapy_class_dict[scrapy_class_index] = web_scrapy_class
+        return self.web_scrapy_class_dict[scrapy_class_index]
 
 
     def __scan_company_time_range_start(self, company_number, company_group=None):
@@ -154,27 +154,27 @@ class WebScrapyURLTimeRange(object):
         company_time_range_start_ordereddict = self.__read_company_time_range_start_from_config(company_number, company_group)
         if company_time_range_start_ordereddict is None:
             company_time_range_start_ordereddict = collections.OrderedDict()
-        for source_type_index in self.source_type_index_list:
+        for scrapy_class_index in self.scrapy_class_index_list:
 # The start time already exist, no need to search
-            if company_time_range_start_ordereddict.has_key(source_type_index):
+            if company_time_range_start_ordereddict.has_key(scrapy_class_index):
                 continue
             # import pdb;pdb.set_trace()
-            stock_source_type_index_offset = source_type_index - CMN.DEF.DATA_SOURCE_STOCK_START
+            stock_scrapy_class_index_offset = scrapy_class_index - CMN.DEF.DATA_SOURCE_STOCK_START
 # Get the web scrapy class
-#             web_scrapy_class = self.web_scrapy_class_dict[stock_source_type_index_offset]
-            web_scrapy_class = self.__get_web_scrapy_class(source_type_index)
+#             web_scrapy_class = self.web_scrapy_class_dict[stock_scrapy_class_index_offset]
+            web_scrapy_class = self.__get_web_scrapy_class(scrapy_class_index)
             if web_scrapy_class.CAN_FIND_TIME_RANGE_START:
 # Find the start time from company profile..., .etc
                 first_web_data_time_str = web_scrapy_class.find_time_range_start(company_number)
                 if first_web_data_time_str is not None:
-                    company_time_range_start_ordereddict[source_type_index] = CMN.CLS.FinanceTimeBase.from_time_string(first_web_data_time_str)
+                    company_time_range_start_ordereddict[scrapy_class_index] = CMN.CLS.FinanceTimeBase.from_time_string(first_web_data_time_str)
                     continue
 # Scan to find the start time from the web
 # Define the time range for scanning the start time
             time_slice_generator_cfg = {
                 "company_code_number": company_number, 
-                "time_duration_start": self.DATA_SOURCE_START_SCAN_TIME_CFG[stock_source_type_index_offset], 
-                "time_duration_end": self.DATA_SOURCE_END_TIME_CFG[source_type_index - CMN.DEF.DATA_SOURCE_STOCK_START],
+                "time_duration_start": self.DATA_SOURCE_START_SCAN_TIME_CFG[stock_scrapy_class_index_offset], 
+                "time_duration_end": self.DATA_SOURCE_END_TIME_CFG[scrapy_class_index - CMN.DEF.DATA_SOURCE_STOCK_START],
             }
             # import pdb; pdb.set_trace()
 # Generate the time slice
@@ -190,16 +190,16 @@ class WebScrapyURLTimeRange(object):
                     web_data = web_scrapy_class.try_get_web_data(url, True)
                     if web_data is not None:
                         first_web_data_time_str = web_scrapy_class.get_first_web_data_time(web_data)
-                        company_time_range_start_ordereddict[source_type_index] = CMN.CLS.FinanceTimeBase.from_time_string(first_web_data_time_str)
+                        company_time_range_start_ordereddict[scrapy_class_index] = CMN.CLS.FinanceTimeBase.from_time_string(first_web_data_time_str)
                         data_exist = True
                 else:
                     data_exist = web_scrapy_class.check_web_data_exist(url)
                     if data_exist:
-                        company_time_range_start_ordereddict[source_type_index] = timeslice
+                        company_time_range_start_ordereddict[scrapy_class_index] = timeslice
                 if data_exist:
                     break
             if not data_exist:
-                raise CMN.EXCEPTION.WebScrapyNotFoundException("Fail to check if the data[%s:%d] exist" % (company_number, source_type_index))
+                raise CMN.EXCEPTION.WebScrapyNotFoundException("Fail to check if the data[%s:%d] exist" % (company_number, scrapy_class_index))
         self.__write_company_time_range_start_to_config(company_time_range_start_ordereddict, company_number, company_group)
         return company_time_range_start_ordereddict
 
@@ -219,7 +219,7 @@ class WebScrapyURLTimeRange(object):
     def initialize(self):
         # import pdb; pdb.set_trace()
         self.whole_company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
-        self.source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
+        self.scrapy_class_index_list = CMN.FUNC.get_scrapy_class_index_range_list()
         self.company_listing_date_dict = {}
 
 
@@ -239,8 +239,8 @@ class WebScrapyURLTimeRange(object):
             else:
                 raise CMN.EXCEPTION.WebScrapyNotFoundException("Fail to find the time range in company[%s]" % company_number)
         else:
-            for source_type_index in self.source_type_index_list:
-                if not company_time_range_start_ordereddict.has_key(source_type_index):
+            for scrapy_class_index in self.scrapy_class_index_list:
+                if not company_time_range_start_ordereddict.has_key(scrapy_class_index):
                     need_scan = True
                     break
         if need_scan:
@@ -263,20 +263,20 @@ class WebScrapyURLTimeRange(object):
         return  self.company_data_source_start_time_dict[company_number]
 
 
-    def get_time_range_start(self, source_type_index, company_number, company_group=None):
+    def get_time_range_start(self, scrapy_class_index, company_number, company_group=None):
         # import pdb;pdb.set_trace()
-        CMN.FUNC.check_source_type_index_in_range(source_type_index)
-        return self.get_time_range_start_all_dict(company_number, company_group)[source_type_index]
+        CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index)
+        return self.get_time_range_start_all_dict(company_number, company_group)[scrapy_class_index]
 
 
-    def get_time_range_end(self, source_type_index):
-        CMN.FUNC.check_source_type_index_in_range(source_type_index)
-        return self.DATA_SOURCE_END_TIME_CFG[source_type_index - CMN.DEF.DATA_SOURCE_STOCK_START]
+    def get_time_range_end(self, scrapy_class_index):
+        CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index)
+        return self.DATA_SOURCE_END_TIME_CFG[scrapy_class_index - CMN.DEF.DATA_SOURCE_STOCK_START]
 
 
-    def get_time_range(self, source_type_index, company_number, company_group=None):
+    def get_time_range(self, scrapy_class_index, company_number, company_group=None):
         # import pdb;pdb.set_trace()
-        return (self.get_time_range_start(source_type_index, company_number, company_group), self.get_time_range_end(source_type_index))
+        return (self.get_time_range_start(scrapy_class_index, company_number, company_group), self.get_time_range_end(scrapy_class_index))
 
 
     @property

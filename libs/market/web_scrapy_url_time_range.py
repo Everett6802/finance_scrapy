@@ -43,17 +43,17 @@ class WebScrapyURLTimeRange(object):
     #     return datetime(datetime_cfg.year + year_offset, datetime_cfg.month, datetime_cfg.day)
 
 
-    def get_time_range_start(self, source_type_index):
-        CMN.FUNC.check_source_type_index_in_range(source_type_index)
-        return self.DATA_SOURCE_START_DATE_LIST[source_type_index]
+    def get_time_range_start(self, scrapy_class_index):
+        CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index)
+        return self.DATA_SOURCE_START_DATE_LIST[scrapy_class_index]
 
 
-    def get_time_range_end(self, source_type_index):
-        CMN.FUNC.check_source_type_index_in_range(source_type_index)
+    def get_time_range_end(self, scrapy_class_index):
+        CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index)
         if self.last_url_data_date is None:
             self.last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         return self.last_url_data_date
 
 
-    def get_time_range(self, source_type_index):
-        return (self.get_time_range_start(source_type_index), self.get_time_range_end(source_type_index))
+    def get_time_range(self, scrapy_class_index):
+        return (self.get_time_range_start(scrapy_class_index), self.get_time_range_end(scrapy_class_index))

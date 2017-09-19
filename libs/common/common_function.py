@@ -69,11 +69,11 @@ def get_web_scrapy_class_for_name(module_folder, module_name, class_name):
     return m
 
 
-def get_web_scrapy_class(source_type_index, init_class_variables=True):
+def get_web_scrapy_class(scrapy_class_index, init_class_variables=True):
     # import pdb; pdb.set_trace()
-    module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER_MAPPING[source_type_index]
-    module_name = CMN_DEF.SCRAPY_MODULE_NAME_PREFIX + CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]
-    class_name = CMN_DEF.SCRAPY_CLASS_NAME_MAPPING[source_type_index]
+    module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER_MAPPING[scrapy_class_index]
+    module_name = CMN_DEF.SCRAPY_MODULE_NAME_PREFIX + CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]
+    class_name = CMN_DEF.SCRAPY_CLASS_NAME_MAPPING[scrapy_class_index]
     g_logger.debug("Try to instantiate %s.%s" % (module_name, class_name))
 # Find the module
     web_scrapy_class = get_web_scrapy_class_for_name(module_folder, module_name, class_name)
@@ -89,40 +89,48 @@ def get_web_scrapy_object(web_scrapy_class, **kwargs):
     return web_scrapy_obj
 
 
-def instantiate_web_scrapy_object(source_type_index, **kwargs):
+def instantiate_web_scrapy_object(scrapy_class_index, **kwargs):
     # import pdb; pdb.set_trace()
 # Get the class
-    web_scrapy_class = get_web_scrapy_class(source_type_index)
+    web_scrapy_class = get_web_scrapy_class(scrapy_class_index)
 # Instantiate the class 
     web_scrapy_obj = get_web_scrapy_object(web_scrapy_class, **kwargs)
     return web_scrapy_obj
 
 
-def check_source_type_index_in_range(source_type_index):
+def check_scrapy_class_index_in_range(scrapy_class_index):
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        return True if CMN_DEF.DATA_SOURCE_MARKET_START <= source_type_index < CMN_DEF.DATA_SOURCE_MARKET_END else False
+        return True if CMN_DEF.SCRAPY_MARKET_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_MARKET_CLASS_END else False
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return True if CMN_DEF.DATA_SOURCE_STOCK_START <= source_type_index < CMN_DEF.DATA_SOURCE_STOCK_END else False
+        return True if CMN_DEF.SCRAPY_STOCK_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_END else False
     raise RuntimeError("Unknown finance mode")
 
 
-def check_statement_source_type_index_in_range(source_type_index):
+def check_statement_scrapy_class_index_in_range(scrapy_class_index):
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
         return False
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return True if CMN_DEF.DATA_SOURCE_STOCK_STATMENT_START <= source_type_index < CMN_DEF.DATA_SOURCE_STOCK_STATMENT_END else False
+        return True if CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_END else False
     raise RuntimeError("Unknown finance mode")
 
 
-def get_source_type_index_range():
+def get_scrapy_class_index_range():
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        return (CMN_DEF.DATA_SOURCE_MARKET_START, CMN_DEF.DATA_SOURCE_MARKET_END)
+        return (CMN_DEF.SCRAPY_MARKET_CLASS_START, CMN_DEF.SCRAPY_MARKET_CLASS_END)
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return (CMN_DEF.DATA_SOURCE_STOCK_START, CMN_DEF.DATA_SOURCE_STOCK_END)
+        return (CMN_DEF.SCRAPY_STOCK_CLASS_START, CMN_DEF.SCRAPY_STOCK_CLASS_END)
     raise RuntimeError("Unknown finance mode")
 
 
-def get_method_index_range():
+def get_scrapy_class_size():
+    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+        return CMN_DEF.SCRAPY_MARKET_CLASS_SIZE
+    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+        return CMN_DEF.SCRAPY_STOCK_CLASS_SIZE
+    raise RuntimeError("Unknown finance mode")
+
+
+def get_scrapy_method_index_range():
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
         return (CMN_DEF.SCRAPY_MARKET_METHOD_START, CMN_DEF.SCRAPY_MARKET_METHOD_END)
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
@@ -130,55 +138,54 @@ def get_method_index_range():
     raise RuntimeError("Unknown finance mode")
 
 
-def get_source_type_size():
+def check_scrapy_method_index_in_range(scrapy_method_index):
     if CMN_DEF.IS_FINANCE_MARKET_MODE:
-        return CMN_DEF.DATA_SOURCE_MARKET_SIZE
+        return True if CMN_DEF.SCRAPY_MARKET_METHOD_START <= scrapy_class_index < CMN_DEF.SCRAPY_MARKET_METHOD_END else False
     elif CMN_DEF.IS_FINANCE_STOCK_MODE:
-        return CMN_DEF.DATA_SOURCE_STOCK_SIZE
+        return True if CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_METHOD_END else False
     raise RuntimeError("Unknown finance mode")
 
 
-def get_source_type_index_from_description(source_type_description, ignore_exception=False):
-    source_type_index = -1
+def get_scrapy_class_index_from_description(scrapy_class_description, ignore_exception=False):
+    scrapy_class_index = -1
     try:
-        source_type_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(source_type_description)
+        scrapy_class_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(scrapy_class_description)
     except ValueError as e:
         if not ignore_exception:
             raise e
-        g_logger.warn("Unknown source type description: %s", source_type_description);
-    return source_type_index
+        g_logger.warn("Unknown source type description: %s", scrapy_class_description);
+    return scrapy_class_index
 
 
-def get_source_type_index_list_from_method_description(method_description):
-    source_type_index_list = []
-    for source_type_index, class_constant_cfg in enumerate(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG):
+def get_scrapy_class_index_list_from_method_description(method_description):
+    scrapy_class_index_list = []
+    for scrapy_class_index, class_constant_cfg in enumerate(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG):
         if re.search(method_description, class_constant_cfg["description"], re.U):
-            source_type_index_list.append(source_type_index)
-    if len(source_type_index_list) == 0:
+            scrapy_class_index_list.append(scrapy_class_index)
+    if len(scrapy_class_index_list) == 0:
         raise ValueError("Unknown method description: %s" % method_description)
-    return source_type_index_list
+    return scrapy_class_index_list
 
 
-def get_source_type_index_list_from_method_index(method_index):
+def get_scrapy_class_index_list_from_method_index(method_index):
     method_description = CMN_DEF.SCRAPY_METHOD_DESCRIPTION[method_index]
-    return get_source_type_index_list_from_method_description(method_description)
+    return get_scrapy_class_index_list_from_method_description(method_description)
 
 
-def get_source_type_index_range_list():
-    source_type_index_list = []
-    (source_type_start_index, source_type_end_index) = get_source_type_index_range()
+def get_scrapy_class_index_range_list():
+    scrapy_class_index_list = []
+    (scrapy_class_start_index, scrapy_class_end_index) = get_scrapy_class_index_range()
 # Semi-open interval
-    for index in range(source_type_start_index, source_type_end_index):
-        source_type_index_list.append(index)
-    return source_type_index_list
+    for index in range(scrapy_class_start_index, scrapy_class_end_index):
+        scrapy_class_index_list.append(index)
+    return scrapy_class_index_list
 
 
 def get_method_index_range_list():
     method_index_list = []
-    (method_start_index, method_end_index) = get_method_index_range()
+    (method_start_index, method_end_index) = get_scrapy_method_index_range()
 # Semi-open interval
-    for index in range(method_start_index, method_end_index):
-        method_index_list.append(index)
+    method_index_list += range(method_start_index, method_end_index)
     return method_index_list
 
 
@@ -494,29 +501,29 @@ def unicode_write_config_file_lines(conf_line_list, conf_filename, conf_folderpa
     return unicode_write_config_file_lines_ex(conf_line_list, conf_filename, 'wb', conf_folderpath, conf_unicode_encode)
 
 
-def read_source_type_time_duration_config_file(conf_filename, time_duration_type):
-    # import pdb; pdb.set_trace()
-    conf_line_list = read_config_file_lines(conf_filename)
-    source_type_time_duration_config_list = []
-    for line in conf_line_list:
-        param_list = line.split(' ')
-        param_list_len = len(param_list)
-        # source_type_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
-        # source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
-        source_type_index_list = get_source_type_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
-        time_duration_start = None
-        if param_list_len >= 2:
-            # time_duration_start = transform_string2datetime(param_list[1])
-            time_duration_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
-        time_duration_end = None
-        if param_list_len >= 3:
-            # time_duration_end = transform_string2datetime(param_list[2])
-            time_duration_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
-        for source_type_index in source_type_index_list:
-            source_type_time_duration_config_list.append(
-                CMN_CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
-            )
-    return source_type_time_duration_config_list
+# def read_source_type_time_duration_config_file(conf_filename, time_duration_type):
+#     # import pdb; pdb.set_trace()
+#     conf_line_list = read_config_file_lines(conf_filename)
+#     source_type_time_duration_config_list = []
+#     for line in conf_line_list:
+#         param_list = line.split(' ')
+#         param_list_len = len(param_list)
+#         # scrapy_class_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+#         # scrapy_class_index = get_scrapy_class_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+#         scrapy_class_index_list = get_scrapy_class_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+#         time_duration_start = None
+#         if param_list_len >= 2:
+#             # time_duration_start = transform_string2datetime(param_list[1])
+#             time_duration_start = CMN_CLS.FinanceTimeBase.from_string(param_list[1])
+#         time_duration_end = None
+#         if param_list_len >= 3:
+#             # time_duration_end = transform_string2datetime(param_list[2])
+#             time_duration_end = CMN_CLS.FinanceTimeBase.from_string(param_list[2])
+#         for scrapy_class_index in scrapy_class_index_list:
+#             source_type_time_duration_config_list.append(
+#                 CMN_CLS.ScrapyClassTimeDurationTuple(scrapy_class_index, time_duration_type, time_duration_start, time_duration_end)
+#             )
+#     return source_type_time_duration_config_list
 
 
 def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as_list=False):
@@ -527,13 +534,13 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as
         for line in conf_line_list:
             param_list = line.split(' ')
             param_list_len = len(param_list)
-            # source_type_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+            # scrapy_class_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             if param_list_len != 3:
                 raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
-            source_type_index = get_source_type_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+            scrapy_class_index = get_scrapy_class_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(param_list[1])
             time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(param_list[2])
-            csv_time_duration_dict[source_type_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
+            csv_time_duration_dict[scrapy_class_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
     except ValueError as e:
         csv_time_duration_dict = None
     return csv_time_duration_dict
@@ -542,12 +549,12 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as
 def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict):
     # import pdb; pdb.set_trace()
     conf_line_list = []
-    source_type_start_index, source_type_end_index = get_source_type_index_range()
-    for source_type_index in range(source_type_start_index, source_type_end_index):
-        time_duration_tuple = csv_time_duration_dict.get(source_type_index, None)
+    source_type_start_index, source_type_end_index = get_scrapy_class_index_range()
+    for scrapy_class_index in range(source_type_start_index, source_type_end_index):
+        time_duration_tuple = csv_time_duration_dict.get(scrapy_class_index, None)
         if time_duration_tuple is None:
             continue
-        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.SCRAPY_CLASS_DESCRIPTION[source_type_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
+        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
         conf_line_list.append(csv_time_duration_entry_unicode.encode(CMN_DEF.UNICODE_ENCODING_IN_FILE) + "\n")
     write_config_file_lines_ex(conf_line_list, conf_filename, "wb", conf_folderpath)
 
@@ -774,8 +781,8 @@ def assemble_market_csv_folderpath(finance_root_folderpath):
     return csv_filepath
 
 
-def assemble_market_csv_filepath(finance_root_folderpath, source_type_index):
-    csv_filepath = "%s/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME, CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+def assemble_market_csv_filepath(finance_root_folderpath, scrapy_class_index):
+    csv_filepath = "%s/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME, CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]) 
     return csv_filepath
 
 
@@ -789,8 +796,8 @@ def assemble_stock_csv_folderpath(finance_root_folderpath, company_code_number, 
     return csv_filepath
 
 
-def assemble_stock_csv_filepath(finance_root_folderpath, source_type_index, company_code_number, company_group_number):
-    csv_filepath = "%s/%s%02d/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+def assemble_stock_csv_filepath(finance_root_folderpath, scrapy_class_index, company_code_number, company_group_number):
+    csv_filepath = "%s/%s%02d/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]) 
     return csv_filepath
 
 

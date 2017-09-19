@@ -22,9 +22,9 @@ def show_usage_and_exit():
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
     print "--debug_scrapy\nDescription: Debug a specific scrapy class only\nCaution: Ignore other parameters when set"
-    source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
-    for source_type_index in source_type_index_list:
-        print "  %d: %s" % (source_type_index, CMN.DEF.SCRAPY_CLASS_DESCRIPTION[source_type_index])
+    scrapy_class_index_list = CMN.FUNC.get_scrapy_class_index_range_list()
+    for scrapy_class_index in scrapy_class_index_list:
+        print "  %d: %s" % (scrapy_class_index, CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index])
     print "  Format: Source Type (ex. 1)"
     print "--no_scrap\nDescription: Don't scrap Web data"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrap flag is NOT set"
@@ -127,25 +127,25 @@ def show_command_example_and_exit():
 
 
 def check_url_and_exit():
-    source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
+    scrapy_class_index_list = CMN.FUNC.get_scrapy_class_index_range_list()
     error_found = False
     errmsg = "**************** Check %s URL ****************\n" % CMN.FUNC.get_finance_mode_description()
-    for source_type_index in source_type_index_list:
+    for scrapy_class_index in scrapy_class_index_list:
         try:
-            g_mgr.do_scrapy_debug(source_type_index, True)
+            g_mgr.do_scrapy_debug(scrapy_class_index, True)
         except Exception as e:
             error_found = True
-            errmsg += " %d: %s %s" % (source_type_index, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_index], str(e))
+            errmsg += " %d: %s %s" % (scrapy_class_index, CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index], str(e))
     if error_found:
         show_error_and_exit(errmsg)
     sys.exit(0)
 
 
-def debug_scrapy_and_exit(source_type_index):
-    if not CMN.FUNC.check_source_type_index_in_range(source_type_index):
-        errmsg = "Unsupported source type index: %d" % source_type_index
+def debug_scrapy_and_exit(scrapy_class_index):
+    if not CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index):
+        errmsg = "Unsupported scrapy class index: %d" % scrapy_class_index
         show_error_and_exit(errmsg)
-    g_mgr.do_scrapy_debug(source_type_index)
+    g_mgr.do_scrapy_debug(scrapy_class_index)
     sys.exit(0)
 
 
@@ -418,55 +418,24 @@ def check_param():
 
 def setup_param():
     # import pdb; pdb.set_trace()
-# Set source type and time range
+# Set method and time range
     if param_cfg["method_from_file"] is not None:
-        g_mgr.set_source_type_time_duration_from_file(param_cfg["method_from_file"], param_cfg["time_duration_type"])
+        g_mgr.set_method_time_duration_from_file(param_cfg["method_from_file"], param_cfg["time_duration_type"])
     else:
-# Set source type
+# Set method
         method_index_list = None
         if param_cfg["method"] is not None:
             method_index_str_list = param_cfg["method"].split(",")
-            total_source_type_index_list = []
             # import pdb; pdb.set_trace()
+            method_index_list = []
             for method_index_str in method_index_str_list:
                 mobj = re.match("([\d]+)-([\d]+)", method_index_str)
                 if mobj is not None:
-                    method_start_index = int(mobj.group(1))
-                    source_type_start_index_list = CMN.FUNC.get_source_type_index_list_from_method_index(method_start_index)
-                    source_type_start_index = min(source_type_start_index_list)
-                    start_index_in_range = False
-                    if param_cfg["renew_statement_field"]:
-                        start_index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_start_index)
-                    else:
-                        start_index_in_range = CMN.FUNC.check_source_type_index_in_range(source_type_start_index)
-                    if not start_index_in_range:
-                        errmsg = "Unsupported source type index: %d" % source_type_start_index
-                        show_error_and_exit(errmsg)
-                    method_end_index = int(mobj.group(2))
-                    source_type_end_index_list = CMN.FUNC.get_source_type_index_list_from_method_index(method_end_index)
-                    source_type_end_index = max(source_type_end_index_list)
-                    end_index_in_range = False
-                    if param_cfg["renew_statement_field"]:
-                        end_index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_end_index)
-                    else:
-                        end_index_in_range = CMN.FUNC.check_source_type_index_in_range(source_type_end_index)
-                    if not end_index_in_range:
-                        errmsg = "Unsupported source type index: %d" % source_type_end_index
-                        show_error_and_exit(errmsg)
-                    for source_type_index in range(source_type_start_index, source_type_end_index + 1):
-                        total_source_type_index_list.append(source_type_index)
+# The method index range
+                    method_index_list += range(int(mobj.group(1)), int(mobj.group(2)))
                 else:
-                    source_type_index_list = CMN.FUNC.get_source_type_index_list_from_method_index(int(method_index_str))
-                    for source_type_index in source_type_index_list:
-                        index_in_range = False
-                        if param_cfg["renew_statement_field"]:
-                            index_in_range = CMN.FUNC.check_statement_source_type_index_in_range(source_type_index)
-                        else:
-                            index_in_range = CMN.FUNC.check_source_type_index_in_range(source_type_index)
-                        if not index_in_range:
-                            errmsg = "Unsupported source type index: %d" % source_type_index
-                            show_error_and_exit(errmsg)
-                        total_source_type_index_list.append(source_type_index)
+# The method index
+                    method_index_list.append(int(method_index_str))
 # Set time range
         time_range_start = None
         time_range_end = None
@@ -485,8 +454,8 @@ def setup_param():
                     errmsg = "Incorrect time range format: %s" % param_cfg["time_duration_range"]
                     show_error_and_exit(errmsg)
         # import pdb; pdb.set_trace()
-        g_mgr.set_source_type_time_duration(total_source_type_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
-
+        g_mgr.set_method_time_duration(method_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
+# Set Company
     if CMN.DEF.IS_FINANCE_STOCK_MODE:
 # Set company list. For stock mode only
         if param_cfg["company_from_file"] is not None:

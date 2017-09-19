@@ -6,8 +6,8 @@ import collections
 MonthTuple = collections.namedtuple('MonthTuple', ('year', 'month'))
 QuarterTuple = collections.namedtuple('QuarterTuple', ('year', 'quarter'))
 TimeDurationTuple = collections.namedtuple('TimeDurationTuple', ('time_duration_start', 'time_duration_end'))
-SourceTypeTimeDurationTuple = collections.namedtuple('SourceTypeTimeDurationTuple', ('source_type_index', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
-SourceTypeCompanyTimeDurationTuple = collections.namedtuple('SourceTypeCompanyTimeDurationTuple', ('source_type_index', 'company_code_number', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
+ScrapyClassTimeDurationTuple = collections.namedtuple('ScrapyClassTimeDurationTuple', ('scrapy_class_index', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
+ScrapyClassCompanyTimeDurationTuple = collections.namedtuple('ScrapyClassCompanyTimeDurationTuple', ('scrapy_class_index', 'company_code_number', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
 import common_definition as CMN_DEF
 import common_function as CMN_FUNC
 

@@ -1,6 +1,6 @@
 # !/bash/sh
 
-usage() { echo "Usage: $0 [-s <source_type_index> (Ex: 6; range: 0~8)]" 1>&2; exit 1; }
+usage() { echo "Usage: $0 [-s <scrapy_class_index> (Ex: 6; range: 0~8)]" 1>&2; exit 1; }
 
 while getopts ":s:" o; do
     case "${o}" in

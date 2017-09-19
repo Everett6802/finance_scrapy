@@ -256,7 +256,7 @@ class WebScrapyBase(object):
 
     PARSE_URL_DATA_FUNC_PTR = None
 # Find corresponding config of the module
-    SOURCE_TYPE_INDEX = None
+    SCRAPY_CLASS_INDEX = None
     CLASS_CONSTANT_CFG = None
     URL_TIME_UNIT = None
     URL_FORMAT = None
@@ -318,7 +318,7 @@ class WebScrapyBase(object):
 
 
     @classmethod
-    def init_class_common_variables(cls, designated_source_type_index=None):
+    def init_class_common_variables(cls, designated_scrapy_class_index=None):
 # CAUTION: This function MUST be called by the LEAF derived class
         if cls.PARSE_URL_DATA_FUNC_PTR is None:
             cls.PARSE_URL_DATA_FUNC_PTR = [
@@ -329,15 +329,15 @@ class WebScrapyBase(object):
 # Find correspnding index of the class
 # Caution: Can NOT be called here !!! 
 # Since this function is probably called by the class which is NOT a leaf derived class
-        if cls.SOURCE_TYPE_INDEX is None:
-            if designated_source_type_index is not None:
-                assert designated_source_type_index >= 0 and designated_source_type_index < CMN.DEF.SCRAPY_MODULE_NAME_MAPPING_LEN, "source type index is Out-of-Range [0, %d)" % CMN.DEF.SCRAPY_MODULE_NAME_MAPPING_LEN
-                cls.SOURCE_TYPE_INDEX = designated_source_type_index
+        if cls.SCRAPY_CLASS_INDEX is None:
+            if designated_scrapy_class_index is not None:
+                assert designated_scrapy_class_index >= 0 and designated_scrapy_class_index < CMN.DEF.SCRAPY_MODULE_NAME_MAPPING_LEN, "source type index is Out-of-Range [0, %d)" % CMN.DEF.SCRAPY_MODULE_NAME_MAPPING_LEN
+                cls.SCRAPY_CLASS_INDEX = designated_scrapy_class_index
             else:
-                cls.SOURCE_TYPE_INDEX = CMN.DEF.SCRAPY_CLASS_NAME_MAPPING.index(cls.__name__)
+                cls.SCRAPY_CLASS_INDEX = CMN.DEF.SCRAPY_CLASS_NAME_MAPPING.index(cls.__name__)
 # Find corresponding config of the module
             if cls.CLASS_CONSTANT_CFG is None:
-                cls.CLASS_CONSTANT_CFG = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[cls.SOURCE_TYPE_INDEX]
+                cls.CLASS_CONSTANT_CFG = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[cls.SCRAPY_CLASS_INDEX]
             if cls.URL_FORMAT is None:
                 cls.URL_FORMAT = cls.CLASS_CONSTANT_CFG["url_format"]
             if cls.URL_TIME_UNIT is None:
@@ -357,7 +357,7 @@ class WebScrapyBase(object):
 
             g_logger.info(
                 u"*****The constants are initialized in %s ***** URL_FORMAT: %s; URL_TIME_UNIT: %d; URL_PARSING_METHOD: %d; TIMESLICE_GENERATE_METHOD: %d; TIMESLICE_TIME_UNIT: %d",
-                CMN.DEF.SCRAPY_CLASS_DESCRIPTION[cls.SOURCE_TYPE_INDEX],
+                CMN.DEF.SCRAPY_CLASS_DESCRIPTION[cls.SCRAPY_CLASS_INDEX],
                 cls.URL_FORMAT,
                 cls.URL_TIME_UNIT,
                 cls.URL_PARSING_METHOD,
@@ -487,28 +487,28 @@ class WebScrapyBase(object):
 
     @property
     def SourceTypeIndex(self):
-        return self.SOURCE_TYPE_INDEX
+        return self.SCRAPY_CLASS_INDEX
 
 
     def get_description(self):
         if self.description is None:
-            self.description = "%s" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX]
+            self.description = "%s" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX]
             # if show_detail:
             #     if not self.timeslice_list_generated:
             #         self.__generate_timeslice_list()
             #     if self.timeslice_start == self.timeslice_end:
             #         self.description = "%s[%s]" % (
-            #             CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.source_type_index], 
+            #             CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.scrapy_class_index], 
             #             self.timeslice_start.to_string()
             #         )
             #     else:
             #         self.description = "%s[%s-%s]" % (
-            #             CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.source_type_index], 
+            #             CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.scrapy_class_index], 
             #             self.timeslice_start.to_string(), 
             #             self.timeslice_end.to_string()
             #         )
             # else:
-            #     self.description = "%s" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.source_type_index]
+            #     self.description = "%s" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.scrapy_class_index]
         return self.description
 
 
@@ -529,15 +529,15 @@ class WebScrapyBase(object):
 #         web2csv_time_duration_update = WebScrapyBase.Web2CSVTimeRangeUpdate()
 # # Adjust the time duration, ignore the data which already exist in the finance data folder
 # # I assume that the time duration between the csv data and new data should be consecutive
-#         # if csv_old_time_duration_tuple.source_type_index != self.source_type_index:
-#         #     raise ValueError("The source type index is NOT identical: %d %d", (csv_old_time_duration_tuple.source_type_index, self.source_type_index))
+#         # if csv_old_time_duration_tuple.scrapy_class_index != self.scrapy_class_index:
+#         #     raise ValueError("The source type index is NOT identical: %d %d", (csv_old_time_duration_tuple.scrapy_class_index, self.scrapy_class_index))
 #         is_overlap = CMN.FUNC.is_time_range_overlap(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end)
 #         if is_overlap:
 #             is_time_duration_start_in_range = CMN.FUNC.is_time_in_range(csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start) 
 #             is_time_duration_end_in_range = CMN.FUNC.is_time_in_range(csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_end) 
 #             if is_time_duration_start_in_range and is_time_duration_end_in_range:
 # # All csv data already exists, no need to update the new data
-#                 g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX]))
+#                 g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX]))
 #                 return web2csv_time_duration_update
 #             elif is_time_duration_start_in_range:
 # # I just assume the new time range can be only extended from the start of end side of the original time range
@@ -554,7 +554,7 @@ class WebScrapyBase(object):
 #             else:
 # # If the time range of new data contain all the time range of csv data, the system is not desiged to update two time range interval
 #                 raise ValueError("The system does NOT support this type[2] of the range update; CSV data[%s:%s], new data[%s:%s]" % (csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-#             g_logger.debug("Time range overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+#             g_logger.debug("Time range overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
 #         else:
 # # I assume that the two interval must be consecutive 
 #             if time_duration_start > csv_old_time_duration_tuple.time_duration_end: 
@@ -565,7 +565,7 @@ class WebScrapyBase(object):
 #                 web2csv_time_duration_update.AppendDirection = WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BEFORE
 #             else:
 #                 raise ValueError("The system does NOT support this type[4] of the range update; CSV data[%s:%s], new data[%s:%s]" % (csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
-#             g_logger.debug("Time range does Not overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+#             g_logger.debug("Time range does Not overlap !!! Adjust the time duration from the CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
 # # Set the time range config
 #             # if web2csv_time_duration_update.NeedUpdate:
 #         assert web2csv_time_duration_update.NeedUpdate, "Error! No data to be updated!!"
@@ -597,7 +597,7 @@ class WebScrapyBase(object):
         overlap_case = CMN.FUNC.get_time_range_overlap_case(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end)
         if overlap_case == CMN.DEF.TIME_OVERLAP_COVERED:
 # All csv data already exists, no need to update the new data
-            g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX]))
+            g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX]))
             self.new_csv_extension_time_duration = None
             return None
         elif overlap_case == CMN.DEF.TIME_OVERLAP_BEFORE:
@@ -608,7 +608,7 @@ class WebScrapyBase(object):
             web2csv_time_duration_update_before.NewWebStart = time_duration_start
             web2csv_time_duration_update_before.NewWebEnd = web2csv_time_duration_update_before.OldCSVStart - 1
             web2csv_time_duration_update_before.AppendDirection = WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BEFORE
-            g_logger.debug("Extend the time duration before the original CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], web2csv_time_duration_update_before.OldCSVStart, web2csv_time_duration_update_before.OldCSVEnd, web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_before.NewWebEnd))
+            g_logger.debug("Extend the time duration before the original CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], web2csv_time_duration_update_before.OldCSVStart, web2csv_time_duration_update_before.OldCSVEnd, web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_before.NewWebEnd))
             self.new_csv_extension_time_duration = CMN.CLS.TimeDurationTuple(web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_before.OldCSVEnd)
             return (web2csv_time_duration_update_before,)
         elif overlap_case == CMN.DEF.TIME_OVERLAP_AFTER:
@@ -619,7 +619,7 @@ class WebScrapyBase(object):
             web2csv_time_duration_update_after.NewWebStart = web2csv_time_duration_update_after.OldCSVEnd + 1
             web2csv_time_duration_update_after.NewWebEnd = time_duration_end
             web2csv_time_duration_update_after.AppendDirection = WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_AFTER
-            g_logger.debug("Extend the time duration after the original CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], web2csv_time_duration_update_after.OldCSVStart, web2csv_time_duration_update_after.OldCSVEnd, web2csv_time_duration_update_after.NewWebStart, web2csv_time_duration_update_after.NewWebEnd))
+            g_logger.debug("Extend the time duration after the original CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], web2csv_time_duration_update_after.OldCSVStart, web2csv_time_duration_update_after.OldCSVEnd, web2csv_time_duration_update_after.NewWebStart, web2csv_time_duration_update_after.NewWebEnd))
             self.new_csv_extension_time_duration = CMN.CLS.TimeDurationTuple(web2csv_time_duration_update_after.OldCSVStart, web2csv_time_duration_update_after.NewWebEnd)
             return (web2csv_time_duration_update_after,)
         elif overlap_case == CMN.DEF.TIME_OVERLAP_COVER:
@@ -630,14 +630,14 @@ class WebScrapyBase(object):
             web2csv_time_duration_update_before.NewWebStart = time_duration_start
             web2csv_time_duration_update_before.NewWebEnd = web2csv_time_duration_update_before.OldCSVStart - 1
             web2csv_time_duration_update_before.AppendDirection = WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_BEFORE
-            g_logger.debug("Extend the time duration before the original CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], web2csv_time_duration_update_before.OldCSVStart, web2csv_time_duration_update_before.OldCSVEnd, web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_before.NewWebEnd))
+            g_logger.debug("Extend the time duration before the original CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], web2csv_time_duration_update_before.OldCSVStart, web2csv_time_duration_update_before.OldCSVEnd, web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_before.NewWebEnd))
             web2csv_time_duration_update_after = WebScrapyBase.Web2CSVTimeRangeUpdate()
             web2csv_time_duration_update_after.OldCSVStart = csv_old_time_duration_tuple.time_duration_start
             web2csv_time_duration_update_after.OldCSVEnd = csv_old_time_duration_tuple.time_duration_end
             web2csv_time_duration_update_after.NewWebStart = web2csv_time_duration_update_after.OldCSVEnd + 1
             web2csv_time_duration_update_after.NewWebEnd = time_duration_end
             web2csv_time_duration_update_after.AppendDirection = WebScrapyBase.Web2CSVTimeRangeUpdate.WEB2CSV_APPEND_AFTER
-            g_logger.debug("Extend the time duration after the original CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], web2csv_time_duration_update_after.OldCSVStart, web2csv_time_duration_update_after.OldCSVEnd, web2csv_time_duration_update_after.NewWebStart, web2csv_time_duration_update_after.NewWebEnd))
+            g_logger.debug("Extend the time duration after the original CSV data[%s %s:%s]: %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], web2csv_time_duration_update_after.OldCSVStart, web2csv_time_duration_update_after.OldCSVEnd, web2csv_time_duration_update_after.NewWebStart, web2csv_time_duration_update_after.NewWebEnd))
             self.new_csv_extension_time_duration = CMN.CLS.TimeDurationTuple(web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_after.NewWebEnd)
             return (web2csv_time_duration_update_before, web2csv_time_duration_update_after,)
 # If the time range of new data contain all the time range of csv data, the system is not desiged to update two time range interval
@@ -646,9 +646,9 @@ class WebScrapyBase(object):
 
     def _adjust_time_range_from_web(self, *args):
 # in Market mode
-# args[0]: source_type_index
+# args[0]: scrapy_class_index
 # in Stock mode
-# args[0]: source_type_index
+# args[0]: scrapy_class_index
 # args[1]: company_code_number
 # Define the suitable time range
 # define the function for transforming the time unit

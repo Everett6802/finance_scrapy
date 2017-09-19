@@ -280,8 +280,8 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
 
 
     def __init__(self, **kwargs):
-        super(WebScrapyStockStatementBase, self).__init__(**kwargs)
         # import pdb;pdb.set_trace()
+        super(WebScrapyStatementBase, self).__init__(**kwargs)
         if not kwargs.get("renew_statement_field", False):
             if self.TABLE_FIELD_INTEREST_TITLE_LIST is None:
                 raise ValueError("TABLE_FIELD_INTEREST_TITLE_LIST is None")
@@ -329,11 +329,11 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
 # Limit the time range from the web site
-                time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SOURCE_TYPE_INDEX, company_code_number)
+                time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SCRAPY_CLASS_INDEX, company_code_number)
                 if time_duration_after_lookup_time is None:
-                    self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SOURCE_TYPE_INDEX, company_code_number)
+                    self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SCRAPY_CLASS_INDEX, company_code_number)
                     continue
-                g_logger.debug("Update statement field => [%s:%s] %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], company_code_number, time_duration_after_lookup_time.time_duration_start, time_duration_after_lookup_time.time_duration_end))
+                g_logger.debug("Update statement field => [%s:%s] %s:%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, time_duration_after_lookup_time.time_duration_start, time_duration_after_lookup_time.time_duration_end))
 # Create the time slice iterator due to correct time range
                 # import pdb; pdb.set_trace()
                 company_statement_field_list = None
@@ -381,7 +381,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
             data_list.append(td[0].text)
         if len(data_list) == 0:
             # import pdb;pdb.set_trace()
-            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The field data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The field data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], self.cur_company_code_number))
         return data_list
 
 
@@ -395,7 +395,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
             data_list.append(td[i].text)
         if len(data_list) == 0:
             # import pdb;pdb.set_trace()
-            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The column field data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The column field data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], self.cur_company_code_number))
         return data_list
 
 
@@ -533,7 +533,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
 #                 break
 #         if data_is_empty:
 #             # import pdb;pdb.set_trace()
-#             raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
+#             raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], self.cur_company_code_number))
 # # Transforms the table into the 1-Dimension list
 #         # import pdb;pdb.set_trace()
 #         padding_entry = "0" 
@@ -640,7 +640,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
                 break
         if data_is_empty:
             # import pdb;pdb.set_trace()
-            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], self.cur_company_code_number))
+            raise CMN.EXCEPTION.WebScrapyServerBusyException(u"The data[%s:%s] is EMPTY" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], self.cur_company_code_number))
 # Transforms the table into the 1-Dimension list
         # import pdb;pdb.set_trace()
         padding_entry = "0" 

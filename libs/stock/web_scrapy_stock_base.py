@@ -62,23 +62,23 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         return csv_company_folderpath
 
 
-    def assemble_csv_filepath(self, source_type_index, company_code_number, company_group_number=-1):
+    def assemble_csv_filepath(self, scrapy_class_index, company_code_number, company_group_number=-1):
         if company_group_number == -1:
             company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
-        # csv_filepath = "%s/%s%02d/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN.DEF.SCRAPY_MODULE_NAME_MAPPING[source_type_index]) 
+        # csv_filepath = "%s/%s%02d/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN.DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]) 
         # return csv_filepath
-        return CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_index, company_code_number, company_group_number)
+        return CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], scrapy_class_index, company_code_number, company_group_number)
 
 
     def _adjust_time_range_from_csv(self, *args):
         # import pdb; pdb.set_trace()
-        def check_old_csv_time_duration_exist(source_type_index, company_code_number, csv_time_duration_table):
+        def check_old_csv_time_duration_exist(scrapy_class_index, company_code_number, csv_time_duration_table):
             if csv_time_duration_table is None:
                 return False 
             company_csv_time_duration_table = csv_time_duration_table.get(company_code_number, None)
             if company_csv_time_duration_table is None:
                 return False
-            if company_csv_time_duration_table.get(source_type_index, None) is None:
+            if company_csv_time_duration_table.get(scrapy_class_index, None) is None:
                 return False
             return True
         assert len(args) == 2, "The argument length should be 2, NOT %d" % len(args)
@@ -86,7 +86,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         company_code_number = args[1]
 # Determine the CSV/Web time duration
         web2csv_time_duration_update_tuple = None
-        if not check_old_csv_time_duration_exist(self.SOURCE_TYPE_INDEX, company_code_number, self.xcfg["csv_time_duration_table"]):
+        if not check_old_csv_time_duration_exist(self.SCRAPY_CLASS_INDEX, company_code_number, self.xcfg["csv_time_duration_table"]):
             web2csv_time_duration_update = self._get_init_web2csv_time_duration_update_cfg(
                 time_duration_after_lookup_time.time_duration_start, 
                 time_duration_after_lookup_time.time_duration_end
@@ -94,7 +94,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             web2csv_time_duration_update_tuple = (web2csv_time_duration_update,)
         else:
             web2csv_time_duration_update_tuple = self._get_extended_web2csv_time_duration_update_cfg(
-                self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX], 
+                self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX], 
                 time_duration_after_lookup_time.time_duration_start, 
                 time_duration_after_lookup_time.time_duration_end
             )
@@ -136,7 +136,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
                 record_string = None
-                if self.SOURCE_TYPE_INDEX in CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_SCRAPY_CLASS_INDEX:
+                if self.SCRAPY_CLASS_INDEX in CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_SCRAPY_CLASS_INDEX_LIST:
                     record_string = "%s:%s-%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[3].to_string(), args[4].to_string())
                 else:
                     record_string = "%s:%d:%s-%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[2], args[3].to_string(), args[4].to_string())
@@ -159,23 +159,23 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 #     if not CompanyGroupSet.WebScrapyCompanyGroupSet.check_company_market_type(company_code_number, self.COMPANY_MARKET_TYPE):
                 #         continue
 # Limit the searching time range from the web site
-                time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SOURCE_TYPE_INDEX, company_code_number)
+                time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SCRAPY_CLASS_INDEX, company_code_number)
                 if time_duration_after_lookup_time is None:
-                    self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SOURCE_TYPE_INDEX, company_code_number)
-                    g_logger.debug("[%s:%s] %s => The searching time range is NOT in the time range of web data !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
+                    self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SCRAPY_CLASS_INDEX, company_code_number)
+                    g_logger.debug("[%s:%s] %s => The searching time range is NOT in the time range of web data !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
                     continue
 # Limit the searching time range from the local CSV data
                 web2csv_time_duration_update_tuple = self._adjust_time_range_from_csv(time_duration_after_lookup_time, company_code_number)
                 if web2csv_time_duration_update_tuple is None:
-                    self.csv_file_no_scrapy_record.add_csv_file_already_exist_record(self.SOURCE_TYPE_INDEX, company_code_number)
-                    g_logger.debug("[%s:%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][company_code_number][self.SOURCE_TYPE_INDEX].time_duration_end))
+                    self.csv_file_no_scrapy_record.add_csv_file_already_exist_record(self.SCRAPY_CLASS_INDEX, company_code_number)
+                    g_logger.debug("[%s:%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX].time_duration_end))
                     continue
 # Create a folder for a specific company
                 csv_company_folderpath = self.assemble_csv_company_folderpath(company_code_number, company_group_number)
                 CMN.FUNC.create_folder_if_not_exist(csv_company_folderpath)
 # Find the file path for writing data into csv
-                csv_filepath = self.assemble_csv_filepath(self.SOURCE_TYPE_INDEX, company_code_number, company_group_number)
-                scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SOURCE_TYPE_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.new_csv_extension_time_duration.time_duration_start, self.new_csv_extension_time_duration.time_duration_end, csv_filepath)
+                csv_filepath = self.assemble_csv_filepath(self.SCRAPY_CLASS_INDEX, company_code_number, company_group_number)
+                scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.new_csv_extension_time_duration.time_duration_start, self.new_csv_extension_time_duration.time_duration_end, csv_filepath)
                 g_logger.debug(scrapy_msg)
 # Check if only dry-run
                 if self.xcfg["dry_run_only"]:
@@ -204,14 +204,14 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                         web_data = self._scrape_web_data(timeslice, company_code_number)
                         if len(web_data) == 0:
 # Keep track of the time range in which the web data is empty
-                            self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SOURCE_TYPE_INDEX, company_code_number)
+                            self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SCRAPY_CLASS_INDEX, company_code_number)
                         else:
                             csv_data_list = self._parse_web_data(web_data)
                             if len(csv_data_list) == 0:
                                 raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
                             csv_data_list_each_year.append(csv_data_list)
 # Flush the last data into the list if required
-                    self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SOURCE_TYPE_INDEX, company_code_number)
+                    self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX, company_code_number)
 # Write the data of last year into csv
                     if len(csv_data_list_each_year) > 0:
                         self._write_to_csv(csv_filepath, csv_data_list_each_year)

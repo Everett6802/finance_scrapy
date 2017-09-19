@@ -30,11 +30,11 @@ class WebSracpyMgrBase(object):
             # "csv_time_duration_table": None
         }
         self.xcfg.update(cfg)
-        self.source_type_time_duration_list = None
+        self.scrapy_class_time_duration_list = None
         # self.multi_thread_amount = None
         # self.xcfg["show_progress"] = False
-        self.scrapy_source_type_progress_amount = None
-        self.scrapy_source_type_progress_count = 0
+        self.scrapy_class_type_progress_amount = None
+        self.scrapy_class_type_progress_count = 0
         self.web_scrapy_obj_list = None
         self.web_scrapy_obj_list_thread_lock = threading.Lock()
         self.web_scrapy_start_datetime = None
@@ -63,9 +63,9 @@ class WebSracpyMgrBase(object):
             self.csv_file_check_status_record_string_dict[no_scrapy_type].extend(web_scrapy_obj.CSVFileNoScrapyDescriptionDict[no_scrapy_type])
 
 
-    def _scrap_web_data_to_csv_file(self, source_type_index, **kwargs):
+    def _scrap_web_data_to_csv_file(self, scrapy_class_index, **kwargs):
         # import pdb; pdb.set_trace()
-        web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(source_type_index, **kwargs)
+        web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(scrapy_class_index, **kwargs)
         if web_scrapy_obj is None:
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
         with self.web_scrapy_obj_list_thread_lock:
@@ -81,7 +81,7 @@ class WebSracpyMgrBase(object):
             self.web_scrapy_obj_list = None
 
 
-    def _multi_thread_scrap_web_data_to_csv_file(self, source_type_index, scrapy_obj_cfg_list):
+    def _multi_thread_scrap_web_data_to_csv_file(self, scrapy_class_index, scrapy_obj_cfg_list):
         # import pdb; pdb.set_trace()
 # Start the thread to scrap data
         thread_pool = ThreadPool.WebScrapyThreadPool(self.xcfg["multi_thread_amount"])
@@ -89,7 +89,7 @@ class WebSracpyMgrBase(object):
             with self.web_scrapy_obj_list_thread_lock:
                 if self.web_scrapy_obj_list is None:
                     self.web_scrapy_obj_list = []
-                web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(source_type_index, **(scrapy_obj_cfg_list[index]))
+                web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(scrapy_class_index, **(scrapy_obj_cfg_list[index]))
                 self.web_scrapy_obj_list.append(web_scrapy_obj)
                 # time.sleep(3)
             g_logger.debug("Start to scrap %s...... %d" % (web_scrapy_obj.get_description(), index))
@@ -104,11 +104,11 @@ class WebSracpyMgrBase(object):
             self.web_scrapy_obj_list = None
 
 
-    def _init_cfg_for_scrapy_obj(self, source_type_time_duration):
+    def _init_cfg_for_scrapy_obj(self, scrapy_class_time_duration):
         scrapy_obj_cfg = {
-            "time_duration_type": source_type_time_duration.time_duration_type,  
-            "time_duration_start": source_type_time_duration.time_duration_start, 
-            "time_duration_end": source_type_time_duration.time_duration_end,
+            "time_duration_type": scrapy_class_time_duration.time_duration_type,  
+            "time_duration_start": scrapy_class_time_duration.time_duration_start, 
+            "time_duration_end": scrapy_class_time_duration.time_duration_end,
             "dry_run_only": self.xcfg["dry_run_only"],
             "finance_root_folderpath": self.xcfg["finance_root_folderpath"]
             }
@@ -125,12 +125,12 @@ class WebSracpyMgrBase(object):
         self._create_finance_folder_if_not_exist()
         total_errmsg = ""
         # import pdb; pdb.set_trace()
-        self.scrapy_source_type_progress_count = 0
+        self.scrapy_class_type_progress_count = 0
         show_progress_timer_thread = None
         if self.xcfg["show_progress"]:
             self.web_scrapy_start_datetime = datetime.now()
             # self.count_scrapy_amount()
-            self.scrapy_source_type_progress_amount = len(self.source_type_time_duration_list)
+            self.scrapy_class_type_progress_amount = len(self.scrapy_class_time_duration_list)
             progress_string = "Total Scrapy Times: %d" % self.ScrapyAmount
             g_logger.info(progress_string)
             if CMN.DEF.CAN_PRINT_CONSOLE:
@@ -138,32 +138,32 @@ class WebSracpyMgrBase(object):
             show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=30)
             show_progress_timer_thread.start_timer(WebSracpyMgrBase.show_scrapy_progress, self)
         # import pdb; pdb.set_trace()
-        for source_type_time_duration in self.source_type_time_duration_list:
+        for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
             try:
-                self._scrap_single_source_data(source_type_time_duration)
+                self._scrape_class_data(scrapy_class_time_duration)
             except CMN.EXCEPTION.WebScrapyException as e:
                 if isinstance(e.message, str):
-                    errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
+                    errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], e.message)
                 else:
-                    errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
+                    errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], e.message)
                 CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
                 g_logger.error(errmsg)
                 raise e
             except Exception as e:
                 if isinstance(e.message, str):
-                    errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
+                    errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], e.message)
                 else:
-                    errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], e.message)
+                    errmsg = u"Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], e.message)
                 CMN.FUNC.try_print(CMN.FUNC.get_full_stack_traceback())
                 g_logger.error(errmsg)
                 total_errmsg += errmsg
                 # print total_errmsg
                 if not self.xcfg["try_to_scrap_all"]:
                     break
-            # self._increment_scrapy_source_type_progress_count(source_type_time_duration.source_type_index)
+            # self._increment_scrapy_class_type_progress_count(scrapy_class_time_duration.scrapy_class_index)
             if self.xcfg["show_progress"]:
                 with self.web_scrapy_obj_list_thread_lock:
-                    self.scrapy_source_type_progress_count += 1
+                    self.scrapy_class_type_progress_count += 1
         if self.xcfg["show_progress"]:
             with self.web_scrapy_obj_list_thread_lock:
                 show_progress_timer_thread.stop_timer()
@@ -190,40 +190,61 @@ class WebSracpyMgrBase(object):
 
 
     @classmethod
-    def do_scrapy_debug(cls, source_type_index, silent_mode=False):
-        web_scrapy_class = CMN.FUNC.get_web_scrapy_class(source_type_index)
+    def do_scrapy_debug(cls, scrapy_class_index, silent_mode=False):
+        web_scrapy_class = CMN.FUNC.get_web_scrapy_class(scrapy_class_index)
         web_scrapy_class.do_debug(silent_mode)
 
 
-    def __check_source_type_in_correct_finance_mode(self):
+    def __check_scrapy_class_in_correct_finance_mode(self):
         g_logger.debug("************* Source Type Time Range *************")
-        for source_type_time_duration in self.source_type_time_duration_list:
-            if not CMN.FUNC.check_source_type_index_in_range(source_type_time_duration.source_type_index):
-                raise ValueError("The source type index[%d] is NOT in %s mode" % (source_type_time_duration.source_type_index, CMN.DEF.FINANCE_MODE_DESCRIPTION[CMN.DEF.FINANCE_MODE]))
+        for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
+            if not CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_time_duration.scrapy_class_index):
+                raise ValueError("The scrapy class index[%d] is NOT in %s mode" % (scrapy_class_time_duration.scrapy_class_index, CMN.DEF.FINANCE_MODE_DESCRIPTION[CMN.DEF.FINANCE_MODE]))
             g_logger.debug("[%s] %s-%s" % (
-                CMN.DEF.SCRAPY_METHOD_DESCRIPTION[source_type_time_duration.source_type_index], 
-                source_type_time_duration.time_duration_start, 
-                source_type_time_duration.time_duration_end
+                CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], 
+                scrapy_class_time_duration.time_duration_start, 
+                scrapy_class_time_duration.time_duration_end
                 )
             )
         g_logger.debug("**************************************************")
 
 
-    def set_source_type_time_duration_from_file(self, filename, time_duration_type):
+    def set_method_time_duration_from_file(self, filename, time_duration_type):
         # import pdb; pdb.set_trace()
-        self.source_type_time_duration_list = CMN.FUNC.read_source_type_time_duration_config_file(filename, time_duration_type)
-        self.__check_source_type_in_correct_finance_mode()
+        conf_line_list = read_config_file_lines(filename)
+        self.scrapy_class_time_duration_list = []
+        for line in conf_line_list:
+            param_list = line.split(' ')
+            param_list_len = len(param_list)
+            class_index_list = CMN.FUNC.get_scrapy_class_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+            time_duration_start = None
+            if param_list_len >= 2:
+                time_duration_start = CMN.CLS.FinanceTimeBase.from_string(param_list[1])
+            time_duration_end = None
+            if param_list_len >= 3:
+                time_duration_end = CMN.CLS.FinanceTimeBase.from_string(param_list[2])
+            for class_index in class_index_list:
+                self.scrapy_class_time_duration_list.append(
+                    CMN_CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, time_duration_start, time_duration_end)
+                )
+        # self.scrapy_class_time_duration_list = CMN.FUNC.read_method_time_duration_config_file(filename, time_duration_type)
+        self.__check_scrapy_class_in_correct_finance_mode()
 
 
-    def set_source_type_time_duration(self, source_type_index_list, time_duration_type, time_duration_start, time_duration_end):
-        if source_type_index_list is None:
-            source_type_index_list = CMN.FUNC.get_source_type_index_range_list()
-        self.source_type_time_duration_list = []
-        for source_type_index in source_type_index_list:
-            self.source_type_time_duration_list.append(
-                CMN.CLS.SourceTypeTimeDurationTuple(source_type_index, time_duration_type, time_duration_start, time_duration_end)
+    def set_method_time_duration(self, method_index_list, time_duration_type, time_duration_start, time_duration_end):
+        class_index_list = None
+        if method_index_list is None:
+            class_index_list = CMN.FUNC.get_scrapy_class_index_range_list()
+        else:
+            class_index_list = []
+            for method_index in method_index_list:
+                class_index_list += CMN.FUNC.get_scrapy_class_index_list_from_method_index(method_index)
+        self.scrapy_class_time_duration_list = []
+        for class_index in class_index_list:
+            self.scrapy_class_time_duration_list.append(
+                CMN.CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, time_duration_start, time_duration_end)
             )
-        self.__check_source_type_in_correct_finance_mode()
+        self.__check_scrapy_class_in_correct_finance_mode()
 
 
     def set_finance_root_folderpath(self, csv_root_folderpath):
@@ -329,7 +350,7 @@ class WebSracpyMgrBase(object):
             progress_ratio_sum = 0.0
             for web_scrapy_obj in self.web_scrapy_obj_list:
                 progress_ratio_sum += web_scrapy_obj.ProgressRatio
-            scrapy_progress = (self.scrapy_source_type_progress_count + progress_ratio_sum / len(self.web_scrapy_obj_list)) / self.scrapy_source_type_progress_amount
+            scrapy_progress = (self.scrapy_class_type_progress_count + progress_ratio_sum / len(self.web_scrapy_obj_list)) / self.scrapy_class_type_progress_amount
         progress_string = "[%s] Progress................... %03.1f" % (datetime.strftime(datetime.now(), '%H:%M:%S'), scrapy_progress)
         if scrapy_progress >= mgr_obj_handle.StartEstimateCompleteTimeThreshold:
             progress_string += "  *Estimated Complete Time: %s" % mgr_obj_handle.estimate_complete_time(scrapy_progress)
@@ -338,7 +359,7 @@ class WebSracpyMgrBase(object):
             print progress_string
 
 
-    # def _increment_scrapy_source_type_progress_count(self, source_type_index):
+    # def _increment_scrapy_class_type_progress_count(self, scrapy_class_index):
     #     raise NotImplementedError
 
 
@@ -380,7 +401,7 @@ class WebSracpyMgrBase(object):
 
 
     @abstractmethod
-    def _scrap_single_source_data(self, source_type_time_duration):
+    def _scrape_class_data(self, scrapy_class_time_duration):
         raise NotImplementedError
 
 

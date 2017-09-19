@@ -54,8 +54,8 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if csv_time_duration_dict is None:
             g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME)
 # # update the time range of each source type from config file
-#         for source_type_index, time_duration_tuple in csv_time_duration_dict.items():
-#             self.source_type_csv_time_duration[source_type_index] = time_duration_tuple
+#         for scrapy_class_index, time_duration_tuple in csv_time_duration_dict.items():
+#             self.source_type_csv_time_duration[scrapy_class_index] = time_duration_tuple
         return csv_time_duration_dict
 
 
@@ -87,32 +87,32 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self.__write_new_csv_time_duration_to_cfg()
 
 
-    def _scrap_single_source_data(self, source_type_time_duration):
+    def _scrape_class_data(self, scrapy_class_time_duration):
 # Setup the time duration configuration for the scrapy object
-        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(source_type_time_duration)
+        scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(scrapy_class_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration
 # Create the scrapy object to transform the data from Web to CSV
-        self._scrap_web_data_to_csv_file(source_type_time_duration.source_type_index, **scrapy_obj_cfg)
+        self._scrap_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
 
 
 #     def check_scrapy(self):
 #         # import pdb; pdb.set_trace()
 #         file_not_found_list = []
 #         file_is_empty_list = []
-#         for source_type_time_duration in self.source_type_time_duration_list:
-#             csv_filepath = CMN.FUNC.assemble_market_csv_filepath(self.xcfg["finance_root_folderpath"], source_type_time_duration.source_type_index)
+#         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
+#             csv_filepath = CMN.FUNC.assemble_market_csv_filepath(self.xcfg["finance_root_folderpath"], scrapy_class_time_duration.scrapy_class_index)
 # # Check if the file exists
 #             if not os.path.exists(csv_filepath):
 #                 file_not_found_list.append(
 #                     {
-#                         "index": source_type_time_duration.source_type_index,
+#                         "index": scrapy_class_time_duration.scrapy_class_index,
 #                         "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
 #                     }
 #                 )
 #             elif os.path.getsize(csv_filepath) == 0:
 #                 file_is_empty_list.append(
 #                     {
-#                         "index": source_type_time_duration.source_type_index,
+#                         "index": scrapy_class_time_duration.scrapy_class_index,
 #                         "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
 #                     }
 #                 )
@@ -159,22 +159,22 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 #         return error_msg
 
 
-    def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, source_type_index):
+    def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, scrapy_class_index):
 # Search for the index of the finance folder which the specific source type index exists
 # -1 if not found
 # Exception occur if the source type is found in more than one finance folder
         finance_folder_index = -1
         for index, csv_time_duration_cfg in enumerate(csv_time_duration_cfg_list):
-            if csv_time_duration_cfg.has_key(source_type_index):
+            if csv_time_duration_cfg.has_key(scrapy_class_index):
                 if finance_folder_index != -1:
-                    raise ValueError("The source type index[%d] is duplicate" % source_type_index)
+                    raise ValueError("The source type index[%d] is duplicate" % scrapy_class_index)
                 else:
                     finance_folder_index = index
         return finance_folder_index
 
 
-    # def _increment_scrapy_source_type_progress_count(self, source_type_index):
-    #     self.scrapy_source_type_progress_count += 1
+    # def _increment_scrapy_class_type_progress_count(self, scrapy_class_index):
+    #     self.scrapy_class_type_progress_count += 1
 
 
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
@@ -189,18 +189,18 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             csv_time_duration_cfg_list.append(self.__parse_csv_time_duration_cfg(finance_folderpath_src))
 # Merge the finance folder
 # Copy the CSV files from source folder to destiantion one
-        (source_type_index_start, source_type_index_end) = CMN.FUNC.get_source_type_index_range()
+        (scrapy_class_index_start, scrapy_class_index_end) = CMN.FUNC.get_scrapy_class_index_range()
         new_source_type_csv_time_duration = {}
-        for source_type_index in range(source_type_index_start, source_type_index_end):
-            finance_folder_index = self._find_existing_source_type_finance_folder_index(csv_time_duration_cfg_list, source_type_index)
+        for scrapy_class_index in range(scrapy_class_index_start, scrapy_class_index_end):
+            finance_folder_index = self._find_existing_source_type_finance_folder_index(csv_time_duration_cfg_list, scrapy_class_index)
             if finance_folder_index == -1:
                 continue
-            src_csv_filepath = CMN.FUNC.assemble_market_csv_filepath(finance_folderpath_src_list[finance_folder_index], source_type_index)
+            src_csv_filepath = CMN.FUNC.assemble_market_csv_filepath(finance_folderpath_src_list[finance_folder_index], scrapy_class_index)
             CMN.FUNC.create_folder_if_not_exist(CMN.FUNC.assemble_market_csv_folderpath(finance_folderpath_dst))
-            dst_csv_filepath = CMN.FUNC.assemble_market_csv_filepath(finance_folderpath_dst, source_type_index)
+            dst_csv_filepath = CMN.FUNC.assemble_market_csv_filepath(finance_folderpath_dst, scrapy_class_index)
             CMN.FUNC.copy_file(src_csv_filepath, dst_csv_filepath)
 # Update the new time duration config
-            new_source_type_csv_time_duration[source_type_index] = csv_time_duration_cfg_list[finance_folder_index][source_type_index]
+            new_source_type_csv_time_duration[scrapy_class_index] = csv_time_duration_cfg_list[finance_folder_index][scrapy_class_index]
         # import pdb; pdb.set_trace()
         self.__write_new_csv_time_duration_to_cfg(finance_folderpath_dst, new_source_type_csv_time_duration)
 
@@ -211,7 +211,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
     # def count_scrapy_amount(self):
     #     if self.scrapy_amount is None:
-    #         self.scrapy_amount = len(self.source_type_time_duration_list)
+    #         self.scrapy_amount = len(self.scrapy_class_time_duration_list)
     #     g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
     #     return self.scrapy_amount
 
@@ -219,7 +219,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     # def count_scrapy_progress(self):
     #     if self.scrapy_amount is None:
     #         raise ValueError("self.scrapy_amount shoudl NOT be None")
-    #     return (float(self.scrapy_source_type_progress_count) / self.scrapy_amount * 100.0)
+    #     return (float(self.scrapy_class_type_progress_count) / self.scrapy_amount * 100.0)
 
 
     # @property
