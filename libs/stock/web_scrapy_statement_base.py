@@ -341,9 +341,6 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
                 timeslice_generator_cfg = {"company_code_number": company_code_number, "time_duration_start": time_duration_after_lookup_time.time_duration_start, "time_duration_end": time_duration_after_lookup_time.time_duration_end,}
                 timeslice_iterable = self._get_timeslice_iterable(**timeslice_generator_cfg)      
                 for timeslice in timeslice_iterable:
-                    # url = self._scrape_web_data(timeslice, company_code_number)
-                    # g_logger.debug("Get the statement data from URL: %s" % url)
-                    # web_data = self.try_get_web_data(url)
                     web_data = self._scrape_web_data(timeslice, company_code_number)
 # Find the statement field
                     company_statement_field_list = self._parse_web_statement_field_data(web_data)
@@ -628,10 +625,14 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
                 # print "data_index: %d, field_index: %d, data: [%s]" % (data_index, field_index, td[field_index].text)
                 # field_value = str(td[field_index].text).strip(" ").replace(",", "")
                 field_value = CMN.FUNC.remove_comma_in_string(str(td[field_index].text).strip(" "))
-                if field_value.find('.') == -1: # Integer
-                    table_field_list[data_index].append(int(field_value))
-                else: # Floating point
-                    table_field_list[data_index].append(float(field_value))
+                try:
+                    if field_value.find('.') == -1: # Integer
+                        table_field_list[data_index].append(int(field_value))
+                    else: # Floating point
+                        table_field_list[data_index].append(float(field_value))
+                except:
+                    import pdb; pdb.set_trace()
+                    print "fuck"
 # Check if there is not any statement data.......
         data_is_empty = True
         for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):

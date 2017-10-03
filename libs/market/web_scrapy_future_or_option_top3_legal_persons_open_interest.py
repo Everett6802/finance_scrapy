@@ -39,6 +39,7 @@ class WebScrapyFutureOrOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.We
                 element = str(td[i].text).replace(',', '').strip('\r\n ')
                 data_list.append(element)
         return data_list
+# "日期",
 # "自營商_多方_口數_期貨",
 # "自營商_多方_口數_選擇權",
 # "自營商_多方_契約金額_期貨",

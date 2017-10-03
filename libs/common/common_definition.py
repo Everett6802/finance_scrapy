@@ -311,7 +311,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "company_group_market_type": MARKET_TYPE_NONE,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
-    {# 現金流量表
+    {# 現金流量表, the data are accumulated quarter by quarter in each year
         "description": u'現金流量表',
         "module_name": "cash_flow_statement",
         "module_folder": "stock",
@@ -435,6 +435,9 @@ SCRAPY_MARKET_METHOD_START = 0
 SCRAPY_MARKET_METHOD_END = len(SCRAPY_MARKET_METHOD_DESCRIPTION)
 SCRAPY_STOCK_METHOD_START = SCRAPY_MARKET_METHOD_END
 SCRAPY_STOCK_METHOD_END = len(SCRAPY_METHOD_DESCRIPTION)
+
+SCRAPY_STOCK_METHOD_STATMENT_START = SCRAPY_METHOD_DESCRIPTION.index(u'資產負債表')
+SCRAPY_STOCK_METHOD_STATMENT_END = SCRAPY_METHOD_DESCRIPTION.index(u'股東權益變動表') + 1
 
 TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_SCRAPY_CLASS_INDEX_LIST = [
     SCRAPY_CLASS_DESCRIPTION.index(u'上市三大法人個股買賣超日報'),

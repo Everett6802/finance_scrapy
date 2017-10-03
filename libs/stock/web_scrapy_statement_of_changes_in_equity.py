@@ -105,12 +105,20 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStatementBase.WebScrapyStatem
 
 
     @classmethod
+    def init_class_customized_variables(cls):
+        # import pdb; pdb.set_trace()
+# CAUTION: This function MUST be called by the LEAF derived class
+        if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+            cls._init_statement_field_class_variables(CMN.DEF.STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME)
+
+
+    @classmethod
     def show_statement_field_dimension(cls, auto_gen_sql_element=True):
         # cls.get_parent_class().init_class_variables() # Caution: This class function should NOT be called by the parent class
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
-            cls._init_statement_field_class_variables(CMN.DEF.DEF_STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME)
+            cls._init_statement_field_class_variables(CMN.DEF.STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME)
             # cls.TABLE_FIELD_INTEREST_ENTRY_DEFAULTDICT[u"　母公司暨子公司所持有之母公司庫藏股股數（單位：股）".encode(CMN.DEF.URL_ENCODING_UTF8)] = [1, 3, 5]
-        cls._show_statement_column_field_dimension_internal(CMN.DEF.DEF_STATEMENT_OF_CHANGES_IN_EQUITY_INTEREST_FIELD_METADATA_FILENAME, auto_gen_sql_element)
+        cls._show_statement_column_field_dimension_internal(CMN.DEF.STATEMENT_OF_CHANGES_IN_EQUITY_INTEREST_FIELD_METADATA_FILENAME, auto_gen_sql_element)
 
 
     def __init__(self, **kwargs):

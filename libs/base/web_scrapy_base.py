@@ -677,13 +677,13 @@ class WebScrapyBase(object):
         time_duration_start = None
         time_duration_end = None
         if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
-            time_duration_start = time_duration_end = CMN.CLS.FinanceDate.get_today_finance_date()
-            time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
-            time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
+            time_duration_start = time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, CMN.CLS.FinanceDate.get_today_finance_date())
+            # time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
+            # time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
         elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
-            time_duration_start = time_duration_end = CMN.CLS.FinanceDate.get_last_finance_date()
-            time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
-            time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
+            time_duration_start = time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, CMN.CLS.FinanceDate.get_last_finance_date())
+            # time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
+            # time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
         elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
             (time_duration_start_from_lookup_table, time_duration_end_from_lookup_table) = self._get_url_time_range().get_time_range(*args)
             time_start_from_table = False

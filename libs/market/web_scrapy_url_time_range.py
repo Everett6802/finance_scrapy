@@ -13,13 +13,13 @@ class WebScrapyURLTimeRange(object):
 
     def __init__(self):
         # import pdb; pdb.set_trace()
-        self.DATA_SOURCE_START_DATE_LIST = None
-        # self.DATA_SOURCE_START_DATE_LIST_LEN = 0
+        self.METHOD_START_DATE_LIST = None
+        # self.METHOD_START_DATE_LIST_LEN = 0
         self.last_url_data_date = None
 
 
     def initialize(self):
-        self.DATA_SOURCE_START_DATE_LIST = [
+        self.METHOD_START_DATE_LIST = [
             CMN.CLS.FinanceDate("2001-01-01"),
             CMN.CLS.FinanceDate("2004-04-07"),
             CMN.CLS.FinanceDate("2001-01-01"),
@@ -36,7 +36,7 @@ class WebScrapyURLTimeRange(object):
             # transform_string2datetime("2004-12-17"),
             # transform_string2datetime("2004-12-17"),
         ]
-        # self.DATA_SOURCE_START_DATE_LIST_LEN = len(self.DATA_SOURCE_START_DATE_LIST)
+        # self.METHOD_START_DATE_LIST_LEN = len(self.METHOD_START_DATE_LIST)
 
 
     # def __get_year_offset_datetime_cfg(self, datetime_cfg, year_offset):
@@ -45,7 +45,7 @@ class WebScrapyURLTimeRange(object):
 
     def get_time_range_start(self, scrapy_class_index):
         CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index)
-        return self.DATA_SOURCE_START_DATE_LIST[scrapy_class_index]
+        return self.METHOD_START_DATE_LIST[scrapy_class_index]
 
 
     def get_time_range_end(self, scrapy_class_index):

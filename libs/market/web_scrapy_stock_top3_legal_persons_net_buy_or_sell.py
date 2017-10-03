@@ -46,6 +46,7 @@ class WebScrapyStockTop3LegalPersonsNetBuyOrSell(WebScrapyMarketBase.WebScrapyMa
                 element = str(entry[i]).replace(',', '')
                 data_list.append(element)
         return data_list
+# 日期
 # 自營商(自行買賣)_買進金額
 # 自營商(自行買賣)_賣出金額
 # 自營商(自行買賣)_買賣差額

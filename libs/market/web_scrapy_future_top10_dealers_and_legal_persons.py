@@ -90,6 +90,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
                 data_list.append(element)
             row_index += 1
         return data_list
+# "日期",
 # "臺股期貨_到期月份_買方_前五大交易人合計_部位數",
 # "臺股期貨_到期月份_買方_前五大交易人合計_百分比",
 # "臺股期貨_到期月份_買方_前十大交易人合計_部位數",
@@ -105,6 +106,7 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
 # "臺股期貨_所有契約_買方_前十大交易人合計_百分比",
 # "臺股期貨_所有契約_賣方_前五大交易人合計_部位數",
 # "臺股期貨_所有契約_賣方_前五大交易人合計_百分比",
+# "臺股期貨_所有契約_賣方_前五大交易人合計_部位數",
 # "臺股期貨_所有契約_賣方_前十大交易人合計_百分比",
 # "臺股期貨_所有契約_全市場未沖銷部位數",
 

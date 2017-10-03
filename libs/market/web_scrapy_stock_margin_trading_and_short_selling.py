@@ -47,6 +47,7 @@ class WebScrapyStockMarginTradingAndShortSelling(WebScrapyMarketBase.WebScrapyMa
                 element = str(td[i].text).replace(',', '')
                 data_list.append(element)
         return data_list
+# 日期
 # 融資(交易單位)_買進
 # 融資(交易單位)_賣出
 # 融資(交易單位)_現金(券)償還

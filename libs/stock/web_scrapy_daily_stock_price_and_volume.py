@@ -77,7 +77,7 @@ class WebScrapyDailyStockPriceAndVolumeBase(WebScrapyStockBase.WebScrapyStockBas
 
     def __init__(self, **kwargs):
         # import pdb; pdb.set_trace()
-        super(WebScrapyDailyStockPriceAndVolume, self).__init__(**kwargs)
+        super(WebScrapyDailyStockPriceAndVolumeBase, self).__init__(**kwargs)
         self.whole_month_data = True
         self.time_duration_start_after_adjustment = self.xcfg["time_duration_start"]
         self.time_duration_end_after_adjustment = self.xcfg["time_duration_end"]

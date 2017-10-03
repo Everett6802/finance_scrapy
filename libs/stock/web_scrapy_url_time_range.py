@@ -29,8 +29,8 @@ class WebScrapyURLTimeRange(object):
 # is deadlock in this situation
         # g_profile_lookup = CompanyProfile.WebScrapyCompanyProfile.Instance()
         self.COMPANY_GROUP_SIZE = g_profile_lookup.CompanyGroupSize
-        # self.stock_offset_scrapy_class_index_list = [scrapy_class_index - CMN.DEF.DATA_SOURCE_STOCK_START for scrapy_class_index in self.scrapy_class_index_list]
-        self.DATA_SOURCE_START_SCAN_TIME_CFG = [
+        # self.stock_offset_scrapy_class_index_list = [scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START for scrapy_class_index in self.scrapy_class_index_list]
+        self.METHOD_START_SCAN_TIME_CFG = [
             CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -1)),
             CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
             CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
@@ -43,7 +43,7 @@ class WebScrapyURLTimeRange(object):
         ]
         last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
         last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)
-        self.DATA_SOURCE_END_TIME_CFG = [
+        self.METHOD_END_TIME_CFG = [
             last_url_data_date,
             last_url_data_quarter,
             last_url_data_quarter,
@@ -159,7 +159,7 @@ class WebScrapyURLTimeRange(object):
             if company_time_range_start_ordereddict.has_key(scrapy_class_index):
                 continue
             # import pdb;pdb.set_trace()
-            stock_scrapy_class_index_offset = scrapy_class_index - CMN.DEF.DATA_SOURCE_STOCK_START
+            stock_scrapy_class_index_offset = scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START
 # Get the web scrapy class
 #             web_scrapy_class = self.web_scrapy_class_dict[stock_scrapy_class_index_offset]
             web_scrapy_class = self.__get_web_scrapy_class(scrapy_class_index)
@@ -173,8 +173,8 @@ class WebScrapyURLTimeRange(object):
 # Define the time range for scanning the start time
             time_slice_generator_cfg = {
                 "company_code_number": company_number, 
-                "time_duration_start": self.DATA_SOURCE_START_SCAN_TIME_CFG[stock_scrapy_class_index_offset], 
-                "time_duration_end": self.DATA_SOURCE_END_TIME_CFG[scrapy_class_index - CMN.DEF.DATA_SOURCE_STOCK_START],
+                "time_duration_start": self.METHOD_START_SCAN_TIME_CFG[stock_scrapy_class_index_offset], 
+                "time_duration_end": self.METHOD_END_TIME_CFG[scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START],
             }
             # import pdb; pdb.set_trace()
 # Generate the time slice
@@ -271,7 +271,7 @@ class WebScrapyURLTimeRange(object):
 
     def get_time_range_end(self, scrapy_class_index):
         CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index)
-        return self.DATA_SOURCE_END_TIME_CFG[scrapy_class_index - CMN.DEF.DATA_SOURCE_STOCK_START]
+        return self.METHOD_END_TIME_CFG[scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START]
 
 
     def get_time_range(self, scrapy_class_index, company_number, company_group=None):

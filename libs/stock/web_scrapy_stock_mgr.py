@@ -271,7 +271,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
             self._scrap_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
 
 
-    def _renew_single_source_statement(self, scrapy_class_time_duration, dst_statement_field_list, dst_statement_column_field_list):
+    def _renew_scrapy_class_statement(self, scrapy_class_time_duration, dst_statement_field_list, dst_statement_column_field_list):
         if not CMN.FUNC.check_statement_scrapy_class_index_in_range(scrapy_class_time_duration.scrapy_class_index):
             raise ValueError("The source type[%d] is NOT in range [%d, %d]" % (scrapy_class_time_duration.scrapy_class_index, CMN.DEF.SCRAPY_STOCK_CLASS_STATMENT_START, CMN.DEF.DATA_SOURCE_STOCK_STATMENT_END))
         # import pdb;pdb.set_trace()
@@ -319,8 +319,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
     def renew_statement_field(self):
         # import pdb; pdb.set_trace()
         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
-            if not CMN.FUNC.check_statement_scrapy_class_index_in_range(scrapy_class_time_duration.scrapy_class_index):
-                continue
+            assert CMN.FUNC.check_statement_scrapy_class_index_in_range(scrapy_class_time_duration.scrapy_class_index), "The scrapy class index[%d] is NOT in the range: [%d, %d)" % (scrapy_class_time_duration.scrapy_class_index, CMN.DEF.SCRAPY_STOCK_METHOD_STATMENT_START, CMN.DEF.SCRAPY_STOCK_METHOD_STATMENT_END)
             web_scrapy_class = CMN.FUNC.get_web_scrapy_class(scrapy_class_time_duration.scrapy_class_index, False)
             table_column_field_exist = web_scrapy_class.TABLE_COLUMN_FIELD_EXIST
             conf_filename = CMN.DEF.STATEMENT_FIELD_NAME_CONF_FILENAME[scrapy_class_time_duration.scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_STATMENT_START]
@@ -355,7 +354,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                     dst_statement_column_field_list = []              
             try:
 # Update the statement field
-                self._renew_single_source_statement(scrapy_class_time_duration, dst_statement_field_list, dst_statement_column_field_list)
+                self._renew_scrapy_class_statement(scrapy_class_time_duration, dst_statement_field_list, dst_statement_column_field_list)
             except Exception as e:
                 if isinstance(e.message, str):
                     errmsg = "Renew %s statement fails, due to: %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], e.message)

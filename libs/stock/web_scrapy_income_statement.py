@@ -38,6 +38,14 @@ class WebScrapyIncomeStatement(WebScrapyStatementBase.WebScrapyStatementBase):
 
 
     @classmethod
+    def init_class_customized_variables(cls):
+        # import pdb; pdb.set_trace()
+# CAUTION: This function MUST be called by the LEAF derived class
+        if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
+            cls._init_statement_field_class_variables(CMN.DEF.INCOME_STATEMENT_FIELD_NAME_CONF_FILENAME)
+
+
+    @classmethod
     def show_statement_field_dimension(cls, auto_gen_sql_element=True):
         cls.init_class_customized_variables()        # cls.get_parent_class().init_class_variables() # Caution: This class function should NOT be called by the parent class
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:

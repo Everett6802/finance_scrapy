@@ -26,8 +26,8 @@ def show_usage_and_exit():
     for scrapy_class_index in scrapy_class_index_list:
         print "  %d: %s" % (scrapy_class_index, CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index])
     print "  Format: Source Type (ex. 1)"
-    print "--no_scrap\nDescription: Don't scrap Web data"
-    print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrap flag is NOT set"
+    print "--no_scrapy\nDescription: Don't scrap Web data"
+    print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrapy flag is NOT set"
     # print "--no_check\nDescription: Don't check the CSV files after scraping Web data"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only work when --check is set"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
@@ -164,6 +164,7 @@ def merge_finance_folder_and_exit(merge_finance_folderpath_src_list, merge_finan
     sys.exit(0)
 
 
+@CMN.FUNC.deprecated("This function is deprecated")
 def renew_statement_field_and_exit():
     show_info("Renew the field of the statement")
     g_mgr.renew_statement_field()
@@ -197,7 +198,7 @@ def init_param():
     param_cfg["check_url"] = False
     param_cfg["debug_scrapy"] = None
     param_cfg["silent"] = False
-    param_cfg["no_scrap"] = False
+    param_cfg["no_scrapy"] = False
     param_cfg["show_progress"] = False
     # param_cfg["no_check"] = False
     param_cfg["clone"] = False
@@ -252,8 +253,8 @@ def parse_param():
             param_cfg["silent"] = True
             CMN.DEF.CAN_PRINT_CONSOLE = not param_cfg["silent"]
             index_offset = 1
-        elif re.match("--no_scrap", sys.argv[index]):
-            param_cfg["no_scrap"] = True
+        elif re.match("--no_scrapy", sys.argv[index]):
+            param_cfg["no_scrapy"] = True
             index_offset = 1
         elif re.match("--show_progress", sys.argv[index]):
             param_cfg["show_progress"] = True
@@ -408,12 +409,21 @@ def check_param():
     if param_cfg["merge_finance_folderpath_src_list"] is not None and param_cfg["merge_finance_folderpath_dst"] is None:
         param_cfg["merge_finance_folderpath_dst"] = CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
         show_warn("Set the 'merge_finance_folderpath_dst' argument to default destination folderpath: %s" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
-    if param_cfg["show_progress"] and param_cfg["no_scrap"]:
+    if param_cfg["show_progress"] and param_cfg["no_scrapy"]:
         param_cfg["show_progress"] = False
-        show_warn("Set the 'show_progress' argument to False since 'no_scrap' is set")
-    if param_cfg["clone"] and param_cfg["no_scrap"]:
+        show_warn("Set the 'show_progress' argument to False since 'no_scrapy' is set")
+    if param_cfg["clone"] and param_cfg["no_scrapy"]:
         param_cfg["clone"] = False
-        show_warn("Set the 'clone' argument to False since 'no_scrap' is set")
+        show_warn("Set the 'clone' argument to False since 'no_scrapy' is set")
+# Special check
+# renew_statement_field
+    if param_cfg["renew_statement_field"]:
+        # import pdb; pdb.set_trace()
+        param_cfg["method_from_file"] = None
+        param_cfg["method"] = "{0}-{1}".format(*CMN.FUNC.get_statement_scrapy_method_index_range())
+        # param_cfg["company_from_file"] = None
+        # param_cfg["company"] = None
+        param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
 
 
 def setup_param():
@@ -578,7 +588,7 @@ if __name__ == "__main__":
     # if param_cfg["check"]:
     #     CMN.WSL.reset_web_scrapy_logger_content()
 # Try to scrap the web data
-    if not param_cfg["no_scrap"]:
+    if not param_cfg["no_scrapy"]:
         do_scrap()
 # Clone the csv files if necessary
     if param_cfg["clone"]:
