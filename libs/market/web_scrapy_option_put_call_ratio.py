@@ -22,15 +22,17 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
     def __init__(self, **kwargs):
         super(WebScrapyOptionPutCallRatio, self).__init__(**kwargs)
         self.whole_month_data = True
+        self.time_duration_start_after_adjustment = self.xcfg["time_duration_start"]
+        self.time_duration_end_after_adjustment = self.xcfg["time_duration_end"]
         self.data_not_whole_month_list = None
 
 
-    def _adjust_time_range_from_web(self, *args):
-        # import pdb; pdb.set_trace()
-        time_duration_after_lookup_time = super(WebScrapyOptionPutCallRatio, self)._adjust_time_range_from_web(*args)
-# Find the month which data does NOT contain the whole month
-        self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(self.xcfg["time_duration_start"], self.xcfg["time_duration_end"])
-        return time_duration_after_lookup_time
+#     def _adjust_time_range_from_web(self, *args):
+#         # import pdb; pdb.set_trace()
+#         time_duration_after_lookup_time = super(WebScrapyOptionPutCallRatio, self)._adjust_time_range_from_web(*args)
+# # Find the month which data does NOT contain the whole month
+#         self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(time_duration_after_lookup_time.time_duration_start, time_duration_after_lookup_time.time_duration_end)
+#         return time_duration_after_lookup_time
 
 
     # def _modify_time_for_timeslice_generator(self, finance_time_start, finance_time_end):
@@ -39,19 +41,30 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
     #     return (finance_time_start.get_finance_month_object(), finance_time_end.get_finance_month_object())
 
 
+    def _adjust_config_before_scrapy(self, *args):
+        # import pdb; pdb.set_trace()
+# args[0]: time duration start
+# args[1]: time duration end
+        web2csv_time_duration_update = args[0]
+        self.time_duration_start_after_adjustment = web2csv_time_duration_update.NewWebStart
+        self.time_duration_end_after_adjustment = web2csv_time_duration_update.NewWebEnd
+        self.data_not_whole_month_list = CMN.FUNC.get_data_not_whole_month_list(self.time_duration_start_after_adjustment, self.time_duration_end_after_adjustment)
+
+
     def _scrape_web_data(self, timeslice):
+        # import pdb; pdb.set_trace()
 # Check if it's no need to acquire the whole month data in this month
         assert isinstance(timeslice, CMN.CLS.FinanceMonth), "The input time duration time unit is %s, not FinanceMonth" % type(timeslice)
         try:
             index = self.data_not_whole_month_list.index(timeslice)
             if len(self.data_not_whole_month_list) == 1:
-                url = self.assemble_web_url(timeslice, self.xcfg["time_duration_start"].day, self.xcfg["time_duration_end"].day)
+                url = self.assemble_web_url(timeslice, self.time_duration_start_after_adjustment.day, self.time_duration_end_after_adjustment.day)
             else:
                 if index == 0:
                     end_day_in_month = CMN.FUNC.get_month_last_day(timeslice.year, timeslice.month)
-                    url = self.assemble_web_url(timeslice, self.xcfg["time_duration_start"].day, end_day_in_month)
+                    url = self.assemble_web_url(timeslice, self.time_duration_start_after_adjustment.day, end_day_in_month)
                 else:
-                    url = self.assemble_web_url(timeslice, 1, self.xcfg["time_duration_start"].day)
+                    url = self.assemble_web_url(timeslice, 1, self.time_duration_end_after_adjustment.day)
             self.whole_month_data = False
         except ValueError:
             end_day_in_month = CMN.FUNC.get_month_last_day(timeslice.year, timeslice.month)

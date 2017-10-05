@@ -63,7 +63,7 @@ class WebSracpyMgr(object):
             raise RuntimeError("Fail to allocate WebScrapyBase derived class")
         g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
         # import pdb; pdb.set_trace()
-        web_scrapy_class_obj.scrap_web_to_csv()
+        web_scrapy_class_obj.scrape_web_to_csv()
 
 #         datetime_range_list = CMN.get_datetime_range_by_month_list(time_start, time_end)
 #         #import pdb; pdb.set_trace()
@@ -73,7 +73,7 @@ class WebSracpyMgr(object):
 #                 raise RuntimeError("Fail to allocate WebScrapyBase derived class")
 #             g_logger.debug("Start to scrap %s......", web_scrapy_class_obj.get_description())
 #             try:
-#                 web_scrapy_class_obj.scrap_web_to_csv()
+#                 web_scrapy_class_obj.scrape_web_to_csv()
 #             except requests.exceptions.Timeout as e:
 # # Fail to scrap the web data, put it to the re-try list
 #                 g_logger.warn("Put %s in the re-try list" % web_scrapy_class_obj.get_description())

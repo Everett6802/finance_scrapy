@@ -104,8 +104,8 @@ class WebScrapyThreadPool(object):
         return True if self.TotalErrorString is not None else False
 
 
-    def add_scrap_web_to_csv_task(self, web_scrapy_obj):
-        self.__add_task(web_scrapy_obj, "scrap_web_to_csv")
+    def add_scrape_web_to_csv_task(self, web_scrapy_obj):
+        self.__add_task(web_scrapy_obj, "scrape_web_to_csv")
 
 
 if __name__ == '__main__':

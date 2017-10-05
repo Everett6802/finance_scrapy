@@ -63,7 +63,7 @@ class WebSracpyMgrBase(object):
             self.csv_file_check_status_record_string_dict[no_scrapy_type].extend(web_scrapy_obj.CSVFileNoScrapyDescriptionDict[no_scrapy_type])
 
 
-    def _scrap_web_data_to_csv_file(self, scrapy_class_index, **kwargs):
+    def _scrape_web_data_to_csv_file(self, scrapy_class_index, **kwargs):
         # import pdb; pdb.set_trace()
         web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(scrapy_class_index, **kwargs)
         if web_scrapy_obj is None:
@@ -71,8 +71,8 @@ class WebSracpyMgrBase(object):
         with self.web_scrapy_obj_list_thread_lock:
             self.web_scrapy_obj_list = []
             self.web_scrapy_obj_list.append(web_scrapy_obj)
-        g_logger.debug("Start to scrap %s......", web_scrapy_obj.get_description())
-        web_scrapy_obj.scrap_web_to_csv()
+        g_logger.debug("Start to scrape %s......", web_scrapy_obj.get_description())
+        web_scrapy_obj.scrape_web_to_csv()
 # Keep track of the CSV file status
         self.__append_no_scrapy_csv_file(web_scrapy_obj)
 # Update the new CSV time duration
@@ -81,7 +81,7 @@ class WebSracpyMgrBase(object):
             self.web_scrapy_obj_list = None
 
 
-    def _multi_thread_scrap_web_data_to_csv_file(self, scrapy_class_index, scrapy_obj_cfg_list):
+    def _multi_thread_scrape_web_data_to_csv_file(self, scrapy_class_index, scrapy_obj_cfg_list):
         # import pdb; pdb.set_trace()
 # Start the thread to scrap data
         thread_pool = ThreadPool.WebScrapyThreadPool(self.xcfg["multi_thread_amount"])
@@ -93,7 +93,7 @@ class WebSracpyMgrBase(object):
                 self.web_scrapy_obj_list.append(web_scrapy_obj)
                 # time.sleep(3)
             g_logger.debug("Start to scrap %s...... %d" % (web_scrapy_obj.get_description(), index))
-            thread_pool.add_scrap_web_to_csv_task(web_scrapy_obj)
+            thread_pool.add_scrape_web_to_csv_task(web_scrapy_obj)
         thread_pool.wait_completion()
         for web_scrapy_obj in self.web_scrapy_obj_list:
 # Keep track of the CSV file status

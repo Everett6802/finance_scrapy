@@ -105,7 +105,7 @@ class WebScrapyMarketBase(BASE.BASE.WebScrapyBase):
         self.progress_amount = 1
 
 
-    def scrap_web_to_csv(self):
+    def scrape_web_to_csv(self):
         # import pdb; pdb.set_trace()
 # Limit the searching time range from the web site
         time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SCRAPY_CLASS_INDEX)

@@ -92,7 +92,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(scrapy_class_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration
 # Create the scrapy object to transform the data from Web to CSV
-        self._scrap_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
+        self._scrape_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
 
 
 #     def check_scrapy(self):

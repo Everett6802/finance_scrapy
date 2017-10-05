@@ -147,7 +147,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         self.progress_amount = self.company_group_set.CompanyAmount
 
 
-    def scrap_web_to_csv(self):
+    def scrape_web_to_csv(self):
         # import pdb; pdb.set_trace()
         self._calculate_progress_amount()
         self.new_csv_time_duration_dict = {}

@@ -192,7 +192,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "module_name": "stock_margin_trading_and_short_selling",
         "module_folder": "market",
         "class_name": "WebScrapyStockMarginTradingAndShortSelling",
-        "url_format": "http://www.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS", 
+        "url_format": "http://app.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS",
         "url_time_unit": DATA_TIME_UNIT_DAY,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 

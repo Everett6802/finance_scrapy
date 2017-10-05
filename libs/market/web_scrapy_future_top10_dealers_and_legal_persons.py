@@ -39,21 +39,39 @@ class WebScrapyFutureTop10DealersAndLegalPersons(WebScrapyMarketBase.WebScrapyMa
         self.cur_date_str = None
 
 
-    def _adjust_time_range_from_web(self, *args):
+    # def _adjust_time_range_from_web(self, *args):
+    #     import pdb; pdb.set_trace()
+    #     time_duration_after_lookup_time = super(WebScrapyFutureTop10DealersAndLegalPersons, self)._adjust_time_range_from_web(*args)
+    #     assert isinstance(self.xcfg["time_duration_start"], CMN.CLS.FinanceDate), "The input start time duration time unit is %s, not FinanceDate" % type(self.xcfg["time_duration_start"])
+    #     assert isinstance(self.xcfg["time_duration_end"], CMN.CLS.FinanceDate), "The input end time duration time unit is %s, not FinanceDate" % type(self.xcfg["time_duration_end"])
+    #     if self.xcfg["time_duration_start"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT and self.xcfg["time_duration_end"] > WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
+    #         self.need_check_everytime = True
+    #         self.data_row_start_index = None
+    #         self.data_row_end_index = None
+    #         self.start_index_list = None
+    #     elif self.xcfg["time_duration_end"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
+    #         self.data_row_start_index = WebScrapyFutureTop10DealersAndLegalPersons.OLD_FORMAT_ROW_START
+    #         self.data_row_end_index = WebScrapyFutureTop10DealersAndLegalPersons.OLD_FORMAT_ROW_END  
+    #         self.start_index_list = [2, 1] 
+    #     return time_duration_after_lookup_time
+
+
+    def _adjust_config_before_scrapy(self, *args):
         # import pdb; pdb.set_trace()
-        time_duration_after_lookup_time = super(WebScrapyFutureTop10DealersAndLegalPersons, self)._adjust_time_range_from_web(*args)
-        assert isinstance(self.xcfg["time_duration_start"], CMN.CLS.FinanceDate), "The input start time duration time unit is %s, not FinanceDate" % type(self.xcfg["time_duration_start"])
-        assert isinstance(self.xcfg["time_duration_end"], CMN.CLS.FinanceDate), "The input end time duration time unit is %s, not FinanceDate" % type(self.xcfg["time_duration_end"])
-        if self.xcfg["time_duration_start"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT and self.xcfg["time_duration_end"] > WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
+# args[0]: time duration start
+# args[1]: time duration end
+        web2csv_time_duration_update = args[0]
+        time_duration_start_after_adjustment = web2csv_time_duration_update.NewWebStart
+        time_duration_end_after_adjustment = web2csv_time_duration_update.NewWebEnd
+        if time_duration_start_after_adjustment <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT and time_duration_end_after_adjustment > WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
             self.need_check_everytime = True
             self.data_row_start_index = None
             self.data_row_end_index = None
             self.start_index_list = None
-        elif self.xcfg["time_duration_end"] <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
+        elif time_duration_end_after_adjustment <= WebScrapyFutureTop10DealersAndLegalPersons.DATE_OLD_FORMAT:
             self.data_row_start_index = WebScrapyFutureTop10DealersAndLegalPersons.OLD_FORMAT_ROW_START
             self.data_row_end_index = WebScrapyFutureTop10DealersAndLegalPersons.OLD_FORMAT_ROW_END  
             self.start_index_list = [2, 1] 
-        return time_duration_after_lookup_time
 
 
     def _scrape_web_data(self, timeslice):

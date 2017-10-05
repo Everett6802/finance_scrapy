@@ -20,8 +20,8 @@ g_logger = WSL.get_web_scrapy_logger()
 class WebScrapyBase(object):
 
     def __init__(self, cur_file_path, **kwargs):
-        # self.scrap_web_to_csv_func_ptr = [self.__scrap_web_to_csv_one_month_per_file, self.__scrap_web_to_csv_one_day_per_file]
-        # self.scrap_web_to_csv_func_ptr = [self.__scrap_multiple_web_data_to_single_csv_file, self.__scrap_single_web_data_to_single_csv_file]
+        # self.scrape_web_to_csv_func_ptr = [self.__scrape_web_to_csv_one_month_per_file, self.__scrape_web_to_csv_one_day_per_file]
+        # self.scrape_web_to_csv_func_ptr = [self.__scrap_multiple_web_data_to_single_csv_file, self.__scrap_single_web_data_to_single_csv_file]
 
         cur_module_name = re.sub(CMN.SCRAPY_MODULE_NAME_PREFIX, "", CMN.get_cur_module_name(cur_file_path))
         # g_logger.debug("Current module name (w/o prefix): %s" % cur_module_name)
@@ -48,11 +48,11 @@ class WebScrapyBase(object):
         # source_data_time_unit_cfg = CMN.CSV_TIME_UNIT[self.data_source_index]
         csv_time_unit = CMN.CSV_TIME_UNIT[self.data_source_index]
         url_time_unit = CMN.TIMESLICE_TO_TIME_UNIT_MAPPING[self.timeslice_generate_method]
-        self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file if url_time_unit == csv_time_unit self.__scrap_single_web_data_to_single_csv_file
+        self.scrape_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file if url_time_unit == csv_time_unit self.__scrap_single_web_data_to_single_csv_file
         # if url_time_unit == csv_time_unit:
-        #     self.scrap_web_to_csv_func_ptr = self.__scrap_single_web_data_to_single_csv_file
+        #     self.scrape_web_to_csv_func_ptr = self.__scrap_single_web_data_to_single_csv_file
         # else:
-        #     self.scrap_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file
+        #     self.scrape_web_to_csv_func_ptr = self.__scrap_multiple_web_data_to_single_csv_file
         # self.timeslice_generator_obj = TimeSliceGenerator.WebScrapyTimeSliceGenerator.Instance()
         self.timeslice_iterable = timeslice_generator_obj.generate_time_slice(self.timeslice_generate_method, **kwargs)
         # self.generate_day_time_list_rule = None
@@ -349,7 +349,7 @@ class WebScrapyBase(object):
 #                 g_logger.warn("Fail to scrap URL[%s], due to: %s" % (url, str(e)))
 
 
-#     def __scrap_web_to_csv_one_month_per_file(self):
+#     def __scrape_web_to_csv_one_month_per_file(self):
 #         csv_data_list = []
 #         web_data = None
 #         # ret = CMN.RET_SUCCESS
@@ -377,7 +377,7 @@ class WebScrapyBase(object):
 #         return CMN.RET_SUCCESS
 
 
-#     def __scrap_web_to_csv_one_day_per_file(self):
+#     def __scrape_web_to_csv_one_day_per_file(self):
 #         # import pdb; pdb.set_trace()
 #         CMN.create_folder_if_not_exist(self.csv_folderpath)
 
@@ -477,9 +477,9 @@ class WebScrapyBase(object):
         return CMN.RET_SUCCESS
 
 
-    def scrap_web_to_csv(self):
+    def scrape_web_to_csv(self):
         # import pdb; pdb.set_trace()
-        return self.scrap_web_to_csv_func_ptr()
+        return self.scrape_web_to_csv_func_ptr()
 
 
 #############################################################################################

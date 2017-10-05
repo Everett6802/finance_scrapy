@@ -265,10 +265,10 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 sub_scrapy_obj_cfg["company_group_set"] = sub_company_group
                 sub_scrapy_obj_cfg_list.append(sub_scrapy_obj_cfg)
 # Start the thread to scrap data
-            self._multi_thread_scrap_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, sub_scrapy_obj_cfg_list)
+            self._multi_thread_scrape_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, sub_scrapy_obj_cfg_list)
         else:
             scrapy_obj_cfg["company_group_set"] = self.__get_market_type_company_group_set(market_type)
-            self._scrap_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
+            self._scrape_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
 
 
     def _renew_scrapy_class_statement(self, scrapy_class_time_duration, dst_statement_field_list, dst_statement_column_field_list):

@@ -865,5 +865,5 @@ class WebScrapyBase(object):
 
 
     @abstractmethod
-    def scrap_web_to_csv(self):
+    def scrape_web_to_csv(self):
         raise NotImplementedError

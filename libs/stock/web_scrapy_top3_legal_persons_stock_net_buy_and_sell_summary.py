@@ -151,7 +151,7 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
         self.progress_amount = self._get_timeslice_iterable_len(**kwargs)
 
 
-    def scrap_web_to_csv(self):
+    def scrape_web_to_csv(self):
         # import pdb; pdb.set_trace()
 # Create the time slice iterator due to correct time range
 # Limit the searching time range from the web site
