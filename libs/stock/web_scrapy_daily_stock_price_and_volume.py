@@ -38,6 +38,11 @@ class WebScrapyDailyStockPriceAndVolumeBase(WebScrapyStockBase.WebScrapyStockBas
 
 
     @classmethod
+    def _transform_data_for_writing_to_csv(cls, csv_data_list):
+        return cls._transform_multi_data_in_one_page(csv_data_list)
+
+
+    @classmethod
     def pre_check_web_data(cls, req):
         json_url_data = json.loads(req.text)
         json_url_stat_data = json_url_data[cls.URL_DATA_EXIST_SELECTOR]

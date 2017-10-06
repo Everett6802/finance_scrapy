@@ -291,14 +291,24 @@ class WebScrapyBase(object):
 
 
     @classmethod
+    def _transform_multi_data_in_one_page(cls, csv_data_list):
+        g_logger.debug("Multi-data in one page, need to transform data structure")
+        csv_data_list_tmp = csv_data_list
+        csv_data_list = []
+        for csv_data_tmp in csv_data_list_tmp:
+            csv_data_list.extend(csv_data_tmp)
+        return csv_data_list
+
+
+    @classmethod
+    def _transform_data_for_writing_to_csv(cls, csv_data_list):
+# Default: do nothing
+        return csv_data_list
+
+
+    @classmethod
     def _write_to_csv(cls, csv_filepath, csv_data_list):
-        # import pdb; pdb.set_trace()
-        if cls.TIMESLICE_TIME_UNIT != cls.URL_TIME_UNIT:
-            g_logger.debug("Multi-data in one page, need to transform data structure")
-            csv_data_list_tmp = csv_data_list
-            csv_data_list = []
-            for csv_data_tmp in csv_data_list_tmp:
-                csv_data_list.extend(csv_data_tmp)
+        csv_data_list = cls._transform_data_for_writing_to_csv(csv_data_list)
         g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
         with open(csv_filepath, 'a+') as fp:
             fp_writer = csv.writer(fp, delimiter=',')

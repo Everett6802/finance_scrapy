@@ -196,6 +196,7 @@ class WebSracpyMgrBase(object):
 
 
     def __check_scrapy_class_in_correct_finance_mode(self):
+        # import pdb; pdb.set_trace()
         g_logger.debug("************* Source Type Time Range *************")
         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
             if not CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_time_duration.scrapy_class_index):

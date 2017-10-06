@@ -13,6 +13,7 @@ g_mgr = None
 g_logger = CMN.WSL.get_web_scrapy_logger()
 param_cfg = {}
 
+
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
@@ -220,7 +221,7 @@ def init_param():
     param_cfg["merge_finance_folderpath_dst"] = None
 
 
-def parse_param():
+def parse_param(only_determine_finance_mode=False):
     argc = len(sys.argv)
     index = 1
     index_offset = None
@@ -235,10 +236,16 @@ def parse_param():
             param_cfg["update_workday_calendar"] = True
             index_offset = 1
         elif re.match("--market_mode", sys.argv[index]):
-            param_cfg["finance_mode"] = CMN.DEF.FINANCE_ANALYSIS_MARKET
+            if only_determine_finance_mode:
+                if param_cfg["finance_mode"] is not None:
+                    raise ValueError("The finance mode has already been set to: %s" % CMN.DEF.FINANCE_MODE_DESCRIPTION[param_cfg["finance_mode"]])
+                param_cfg["finance_mode"] = CMN.DEF.FINANCE_ANALYSIS_MARKET
             index_offset = 1
         elif re.match("--stock_mode", sys.argv[index]):
-            param_cfg["finance_mode"] = CMN.DEF.FINANCE_ANALYSIS_STOCK
+            if only_determine_finance_mode:
+                if param_cfg["finance_mode"] is not None:
+                    raise ValueError("The finance mode has already been set to: %s" % CMN.DEF.FINANCE_MODE_DESCRIPTION[param_cfg["finance_mode"]])
+                param_cfg["finance_mode"] = CMN.DEF.FINANCE_ANALYSIS_STOCK
             index_offset = 1
         elif re.match("(-h|--help)", sys.argv[index]):
             param_cfg["help"] = True
@@ -482,6 +489,25 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
+def determine_finance_mode():
+    parse_param(True)
+# Determine the mode and initialize the manager class
+    if param_cfg["finance_mode"] is None:
+        CMN.DEF.FINANCE_MODE = CMN.FUNC.get_finance_analysis_mode()
+        CMN.DEF.IS_FINANCE_MARKET_MODE = True if (CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_ANALYSIS_MARKET) else False
+        CMN.DEF.IS_FINANCE_STOCK_MODE = True if (CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_ANALYSIS_STOCK) else False
+    elif param_cfg["finance_mode"] == CMN.DEF.FINANCE_ANALYSIS_MARKET:
+        CMN.DEF.FINANCE_MODE = CMN.DEF.FINANCE_ANALYSIS_MARKET
+        CMN.DEF.IS_FINANCE_MARKET_MODE = True
+        CMN.DEF.IS_FINANCE_STOCK_MODE = False
+    elif param_cfg["finance_mode"] == CMN.DEF.FINANCE_ANALYSIS_STOCK:
+        CMN.DEF.FINANCE_MODE = CMN.DEF.FINANCE_ANALYSIS_STOCK
+        CMN.DEF.IS_FINANCE_MARKET_MODE = False
+        CMN.DEF.IS_FINANCE_STOCK_MODE = True
+    else:
+        raise ValueError("Unknown mode !!!")
+
+
 def record_exe_time(action):
     def decorator(func):
         def wrapper(*args, **kwargs):
@@ -497,11 +523,11 @@ def record_exe_time(action):
     return decorator
 
 
-@record_exe_time("SCRAP")
+@record_exe_time("SCRAPE")
 def do_scrap():
-    show_info("* Scrap the data from the website......")
+    show_info("* Scrape the data from the website......")
     g_mgr.do_scrapy()
-    show_info("* Scrap the data from the website...... DONE!!!")
+    show_info("* Scrape the data from the website...... DONE!!!")
     if g_mgr.NoScrapyCSVFound:
         show_warn("No Web Data while scraping:")
         g_mgr.show_no_scrapy()
@@ -530,7 +556,7 @@ def do_clone():
 
 
 if __name__ == "__main__":
-#    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
     parse_param()
@@ -539,27 +565,16 @@ if __name__ == "__main__":
     if param_cfg["show_command_example"]:
         show_command_example_and_exit()
 # Determine the mode and initialize the manager class
-    if param_cfg["finance_mode"] is None:
-        CMN.DEF.IS_FINANCE_MARKET_MODE = CMN.FUNC.is_market_mode()
-        CMN.DEF.IS_FINANCE_STOCK_MODE = CMN.FUNC.is_stock_mode()
-    elif param_cfg["finance_mode"] == CMN.DEF.FINANCE_ANALYSIS_MARKET:
-        CMN.DEF.IS_FINANCE_MARKET_MODE = True
-        CMN.DEF.IS_FINANCE_STOCK_MODE = False
-    elif param_cfg["finance_mode"] == CMN.DEF.FINANCE_ANALYSIS_STOCK:
-        CMN.DEF.IS_FINANCE_MARKET_MODE = False
-        CMN.DEF.IS_FINANCE_STOCK_MODE = True
-    else:
-        raise ValueError("Unknown mode !!!")
+    determine_finance_mode()
 
     if param_cfg["help"]:
         show_usage_and_exit()
-
+# Prepare the param for initializing the manager class
     update_cfg = {}
     if param_cfg["multi_thread"] is not None:
         update_cfg["multi_thread_amount"] = param_cfg["multi_thread"]
     if param_cfg["show_progress"]:
         update_cfg["show_progress"] = param_cfg["show_progress"]
-
     if CMN.DEF.IS_FINANCE_MARKET_MODE:
         from libs.market import web_scrapy_market_mgr as MGR
         g_mgr = MGR.WebSracpyMarketMgr(**update_cfg)

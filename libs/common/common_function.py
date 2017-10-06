@@ -452,14 +452,14 @@ def get_finance_analysis_mode():
     #     raise e
 
 
-def is_market_mode():
-    if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
-        CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
-    return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_MARKET
-def is_stock_mode():
-    if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
-        CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
-    return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_STOCK
+# def is_market_mode():
+#     if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
+#         CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
+#     return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_MARKET
+# def is_stock_mode():
+#     if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
+#         CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
+#     return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_STOCK
 
 
 def get_finance_mode_description():

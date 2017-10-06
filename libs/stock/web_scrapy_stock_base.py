@@ -214,6 +214,7 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                     self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX, company_code_number)
 # Write the data of last year into csv
                     if len(csv_data_list_each_year) > 0:
+                        # import pdb; pdb.set_trace()
                         self._write_to_csv(csv_filepath, csv_data_list_each_year)
 # Append the old CSV data after the new web data if necessary
                     web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)

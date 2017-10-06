@@ -19,6 +19,11 @@ class WebScrapyOptionPutCallRatio(WebScrapyMarketBase.WebScrapyMarketBase):
         return url
 
 
+    @classmethod
+    def _transform_data_for_writing_to_csv(cls, csv_data_list):
+        return cls._transform_multi_data_in_one_page(csv_data_list)
+
+
     def __init__(self, **kwargs):
         super(WebScrapyOptionPutCallRatio, self).__init__(**kwargs)
         self.whole_month_data = True

@@ -59,7 +59,7 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
         data_list = []
         data_list.append(self.date_cur_string)
         sum_found = False
-        index_list = range(10, 25)
+        index_list = range(9, 24)
         index_last = index_list[-1]
 # Scrape the data of each stock interval
         for index in index_list:
@@ -67,20 +67,20 @@ class WebScrapyDepositoryShareholderDistributionTable(WebScrapyStockBase.WebScra
             td = tr.select('td')
             data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
             data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
-            data_list.append(td[4].text)
+            data_list.append(str(td[4].text))
             if index == index_last:
                 if re.match(self.TABLE_SUM_FLAG, td[1].text, re.U):
                     sum_found = True
 # Ignore the data which is NOT interesting... Scrape the data of sum if necessary
         # import pdb; pdb.set_trace()
         if not sum_found:
-            for tr in web_data[25:]:
+            for tr in web_data[24:]:
                 td = tr.select('td')
                 if not re.match(self.TABLE_SUM_FLAG, td[1].text, re.U):
                     continue
                 data_list.append(str(CMN.FUNC.remove_comma_in_string(td[2].text)))
                 data_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(td[3].text)))
-                data_list.append(td[4].text)
+                data_list.append(str(td[4].text))
                 sum_found = True
                 break
         if not sum_found:
