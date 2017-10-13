@@ -22,7 +22,7 @@ def show_usage_and_exit():
     print "--silent\nDescription: Disable print log on console"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
-    print "--debug_scrapy\nDescription: Debug a specific scrapy class only\nCaution: Ignore other parameters when set"
+    print "--debug_scrapy_class\nDescription: Debug a specific scrapy class only\nCaution: Ignore other parameters when set"
     scrapy_class_index_list = CMN.FUNC.get_scrapy_class_index_range_list()
     for scrapy_class_index in scrapy_class_index_list:
         print "  %d: %s" % (scrapy_class_index, CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index])
@@ -142,7 +142,7 @@ def check_url_and_exit():
     sys.exit(0)
 
 
-def debug_scrapy_and_exit(scrapy_class_index):
+def debug_scrapy_class_and_exit(scrapy_class_index):
     if not CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_index):
         errmsg = "Unsupported scrapy class index: %d" % scrapy_class_index
         show_error_and_exit(errmsg)
@@ -197,7 +197,7 @@ def init_param():
     param_cfg["finance_mode"] = None
     param_cfg["help"] = False
     param_cfg["check_url"] = False
-    param_cfg["debug_scrapy"] = None
+    param_cfg["debug_scrapy_class"] = None
     param_cfg["silent"] = False
     param_cfg["no_scrapy"] = False
     param_cfg["show_progress"] = False
@@ -221,7 +221,7 @@ def init_param():
     param_cfg["merge_finance_folderpath_dst"] = None
 
 
-def parse_param(only_determine_finance_mode=False):
+def parse_param(early_parse=False):
     argc = len(sys.argv)
     index = 1
     index_offset = None
@@ -231,130 +231,157 @@ def parse_param(only_determine_finance_mode=False):
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
         if re.match("--show_command_example", sys.argv[index]):
             param_cfg["show_command_example"] = True
-            index_offset = 1
+            return
         elif re.match("--update_workday_calendar", sys.argv[index]):
             param_cfg["update_workday_calendar"] = True
             index_offset = 1
         elif re.match("--market_mode", sys.argv[index]):
-            if only_determine_finance_mode:
+            if early_parse:
                 if param_cfg["finance_mode"] is not None:
                     raise ValueError("The finance mode has already been set to: %s" % CMN.DEF.FINANCE_MODE_DESCRIPTION[param_cfg["finance_mode"]])
                 param_cfg["finance_mode"] = CMN.DEF.FINANCE_ANALYSIS_MARKET
             index_offset = 1
         elif re.match("--stock_mode", sys.argv[index]):
-            if only_determine_finance_mode:
+            if early_parse:
                 if param_cfg["finance_mode"] is not None:
                     raise ValueError("The finance mode has already been set to: %s" % CMN.DEF.FINANCE_MODE_DESCRIPTION[param_cfg["finance_mode"]])
                 param_cfg["finance_mode"] = CMN.DEF.FINANCE_ANALYSIS_STOCK
             index_offset = 1
+        elif re.match("--silent", sys.argv[index]):
+            if early_parse:
+                param_cfg["silent"] = True
+                CMN.DEF.CAN_PRINT_CONSOLE = not param_cfg["silent"]
+            index_offset = 1
         elif re.match("(-h|--help)", sys.argv[index]):
-            param_cfg["help"] = True
+            if not early_parse:
+                param_cfg["help"] = True
             index_offset = 1
         elif re.match("--check_url", sys.argv[index]):
-            param_cfg["check_url"] = True
+            if not early_parse:
+                param_cfg["check_url"] = True
             index_offset = 1 
-        elif re.match("--debug_scrapy", sys.argv[index]):
-            param_cfg["debug_scrapy"] = int(sys.argv[index + 1])
+        elif re.match("--debug_scrapy_class", sys.argv[index]):
+            if not early_parse:
+                param_cfg["debug_scrapy_class"] = int(sys.argv[index + 1])
             index_offset = 2 
-        elif re.match("--silent", sys.argv[index]):
-            param_cfg["silent"] = True
-            CMN.DEF.CAN_PRINT_CONSOLE = not param_cfg["silent"]
-            index_offset = 1
         elif re.match("--no_scrapy", sys.argv[index]):
-            param_cfg["no_scrapy"] = True
+            if not early_parse:
+                param_cfg["no_scrapy"] = True
             index_offset = 1
         elif re.match("--show_progress", sys.argv[index]):
-            param_cfg["show_progress"] = True
+            if not early_parse:
+                param_cfg["show_progress"] = True
             index_offset = 1
         # elif re.match("--no_check", sys.argv[index]):
         #     param_cfg["no_check"] = True
         #     index_offset = 1
         elif re.match("--clone", sys.argv[index]):
-            param_cfg["clone"] = True
+            if not early_parse:
+                param_cfg["clone"] = True
             index_offset = 1
         elif re.match("--reserve_old", sys.argv[index]):
-            param_cfg["reserve_old"] = True
+            if not early_parse:
+                param_cfg["reserve_old"] = True
             index_offset = 1
         elif re.match("--dry_run", sys.argv[index]):
-            param_cfg["dry_run"] = True
+            if not early_parse:
+                param_cfg["dry_run"] = True
             index_offset = 1
         elif re.match("--finance_folderpath", sys.argv[index]):
-            param_cfg["finance_folderpath"] = sys.argv[index + 1]
+            if not early_parse:
+                param_cfg["finance_folderpath"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--method_from_all_time_range_default_file", sys.argv[index]):
-            param_cfg["method_from_all_time_range_default_file"] = True
-            param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE
+            if not early_parse:
+                param_cfg["method_from_all_time_range_default_file"] = True
+                param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 1
         elif re.match("--method_from_today_file", sys.argv[index]):
-            param_cfg["method_from_file"] = sys.argv[index + 1]
-            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
+            if not early_parse:
+                param_cfg["method_from_file"] = sys.argv[index + 1]
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
             index_offset = 2
         elif re.match("--method_from_last_file", sys.argv[index]):
-            param_cfg["method_from_file"] = sys.argv[index + 1]
-            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
+            if not early_parse:
+                param_cfg["method_from_file"] = sys.argv[index + 1]
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
             index_offset = 2
         elif re.match("--method_from_time_range_file", sys.argv[index]):
-            param_cfg["method_from_file"] = sys.argv[index + 1]
-            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
+            if not early_parse:
+                param_cfg["method_from_file"] = sys.argv[index + 1]
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 2
         elif re.match("--method", sys.argv[index]):
-            param_cfg["method"] = sys.argv[index + 1]
+            if not early_parse:
+                param_cfg["method"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--time_today", sys.argv[index]):
-            if param_cfg["time_duration_type"] is not None:
-                g_logger.debug("Time duration has already been set to: %d, ignore the time_today attribute...", param_cfg["time_duration_type"])
-            else:
-                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
+            if not early_parse:
+                if param_cfg["time_duration_type"] is not None:
+                    g_logger.debug("Time duration has already been set to: %d, ignore the time_today attribute...", param_cfg["time_duration_type"])
+                else:
+                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
             index_offset = 1
         elif re.match("--time_last", sys.argv[index]):
-            if param_cfg["time_duration_type"] is not None:
-                g_logger.debug("Time duration has already been set to: %d, ignore the time_last attribute...", param_cfg["time_duration_type"])
-            else:
-                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
+            if not early_parse:
+                if param_cfg["time_duration_type"] is not None:
+                    g_logger.debug("Time duration has already been set to: %d, ignore the time_last attribute...", param_cfg["time_duration_type"])
+                else:
+                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
             index_offset = 1
         elif re.match("--time_duration_range_all", sys.argv[index]):
-            if param_cfg["time_duration_type"] is not None:
-                g_logger.debug("Time duration has already been set to: %d, ignore the time_duration_range_all attribute...", param_cfg["time_duration_type"])
-            else:
-                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
+            if not early_parse:
+                if param_cfg["time_duration_type"] is not None:
+                    g_logger.debug("Time duration has already been set to: %d, ignore the time_duration_range_all attribute...", param_cfg["time_duration_type"])
+                else:
+                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
             index_offset = 1
         elif re.match("--time_duration_range", sys.argv[index]):
-            if param_cfg["time_duration_type"] is not None:
-                g_logger.debug("Time duration has already been set to: %d, ignore the time_duration_range attribute...", param_cfg["time_duration_type"])
-            else:
-                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
-                param_cfg["time_duration_range"] = sys.argv[index + 1]
-            # g_logger.debug("Param time range: %s", param_cfg["time_duration_range"])
+            if not early_parse:
+                if param_cfg["time_duration_type"] is not None:
+                    g_logger.debug("Time duration has already been set to: %d, ignore the time_duration_range attribute...", param_cfg["time_duration_type"])
+                else:
+                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
+                    param_cfg["time_duration_range"] = sys.argv[index + 1]
+                # g_logger.debug("Param time range: %s", param_cfg["time_duration_range"])
             index_offset = 2
         elif re.match("--company_list_in_default_folderpath", sys.argv[index]):
-            param_cfg["company_list_in_default_folderpath"] = True
+            if not early_parse:
+                param_cfg["company_list_in_default_folderpath"] = True
             index_offset = 1
         elif re.match("--company_list_in_folderpath", sys.argv[index]):
-            param_cfg["company_list_in_folderpath"] = sys.argv[index + 1]
+            if not early_parse:
+                param_cfg["company_list_in_folderpath"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--company_from_file", sys.argv[index]):
-            if CMN.DEF.IS_FINANCE_MARKET_MODE:
-                g_logger.warn("The company_from_file arguemnt is ignored in the Market mode")
-            else:
-                param_cfg["company_from_file"] = sys.argv[index + 1]
+            if not early_parse:
+                if CMN.DEF.IS_FINANCE_MARKET_MODE:
+                    g_logger.warn("The company_from_file arguemnt is ignored in the Market mode")
+                else:
+                    param_cfg["company_from_file"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("(-c|--company)", sys.argv[index]):
-            if CMN.DEF.IS_FINANCE_MARKET_MODE:
-                g_logger.warn("The company arguemnt is ignored in the Market mode")
-            else:
-                param_cfg["company"] = sys.argv[index + 1]
+            if not early_parse:
+                if CMN.DEF.IS_FINANCE_MARKET_MODE:
+                    g_logger.warn("The company arguemnt is ignored in the Market mode")
+                else:
+                    param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--renew_statement_field", sys.argv[index]):
-            param_cfg["renew_statement_field"] = True
+            if not early_parse:
+                param_cfg["renew_statement_field"] = True
             index_offset = 1
         elif re.match("--multi_thread", sys.argv[index]):
-            param_cfg["multi_thread"] = int(sys.argv[index + 1])
+            if not early_parse:
+                param_cfg["multi_thread"] = int(sys.argv[index + 1])
             index_offset = 2
         elif re.match("--merge_finance_folderpath_src_list", sys.argv[index]):
-            param_cfg["merge_finance_folderpath_src_list"] = sys.argv[index + 1]
+            if not early_parse:
+                param_cfg["merge_finance_folderpath_src_list"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--merge_finance_folderpath_dst", sys.argv[index]):
-            param_cfg["merge_finance_folderpath_dst"] = sys.argv[index + 1]
+            if not early_parse:
+                param_cfg["merge_finance_folderpath_dst"] = sys.argv[index + 1]
             index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
@@ -584,8 +611,8 @@ if __name__ == "__main__":
 # RUN the argument that will return after the execution is done
     if param_cfg["check_url"]:
         check_url_and_exit()
-    if param_cfg["debug_scrapy"] is not None:
-        debug_scrapy_and_exit(param_cfg["debug_scrapy"])
+    if param_cfg["debug_scrapy_class"] is not None:
+        debug_scrapy_class_and_exit(param_cfg["debug_scrapy_class"])
 # Check the parameters for the manager
     check_param()
     # import pdb; pdb.set_trace()

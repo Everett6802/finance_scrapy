@@ -120,7 +120,7 @@ class WebScrapyDailyStockPriceAndVolumeBase(WebScrapyStockBase.WebScrapyStockBas
             date_list = str(data_entry[0]).split('/')
             if len(date_list) != 3:
                 raise RuntimeError("The date format is NOT as expected: %s", date_list)
-            entry = [CMN.FUNC.transform_date_str(int(date_list[0]), int(date_list[1]), int(date_list[2])),]
+            entry = [CMN.FUNC.transform_date_str(int(date_list[0]) + 1911, int(date_list[1]), int(date_list[2])),]
             if not self.whole_month_data:
                 date_cur = CMN.CLS.FinanceDate.from_string(entry[0])
                 if date_cur < self.time_duration_start_after_adjustment:

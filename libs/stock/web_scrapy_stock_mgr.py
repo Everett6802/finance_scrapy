@@ -170,7 +170,7 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
                 csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
 # Create the folder for each company if not exist
                 CMN.FUNC.create_folder_if_not_exist(csv_data_folderpath)
-                g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
+                # g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
                 CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration_dict[company_code_number])
 
 

@@ -502,7 +502,7 @@ class WebScrapyBase(object):
 
     def get_description(self):
         if self.description is None:
-            self.description = "%s" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX]
+            self.description = "%s" % CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX]
             # if show_detail:
             #     if not self.timeslice_list_generated:
             #         self.__generate_timeslice_list()

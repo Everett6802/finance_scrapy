@@ -92,7 +92,7 @@ class WebSracpyMgrBase(object):
                 web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(scrapy_class_index, **(scrapy_obj_cfg_list[index]))
                 self.web_scrapy_obj_list.append(web_scrapy_obj)
                 # time.sleep(3)
-            g_logger.debug("Start to scrap %s...... %d" % (web_scrapy_obj.get_description(), index))
+            g_logger.debug("Start to scrape %s...... %d" % (web_scrapy_obj.get_description(), index))
             thread_pool.add_scrape_web_to_csv_task(web_scrapy_obj)
         thread_pool.wait_completion()
         for web_scrapy_obj in self.web_scrapy_obj_list:

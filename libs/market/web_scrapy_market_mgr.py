@@ -79,7 +79,7 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
         if source_type_csv_time_duration is None:
             source_type_csv_time_duration = self.source_type_csv_time_duration
-        g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
+        # g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
         CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration)
 
 
