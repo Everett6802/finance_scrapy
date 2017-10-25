@@ -82,6 +82,11 @@ class WebScrapyCompanyProfile(object):
             self.__group_company_by_industry,
             self.__group_company_by_industry_and_market,
         ]
+# A lookup table used when the comapny profile is reqiured to be modified
+        self.modified_company_lookup = {
+            "3709": {COMPANY_PROFILE_ENTRY_FIELD_INDEX_LISTING_DATE: "2017-09-01"},
+        }
+        self.modified_company_number_list = self.modified_company_lookup.keys()
 
 
     def initialize(self):
@@ -294,23 +299,6 @@ class WebScrapyCompanyProfile(object):
 # Assemble the URL
         url = self.url_format % str_mode
 # Scrap the web data
-        # try:
-        #     # g_logger.debug("Try to Scrap data [%s]" % url)
-        #     res = requests.get(url, timeout=CMN.DEF.SCRAPY_WAIT_TIMEOUT)
-        # except requests.exceptions.Timeout as e:
-        #     # g_logger.debug("Try to Scrap data [%s]... Timeout" % url)
-        #     fail_to_scrap = False
-        #     for index in range(self.SCRAPY_RETRY_TIMES):
-        #         time.sleep(randint(1,3))
-        #         try:
-        #             res = requests.get(url, timeout=CMN.DEF.SCRAPY_WAIT_TIMEOUT)
-        #         except requests.exceptions.Timeout as ex:
-        #             fail_to_scrap = True
-        #         if not fail_to_scrap:
-        #             break
-        #     if fail_to_scrap:
-        #         g_logger.error("Fail to scrap company code number info even retry for %d times !!!!!!" % self.SCRAPY_RETRY_TIMES)
-        #         raise e
         req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
 # Select the section we are interested in
         req.encoding = self.encoding
@@ -344,7 +332,7 @@ class WebScrapyCompanyProfile(object):
             company_number = mobj.group(1)
             if not re.match(r"^[\d][\d]{2}[\d]$", company_number, re.U):
                 continue
-# Filter ETF
+# Filter ETF/TDR
             if re.match(ETF_AND_TDR_COMPANY_CODE_NUMBER_PATTERN, company_number, re.U):
                 continue
             if failed_case:
@@ -399,6 +387,13 @@ class WebScrapyCompanyProfile(object):
             #     # import pdb; pdb.set_trace()
             #     assert (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] == u""), u"The company[%s] Industry is NOT Empty: %s" % (element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER], element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY])
             #     element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY] = COMPANY_GROUP_EXCEPTION_DICT[COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT]
+# Check if the company is required to modify the data by myself
+            if company_number in self.modified_company_number_list:
+                g_logger.warn("WARNING: The company[%s] is required to update the data in the profile by myself......" % company_number)
+                modified_company_lookup = self.modified_company_lookup[company_number]
+                for key, value in modified_company_lookup.items():
+                    element_list[key] = value
+
             self.company_profile_list.append(element_list)
 # 有價證券代號及名稱
 # 國際證券辨識號碼(ISIN Code) 
