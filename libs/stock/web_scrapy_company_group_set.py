@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 
+import re
 import collections
 import threading
 import libs.common as CMN
@@ -18,14 +19,58 @@ class WebScrapyCompanyGroupSet(object):
     whole_over_the_counter_company_number_in_group_dict = None
     whole_over_the_counter_company_number_list = None
 
-    def __init__(self):
-        self.company_number_in_group_dict = None
-        self.altered_company_number_in_group_dict = None
-        self.is_whole_group = False
-        self.is_add_done = False
-        self.check_company_exist = True
-        self.company_amount = None
-        self.market_type = CMN.DEF.MARKET_TYPE_NONE
+
+    @classmethod
+    def create_instance_from_string(cls, company_word_list_string):
+        """
+        The argument type:
+        Company code number: 2347
+        Company code number range: 2100-2200
+        Company group number: [Gg]12
+        Company code number/number range hybrid: 2347,2100-2200,2362,g2,1500-1510
+        """
+        company_group_set = cls()
+        company_word_list = company_word_list_string.split(",")
+        for company_number in company_word_list:
+            mobj = re.match("([\d]{4})-([\d]{4})", company_number)
+            if mobj is None:
+# Check if data is company code/group number
+                mobj = re.match("[Gg]([\d]{1,})", company_number)
+                if mobj is None:
+# Company code number
+                    if not re.match("([\d]{4})", company_number):
+                        raise ValueError("Unknown company number format: %s" % company_number)
+                    company_group_set.add_company(company_number)
+                else:
+# Compgny group number
+                    company_group_number = int(mobj.group(1))
+                    company_group_set.add_company_group(company_group_number)
+            else:
+# Company code number Range
+                start_company_number_int = int(mobj.group(1))
+                end_company_number_int = int(mobj.group(2))
+                number_list = []
+                for number in range(start_company_number_int, end_company_number_int + 1):
+                    number_list.append("%04d" % number)
+                company_group_set.add_company_word_list(number_list)
+        company_group_set.add_done()
+        return company_group_set
+
+
+    @classmethod
+    def to_company_number_list(cls, company_word_list_string):
+        company_group_set = cls.create_instance_from_string(company_word_list_string)
+        company_group_set.altered_company_number_in_group_dict
+        whole_company_number_list = []
+        for _, company_number_list in company_group_set.altered_company_number_in_group_dict.items():
+            whole_company_number_list += company_number_list
+        return whole_company_number_list
+
+
+    @classmethod
+    def get_company_in_group_number_list(cls, company_group_number):
+        company_word_list_string = "g%02d" % company_group_number
+        return cls.to_company_number_list(company_word_list_string)
 
 
     @classmethod
@@ -151,6 +196,16 @@ class WebScrapyCompanyGroupSet(object):
         company_group_set = cls()
         company_group_set.add_done();
         return company_group_set
+
+
+    def __init__(self):
+        self.company_number_in_group_dict = None
+        self.altered_company_number_in_group_dict = None
+        self.is_whole_group = False
+        self.is_add_done = False
+        self.check_company_exist = True
+        self.company_amount = None
+        self.market_type = CMN.DEF.MARKET_TYPE_NONE
 
 
     def items(self):

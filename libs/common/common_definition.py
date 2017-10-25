@@ -331,10 +331,11 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "module_folder": "stock",
         "class_name": "WebScrapyStatementOfChangesInEquity",
         "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
+        "url_special_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=2&firstin=1&id=&key=&TYPEK=sii&co_id={0}&year={1}&season={2}",
         "url_time_unit": DATA_TIME_UNIT_QUARTER,
         "url_encoding": URL_ENCODING_UTF8,
         "url_parsing_method": PARSE_URL_DATA_BY_CUSTOMIZATION, 
-        "url_data_selector": '', # Useless when url_parsing_method is PARSE_URL_DATA_BY_CUSTOMIZATION
+        "url_data_selector": 'table',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
         "company_group_market_type": MARKET_TYPE_NONE,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),

@@ -159,9 +159,7 @@ class WebScrapyURLTimeRange(object):
             if company_time_range_start_ordereddict.has_key(scrapy_class_index):
                 continue
             # import pdb;pdb.set_trace()
-            stock_scrapy_class_index_offset = scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START
 # Get the web scrapy class
-#             web_scrapy_class = self.web_scrapy_class_dict[stock_scrapy_class_index_offset]
             web_scrapy_class = self.__get_web_scrapy_class(scrapy_class_index)
             if web_scrapy_class.CAN_FIND_TIME_RANGE_START:
 # Find the start time from company profile..., .etc
@@ -171,6 +169,7 @@ class WebScrapyURLTimeRange(object):
                     continue
 # Scan to find the start time from the web
 # Define the time range for scanning the start time
+            stock_scrapy_class_index_offset = scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START
             time_slice_generator_cfg = {
                 "company_code_number": company_number, 
                 "time_duration_start": self.METHOD_START_SCAN_TIME_CFG[stock_scrapy_class_index_offset], 
@@ -204,14 +203,15 @@ class WebScrapyURLTimeRange(object):
         return company_time_range_start_ordereddict
 
 
-    def __scan_time_range_start(self):
+    def __scan_time_range_start(self, company_word_list_string = None):
 # Update the time range of time slice
         # import pdb; pdb.set_trace()
         # company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
         # company_group_set.add_company("1256")
         # company_group_set.add_done()
         # for company_group, company_number_list in company_group_set.items():
-        for company_group, company_number_list in self.whole_company_group_set.items():
+        company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.create_instance_from_string(company_word_list_string) if company_word_list_string is not None else self.whole_company_group_set
+        for company_group, company_number_list in company_group_set.items():
             for company_number in company_number_list:
                 self.__scan_company_time_range_start(company_number, company_group)
 
@@ -223,11 +223,12 @@ class WebScrapyURLTimeRange(object):
         self.company_listing_date_dict = {}
 
 
-    def renew_time_range(self, cleanup_old=True):
+    def renew_time_range(self, company_word_list_string = None, cleanup_old=True):
+        # import pdb; pdb.set_trace()
         if cleanup_old:
             self.__remove_old_time_range_folder()
         self.__create_time_range_folder_if_not_exist()
-        self.__scan_time_range_start()
+        self.__scan_time_range_start(company_word_list_string)
 
 
     def __update_company_time_range(self, company_number, company_group):

@@ -178,38 +178,38 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self.__write_new_csv_time_duration_to_cfg()
 
 
-    def __transform_company_word_list_to_group_set(self, company_word_list):
-        """
-        The argument type:
-        Company code number: 2347
-        Company code number range: 2100-2200
-        Company group number: [Gg]12
-        Company code number/number range hybrid: 2347,2100-2200,2362,g2,1500-1510
-        """
-        self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
-        for company_number in company_word_list:
-            mobj = re.match("([\d]{4})-([\d]{4})", company_number)
-            if mobj is None:
-# Check if data is company code/group number
-                mobj = re.match("[Gg]([\d]{1,})", company_number)
-                if mobj is None:
-# Company code number
-                    if not re.match("([\d]{4})", company_number):
-                        raise ValueError("Unknown company number format: %s" % company_number)
-                    self.company_group_set.add_company(company_number)
-                else:
-# Compgny group number
-                    company_group_number = int(mobj.group(1))
-                    self.company_group_set.add_company_group(company_group_number)
-            else:
-# Company code number Range
-                start_company_number_int = int(mobj.group(1))
-                end_company_number_int = int(mobj.group(2))
-                number_list = []
-                for number in range(start_company_number_int, end_company_number_int + 1):
-                    number_list.append("%04d" % number)
-                self.company_group_set.add_company_word_list(number_list)
-        self.company_group_set.add_done()
+    # def __transform_company_word_list_to_group_set(self, company_word_list_string):
+#         """
+#         The argument type:
+#         Company code number: 2347
+#         Company code number range: 2100-2200
+#         Company group number: [Gg]12
+#         Company code number/number range hybrid: 2347,2100-2200,2362,g2,1500-1510
+#         """
+#         self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
+#         for company_number in company_word_list:
+#             mobj = re.match("([\d]{4})-([\d]{4})", company_number)
+#             if mobj is None:
+# # Check if data is company code/group number
+#                 mobj = re.match("[Gg]([\d]{1,})", company_number)
+#                 if mobj is None:
+# # Company code number
+#                     if not re.match("([\d]{4})", company_number):
+#                         raise ValueError("Unknown company number format: %s" % company_number)
+#                     self.company_group_set.add_company(company_number)
+#                 else:
+# # Compgny group number
+#                     company_group_number = int(mobj.group(1))
+#                     self.company_group_set.add_company_group(company_group_number)
+#             else:
+# # Company code number Range
+#                 start_company_number_int = int(mobj.group(1))
+#                 end_company_number_int = int(mobj.group(2))
+#                 number_list = []
+#                 for number in range(start_company_number_int, end_company_number_int + 1):
+#                     number_list.append("%04d" % number)
+#                 self.company_group_set.add_company_word_list(number_list)
+#         self.company_group_set.add_done()
 
 
     def set_company_from_file(self, filename):
@@ -217,9 +217,10 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         self.set_company(company_word_list)
 
 
-    def set_company(self, company_word_list=None):
-        if company_word_list is not None:
-            self.__transform_company_word_list_to_group_set(company_word_list)
+    def set_company(self, company_word_list_string=None):
+        if company_word_list_string is not None:
+            self.company_group_set = CompanyGroupSet.create_instance_from_string(company_word_list_string)
+            # self.__transform_company_word_list_to_group_set(company_word_list)
         else:
             self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
 

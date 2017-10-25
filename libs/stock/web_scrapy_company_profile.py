@@ -34,6 +34,9 @@ COMPANY_GROUP_EXCEPTION_DICT = {
     COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT: "ETF",
     COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT: "TDR",
 }
+ETF_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
+TDR_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
+ETF_AND_TDR_COMPANY_CODE_NUMBER_PATTERN = "%s|%s" % (ETF_COMPANY_CODE_NUMBER_PATTERN, TDR_COMPANY_CODE_NUMBER_PATTERN)
 
 COMPANY_GROUP_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT = 0
 COMPANY_GROUP_INDUSTRY = 1
@@ -65,9 +68,6 @@ class WebScrapyCompanyProfile(object):
         self.update_from_web = False
         self.__company_group_size = 0
         self.__company_amount = 0
-
-        self.ETF_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
-        self.TDR_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
 
 # A lookup table used when failing to parse company number and name
         self.failed_company_name_lookup = {
@@ -136,7 +136,7 @@ class WebScrapyCompanyProfile(object):
                 self.__write_company_profile_change_list_to_file(None, None, cur_timestamp_str)
 # Write the result into the config file
             self.__write_company_profile_to_file(cur_timestamp_str)
-# Copy the config file to the finance_analyzer/finance_recorder_java project
+# Copy the config file to the finance_analyzer/finance_recorder project
             # self.__copy_company_profile_config_file()
             self.update_from_web = True
 
@@ -214,9 +214,9 @@ class WebScrapyCompanyProfile(object):
         g_logger.debug("Try to Acquire the Company Code Number info from the web......")
         time_start_second = int(time.time())
         g_logger.debug("###### Get the Code Number of the Stock Exchange Company ######")
-        self.__scrap_company_profile_from_web(CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE)
+        self.__scrape_company_profile_from_web(CMN.DEF.MARKET_TYPE_STOCK_EXCHANGE)
         g_logger.debug("###### Get the Code Number of the Over-the-Counter Company ######")
-        self.__scrap_company_profile_from_web(CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER)
+        self.__scrape_company_profile_from_web(CMN.DEF.MARKET_TYPE_OVER_THE_COUNTER)
         self.__company_group_size = len(self.company_group_num2name_list)
         self.__company_amount = len(self.company_profile_list)
         self.__generate_company_group_profile_list()
@@ -272,7 +272,7 @@ class WebScrapyCompanyProfile(object):
         return (is_company_change, old_lost_list, new_added_list)
 
 
-    def __scrap_company_profile_from_web(self, market_type):
+    def __scrape_company_profile_from_web(self, market_type):
         # import pdb; pdb.set_trace()
         def get_company_group_name(company_profile):
             company_group_name = None
@@ -343,6 +343,9 @@ class WebScrapyCompanyProfile(object):
             # if not re.match("^[\d][\d]{2}[\d]$", company_number):
             company_number = mobj.group(1)
             if not re.match(r"^[\d][\d]{2}[\d]$", company_number, re.U):
+                continue
+# Filter ETF
+            if re.match(ETF_AND_TDR_COMPANY_CODE_NUMBER_PATTERN, company_number, re.U):
                 continue
             if failed_case:
                 company_name = self.failed_company_name_lookup.get(company_number, None)

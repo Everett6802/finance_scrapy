@@ -507,8 +507,7 @@ def setup_param():
         else:
             company_word_list = None
             if param_cfg["company"] is not None:
-                company_word_list = param_cfg["company"].split(",")
-            g_mgr.set_company(company_word_list)
+                g_mgr.set_company(param_cfg["company"])
 
     g_mgr.enable_old_finance_folder_reservation(param_cfg["reserve_old"])
     g_mgr.enable_dry_run(param_cfg["dry_run"])
@@ -551,7 +550,7 @@ def record_exe_time(action):
 
 
 @record_exe_time("SCRAPE")
-def do_scrap():
+def do_scrapy():
     show_info("* Scrape the data from the website......")
     g_mgr.do_scrapy()
     show_info("* Scrape the data from the website...... DONE!!!")
@@ -631,10 +630,10 @@ if __name__ == "__main__":
     #     CMN.WSL.reset_web_scrapy_logger_content()
 # Try to scrap the web data
     if not param_cfg["no_scrapy"]:
-        do_scrap()
+        do_scrapy()
 # Clone the csv files if necessary
     if param_cfg["clone"]:
         if not g_mgr.NoScrapyCSVFound:
             do_clone()
         else:
-            show_error("Find errors while scarping... Stop the Clone action")
+            show_error("Find errors while scraping... Stop the Clone action")

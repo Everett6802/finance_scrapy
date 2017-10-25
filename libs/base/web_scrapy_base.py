@@ -451,7 +451,7 @@ class WebScrapyBase(object):
                 else:
                     scrapy_success = True
             if not scrapy_success:
-                raise CMN.EXCEPTION.WebScrapyServerBusyException("Fail to scrap URL[%s] after retry for %d times" % (url, RETRY_TIMES))
+                raise CMN.EXCEPTION.WebScrapyServerBusyException("Fail to scrape URL[%s] after retry for %d times" % (url, RETRY_TIMES))
         except Exception as e:
             # import pdb;pdb.set_trace()
             if isinstance(e.message, str):

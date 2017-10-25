@@ -631,8 +631,7 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
                     else: # Floating point
                         table_field_list[data_index].append(float(field_value))
                 except:
-                    import pdb; pdb.set_trace()
-                    print "fuck"
+                    raise CMN.EXCEPTION.WebScrapyIncorrectFormatException("Unknown data type: %s" % field_value)
 # Check if there is not any statement data.......
         data_is_empty = True
         for index in range(self.TABLE_FIELD_INTEREST_TITLE_LIST_LEN):

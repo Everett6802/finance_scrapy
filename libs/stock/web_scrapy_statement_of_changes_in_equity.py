@@ -8,6 +8,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
+import web_scrapy_company_group_set as CompanyGroupSet
 import web_scrapy_statement_base as WebScrapyStatementBase
 g_logger = CMN.WSL.get_web_scrapy_logger()
 # g_lock =  threading.Lock()
@@ -91,6 +92,7 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStatementBase.WebScrapyStatem
     #     u"非控制權益".encode(CMN.DEF.URL_ENCODING_UTF8),
     #     # u"權益總額".encode(CMN.DEF.URL_ENCODING_UTF8),
     # ]
+    URL_SPECIAL_FORMAT = None
     TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST = None
     # TABLE_COLUMN_FIELD_NOT_INTEREST_TITLE_LIST_LEN = None
     TABLE_COLUMN_FIELD_INTEREST_TITLE_LIST_LEN = None
@@ -102,12 +104,49 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStatementBase.WebScrapyStatem
     TABLE_FIELD_END_INDEX = None # 13
     TABLE_COLUMN_FIELD_TITLE_INDEX = TABLE_FIELD_START_INDEX - 1
     TABLE_COLUMN_FIELD_EXIST = True
+    # NEED_URL_SPECIAL_FORMAT_LIST = ["5871", "2841", "2801", "2809", "2812", "2816", "2820", "2823", "2832", "2834", "2836", "2838",]
+    # import pdb; pdb.set_trace()
+    NEED_URL_SPECIAL_FORMAT_LIST = ["5871", "2841", "g27",]
+    for elem in NEED_URL_SPECIAL_FORMAT_LIST:
+        if re.match("[Gg]\d{2}", elem):
+            NEED_URL_SPECIAL_FORMAT_LIST += CompanyGroupSet.WebScrapyCompanyGroupSet.get_company_in_group_number_list(int(elem[1:]))
+    # import pdb; pdb.set_trace()
+    NEED_SPECIAL_WEB_TABLE_DATA_LIST = ["9929",]
+    WEB_TABLE_DATA_LEN = 3
+    WEB_TABLE_DATA_INDEX = 1
+    SPECIAL_WEB_TABLE_DATA_LEN = 4
+    SPECIAL_WEB_TABLE_DATA_INDEX = 2
+
+
+    @classmethod
+    def assemble_web_url(cls, timeslice, company_code_number, *args):
+        # import pdb; pdb.set_trace()
+# CAUTION: This function MUST be called by the LEAF derived class
+        if company_code_number in cls.NEED_URL_SPECIAL_FORMAT_LIST:
+            url = cls.URL_SPECIAL_FORMAT.format(
+                *(
+                    company_code_number,
+                    timeslice.year - 1911, 
+                    "%02d" % timeslice.quarter,
+                )
+            )
+        else:
+            url = cls.URL_FORMAT.format(
+                *(
+                    company_code_number,
+                    timeslice.year - 1911, 
+                    "%02d" % timeslice.quarter,
+                )
+            )
+        return url
 
 
     @classmethod
     def init_class_customized_variables(cls):
         # import pdb; pdb.set_trace()
 # CAUTION: This function MUST be called by the LEAF derived class
+        if cls.URL_SPECIAL_FORMAT is None:
+            cls.URL_SPECIAL_FORMAT = cls.CLASS_CONSTANT_CFG["url_special_format"]
         if cls.TABLE_FIELD_INTEREST_TITLE_LIST is None:
             cls._init_statement_field_class_variables(CMN.DEF.STATEMENT_OF_CHANGES_IN_EQUITY_FIELD_NAME_CONF_FILENAME)
 
@@ -131,14 +170,16 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStatementBase.WebScrapyStatem
         # import pdb; pdb.set_trace()
         url_data.encoding = url_parsing_cfg["url_encoding"]
         soup = BeautifulSoup(url_data.text)
-        table_list = soup.select('table')
-        if len(table_list) != 3:
-            if re.search(r"查無資料", soup.text.encode(CMN.DEF.URL_ENCODING_UTF8), re.U):
-                return None
-            else:
-                raise CMN.EXCEPTION.WebScrapyServerBusyException("The len of the table_list should be 3, not %d. Server is probably busy, need retry" % len(table_list))
+        table_list = soup.select(url_parsing_cfg["url_data_selector"])
+        table_list_len = len(table_list)
+        if table_list_len == cls.WEB_TABLE_DATA_LEN:
+            return table_list[cls.WEB_TABLE_DATA_INDEX].select('tr')
+        elif table_list_len == cls.SPECIAL_WEB_TABLE_DATA_LEN:
+            return table_list[cls.SPECIAL_WEB_TABLE_DATA_INDEX].select('tr')
+        elif re.search(r"查無資料", soup.text.encode(CMN.DEF.URL_ENCODING_UTF8), re.U):
+            return None
+        raise CMN.EXCEPTION.WebScrapyServerBusyException("The len of the table_list should be 3, not %d. Server is probably busy, need retry" % len(table_list))
             # raise ValueError("The len of the table_list should be 3, not %d" % len(table_list))
-        return table_list[1].select('tr')
 
 
     def _scrape_web_data(self, timeslice, company_code_number):
@@ -163,6 +204,7 @@ class WebScrapyStatementOfChangesInEquity(WebScrapyStatementBase.WebScrapyStatem
     def do_debug(silent_mode=False):
         # import pdb; pdb.set_trace()
         res = CMN.FUNC.request_from_url_and_check_return("http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id=4947&year=105&season=01")
+        # res = CMN.FUNC.request_from_url_and_check_return("http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id=9929&year=102&season=01")
         res.encoding = 'utf-8'
         # print res.text
         soup = BeautifulSoup(res.text)
