@@ -198,6 +198,9 @@ class WebScrapyURLTimeRange(object):
                 if data_exist:
                     break
             if not data_exist:
+                if not web_scrapy_class.check_company_first_data_exist(company_number):
+                    g_logger.warn("The %s:%s first data does NOT EXIST !!!" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index], company_number))
+                    continue
                 raise CMN.EXCEPTION.WebScrapyNotFoundException("Fail to check if the data[%s:%d] exist" % (company_number, scrapy_class_index))
         self.__write_company_time_range_start_to_config(company_time_range_start_ordereddict, company_number, company_group)
         return company_time_range_start_ordereddict

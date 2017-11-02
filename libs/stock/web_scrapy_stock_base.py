@@ -23,6 +23,21 @@ g_logger = CMN.WSL.get_web_scrapy_logger()
 class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
 
     __metaclass__ = ABCMeta
+    company_profile = None
+
+    @classmethod
+    def __get_company_profile(cls):
+        if cls.company_profile is None:
+            cls.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
+        return cls.company_profile
+
+
+    @classmethod
+    def check_company_first_data_exist(cls, company_code_number):
+        first_data_time = cls.__get_company_profile().lookup_company_first_data_date(company_code_number, cls.URL_TIME_UNIT)
+        return True if first_data_time is not None else False
+
+
     def __init__(self, **kwargs):
         super(WebScrapyStockBase, self).__init__(**kwargs)
         # self.is_whole_company_group_set = False
@@ -41,12 +56,6 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         # self.scrapy_company_progress_count = 0
         self.company_profile = None
         self.cur_company_code_number = None # Caution: This value is updated every time when _scrape_web_data() is called
-
-
-    def __get_company_profile(self):
-        if self.company_profile is None:
-            self.company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
-        return self.company_profile
 
 
     def _get_url_time_range(self):

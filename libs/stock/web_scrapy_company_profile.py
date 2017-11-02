@@ -8,8 +8,10 @@ import csv
 import shutil
 import time
 from bs4 import BeautifulSoup
-# from datetime import datetime, timedelta
+from datetime import datetime, timedelta
 import libs.common as CMN
+import libs.base as BASE
+
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -69,6 +71,8 @@ class WebScrapyCompanyProfile(object):
         self.__company_group_size = 0
         self.__company_amount = 0
 
+        self.timeslice_generator = None
+
 # A lookup table used when failing to parse company number and name
         self.failed_company_name_lookup = {
             "8349": u"恒耀",
@@ -92,6 +96,12 @@ class WebScrapyCompanyProfile(object):
     def initialize(self):
         # import pdb; pdb.set_trace()
         self.__update_company_profile(False, False)
+
+
+    def __get_timeslice_generator(self):
+        if self.timeslice_generator is None:
+            self.timeslice_generator = BASE.TSG.WebScrapyTimeSliceGenerator.Instance()
+        return self.timeslice_generator
 
 
     def __cleanup_company_profile_data_structure(self):
@@ -672,3 +682,39 @@ class WebScrapyCompanyProfile(object):
     def lookup_company_group_number(self, company_number):
         COMPANY_PROFILE = self.lookup_company_profile(company_number)
         return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER]
+
+
+    def lookup_company_first_data_date(self, company_number, time_unit):
+        start_date_str = str(self.lookup_company_listing_date(company_number))
+        datetime_now = datetime.today()
+        end_date_str = CMN.FUNC.transform_date_str(datetime_now.year, datetime_now.month, datetime_now.day)
+ 
+        start_time = end_time = None
+        if time_unit == CMN.DEF.DATA_TIME_UNIT_DAY or time_unit == CMN.DEF.DATA_TIME_UNIT_WEEK:
+            start_time = CMN.CLS.FinanceDate(start_date_str)
+            end_time = CMN.CLS.FinanceDate(end_date_str)
+        elif time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+            start_time = CMN.CLS.FinanceMonth.get_finance_month_from_date(start_date_str)
+            end_time = CMN.CLS.FinanceMonth.get_finance_month_from_date(end_date_str)
+        elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+            start_time = CMN.CLS.FinanceQuarter.get_start_finance_quarter_from_date(start_date_str)
+            end_time = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(end_date_str)
+        else:
+            raise CMN.EXCEPTION.WebScrapyUnDefiedCaseException("UnSupported time unit: %d" % time_unit)
+
+        if start_time <= end_time:
+            timeslice_generate_method = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[time_unit]
+            time_slice_generator_cfg = {
+                "company_code_number": company_number, 
+                "time_duration_start": start_time, 
+                "time_duration_end": end_time,
+            }
+                # import pdb; pdb.set_trace()
+# Generate the time slice
+            timeslice_iterable = self.__get_timeslice_generator().generate_time_slice(timeslice_generate_method, **time_slice_generator_cfg)
+            count = 0
+            for timeslice in timeslice_iterable:
+                if count == 1:
+                    return timeslice
+                count += 1
+        return None

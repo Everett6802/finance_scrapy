@@ -581,7 +581,45 @@ def do_clone():
     subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
 
 
+# def calculate_profit(total_count):
+#     import random
+#     filename = "profit"
+#     money = 100
+#     win_count = 0
+#     loss_count = 0
+#     with open(filename, "w") as fp:
+#         for index in range(1, total_count + 1):
+#             dice_index = random.randint(1, 6)
+#             money_old = money
+#             if dice_index % 2 == 1:
+#                 loss_count += 1
+#                 money -= dice_index
+#                 msg = "%03d %03d * - - %03d" % (index, money_old, money)
+#                 print msg
+#                 fp.write(msg + "\n")
+#             else:
+#                 win_count += 1
+#                 dice_index = random.randint(1, 6)
+#                 money += dice_index
+#                 msg = "%03d %03d - * %d %03d" % (index, money_old, dice_index, money)
+#                 print msg
+#                 fp.write(msg + "\n")
+#         msg = "Total: %d, Win: %d, Loss: %d" % (total_count, win_count, loss_count)
+#         print msg
+#         fp.write(msg + "\n")
+
+
+from libs.stock import web_scrapy_company_profile as CompanyProfile
+
 if __name__ == "__main__":
+    # calculate_profit(262)
+    company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
+    import pdb; pdb.set_trace()
+    # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_DAY)
+    # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_WEEK)
+    # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_MONTH)
+    print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_QUARTER)
+    sys.exit(0)
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
