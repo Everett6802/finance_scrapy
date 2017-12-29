@@ -1,3 +1,4 @@
+import re
 import time
 import threading
 from datetime import datetime, timedelta
@@ -46,7 +47,8 @@ class Singleton:
                 try:
                     return self._instance
                 except AttributeError:
-                    self._instance = self._decorated()
+                    # import pdb; pdb.set_trace()
+                    self._instance = self._decorated() # Call __init__() of the class
                     if hasattr(self._instance, "initialize"):
                         if cfg is None:
                             self._instance.initialize()

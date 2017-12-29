@@ -11,11 +11,11 @@ import common_function as CMN_FUNC
 # g_logger = WSL.get_web_scrapy_logger()
 
 
-FINANCE_ANALYSIS_UNKNOWN = -1
-FINANCE_ANALYSIS_MARKET = 0
-FINANCE_ANALYSIS_STOCK = 1
+FINANCE_MODE_UNKNOWN = -1
+FINANCE_MODE_MARKET = 0
+FINANCE_MODE_STOCK = 1
 
-FINANCE_MODE = FINANCE_ANALYSIS_UNKNOWN
+FINANCE_MODE = FINANCE_MODE_UNKNOWN
 IS_FINANCE_MARKET_MODE = False
 IS_FINANCE_STOCK_MODE = True
 
@@ -109,9 +109,11 @@ TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER = "88
 # Config filename
 # SCRAPY_BEGIN_DATE_STR = START_DATE_STR
 # MARKET_LAST_CONFIG_FILENAME = "def_market_last.conf"
-MARKET_ALL_TIME_RANGE_CONFIG_FILENAME = "def_market_all_time_range.conf"
+# MARKET_ALL_TIME_RANGE_CONFIG_FILENAME = "def_market_all_time_range.conf"
 # STOCK_LAST_CONFIG_FILENAME = "def_stock_last.conf"
-STOCK_ALL_TIME_RANGE_CONFIG_FILENAME = "def_stock_all_time_range.conf"
+# STOCK_ALL_TIME_RANGE_CONFIG_FILENAME = "def_stock_all_time_range.conf"
+FINANCE_MODE_SWITCH_CONF_FILENAME = "finance_mode_switch.conf"
+FINANCE_SCRAPY_CONF_FILENAME = "finance_scrapy.conf"
 WORKDAY_CANLENDAR_CONF_FILENAME = ".workday_canlendar.conf"
 COMPANY_PROFILE_CONF_FILENAME = ".company_profile.conf"
 COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME = ".company_profile_change_list.conf"
@@ -130,8 +132,8 @@ BALANCE_SHEET_INTEREST_FIELD_METADATA_FILENAME = "balance_sheet_interest_field_m
 INCOME_STATEMENT_INTEREST_FIELD_METADATA_FILENAME = "income_statement_interest_field_metadata"
 CASH_FLOW_STATEMENT_INTEREST_FIELD_METADATA_FILENAME = "cash_flow_statement_interest_field_metadata"
 STATEMENT_OF_CHANGES_IN_EQUITY_INTEREST_FIELD_METADATA_FILENAME = "statement_of_changes_in_equity_interest_field_metadata"
-FINANCE_ANALYSIS_CONF_FILENAME = ".finance_analysis.conf"
-MARKET_STOCK_SWITCH_CONF_FILENAME = "market_stock_switch.conf"
+FINANCE_MODE_CONF_FILENAME = ".finance_analysis.conf"
+# MARKET_STOCK_SWITCH_CONF_FILENAME = "market_stock_switch.conf"
 CSV_DATA_TIME_DURATION_FILENAME = ".csv_time_range.conf"
 COMMAND_EXAMPLE_FILENAME = "command_example"
 # Constants

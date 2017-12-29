@@ -12,21 +12,29 @@ import libs.common as CMN
 import libs.base as BASE
 import web_scrapy_company_profile as CompanyProfile
 import web_scrapy_company_group_set as CompanyGroupSet
+import web_scrapy_stock_configurer as Configurer
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
 SHOW_STATMENT_FIELD_DIMENSION = True
 
-class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
+class WebScrapyStockMgr(BASE.MGR_BASE.WebScrapyMgrBase):
 
+    finance_mode = CMN.DEF.FINANCE_MODE_STOCK
     company_profile = None
 
     def __init__(self, **cfg):
-        super(WebSracpyStockMgr, self).__init__(**cfg)
+        super(WebScrapyStockMgr, self).__init__(**cfg)
         self.is_whole_company_group_set = False
         self.company_group_set = None
         self.source_type_csv_time_duration_dict = None
         self.market_type_company_group_set_dict = None
+
+
+    def _get_configurer(self):
+        if self.configurer is None:
+            self.configurer = Configurer.WebScrapyStockConfigurer.Instance()
+        return self.configurer
 
 
     def __get_market_type_company_group_set(self, market_type=CMN.DEF.MARKET_TYPE_NONE):
@@ -213,20 +221,21 @@ class WebSracpyStockMgr(BASE.MGR_BASE.WebSracpyMgrBase):
 
 
     def set_company_from_file(self, filename):
-        company_word_list = CMN.FUNC.read_company_config_file(filename)
-        self.set_company(company_word_list)
+        # company_word_list = CMN.FUNC.read_company_config_file(filename)
+        # self.set_company(company_word_list)
+        self.set_company(self._get_configurer().Company)
 
 
     def set_company(self, company_word_list_string=None):
         if company_word_list_string is not None:
-            self.company_group_set = CompanyGroupSet.create_instance_from_string(company_word_list_string)
+            self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.create_instance_from_string(company_word_list_string)
             # self.__transform_company_word_list_to_group_set(company_word_list)
         else:
             self.company_group_set = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_group_set()
 
 
     # def initialize(**kwargs):
-    #     super(WebSracpyStockMgr, self).initialize(**kwargs)
+    #     super(WebScrapyStockMgr, self).initialize(**kwargs)
     #     if kwargs.get("company_word_list", None) is not None:
     #         company_group_set = WebScrapyCompanyGroupSet()
     #         for company_number in kwargs["company_word_list"]:

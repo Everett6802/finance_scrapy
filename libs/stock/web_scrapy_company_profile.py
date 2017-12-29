@@ -38,7 +38,8 @@ COMPANY_GROUP_EXCEPTION_DICT = {
 }
 ETF_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_ETF_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
 TDR_COMPANY_CODE_NUMBER_PATTERN = r"%s[\d]{2}" % COMPANY_GROUP_TDR_BY_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT
-ETF_AND_TDR_COMPANY_CODE_NUMBER_PATTERN = "%s|%s" % (ETF_COMPANY_CODE_NUMBER_PATTERN, TDR_COMPANY_CODE_NUMBER_PATTERN)
+# FILTERED_COMPANY_CODE_NUMBER_PATTERN = "%s|%s" % (ETF_COMPANY_CODE_NUMBER_PATTERN, TDR_COMPANY_CODE_NUMBER_PATTERN)
+FILTERED_COMPANY_CODE_NUMBER_PATTERN = "|".join([TDR_COMPANY_CODE_NUMBER_PATTERN,])
 
 COMPANY_GROUP_COMPANY_CODE_NUMBER_FIRST_TWO_DIGIT = 0
 COMPANY_GROUP_INDUSTRY = 1
@@ -342,8 +343,8 @@ class WebScrapyCompanyProfile(object):
             company_number = mobj.group(1)
             if not re.match(r"^[\d][\d]{2}[\d]$", company_number, re.U):
                 continue
-# Filter ETF/TDR
-            if re.match(ETF_AND_TDR_COMPANY_CODE_NUMBER_PATTERN, company_number, re.U):
+# Filter TDR
+            if re.match(FILTERED_COMPANY_CODE_NUMBER_PATTERN, company_number, re.U):
                 continue
             if failed_case:
                 company_name = self.failed_company_name_lookup.get(company_number, None)
@@ -644,16 +645,15 @@ class WebScrapyCompanyProfile(object):
         return self.company_group_num2name_list[index];
 
 
-    def lookup_company_profile(self, company_number):
+    def lookup_company_profile(self, company_number, disable_exception=False):
+        # import pdb; pdb.set_trace()
         company_number_unicode = CMN.FUNC.to_unicode(company_number, self.UNICODE_ENCODING_IN_FILE)
         company_profile = self.company_profile_dict.get(company_number_unicode, None)
         if company_profile is None:
-            raise ValueError("Fail to find the company profile of company number: %s" % company_number)
+            # import pdb; pdb.set_trace()
+            if not disable_exception:
+                raise ValueError("Fail to find the company profile of company number: %s" % company_number)
         return company_profile
-
-
-    def is_company_exist(self, company_number):
-        return True if self.lookup_company_profile(company_number) is not None else False
 
 
     def lookup_company_listing_date(self, company_number):
@@ -718,3 +718,12 @@ class WebScrapyCompanyProfile(object):
                     return timeslice
                 count += 1
         return None
+
+
+    def is_company_exist(self, company_number):
+        return True if self.lookup_company_profile(company_number, True) is not None else False
+
+
+    def is_company_etf(self, company_number):
+        assert self.is_company_exist(company_number), "The company number[%s] does NOT exist" % company_number
+        return True if (re.match(ETF_COMPANY_CODE_NUMBER_PATTERN, company_number, re.U) is not None) else False

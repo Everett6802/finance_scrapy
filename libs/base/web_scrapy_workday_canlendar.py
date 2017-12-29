@@ -36,7 +36,7 @@ class WebScrapyWorkdayCanlendar(object):
         self.date_start = CMN.CLS.FinanceDate(CMN.DEF.WORKDAY_CANLENDAR_START_DATE_STR) if date_start is None else date_start 
         self.date_end = CMN.CLS.FinanceDate.get_last_finance_date()
         # self.date_end = CMN.FUNC.get_last_url_data_date(self.TODAY_WORKDAY_DATA_EXIST_HOUR, self.TODAY_WORKDAY_DATA_EXIST_MINUTE)
-# The start/end time of scrapying data from the web
+# The start/end time of scraping data from the web
         self.date_start_from_web = self.date_start
         self.date_end_from_web = self.date_end
 # The first/last workday
@@ -116,9 +116,9 @@ class WebScrapyWorkdayCanlendar(object):
                         g_logger.debug("Original Date Range in Workday Canlendar config file: %s, %s" % (mobj.group(1), mobj.group(2)))
                         if date_start_from_file > self.date_start:
                             raise RuntimeError("Incorrect start date; File: %s, Expected: %s", date_start_from_file.to_string(), self.date_start.to_string())
-# Check the time range in the file and adjust the range of scrapying data from the web
+# Check the time range in the file and adjust the range of scraping data from the web
                         if date_end_from_file >= self.date_end:
-                            g_logger.debug("The last data has already existed in the file. It's no need to scrap data from the web")
+                            g_logger.debug("The last data has already existed in the file. It's no need to scrape data from the web")
                             need_update_from_web = False
                         else:
                             self.date_start_from_web = date_end_from_file + 1
@@ -187,7 +187,7 @@ class WebScrapyWorkdayCanlendar(object):
 
 
     def __update_workday_from_web_by_month(self, year, month, start_day=None, end_day=None):
-# Check if scrapying the whole month data
+# Check if scraping the whole month data
         # import pdb; pdb.set_trace()
         whole_month_data = False
 #***************************************************

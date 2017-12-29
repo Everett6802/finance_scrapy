@@ -72,6 +72,7 @@ def deprecated(reason):
     else:
         raise TypeError(repr(type(reason)))
 
+
 def try_print(msg):
     if CMN_DEF.CAN_PRINT_CONSOLE: 
         print msg
@@ -220,8 +221,19 @@ def get_scrapy_class_index_from_description(scrapy_class_description, ignore_exc
     except ValueError as e:
         if not ignore_exception:
             raise e
-        g_logger.warn("Unknown source type description: %s", scrapy_class_description);
+        g_logger.warn("Unknown source class description: %s", scrapy_class_description);
     return scrapy_class_index
+
+
+def get_method_index_from_description(method_description, ignore_exception=False):
+    method_index = -1
+    try:
+        method_index = CMN_DEF.SCRAPY_METHOD_DESCRIPTION.index(method_description)
+    except ValueError as e:
+        if not ignore_exception:
+            raise e
+        g_logger.warn("Unknown method description: %s", method_description);
+    return method_index
 
 
 def get_scrapy_class_index_list_from_method_description(method_description):
@@ -431,41 +443,41 @@ def get_config_filepath(conf_filename, conf_folderpath=None):
     return conf_filepath
 
 
-def get_finance_analysis_mode():
-    conf_line_list = read_config_file_lines(CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
-    if len(conf_line_list) != 1:
-        raise ValueError("Incorrect setting in %s" % CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
-    mode = int(conf_line_list[0])
-    if mode not in [CMN_DEF.FINANCE_ANALYSIS_MARKET, CMN_DEF.FINANCE_ANALYSIS_STOCK]:
-        raise ValueError("Unknown finance analysis mode: %d" % mode)
-    return mode
-    # conf_filepath = get_config_filepath(CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
-    # try:
-    #     with open(conf_filepath, 'r') as fp:
-    #         for line in fp:
-    #             mode = int(line)
-    #             if mode not in [CMN_DEF.FINANCE_ANALYSIS_MARKET, CMN_DEF.FINANCE_ANALYSIS_STOCK]:
-    #                 raise ValueError("Unknown finance analysis mode: %d" % mode)
-    #             return mode
-    # except Exception as e:
-    #     g_logger.error("Error occur while parsing config file[%s], due to %s" % (CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME, str(e)))
-    #     raise e
+# def get_finance_analysis_mode():
+#     conf_line_list = read_config_file_lines(CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
+#     if len(conf_line_list) != 1:
+#         raise ValueError("Incorrect setting in %s" % CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
+#     mode = int(conf_line_list[0])
+#     if mode not in [CMN_DEF.FINANCE_MODE_MARKET, CMN_DEF.FINANCE_MODE_STOCK]:
+#         raise ValueError("Unknown finance analysis mode: %d" % mode)
+#     return mode
+#     # conf_filepath = get_config_filepath(CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME)
+#     # try:
+#     #     with open(conf_filepath, 'r') as fp:
+#     #         for line in fp:
+#     #             mode = int(line)
+#     #             if mode not in [CMN_DEF.FINANCE_MODE_MARKET, CMN_DEF.FINANCE_MODE_STOCK]:
+#     #                 raise ValueError("Unknown finance analysis mode: %d" % mode)
+#     #             return mode
+#     # except Exception as e:
+#     #     g_logger.error("Error occur while parsing config file[%s], due to %s" % (CMN_DEF.MARKET_STOCK_SWITCH_CONF_FILENAME, str(e)))
+#     #     raise e
 
 
 # def is_market_mode():
-#     if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
+#     if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_MODE_UNKNOWN:
 #         CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
-#     return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_MARKET
+#     return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_MODE_MARKET
 # def is_stock_mode():
-#     if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
+#     if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_MODE_UNKNOWN:
 #         CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
-#     return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_STOCK
+#     return CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_MODE_STOCK
 
 
-def get_finance_mode_description():
-    if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_ANALYSIS_UNKNOWN:
-        CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
-    return CMN_DEF.FINANCE_MODE_DESCRIPTION[CMN_DEF.FINANCE_MODE]
+# def get_finance_mode_description():
+#     if CMN_DEF.FINANCE_MODE == CMN_DEF.FINANCE_MODE_UNKNOWN:
+#         CMN_DEF.FINANCE_MODE = get_finance_analysis_mode()
+#     return CMN_DEF.FINANCE_MODE_DESCRIPTION[CMN_DEF.FINANCE_MODE]
 
 
 def read_file_lines_ex(filepath, file_read_attribute):
@@ -591,6 +603,23 @@ def unicode_write_config_file_lines(conf_line_list, conf_filename, conf_folderpa
 #                 CMN_CLS.ScrapyClassTimeDurationTuple(scrapy_class_index, time_duration_type, time_duration_start, time_duration_end)
 #             )
 #     return source_type_time_duration_config_list
+
+
+def get_finance_mode():
+    line_list = read_config_file_lines(CMN_DEF.FINANCE_MODE_SWITCH_CONF_FILENAME)
+    assert len(line_list) > 0, "The line number should NOT be 0"
+    finance_mode = None
+    line = line_list[0]
+    try:
+        finance_mode = int(line)
+    except:
+        raise CMN_EXCEPTION.WebScrapyIncorrectFormatException("Incorrect finance mode format in config: %s" % line)
+    try:
+        if finance_mode not in [CMN_DEF.FINANCE_MODE_MARKET, CMN_DEF.FINANCE_MODE_STOCK,]:
+            raise Exception()
+    except:
+        raise CMN_EXCEPTION.WebScrapyIncorrectFormatException("Incorrect finance mode value in config: %s" % line)
+    return finance_mode
 
 
 def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as_list=False):
@@ -925,7 +954,6 @@ def get_time_range_overlap_case(new_finance_time_start, new_finance_time_end, or
     raise CMN_EXCEPTION.WebScrapyUnDefiedCaseException("Un-Defined case !!!")
 
 
-
 def is_time_range_overlap(finance_time1_start, finance_time1_end, finance_time2_start, finance_time2_end):
     check_overlap1 = True
     if finance_time1_start is not None and finance_time2_end is not None:
@@ -966,3 +994,17 @@ def get_data_not_whole_month_list(date_duration_start, date_duration_end):
         if date_duration_end.day < get_month_last_day(date_duration_end.year, date_duration_end.month):
             data_not_whole_month_list.append(CMN_CLS.FinanceMonth(date_duration_end.year, date_duration_end.month))
     return data_not_whole_month_list
+
+
+def parse_time_duration_range_str_to_object(time_duration_range_list_str):
+    time_duration_range_list = time_duration_range_list_str.split(",")
+    time_duration_range_list_len = len(time_duration_range_list)
+    time_range_start = time_range_end = None
+    if time_duration_range_list_len == 2:
+        if not time_duration_range_list_str.startswith(","):
+# For time range
+            time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
+        time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(time_duration_range_list[1])
+    elif time_duration_range_list_len == 1:
+        time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
+    return (time_range_start, time_range_end)

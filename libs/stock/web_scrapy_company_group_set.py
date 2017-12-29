@@ -106,7 +106,7 @@ class WebScrapyCompanyGroupSet(object):
             for entry in cls.__get_company_profile().group_iterator(company_group_index):
                 company_code_number = entry[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]
                 if market_type != CMN.DEF.MARKET_TYPE_NONE:
-                    if not self.check_company_market_type(company_code_number, market_type):
+                    if not cls.check_company_market_type(company_code_number, market_type):
                     # if self.__get_company_profile().lookup_company_market_type_index(company_code_number) != market_type:
                         continue
                 company_number_list.append(company_code_number)

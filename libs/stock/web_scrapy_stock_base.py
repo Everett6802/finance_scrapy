@@ -156,12 +156,20 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
         self.progress_amount = self.company_group_set.CompanyAmount
 
 
+    def _need_filter_scrape_company(self, company_code_number):
+        pass
+
+
     def scrape_web_to_csv(self):
         # import pdb; pdb.set_trace()
         self._calculate_progress_amount()
         self.new_csv_time_duration_dict = {}
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
+#  Filter the company which should NOT be scraped in certain a scrapy class
+                if self._need_filter_scrape_company(company_code_number):
+                    g_logger.debug("[%s:%s] is filtered......" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number))
+                    continue
                 # import pdb; pdb.set_trace()
 # We assume the market type of all the companies in the Company Group Set are correct before trasverse
                 # if self.COMPANY_MARKET_TYPE != CMN.DEF.MARKET_TYPE_NONE and (not self.is_whole_company_group_set):
@@ -171,20 +179,20 @@ class WebScrapyStockBase(BASE.BASE.WebScrapyBase):
                 time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SCRAPY_CLASS_INDEX, company_code_number)
                 if time_duration_after_lookup_time is None:
                     self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SCRAPY_CLASS_INDEX, company_code_number)
-                    g_logger.debug("[%s:%s] %s => The searching time range is NOT in the time range of web data !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
+                    g_logger.debug("[%s:%s] %s => The searching time range is NOT in the time range of web data !!!" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
                     continue
 # Limit the searching time range from the local CSV data
                 web2csv_time_duration_update_tuple = self._adjust_time_range_from_csv(time_duration_after_lookup_time, company_code_number)
                 if web2csv_time_duration_update_tuple is None:
                     self.csv_file_no_scrapy_record.add_csv_file_already_exist_record(self.SCRAPY_CLASS_INDEX, company_code_number)
-                    g_logger.debug("[%s:%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX].time_duration_end))
+                    g_logger.debug("[%s:%s] %s %s:%s => The CSV data already cover this time range !!!" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX].time_duration_start, self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX].time_duration_end))
                     continue
 # Create a folder for a specific company
                 csv_company_folderpath = self.assemble_csv_company_folderpath(company_code_number, company_group_number)
                 CMN.FUNC.create_folder_if_not_exist(csv_company_folderpath)
 # Find the file path for writing data into csv
                 csv_filepath = self.assemble_csv_filepath(self.SCRAPY_CLASS_INDEX, company_code_number, company_group_number)
-                scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.new_csv_extension_time_duration.time_duration_start, self.new_csv_extension_time_duration.time_duration_end, csv_filepath)
+                scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.new_csv_extension_time_duration.time_duration_start, self.new_csv_extension_time_duration.time_duration_end, csv_filepath)
                 g_logger.debug(scrapy_msg)
 # Check if only dry-run
                 if self.xcfg["dry_run_only"]:

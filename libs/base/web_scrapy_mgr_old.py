@@ -10,7 +10,7 @@ import libs.base as BASE
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-class WebSracpyMgr(object):
+class WebScrapyMgr(object):
 
     def __init__(self):
         self.MAX_CONCURRENT_THREAD_AMOUNT = 8

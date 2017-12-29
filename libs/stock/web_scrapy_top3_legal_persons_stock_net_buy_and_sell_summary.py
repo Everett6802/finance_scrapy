@@ -7,6 +7,7 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 import libs.common as CMN
 import web_scrapy_stock_base as WebScrapyStockBase
+import web_scrapy_company_group_set as CompanyGroupSet
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
@@ -27,7 +28,8 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
 
 
     def _scrape_web_data(self, timeslice, company_code_number):
-        url = self.assemble_web_url(timeslice, company_code_number)
+# CAUTION: company_code_number is dummy
+        url = self.assemble_web_url(timeslice, None)
         web_data = self.try_get_web_data(url)
         return web_data
 
@@ -43,19 +45,19 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
 # Company code number
             element_list.append(company_number)
 # 外資
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[2])))
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[3])))
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[4])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[2])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[3])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[4])))
 # 投信
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[5])))
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[6])))
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[7])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[5])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[6])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[7])))
 # 自營商
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[9]) + CMN.FUNC.transform_share_number_string_to_board_lot(data[12])))
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[10]) + CMN.FUNC.transform_share_number_string_to_board_lot(data[13])))
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[11]) + CMN.FUNC.transform_share_number_string_to_board_lot(data[14])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[9]) + CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[12])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[10]) + CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[13])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[11]) + CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[14])))
 # 三大法人
-            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data[15])))
+            element_list.append(str(CMN.FUNC.transform_share_number_string_to_board_lot(data_entry[15])))
 # Add the entry
             data_list.append(element_list)
         return data_list
@@ -73,9 +75,10 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
 
 
     def __write_each_company_to_csv(self, company_code_number, csv_data_list, web2csv_time_duration_update, need_append_old_csv=True):
+        # import pdb; pdb.set_trace()
 # Find the file path for writing data into csv
         csv_filepath = self.assemble_csv_filepath(self.SCRAPY_CLASS_INDEX, company_code_number)
-        scrapy_msg = "[%s:%s] %s %d => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], len(csv_data_list), csv_filepath)
+        scrapy_msg = "[%s:%s] %s %d => %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], len(csv_data_list), csv_filepath)
         g_logger.debug(scrapy_msg)
 # If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
         web2csv_time_duration_update.backup_old_csv_if_necessary(csv_filepath, True)
@@ -86,12 +89,11 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
         self._write_to_csv(csv_filepath, csv_data_list)
 # Merge the CSV files
         if need_append_old_csv:
-            web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath, True)
+            web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 
 
     def __update_each_company_csv_data(self, finance_date, all_company_csv_data_list):
-        for all_company_csv_data_entry in all_company_csv_data_list:
-            company_code_number = all_company_csv_data_entry[self.WEB_DATA_ENTRY_COMPANY_CODE_NUMBER]
+        # import pdb; pdb.set_trace()
         for all_company_csv_data_entry in all_company_csv_data_list:
             company_code_number = all_company_csv_data_entry[self.WEB_DATA_ENTRY_COMPANY_CODE_NUMBER]
 # Find the csv time range in the initail update
@@ -151,6 +153,42 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
         self.progress_amount = self._get_timeslice_iterable_len(**kwargs)
 
 
+    def _adjust_time_range_from_web(self, *args):
+        time_duration_start = None
+        time_duration_end = None
+        if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
+            time_duration_start = time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, CMN.CLS.FinanceDate.get_today_finance_date())
+        elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
+            time_duration_start = time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, CMN.CLS.FinanceDate.get_last_finance_date())
+        elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
+            (time_duration_start_from_lookup_table, time_duration_end_from_lookup_table) = self._get_url_time_range().get_time_range(*args)
+            time_start_from_table = False
+            if self.xcfg["time_duration_start"] is None:
+                time_duration_start = time_duration_start_from_lookup_table
+                time_start_from_table = True
+            else:
+                time_duration_start = self.xcfg["time_duration_start"]
+            time_end_from_table = False
+            if self.xcfg["time_duration_end"] is None:
+                time_duration_end = time_duration_end_from_lookup_table
+                time_end_from_table = True
+            else:
+                time_duration_end = self.xcfg["time_duration_end"]
+            need_check_overlap = not (time_start_from_table or time_end_from_table)
+# Check the time duration is in the range of table
+            if need_check_overlap:
+                if not CMN.FUNC.is_time_range_overlap(time_duration_start_from_lookup_table, time_duration_end_from_lookup_table, time_duration_start, time_duration_end):
+                    g_logger.debug("The time range[%s-%s] for searching is Out of Range of the table[%s-%s]" % (time_duration_start, time_duration_end, time_duration_start_from_lookup_table, time_duration_end_from_lookup_table))
+                    return None
+            if (not time_start_from_table) and (time_duration_start < time_duration_start_from_lookup_table):
+                time_duration_start = time_duration_start_from_lookup_table
+            if (not time_end_from_table) and (time_duration_end > time_duration_end_from_lookup_table):
+                time_duration_end = time_duration_end_from_lookup_table
+        else:
+            raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
+        return CMN.CLS.TimeDurationTuple(time_duration_start, time_duration_end)
+
+
     def scrape_web_to_csv(self):
         # import pdb; pdb.set_trace()
 # Create the time slice iterator due to correct time range
@@ -162,10 +200,12 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
             return
         self.company_number_csv_time_range_dict = {}
         self.company_number_csv_data_dict = {}
-        self.company_group_out_of_csv_time_range_set = WebScrapyCompanyGroupSet.CompanyGroupSet()
-        timeslice_generator_cfg = {"time_duration_start": time_duration_after_lookup_time.time_duration_end, "time_duration_end": time_duration_after_lookup_time.time_duration_end,}
+        self.company_group_out_of_csv_time_range_set = CompanyGroupSet.WebScrapyCompanyGroupSet()
+        timeslice_generator_cfg = {"time_duration_start": self.time_duration_after_lookup_time.time_duration_start, "time_duration_end": self.time_duration_after_lookup_time.time_duration_end,}
         timeslice_iterable = self._get_timeslice_iterable(**timeslice_generator_cfg)
         self._calculate_progress_amount(**timeslice_generator_cfg)
+        self.new_csv_time_duration_dict = {}
+        # import pdb; pdb.set_trace()
         for timeslice in timeslice_iterable:
 # Scrape the web data
             web_data = self._scrape_web_data(timeslice, None)
@@ -178,7 +218,7 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummaryBase(WebScrapyStockBase.W
                     raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
                 self.__update_each_company_csv_data(timeslice, csv_data_list)
 # Flush the last data into the list if required
-            self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX, TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
+            self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX, CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
 # Write the last data in the buf
             self.__update_each_company_last_csv_data()
 # Increase the progress count
@@ -259,7 +299,7 @@ class WebScrapyTop3LegalPersonsStockNetBuyOrSellSummary(WebScrapyTop3LegalPerson
         # import pdb; pdb.set_trace()
         # res = requests.get("http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date=105%2F03%2F23&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+")
         # res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/ch/trading/fund/T86/T86.php?input_date=105%2F03%2F23&select2=ALL&sorting=by_stkno&login_btn=+%ACd%B8%DF+")
-        res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/fund/T86?response=json&date=20170804&selectType=ALL")
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.twse.com.tw/fund/T86?response=json&date=20170901&selectType=ALL")
         #print res.text
         res.encoding = 'utf-8'
         g_data = json.loads(res.text)['data']
@@ -362,7 +402,7 @@ class WebScrapyOTCTop3LegalPersonsStockNetBuyOrSellSummary(WebScrapyTop3LegalPer
         # import pdb; pdb.set_trace()
         # res = requests.get("http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d=105/04/01&_=1460104675945")
         # res = CMN.FUNC.request_from_url_and_check_return("http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d=105/04/01&_=1460104675945")
-        res = CMN.FUNC.request_from_url_and_check_return("http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d=106/08/15")
+        res = CMN.FUNC.request_from_url_and_check_return("http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d=106/09/01")
         json_res = json.loads(res.text)
         g_data = json_res['aaData']
         if not silent_mode: 

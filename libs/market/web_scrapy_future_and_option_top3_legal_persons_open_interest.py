@@ -62,6 +62,7 @@ class WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.W
 
     @staticmethod
     def do_debug(silent_mode=False):
+        # import pdb; pdb.set_trace()
         # res = requests.get("http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=10&sday=1&datestart=1979%2F09%2F04")
         res = CMN.FUNC.request_from_url_and_check_return("http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear=2015&smonth=10&sday=1&datestart=1979%2F09%2F04")
         res.encoding = 'utf-8'
@@ -81,6 +82,7 @@ class WebScrapyFutureAndOptionTop3LegalPersonsOpenInterest(WebScrapyMarketBase.W
 # 外資 186,318 98,294 189,514 97,276 -3,196 1,018
         if not silent_mode: print "\n"
 # 未平倉口數與契約金額
+        # g_data = soup.find("table", {"class": "table_c"}).select('tr')
         g_data = soup.select('.table_c tr')
         #print "len: %d" % len(g_data)
         for tr in g_data[3:6]:

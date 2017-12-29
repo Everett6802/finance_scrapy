@@ -278,8 +278,10 @@ class WebScrapyURLTimeRange(object):
         return self.METHOD_END_TIME_CFG[scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START]
 
 
-    def get_time_range(self, scrapy_class_index, company_number, company_group=None):
+    def get_time_range(self, scrapy_class_index, company_number=None, company_group=None):
         # import pdb;pdb.set_trace()
+        if company_number is None:
+            return (self.METHOD_START_SCAN_TIME_CFG[scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START], self.METHOD_END_TIME_CFG[scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START])
         return (self.get_time_range_start(scrapy_class_index, company_number, company_group), self.get_time_range_end(scrapy_class_index))
 
 

@@ -356,6 +356,10 @@ class WebScrapyStatementBase(WebScrapyStockBase.WebScrapyStockBase):
                         self._insert_not_exist_statement_element(dst_statement_column_field_list, company_statement_column_field_list)
 
 
+    def _need_filter_scrape_company(self, company_code_number):
+        return self.__get_company_profile().is_company_etf(company_code_number)
+
+
     def _scrape_web_data_internal(self, timeslice, company_code_number):
         # import pdb; pdb.set_trace()
         self.cur_company_code_number = company_code_number

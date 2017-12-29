@@ -347,7 +347,7 @@ class WebScrapyTimeSliceGenerator(object):
 
 
     def get_time_slice_len(self, time_slice_type, time_duration_start, time_duration_end, **kwargs):
-        timeslice_iterable = self.timeslice_generator.generate_time_slice(time_slice_type, time_duration_start, time_duration_end, **kwargs)
+        timeslice_iterable = self.generate_time_slice(time_slice_type, time_duration_start, time_duration_end, **kwargs)
         time_slice_iterable_len = 0
         for timeslice in timeslice_iterable:
             time_slice_iterable_len += 1

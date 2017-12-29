@@ -13,7 +13,7 @@ import web_scrapy_thread_pool as ThreadPool
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-class WebSracpyMgrBase(object):
+class WebScrapyMgrBase(object):
 
     __metaclass__ = ABCMeta
     def __init__(self, **cfg):
@@ -40,6 +40,8 @@ class WebSracpyMgrBase(object):
         self.web_scrapy_start_datetime = None
         self.csv_file_check_status_record_string_dict = None
         self.csv_file_check_status_record_description_dict = None
+        self.finance_mode = None
+        self.configurer = None
 
 
     def __append_no_scrapy_csv_file(self, web_scrapy_obj):
@@ -136,7 +138,7 @@ class WebSracpyMgrBase(object):
             if CMN.DEF.CAN_PRINT_CONSOLE:
                 print progress_string
             show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=30)
-            show_progress_timer_thread.start_timer(WebSracpyMgrBase.show_scrapy_progress, self)
+            show_progress_timer_thread.start_timer(WebScrapyMgrBase.show_scrapy_progress, self)
         # import pdb; pdb.set_trace()
         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
             try:
@@ -210,25 +212,40 @@ class WebSracpyMgrBase(object):
         g_logger.debug("**************************************************")
 
 
-    def set_method_time_duration_from_file(self, filename, time_duration_type):
+    def set_config_from_file(self):
         # import pdb; pdb.set_trace()
-        conf_line_list = read_config_file_lines(filename)
-        self.scrapy_class_time_duration_list = []
-        for line in conf_line_list:
-            param_list = line.split(' ')
-            param_list_len = len(param_list)
-            class_index_list = CMN.FUNC.get_scrapy_class_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
-            time_duration_start = None
-            if param_list_len >= 2:
-                time_duration_start = CMN.CLS.FinanceTimeBase.from_string(param_list[1])
-            time_duration_end = None
-            if param_list_len >= 3:
-                time_duration_end = CMN.CLS.FinanceTimeBase.from_string(param_list[2])
+        # time_range_str_list = None
+        # if CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_MARKET:
+        #     time_range_str_list = self.configurer.get_config("MarketAllTimeRange")
+        # elif CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_STOCK:
+        #     time_range_str_list = self.configurer.get_config("StockAllTimeRange")
+        # else:
+        #     raise ValueError("Unknown finance mode: %d" % CMN.DEF.FINANCE_MODE)
+        method_index_list = self._get_configurer().Method
+        time_duration_type = self._get_configurer().TimeType
+        method_time_duration_range_dict = self._get_configurer().MethodTimeDurationRangeDict
+        for method_index in method_index_list:
+            if not method_time_duration_range_dict.has_key(method_index):
+                raise ValueError("The time duration of method[%s] is NOT defined in the config" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
+            class_index_list = CMN.FUNC.get_scrapy_class_index_list_from_method_index(method_index)
             for class_index in class_index_list:
                 self.scrapy_class_time_duration_list.append(
-                    CMN_CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, time_duration_start, time_duration_end)
+                    CMN_CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, method_time_duration_range_dict[method_index][0], method_time_duration_range_dict[method_index][1])
                 )
-        # self.scrapy_class_time_duration_list = CMN.FUNC.read_method_time_duration_config_file(filename, time_duration_type)
+        # for time_range_str in time_range_str_list:
+        #     param_list = time_range_str.split(' ')
+        #     param_list_len = len(param_list)
+        #     class_index_list = CMN.FUNC.get_scrapy_class_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+        #     time_duration_start = None
+        #     if param_list_len >= 2:
+        #         time_duration_start = CMN.CLS.FinanceTimeBase.from_string(param_list[1])
+        #     time_duration_end = None
+        #     if param_list_len >= 3:
+        #         time_duration_end = CMN.CLS.FinanceTimeBase.from_string(param_list[2])
+        #     for class_index in class_index_list:
+        #         self.scrapy_class_time_duration_list.append(
+        #             CMN_CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, time_duration_start, time_duration_end)
+        #         )
         self.__check_scrapy_class_in_correct_finance_mode()
 
 
@@ -342,10 +359,16 @@ class WebSracpyMgrBase(object):
         return True if self.csv_file_check_status_record_string_dict is not None else False
 
 
+    @property
+    def FinanceMode(self):
+        assert self.finance_mode is not None, "finance_mode should NOT be None"
+        return self.finance_mode
+
+
     @staticmethod
     def show_scrapy_progress(mgr_obj_handle):
-        if not isinstance(mgr_obj_handle, WebSracpyMgrBase):
-            raise AttributeError("mgr_obj_handle should be the WebSracpyMgrBase instance")
+        if not isinstance(mgr_obj_handle, WebScrapyMgrBase):
+            raise AttributeError("mgr_obj_handle should be the WebScrapyMgrBase instance")
         scrapy_progress = None
         with self.web_scrapy_obj_list_thread_lock:
             progress_ratio_sum = 0.0
@@ -367,6 +390,11 @@ class WebSracpyMgrBase(object):
     @abstractmethod
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
         # """IMPORTANT: This is a class method, override it with @classmethod !"""
+        raise NotImplementedError
+
+
+    @abstractmethod
+    def _get_configurer(self):
         raise NotImplementedError
 
 

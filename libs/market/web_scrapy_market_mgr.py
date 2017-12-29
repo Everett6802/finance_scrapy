@@ -9,13 +9,15 @@ from datetime import datetime
 import libs.common as CMN
 import libs.base as BASE
 import web_scrapy_market_base as MarketBase
+import web_scrapy_market_configurer as Configurer
 g_logger = CMN.WSL.get_web_scrapy_logger()
 
 
-class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
+class WebScrapyMarketMgr(BASE.MGR_BASE.WebScrapyMgrBase):
 
+    finance_mode = CMN.DEF.FINANCE_MODE_MARKET
     def __init__(self, **cfg):
-        super(WebSracpyMarketMgr, self).__init__(**cfg)
+        super(WebScrapyMarketMgr, self).__init__(**cfg)
         self.source_type_csv_time_duration = None
 
 
@@ -25,6 +27,12 @@ class WebSracpyMarketMgr(BASE.MGR_BASE.WebSracpyMgrBase):
         if finance_root_folderpath is None:
             finance_root_folderpath = CMN.DEF.SCRAPY_METHOD_DESCRIPTIONCSV_ROOT_FOLDERPATH
     	return "%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_MARKET_FOLDERNAME)
+
+
+    def _get_configurer(self):
+        if self.configurer is None:
+            self.configurer = Configurer.WebScrapyMarketConfigurer.Instance()
+        return self.configurer
 
 
     def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
