@@ -11,7 +11,7 @@ from libs import common as CMN
 from libs import base as BASE
 # g_configurer = None
 g_mgr = None
-g_logger = CMN.WSL.get_web_scrapy_logger()
+g_logger = CMN.LOG.get_logger()
 param_cfg = {}
 
 
@@ -19,7 +19,7 @@ def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
-    print "--market_mode --stock_mode\nDescription: Switch the market/stock mode\nCaution: Read parameters from %s when NOT set" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
+    # print "--market_mode --stock_mode\nDescription: Switch the market/stock mode\nCaution: Read parameters from %s when NOT set" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
     print "--silent\nDescription: Disable print log on console"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
@@ -27,8 +27,8 @@ def show_usage_and_exit():
     scrapy_class_index_list = CMN.FUNC.get_scrapy_class_index_range_list()
     for scrapy_class_index in scrapy_class_index_list:
         print "  %d: %s" % (scrapy_class_index, CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index])
-    print "  Format: Source Type (ex. 1)"
-    print "--no_scrapy\nDescription: Don't scrap Web data"
+    print "  Format: Scrapy class index (ex. 1)"
+    print "--no_scrapy\nDescription: Don't scrape Web data"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrapy flag is NOT set"
     # print "--no_check\nDescription: Don't check the CSV files after scraping Web data"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only take effect when --check is set"
@@ -115,7 +115,7 @@ def snapshot_result(run_result_str):
 
 
 def update_workday_calendar_and_exit():
-    workday_calendar = BASE.WC.WebScrapyWorkdayCanlendar.Instance()
+    workday_calendar = BASE.WC.WorkdayCanlendar.Instance()
     sys.exit(0)
 
 
@@ -549,13 +549,13 @@ def determine_finance_mode():
     CMN.DEF.FINANCE_MODE = CMN.FUNC.get_finance_mode()
     if CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_MARKET:
         # from libs.market import web_scrapy_market_configurer as CONF
-        # g_configurer = CONF.WebScrapyMarketConfigurer.Instance()
+        # g_configurer = CONF.MarketConfigurer.Instance()
         CMN.DEF.IS_FINANCE_MARKET_MODE = True
         CMN.DEF.IS_FINANCE_STOCK_MODE = False
         show_info("Instantiate in MARKET mode.......")
     elif CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_STOCK:
         # from libs.stock import web_scrapy_stock_configurer as CONF
-        # g_configurer = CONF.WebScrapyStockConfigurer.Instance()
+        # g_configurer = CONF.StockConfigurer.Instance()
         CMN.DEF.IS_FINANCE_MARKET_MODE = False
         CMN.DEF.IS_FINANCE_STOCK_MODE = True
         show_info("Instantiate in STOCK mode.......")
@@ -567,11 +567,11 @@ def get_manager(update_cfg):
     # assert g_configurer is None, "g_configurer should NOT be None"
     mgr_obj = None
     if CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_MARKET:
-        from libs.market import web_scrapy_market_mgr as MGR
-        mgr_obj = MGR.WebScrapyMarketMgr(**update_cfg)
+        from libs.market import market_mgr as MGR
+        mgr_obj = MGR.MarketMgr(**update_cfg)
     elif CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_STOCK:
-        from libs.stock import web_scrapy_stock_mgr as MGR
-        mgr_obj = MGR.WebScrapyStockMgr(**update_cfg)
+        from libs.stock import stock_mgr as MGR
+        mgr_obj = MGR.StockMgr(**update_cfg)
     else:
         raise ValueError("Unknown finance mode !!!")
     return mgr_obj
@@ -656,7 +656,7 @@ def do_clone():
 
 if __name__ == "__main__":
     # calculate_profit(262)
-    # company_profile = CompanyProfile.WebScrapyCompanyProfile.Instance()
+    # company_profile = CompanyProfile.CompanyProfile.Instance()
     # import pdb; pdb.set_trace()
     # # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_DAY)
     # # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_WEEK)

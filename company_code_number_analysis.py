@@ -6,10 +6,10 @@ import re
 import sys
 import time
 import libs.common as CMN
-import libs.stock.web_scrapy_company_profile as CompanyProfile
-import libs.stock.web_scrapy_company_group_set as CompanyGroupSet
-import libs.stock.web_scrapy_url_time_range as URLTimeRange
-g_logger = CMN.WSL.get_web_scrapy_logger()
+import libs.base.company_profile as CompanyProfile
+import libs.base.company_group_set as CompanyGroupSet
+import libs.stock.stock_url_time_range as URLTimeRange
+g_logger = CMN.LOG.get_logger()
 
 
 def show_usage():
@@ -99,7 +99,7 @@ def parse_param():
 
 
 def show_group_statistics(show_detail, company_group_size):
-    whole_company_number_in_group_dict = CompanyGroupSet.WebScrapyCompanyGroupSet.get_whole_company_number_in_group_dict()
+    whole_company_number_in_group_dict = CompanyGroupSet.CompanyGroupSet.get_whole_company_number_in_group_dict()
     # import pdb; pdb.set_trace()
     for company_group_index in range(company_group_size):
         statistics_in_group_message = "Group%02d: %s, Len: %d" % (company_group_index, company_profile.get_company_group_description(company_group_index), len(whole_company_number_in_group_dict[company_group_index]))
@@ -114,8 +114,8 @@ if __name__ == "__main__":
 # Parse the parameters
     param_dict = parse_param()
 # Initialize the instance
-    company_profile_obj = CompanyProfile.WebScrapyCompanyProfile.Instance()
-    url_time_range_obj = URLTimeRange.WebScrapyURLTimeRange.Instance()
+    company_profile_obj = CompanyProfile.CompanyProfile.Instance()
+    url_time_range_obj = URLTimeRange.StockURLTimeRange.Instance()
     cleanup_old_start_time = False
 # Run by argument
     if param_dict.get("cleanup_old_start_time", None) is not None:
@@ -123,7 +123,7 @@ if __name__ == "__main__":
     # import pdb; pdb.set_trace()
 # Renew the company data
     if param_dict.get("renew_company_start_time", None) is not None:
-        company_code_number_list = CompanyGroupSet.WebScrapyCompanyGroupSet.to_company_number_list(param_dict["renew_company_start_time"])
+        company_code_number_list = CompanyGroupSet.CompanyGroupSet.to_company_number_list(param_dict["renew_company_start_time"])
         # print "Renew Company Start time:"
         for company_code_number in company_code_number_list:
             url_time_range_obj.renew_time_range(company_code_number, cleanup_old_start_time)
@@ -150,7 +150,7 @@ if __name__ == "__main__":
 
     if param_dict.get("lookup_company", None) is not None:
         # import pdb; pdb.set_trace()
-        company_code_number_list = CompanyGroupSet.WebScrapyCompanyGroupSet.to_company_number_list(param_dict["lookup_company"])
+        company_code_number_list = CompanyGroupSet.CompanyGroupSet.to_company_number_list(param_dict["lookup_company"])
         print "Company Profile:"
         for company_code_number in company_code_number_list:
             company_profile = company_profile_obj.lookup_company_profile(company_code_number)

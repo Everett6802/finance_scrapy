@@ -15,8 +15,8 @@ from datetime import datetime, timedelta
 import common_definition as CMN_DEF
 import common_class as CMN_CLS
 import common_exception as CMN_EXCEPTION
-import web_scrapy_logging as WSL
-g_logger = WSL.get_web_scrapy_logger()
+import common_logging as LOG
+g_logger = LOG.get_logger()
 
 
 ########################################################################################
