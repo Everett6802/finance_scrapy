@@ -223,30 +223,33 @@ class MgrBase(object):
         #     raise ValueError("Unknown finance mode: %d" % CMN.DEF.FINANCE_MODE)
         method_index_list = self._get_configurer().Method
         time_duration_type = self._get_configurer().TimeType
-        method_time_duration_range_dict = self._get_configurer().MethodTimeDurationRangeDict
-        for method_index in method_index_list:
-            if not method_time_duration_range_dict.has_key(method_index):
-                raise ValueError("The time duration of method[%s] is NOT defined in the config" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
-            class_index_list = CMN.FUNC.get_scrapy_class_index_list_from_method_index(method_index)
-            for class_index in class_index_list:
-                self.scrapy_class_time_duration_list.append(
-                    CMN_CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, method_time_duration_range_dict[method_index][0], method_time_duration_range_dict[method_index][1])
-                )
-        # for time_range_str in time_range_str_list:
-        #     param_list = time_range_str.split(' ')
-        #     param_list_len = len(param_list)
-        #     class_index_list = CMN.FUNC.get_scrapy_class_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
-        #     time_duration_start = None
-        #     if param_list_len >= 2:
-        #         time_duration_start = CMN.CLS.FinanceTimeBase.from_string(param_list[1])
-        #     time_duration_end = None
-        #     if param_list_len >= 3:
-        #         time_duration_end = CMN.CLS.FinanceTimeBase.from_string(param_list[2])
+        (time_duration_start, time_duration_end) = self._get_configurer().TimeDurationRange
+        self.set_method_time_duration(method_index_list, time_duration_type, time_duration_start, time_duration_end)
+        # method_time_duration_range_dict = self._get_configurer().MethodTimeDurationRange
+        # self.scrapy_class_time_duration_list = []
+        # for method_index in method_index_list:
+        #     if not method_time_duration_range_dict.has_key(method_index):
+        #         raise ValueError("The time duration of method[%s] is NOT defined in the config" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
+        #     class_index_list = CMN.FUNC.get_scrapy_class_index_list_from_method_index(method_index)
         #     for class_index in class_index_list:
         #         self.scrapy_class_time_duration_list.append(
-        #             CMN_CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, time_duration_start, time_duration_end)
+        #             CMN.CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, method_time_duration_range_dict[method_index][0], method_time_duration_range_dict[method_index][1])
         #         )
-        self.__check_scrapy_class_in_correct_finance_mode()
+        # # for time_range_str in time_range_str_list:
+        # #     param_list = time_range_str.split(' ')
+        # #     param_list_len = len(param_list)
+        # #     class_index_list = CMN.FUNC.get_scrapy_class_index_list_from_method_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+        # #     time_duration_start = None
+        # #     if param_list_len >= 2:
+        # #         time_duration_start = CMN.CLS.FinanceTimeBase.from_string(param_list[1])
+        # #     time_duration_end = None
+        # #     if param_list_len >= 3:
+        # #         time_duration_end = CMN.CLS.FinanceTimeBase.from_string(param_list[2])
+        # #     for class_index in class_index_list:
+        # #         self.scrapy_class_time_duration_list.append(
+        # #             CMN_CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, time_duration_start, time_duration_end)
+        # #         )
+        # self.__check_scrapy_class_in_correct_finance_mode()
 
 
     def set_method_time_duration(self, method_index_list, time_duration_type, time_duration_start, time_duration_end):
@@ -258,10 +261,20 @@ class MgrBase(object):
             for method_index in method_index_list:
                 class_index_list += CMN.FUNC.get_scrapy_class_index_list_from_method_index(method_index)
         self.scrapy_class_time_duration_list = []
-        for class_index in class_index_list:
-            self.scrapy_class_time_duration_list.append(
-                CMN.CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, time_duration_start, time_duration_end)
-            )
+        if time_duration_type == CMN.DEF.DATA_TIME_DURATION_RANGE_ALL:
+            method_time_duration_range_dict = self._get_configurer().MethodTimeDurationRange
+            for method_index in method_index_list:
+                if not method_time_duration_range_dict.has_key(method_index):
+                    raise ValueError("The time duration of method[%s] is NOT defined in the config" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
+            for class_index in class_index_list:
+                self.scrapy_class_time_duration_list.append(
+                    CMN.CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, method_time_duration_range_dict[method_index][0], method_time_duration_range_dict[method_index][1])
+                )
+        else:
+            for class_index in class_index_list:
+                self.scrapy_class_time_duration_list.append(
+                    CMN.CLS.ScrapyClassTimeDurationTuple(class_index, time_duration_type, time_duration_start, time_duration_end)
+                )
         self.__check_scrapy_class_in_correct_finance_mode()
 
 

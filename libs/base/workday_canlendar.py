@@ -9,7 +9,7 @@ import json
 from bs4 import BeautifulSoup
 # from datetime import datetime, timedelta
 import libs.common as CMN
-g_logger = CMN.WSL.get_logger()
+g_logger = CMN.LOG.get_logger()
 
 
 @CMN.CLS.Singleton

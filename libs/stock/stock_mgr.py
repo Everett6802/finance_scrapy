@@ -18,7 +18,7 @@ g_logger = CMN.LOG.get_logger()
 
 SHOW_STATMENT_FIELD_DIMENSION = True
 
-class StockMgr(BASE.MGR_BASE.ScrapyMgrBase):
+class StockMgr(BASE.MGR_BASE.MgrBase):
 
     finance_mode = CMN.DEF.FINANCE_MODE_STOCK
     company_profile = None

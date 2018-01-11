@@ -12,7 +12,7 @@ from requests.exceptions import ConnectionError
 # from libs import web_scrapy_url_date_range as URLTimeRange
 import workday_canlendar as WorkdayCanlendar
 import libs.common as CMN
-g_logger = CMN.WSL.get_logger()
+g_logger = CMN.LOG.get_logger()
 
 
 thread_lock = threading.Lock()

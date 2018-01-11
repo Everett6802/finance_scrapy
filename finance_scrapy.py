@@ -153,12 +153,12 @@ def debug_scrapy_class_and_exit(scrapy_class_index):
     sys.exit(0)
 
 
-def show_company_list_in_folerpath_and_exit():
-    if CMN.DEF.IS_FINANCE_MARKET_MODE:
-        raise ValueError("Not Support in Market mode")
-    g_mgr.set_finance_root_folderpath(param_cfg["company_list_in_folderpath"])
-    g_mgr.show_company_list_in_finance_folder()
-    sys.exit(0)
+# def show_company_list_in_folerpath_and_exit():
+#     if CMN.DEF.IS_FINANCE_MARKET_MODE:
+#         raise ValueError("Not Support in Market mode")
+#     g_mgr.set_finance_root_folderpath(param_cfg["company_list_in_folderpath"])
+#     g_mgr.show_company_list_in_finance_folder()
+#     sys.exit(0)
 
 
 def merge_finance_folder_and_exit(merge_finance_folderpath_src_list, merge_finance_folderpath_dst):
@@ -530,13 +530,13 @@ def setup_param():
         g_mgr.set_method_time_duration(method_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
 # Set Company
         if CMN.DEF.IS_FINANCE_STOCK_MODE:
-    # Set company list. For stock mode only
+# Set company list. For stock mode only
             # if param_cfg["company_from_file"] is not None:
             #     g_mgr.set_company_from_file(param_cfg["company_from_file"])
             # else:
             company_word_list = None
-                if param_cfg["company"] is not None:
-                    g_mgr.set_company(param_cfg["company"])
+            if param_cfg["company"] is not None:
+                g_mgr.set_company(param_cfg["company"])
 
     g_mgr.enable_old_finance_folder_reservation(param_cfg["reserve_old"])
     g_mgr.enable_dry_run(param_cfg["dry_run"])
@@ -693,8 +693,8 @@ if __name__ == "__main__":
 # Check the parameters for the manager
     check_param()
     # import pdb; pdb.set_trace()
-    if param_cfg["company_list_in_folderpath"] is not None:
-        show_company_list_in_folerpath_and_exit()
+    # if param_cfg["company_list_in_folderpath"] is not None:
+    #     show_company_list_in_folerpath_and_exit()
 # Setup the parameters for the manager
     setup_param()
 # Merge the finance folders...

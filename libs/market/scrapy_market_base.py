@@ -30,7 +30,7 @@ class ScrapyMarketBase(BASE.BASE.ScrapyBase):
     def _get_url_time_range(self):
         # import pdb; pdb.set_trace()
         if self.url_time_range is None:
-            self.url_time_range = URLTimeRange.URLTimeRange.Instance()
+            self.url_time_range = URLTimeRange.MarketURLTimeRange.Instance()
         return self.url_time_range
 
 

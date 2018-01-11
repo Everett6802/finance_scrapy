@@ -13,7 +13,7 @@ import market_configurer as Configurer
 g_logger = CMN.LOG.get_logger()
 
 
-class ScrapyMarketMgr(BASE.MGR_BASE.ScrapyMgrBase):
+class MarketMgr(BASE.MGR_BASE.MgrBase):
 
     finance_mode = CMN.DEF.FINANCE_MODE_MARKET
     def __init__(self, **cfg):

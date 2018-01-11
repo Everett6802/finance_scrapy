@@ -126,7 +126,7 @@ def get_web_scrapy_class_for_name(module_folder, module_name, class_name):
 def get_web_scrapy_class(scrapy_class_index, init_class_variables=True):
     # import pdb; pdb.set_trace()
     module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER_MAPPING[scrapy_class_index]
-    module_name = CMN_DEF.SCRAPY_MODULE_NAME_PREFIX + CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]
+    module_name = CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]
     class_name = CMN_DEF.SCRAPY_CLASS_NAME_MAPPING[scrapy_class_index]
     g_logger.debug("Try to instantiate %s.%s" % (module_name, class_name))
 # Find the module
