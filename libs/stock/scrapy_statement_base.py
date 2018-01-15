@@ -357,7 +357,7 @@ class ScrapyStatementBase(ScrapyStockBase.ScrapyStockBase):
 
 
     def _need_filter_scrape_company(self, company_code_number):
-        return self.__get_company_profile().is_company_etf(company_code_number)
+        return self._get_company_profile().is_company_etf(company_code_number)
 
 
     def _scrape_web_data_internal(self, timeslice, company_code_number):

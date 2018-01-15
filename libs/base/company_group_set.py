@@ -192,8 +192,9 @@ class CompanyGroupSet(object):
 
 
     @classmethod
-    def get_whole_company_group_set(cls):
+    def get_whole_company_group_set(cls, market_type=CMN.DEF.MARKET_TYPE_NONE):
         company_group_set = cls()
+        company_group_set.set_market_type(market_type)
         company_group_set.add_done();
         return company_group_set
 

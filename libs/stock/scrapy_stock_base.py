@@ -26,7 +26,7 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
     company_profile = None
 
     @classmethod
-    def __get_company_profile(cls):
+    def _get_company_profile(cls):
         if cls.company_profile is None:
             cls.company_profile = BASE.CP.CompanyProfile.Instance()
         return cls.company_profile
@@ -34,12 +34,13 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
 
     @classmethod
     def check_company_first_data_exist(cls, company_code_number):
-        first_data_time = cls.__get_company_profile().lookup_company_first_data_date(company_code_number, cls.URL_TIME_UNIT)
+        first_data_time = cls._get_company_profile().lookup_company_first_data_date(company_code_number, cls.URL_TIME_UNIT)
         return True if first_data_time is not None else False
 
 
     def __init__(self, **kwargs):
         super(ScrapyStockBase, self).__init__(**kwargs)
+        # import pdb; pdb.set_trace()
         # self.is_whole_company_group_set = False
 # CAUTION: The company group set should be determined outside the class, including
 # the market type, and the companies belong to the specific market type
@@ -66,14 +67,14 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
 
     def assemble_csv_company_folderpath(self, company_code_number, company_group_number=-1):
         if company_group_number == -1:
-            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            company_group_number = self._get_company_profile().lookup_company_group_number(company_code_number)
         csv_company_folderpath = "%s/%s%02d/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number) 
         return csv_company_folderpath
 
 
     def assemble_csv_filepath(self, scrapy_class_index, company_code_number, company_group_number=-1):
         if company_group_number == -1:
-            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            company_group_number = self._get_company_profile().lookup_company_group_number(company_code_number)
         # csv_filepath = "%s/%s%02d/%s/%s.csv" % (self.xcfg["finance_root_folderpath"], CMN.DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN.DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]) 
         # return csv_filepath
         return CMN.FUNC.assemble_stock_csv_filepath(self.xcfg["finance_root_folderpath"], scrapy_class_index, company_code_number, company_group_number)

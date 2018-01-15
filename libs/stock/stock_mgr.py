@@ -46,7 +46,8 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
 # Update the company group set if necessary
         if self.is_whole_company_group_set:
             if not self.market_type_company_group_set_dict.has_key(market_type):
-                self.market_type_company_group_set_dict[market_type] = BASE.CGS.CompanyGroupSet.get_whole_company_number_in_group_dict(market_type)
+                # self.market_type_company_group_set_dict[market_type] = BASE.CGS.CompanyGroupSet.get_whole_company_number_in_group_dict(market_type)
+                self.market_type_company_group_set_dict[market_type] = BASE.CGS.CompanyGroupSet.get_whole_company_group_set(market_type)
         else:
             if market_type == CMN.DEF.MARKET_TYPE_NONE:
                 if not self.market_type_company_group_set_dict.has_key(CMN.DEF.MARKET_TYPE_NONE): 
@@ -220,7 +221,9 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
 #         self.company_group_set.add_done()
 
 
-    def set_company_from_file(self, filename):
+    def set_config_from_file(self):
+        # import pdb; pdb.set_trace()
+        super(StockMgr, self).set_config_from_file()
         # company_word_list = CMN.FUNC.read_company_config_file(filename)
         # self.set_company(company_word_list)
         self.set_company(self._get_configurer().Company)

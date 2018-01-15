@@ -274,7 +274,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
 # Stock Start
     {# 集保戶股權分散表
         "description": u'個股集保戶股權分散表',
-        "module_name": "company_depository_shareholder_distribution_table",
+        "module_name": "depository_shareholder_distribution_table",
         "module_folder": "stock",
         "class_name": "DepositoryShareholderDistributionTable",
         "url_format": "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1:02d}{2:02d}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
