@@ -412,13 +412,13 @@ def check_param():
         if param_cfg["method"] is not None:
             param_cfg["method"] = None
             show_warn("The 'method' argument is ignored since 'config_from_file' is set")
-        if param_cfg["time_duration_type"] is None:
+        if param_cfg["time_duration_type"] is not None:
             param_cfg["time_duration_type"] = None
             show_warn("The 'time_duration_type' argument is ignored since 'config_from_file' is set")
-        if param_cfg["time_duration_range"] is None:
+        if param_cfg["time_duration_range"] is not None:
             param_cfg["time_duration_range"] = None
             show_warn("The 'time_duration_range' argument is ignored since 'config_from_file' is set")
-        if param_cfg["company"] is None:
+        if param_cfg["company"] is not None:
             param_cfg["company"] = None
             show_warn("The 'company' argument is ignored since it's 'Market' mode")
     else:

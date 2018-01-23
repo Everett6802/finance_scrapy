@@ -3,11 +3,12 @@
 import re
 import requests
 import json
+import time
 from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 import libs.common as CMN
+import libs.base as BASE
 import scrapy_stock_base as ScrapyStockBase
-# import web_scrapy_company_group_set as CompanyGroupSet
 g_logger = CMN.LOG.get_logger()
 
 
@@ -16,6 +17,8 @@ class Top3LegalPersonsStockNetBuyOrSellSummaryBase(ScrapyStockBase.ScrapyStockBa
 
     __metaclass__ = ABCMeta
     CSV_DATA_BUF_SIZE = 20
+    SERVER_BUSY_SLEEP_TIME = 10
+    SERVER_BUSY_RETRY_TIMES = 3
     WEB_DATA_ENTRY_COMPANY_CODE_NUMBER = 0
 
 
@@ -92,13 +95,16 @@ class Top3LegalPersonsStockNetBuyOrSellSummaryBase(ScrapyStockBase.ScrapyStockBa
             web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 
 
-    def __update_each_company_csv_data(self, finance_date, all_company_csv_data_list):
+    def __update_each_company_csv_data(self, finance_date, all_company_csv_data_list, update_whole_company=False):
         # import pdb; pdb.set_trace()
         for all_company_csv_data_entry in all_company_csv_data_list:
             company_code_number = all_company_csv_data_entry[self.WEB_DATA_ENTRY_COMPANY_CODE_NUMBER]
-# Find the csv time range in the initail update
+            if (not update_whole_company) and (not self.company_group_set.IsWhole):
+                if not self.company_group_set.is_company_in_group(company_code_number):
+                    continue
+# Find the csv time range in the initial update
 # If time range is out of the csv data range....
-            if self.company_group_out_of_csv_time_range_set.is_current_company_exist(company_code_number):
+            if self.company_group_out_of_csv_time_range_set.is_current_company_in_group(company_code_number):
                 continue
             web2csv_time_duration_update_list = None
 # Limit the searching time range from the local CSV data
@@ -210,8 +216,20 @@ class Top3LegalPersonsStockNetBuyOrSellSummaryBase(ScrapyStockBase.ScrapyStockBa
 # Scrape the web data
             web_data = self._scrape_web_data(timeslice, None)
             if len(web_data) == 0:
+                # import pdb; pdb.set_trace()
+                g_logger.debug("Perhaps server is busy while scraping data[%s:%s]......" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], timeslice))
+                scrapy_success = False
+                for i in range(self.SERVER_BUSY_RETRY_TIMES):
+                    time.sleep(self.SERVER_BUSY_SLEEP_TIME)
+                    g_logger.debug("Attempt to scrape data[%s:%s]...... %d" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], timeslice, i + 1))
+                    web_data = self._scrape_web_data(timeslice, None)
+                    if len(web_data) != 0:
+                        scrapy_success = True
+                        break
+                # import pdb; pdb.set_trace()
 # Keep track of the time range in which the web data is empty
-                self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SCRAPY_CLASS_INDEX, CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
+                if not scrapy_success:
+                    self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SCRAPY_CLASS_INDEX, CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
             else:
                 csv_data_list = self._parse_web_data(web_data)
                 if len(csv_data_list) == 0:

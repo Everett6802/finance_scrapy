@@ -202,7 +202,7 @@ class CompanyGroupSet(object):
     def __init__(self):
         self.company_number_in_group_dict = None
         self.altered_company_number_in_group_dict = None
-        self.is_whole_group = False
+        self.is_whole = False
         self.is_add_done = False
         self.check_company_exist = True
         self.company_amount = None
@@ -319,7 +319,7 @@ class CompanyGroupSet(object):
 
     def __setup_for_traverse(self):
         if self.company_number_in_group_dict is None:
-            self.is_whole_group = True
+            self.is_whole = True
             self.altered_company_number_in_group_dict = self.get_whole_company_number_in_group_dict(self.market_type)
         else:
             self.altered_company_number_in_group_dict = {}
@@ -349,6 +349,14 @@ class CompanyGroupSet(object):
                 for company_number in company_number_list:
                     company_amount += 1
         return company_amount
+
+
+    @property
+    def IsWhole(self):
+        if not self.is_add_done:
+            g_logger.error("The add_done flag is NOT set to True");
+            raise RuntimeError("The add_done flag is NOT set to True")
+        return self.is_whole
 
 
     def get_sub_company_group_set_in_market_type(self, market_type):
@@ -418,13 +426,16 @@ class CompanyGroupSet(object):
         return sub_company_group_set_list
 
 
-    def is_company_exist(self, company_code_number, company_group_number=None):
+    def is_company_in_group(self, company_code_number, company_group_number=None):
         # import pdb; pdb.set_trace()
         if not self.is_add_done:
             g_logger.error("The add_done flag is NOT set to True");
             raise RuntimeError("The add_done flag is NOT set to True")
         if company_group_number is None:
-            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            try:
+                company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            except ValueError:
+                return False
 # Check if the company group exist
         company_code_number_list = self.altered_company_number_in_group_dict.get(company_group_number, None)
         if company_code_number_list is None:
@@ -437,11 +448,14 @@ class CompanyGroupSet(object):
         return True
 
 
-    def is_current_company_exist(self, company_code_number, company_group_number=None):
+    def is_current_company_in_group(self, company_code_number, company_group_number=None):
         if self.company_number_in_group_dict is None:
             return False
         if company_group_number is None:
-            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            try:
+                company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            except ValueError:
+                return False
 # Check if the company group exist
         company_code_number_list = self.company_number_in_group_dict.get(company_group_number, None)
         if company_code_number_list is None:

@@ -19,7 +19,7 @@ class MgrBase(object):
     def __init__(self, **cfg):
         self.xcfg = {
             "old_finance_folder_reservation": False,
-            "try_to_scrap_all": True,
+            "try_to_scrape_all": True,
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
             "multi_thread_amount": None,
@@ -152,6 +152,7 @@ class MgrBase(object):
                 g_logger.error(errmsg)
                 raise e
             except Exception as e:
+                # import pdb; pdb.set_trace()
                 if isinstance(e.message, str):
                     errmsg = "Scraping %s fails, due to: %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], e.message)
                 else:
@@ -160,7 +161,7 @@ class MgrBase(object):
                 g_logger.error(errmsg)
                 total_errmsg += errmsg
                 # print total_errmsg
-                if not self.xcfg["try_to_scrap_all"]:
+                if not self.xcfg["try_to_scrape_all"]:
                     break
             # self._increment_scrapy_class_type_progress_count(scrapy_class_time_duration.scrapy_class_index)
             if self.xcfg["show_progress"]:

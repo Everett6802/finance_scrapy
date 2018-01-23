@@ -6,6 +6,7 @@ import json
 import requests
 import csv
 import time
+# import copy
 import collections
 import sys
 from abc import ABCMeta, abstractmethod
@@ -199,6 +200,7 @@ class ScrapyBase(object):
 # args[1]: company code number
             self.__add_record("TimeRangeNotOverlap", *args)
 
+
         def add_csv_file_already_exist_record(self, *args):
 # Market
 # args[0]: source type index
@@ -206,6 +208,7 @@ class ScrapyBase(object):
 # args[0]: source type index
 # args[1]: company code number
             self.__add_record("CSVFileAlreadyExist", *args)
+
 
         def add_web_data_not_found_record(self, *args):
 # Market
@@ -241,7 +244,8 @@ class ScrapyBase(object):
 # args_new[2]: empty time start
 # args_new[3]: empty time end
                 # import pdb; pdb.set_trace()
-                args_new = copy.deepcopy(args)
+                # args_new = copy.deepcopy(args)
+                args_new = [arg for arg in args]
                 args_new.append(self.web_data_not_found_time_start)
                 args_new.append(self.web_data_not_found_time_end)
                 self.web_data_not_found_time_start = self.web_data_not_found_time_end = None
@@ -277,6 +281,7 @@ class ScrapyBase(object):
 
     @classmethod
     def __select_web_data_by_json(cls, url_data, parse_url_data_type_cfg):
+        # import pdb; pdb.set_trace()
         g_logger.debug("Parse URL data by JSON, Selector: %s" % parse_url_data_type_cfg["url_data_selector"])
         json_url_data = json.loads(url_data.text)
         return json_url_data[parse_url_data_type_cfg["url_data_selector"]]
@@ -458,6 +463,9 @@ class ScrapyBase(object):
                 g_logger.warn("Exception occurs while scraping URL[%s], due to: %s" % (url, e.message))
             else:
                 g_logger.warn(u"Exception occurs while scraping URL[%s], due to: %s" % (url, e.message))
+# Caution: web_data should NOT be None. Exception occurs while exploiting len(web_data)
+# The len() function can NOT calculate the length of the None object
+            web_data = []
         return web_data
 
 
