@@ -147,9 +147,9 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
             for args in record_type_dict[record_type]:
                 record_string = None
                 if self.SCRAPY_CLASS_INDEX in CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_SCRAPY_CLASS_INDEX_LIST:
-                    record_string = "%s:%s-%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[3].to_string(), args[4].to_string())
+                    record_string = "%s:[%s %s]" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[3].to_string(), args[4].to_string())
                 else:
-                    record_string = "%s:%d:%s-%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[2], args[3].to_string(), args[4].to_string())
+                    record_string = "%s:%d:[%s %s]" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[2], args[3].to_string(), args[4].to_string())
                 self.csv_file_no_scrapy_record_string_dict[record_type].append(record_string)
 
 

@@ -235,12 +235,12 @@ class Top3LegalPersonsStockNetBuyOrSellSummaryBase(ScrapyStockBase.ScrapyStockBa
                 if len(csv_data_list) == 0:
                     raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
                 self.__update_each_company_csv_data(timeslice, csv_data_list)
-# Flush the last data into the list if required
-            self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX, CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
 # Write the last data in the buf
             self.__update_each_company_last_csv_data()
 # Increase the progress count
             self.progress_count += 1
+# Flush the last data into the list if required
+        self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX, CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_DUMMY_COMPANY_CODE_NUMBER)
 # Parse csv file status
         self._parse_csv_file_status_to_string_list()
 

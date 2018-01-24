@@ -97,7 +97,7 @@ class ScrapyMarketBase(BASE.BASE.ScrapyBase):
 # args[3]: empty time end
             self.csv_file_no_scrapy_record_string_dict[record_type] = []
             for args in record_type_dict[record_type]:
-                record_string = "%s:%s-%s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[2].to_string(), args[3].to_string())
+                record_string = "%s:[%s %s]" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[args[1]], args[2].to_string(), args[3].to_string())
                 self.csv_file_no_scrapy_record_string_dict[record_type].append(record_string)
 
 
@@ -157,7 +157,7 @@ class ScrapyMarketBase(BASE.BASE.ScrapyBase):
                         raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
                     csv_data_list_each_year.append(csv_data_list)
 # Flush the last data into the list if required
-                self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX)
+            self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX)
 # Write the data of last year into csv
             if len(csv_data_list_each_year) > 0:
                 self._write_to_csv(csv_filepath, csv_data_list_each_year)
