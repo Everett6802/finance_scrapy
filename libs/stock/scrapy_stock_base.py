@@ -9,13 +9,10 @@ import time
 import copy
 import collections
 from abc import ABCMeta, abstractmethod
-# from random import randint
 # from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
-# import web_scrapy_company_group_set as CompanyGroupSet
-# import web_scrapy_company_profile as CompanyProfile
 import stock_url_time_range as URLTimeRange
 g_logger = CMN.LOG.get_logger()
 

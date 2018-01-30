@@ -15,6 +15,8 @@ g_logger = CMN.LOG.get_logger()
 
 class MgrBase(object):
 
+    SHOW_PROGRESS_INTERVAL = 30
+
     __metaclass__ = ABCMeta
     def __init__(self, **cfg):
         self.xcfg = {
@@ -133,11 +135,11 @@ class MgrBase(object):
             self.web_scrapy_start_datetime = datetime.now()
             # self.count_scrapy_amount()
             self.scrapy_class_type_progress_amount = len(self.scrapy_class_time_duration_list)
-            progress_string = "Total Scrapy Times: %d" % self.ScrapyAmount
-            g_logger.info(progress_string)
-            if CMN.DEF.CAN_PRINT_CONSOLE:
-                print progress_string
-            show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval=30)
+            # progress_string = "Total Scrapy Times: %d" % self.ScrapyAmount
+            # g_logger.info(progress_string)
+            # if CMN.DEF.CAN_PRINT_CONSOLE:
+            #     print progress_string
+            show_progress_timer_thread = CMN.CLS.FinanceTimerThread(interval = self.SHOW_PROGRESS_INTERVAL)
             show_progress_timer_thread.start_timer(MgrBase.show_scrapy_progress, self)
         # import pdb; pdb.set_trace()
         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
@@ -379,19 +381,32 @@ class MgrBase(object):
         return self.finance_mode
 
 
-    @staticmethod
-    def show_scrapy_progress(mgr_obj_handle):
-        if not isinstance(mgr_obj_handle, MgrBase):
-            raise AttributeError("mgr_obj_handle should be the MgrBase instance")
-        scrapy_progress = None
+    @property
+    def ScrapyProgress(self):
+        scrapy_progress = 0
         with self.web_scrapy_obj_list_thread_lock:
-            progress_ratio_sum = 0.0
-            for web_scrapy_obj in self.web_scrapy_obj_list:
-                progress_ratio_sum += web_scrapy_obj.ProgressRatio
-            scrapy_progress = (self.scrapy_class_type_progress_count + progress_ratio_sum / len(self.web_scrapy_obj_list)) / self.scrapy_class_type_progress_amount
-        progress_string = "[%s] Progress................... %03.1f" % (datetime.strftime(datetime.now(), '%H:%M:%S'), scrapy_progress)
-        if scrapy_progress >= mgr_obj_handle.StartEstimateCompleteTimeThreshold:
-            progress_string += "  *Estimated Complete Time: %s" % mgr_obj_handle.estimate_complete_time(scrapy_progress)
+            if self.web_scrapy_obj_list is not None:
+                progress_ratio_sum = 0.0
+                for web_scrapy_obj in self.web_scrapy_obj_list:
+                    # print "ProgressRatio: %f" % web_scrapy_obj.ProgressRatio
+                    progress_ratio_sum += web_scrapy_obj.ProgressRatio
+                scrapy_progress = (self.scrapy_class_type_progress_count + progress_ratio_sum / len(self.web_scrapy_obj_list)) / self.scrapy_class_type_progress_amount
+        return scrapy_progress
+
+
+    @staticmethod
+    def show_scrapy_progress(mgr_obj):
+        if not isinstance(mgr_obj, MgrBase):
+            raise AttributeError("mgr_obj should be the MgrBase instance")
+        scrapy_progress = mgr_obj.ScrapyProgress
+        # with mgr_obj.web_scrapy_obj_list_thread_lock:
+        #     progress_ratio_sum = 0.0
+        #     for web_scrapy_obj in mgr_obj.web_scrapy_obj_list:
+        #         progress_ratio_sum += web_scrapy_obj.ProgressRatio
+        #     scrapy_progress = (mgr_obj.scrapy_class_type_progress_count + progress_ratio_sum / len(mgr_obj.web_scrapy_obj_list)) / mgr_obj.scrapy_class_type_progress_amount
+        progress_string = "[%s] Progress................... %03.1f%%" % (datetime.strftime(datetime.now(), '%H:%M:%S'), scrapy_progress * 100.0)
+        if scrapy_progress >= mgr_obj.StartEstimateCompleteTimeThreshold:
+            progress_string += "  *Estimated Complete Time: %s" % mgr_obj.estimate_complete_time(scrapy_progress)
         g_logger.info(progress_string)
         if CMN.DEF.CAN_PRINT_CONSOLE:
             print progress_string

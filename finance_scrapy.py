@@ -66,7 +66,7 @@ def show_usage_and_exit():
         print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
         print "--multi_thread\nDescription: Scrape web data in multi-thread"
         print "  Format: multi-thread number (ex. 4)"
-        print "--renew_statement_field\nDescription: Renew the statment field\nCaution: Exit after renewing the statement field"
+        # print "--renew_statement_field\nDescription: Renew the statment field\nCaution: Exit after renewing the statement field"
         print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number"
     print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder can NOT be duplicate. If so, the merge progress aborts"
     print "  Format 1 (folderpath): /var/tmp/finance"
@@ -375,10 +375,10 @@ def parse_param(early_parse=False):
                 else:
                     param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
-        elif re.match("--renew_statement_field", sys.argv[index]):
-            if not early_parse:
-                param_cfg["renew_statement_field"] = True
-            index_offset = 1
+        # elif re.match("--renew_statement_field", sys.argv[index]):
+        #     if not early_parse:
+        #         param_cfg["renew_statement_field"] = True
+        #     index_offset = 1
         elif re.match("--enable_company_not_found_exception", sys.argv[index]):
             if not early_parse:
                 param_cfg["enable_company_not_found_exception"] = True
@@ -700,8 +700,8 @@ if __name__ == "__main__":
 # Merge the finance folders...
     if param_cfg["merge_finance_folderpath_src_list"] is not None:
         merge_finance_folder_and_exit(param_cfg["merge_finance_folderpath_src_list"], param_cfg["merge_finance_folderpath_dst"])
-    if param_cfg["renew_statement_field"]:
-        renew_statement_field_and_exit()
+    # if param_cfg["renew_statement_field"]:
+    #     renew_statement_field_and_exit()
 # Start to do something about scrapy......
 # Reset the file positon of the log file to 0
     # if param_cfg["check"]:
