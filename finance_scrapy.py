@@ -30,15 +30,10 @@ def show_usage_and_exit():
     print "  Format: Scrapy class index (ex. 1)"
     print "--no_scrapy\nDescription: Don't scrape Web data"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrapy flag is NOT set"
-    # print "--no_check\nDescription: Don't check the CSV files after scraping Web data"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only take effect when --check is set"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s" % CMN.DEF.CSV_ROOT_FOLDERPATH
-    # print "--method_from_all_time_range_default_file\nDescription: The finance data source in all time range from file: %s\nCaution: source/source_from_xxx_file/time_duration_range are ignored when set" % (CMN.DEF.MARKET_ALL_TIME_RANGE_CONFIG_FILENAME if CMN.DEF.IS_FINANCE_MARKET_MODE else CMN.DEF.STOCK_ALL_TIME_RANGE_CONFIG_FILENAME)
-    # print "--method_from_today_file\nDescription: The today's finance data source from file\nCaution: source/time_duration_range are ignored when set"
-    # print "--method_from_last_file\nDescription: The last finance data source from file\nCaution: source/time_duration_range are ignored when set"
-    # print "--method_from_time_range_file\nDescription: The finance data source in time range from file\nCaution: source/time_duration_range are ignored when set"
     print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
     print "--method\nDescription: The list of the methods\nDefault: All finance methods\nCaution: Only take effect when config_from_file is NOT set"
     method_index_list = CMN.FUNC.get_method_index_range_list()
@@ -50,15 +45,11 @@ def show_usage_and_exit():
     print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "--time_duration_range\nDescription: The data in the time range of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
-    # print "--time_duration_range_all\nDescription: The data in the all time range of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "  Format 1 (start_time): 2015-01-01"
     print "  Format 2 (,end_time): ,2015-01-01"
     print "  Format 3 (start_time,end_time): 2015-01-01,2015-09-04"
     print "--time_today --time_last --time_duration_range\nCaution: Shuold NOT be set simultaneously. Will select the first one"
     if CMN.DEF.IS_FINANCE_STOCK_MODE:
-        # print "--company_list_in_default_folderpath\nDescription: Show the company number list in the default finance folder"
-        # print "--company_list_in_folderpath\nDescription: Show the company number list in the finance folder" 
-        # print "--company_from_file\nDescription: The company code number from file\nDefault: All company code nubmers\nCaution: company is ignored when set"
         print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only take effect when config_from_file is NOT set"
         print "  Format1: Company code number (ex. 2347)"
         print "  Format2: Company code number range (ex. 2100-2200)"
@@ -66,13 +57,11 @@ def show_usage_and_exit():
         print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
         print "--multi_thread\nDescription: Scrape web data in multi-thread"
         print "  Format: multi-thread number (ex. 4)"
-        # print "--renew_statement_field\nDescription: Renew the statment field\nCaution: Exit after renewing the statement field"
         print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number"
     print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder can NOT be duplicate. If so, the merge progress aborts"
     print "  Format 1 (folderpath): /var/tmp/finance"
     print "  Format 2 (folderpath1,folderpath2,folderpath3): /var/tmp/finance1,/var/tmp/finance2,/var/tmp/finance3"
     print "--merge_finance_folderpath_dst\nDescription: The destination folderpath after merging\nDefault: %s" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
-    # print "--run_daily\nDescription: Run daily web-scrapy\nCaution: Ignore other parameters when set"
     print "============================================================="
     sys.exit(0)
 
@@ -153,14 +142,6 @@ def debug_scrapy_class_and_exit(scrapy_class_index):
     sys.exit(0)
 
 
-# def show_company_list_in_folerpath_and_exit():
-#     if CMN.DEF.IS_FINANCE_MARKET_MODE:
-#         raise ValueError("Not Support in Market mode")
-#     g_mgr.set_finance_root_folderpath(param_cfg["company_list_in_folderpath"])
-#     g_mgr.show_company_list_in_finance_folder()
-#     sys.exit(0)
-
-
 def merge_finance_folder_and_exit(merge_finance_folderpath_src_list, merge_finance_folderpath_dst):
     show_info("Merge several finance folders to: %s" % merge_finance_folderpath_dst)
     merge_finance_folderpath_src_list = param_cfg["merge_finance_folderpath_src_list"].split(",")
@@ -197,27 +178,21 @@ def init_param():
     # import pdb; pdb.set_trace()
     param_cfg["update_workday_calendar"] = False
     param_cfg["show_command_example"] = False
-    # param_cfg["finance_mode"] = None
     param_cfg["help"] = False
     param_cfg["check_url"] = False
     param_cfg["debug_scrapy_class"] = None
     param_cfg["silent"] = False
     param_cfg["no_scrapy"] = False
     param_cfg["show_progress"] = False
-    # param_cfg["no_check"] = False
     param_cfg["clone"] = False
     param_cfg["reserve_old"] = False
     param_cfg["dry_run"] = False
     param_cfg["finance_folderpath"] = None
-    # param_cfg['method_from_all_time_range_default_file'] = False
     param_cfg["config_from_file"] = False
     param_cfg["method"] = None
     param_cfg["time_duration_type"] = None # Should be check in check_param()
     param_cfg["time_duration_range"] = None
-    # param_cfg["company_list_in_default_folderpath"] = False
-    # param_cfg["company_list_in_folderpath"] = None
     param_cfg["company"] = None
-    # param_cfg["company_from_file"] = None
     param_cfg["renew_statement_field"] = False
     param_cfg["enable_company_not_found_exception"] = False
     param_cfg["multi_thread"] = None
@@ -239,18 +214,6 @@ def parse_param(early_parse=False):
         elif re.match("--update_workday_calendar", sys.argv[index]):
             param_cfg["update_workday_calendar"] = True
             index_offset = 1
-        # elif re.match("--market_mode", sys.argv[index]):
-        #     if early_parse:
-        #         if param_cfg["finance_mode"] is not None:
-        #             raise ValueError("The finance mode has already been set to: %s" % CMN.DEF.FINANCE_MODE_DESCRIPTION[param_cfg["finance_mode"]])
-        #         param_cfg["finance_mode"] = CMN.DEF.FINANCE_MODE_MARKET
-        #     index_offset = 1
-        # elif re.match("--stock_mode", sys.argv[index]):
-        #     if early_parse:
-        #         if param_cfg["finance_mode"] is not None:
-        #             raise ValueError("The finance mode has already been set to: %s" % CMN.DEF.FINANCE_MODE_DESCRIPTION[param_cfg["finance_mode"]])
-        #         param_cfg["finance_mode"] = CMN.DEF.FINANCE_MODE_STOCK
-        #     index_offset = 1
         elif re.match("--silent", sys.argv[index]):
             if early_parse:
                 param_cfg["silent"] = True
@@ -276,9 +239,6 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["show_progress"] = True
             index_offset = 1
-        # elif re.match("--no_check", sys.argv[index]):
-        #     param_cfg["no_check"] = True
-        #     index_offset = 1
         elif re.match("--clone", sys.argv[index]):
             if not early_parse:
                 param_cfg["clone"] = True
@@ -295,26 +255,6 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["finance_folderpath"] = sys.argv[index + 1]
             index_offset = 2
-        # elif re.match("--method_from_all_time_range_default_file", sys.argv[index]):
-        #     if not early_parse:
-        #         param_cfg["method_from_all_time_range_default_file"] = True
-        #         param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE
-        #     index_offset = 1
-        # elif re.match("--method_from_today_file", sys.argv[index]):
-        #     if not early_parse:
-        #         param_cfg["config_from_file"] = sys.argv[index + 1]
-        #         param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
-        #     index_offset = 2
-        # elif re.match("--method_from_last_file", sys.argv[index]):
-        #     if not early_parse:
-        #         param_cfg["config_from_file"] = sys.argv[index + 1]
-        #         param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
-        #     index_offset = 2
-        # elif re.match("--method_from_time_range_file", sys.argv[index]):
-        #     if not early_parse:
-        #         param_cfg["config_from_file"] = sys.argv[index + 1]
-        #         param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
-        #     index_offset = 2
         elif re.match("--config_from_file", sys.argv[index]):
             if not early_parse:
                 param_cfg["config_from_file"] = True
@@ -337,13 +277,6 @@ def parse_param(early_parse=False):
                 else:
                     param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
             index_offset = 1
-        # elif re.match("--time_duration_range_all", sys.argv[index]):
-        #     if not early_parse:
-        #         if param_cfg["time_duration_type"] is not None:
-        #             g_logger.debug("Time duration has already been set to: %d, ignore the time_duration_range_all attribute...", param_cfg["time_duration_type"])
-        #         else:
-        #             param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_RANGE
-        #     index_offset = 1
         elif re.match("--time_duration_range", sys.argv[index]):
             if not early_parse:
                 if param_cfg["time_duration_type"] is not None:
@@ -353,21 +286,6 @@ def parse_param(early_parse=False):
                     param_cfg["time_duration_range"] = sys.argv[index + 1]
                 # g_logger.debug("Param time range: %s", param_cfg["time_duration_range"])
             index_offset = 2
-        # elif re.match("--company_list_in_default_folderpath", sys.argv[index]):
-        #     if not early_parse:
-        #         param_cfg["company_list_in_default_folderpath"] = True
-        #     index_offset = 1
-        # elif re.match("--company_list_in_folderpath", sys.argv[index]):
-        #     if not early_parse:
-        #         param_cfg["company_list_in_folderpath"] = sys.argv[index + 1]
-        #     index_offset = 2
-        # elif re.match("--company_from_file", sys.argv[index]):
-        #     if not early_parse:
-        #         if CMN.DEF.IS_FINANCE_MARKET_MODE:
-        #             g_logger.warn("The company_from_file arguemnt is ignored in the Market mode")
-        #         else:
-        #             param_cfg["company_from_file"] = sys.argv[index + 1]
-        #     index_offset = 2
         elif re.match("(-c|--company)", sys.argv[index]):
             if not early_parse:
                 if CMN.DEF.IS_FINANCE_MARKET_MODE:
@@ -375,10 +293,6 @@ def parse_param(early_parse=False):
                 else:
                     param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
-        # elif re.match("--renew_statement_field", sys.argv[index]):
-        #     if not early_parse:
-        #         param_cfg["renew_statement_field"] = True
-        #     index_offset = 1
         elif re.match("--enable_company_not_found_exception", sys.argv[index]):
             if not early_parse:
                 param_cfg["enable_company_not_found_exception"] = True
@@ -401,13 +315,6 @@ def parse_param(early_parse=False):
 
 
 def check_param():
-    # if param_cfg["method_from_all_time_range_default_file"]:
-    #     if param_cfg["config_from_file"] is not None:
-    #         show_warn("The 'config_from_file' argument is ignored since 'method_from_all_time_range_default_file' is set")
-    #     if CMN.DEF.IS_FINANCE_MARKET_MODE:
-    #         param_cfg["config_from_file"] = CMN.DEF.MARKET_ALL_TIME_RANGE_CONFIG_FILENAME
-    #     elif CMN.DEF.IS_FINANCE_STOCK_MODE:
-    #         param_cfg["config_from_file"] = CMN.DEF.STOCK_ALL_TIME_RANGE_CONFIG_FILENAME
     if param_cfg["config_from_file"] is not False:
         if param_cfg["method"] is not None:
             param_cfg["method"] = None
@@ -433,18 +340,6 @@ def check_param():
                 param_cfg["company"] = None
                 show_warn("The 'company' argument is ignored since it's 'Market' mode")
     if CMN.DEF.IS_FINANCE_MARKET_MODE:
-        # if param_cfg["company_list_in_default_folderpath"]:
-        #     param_cfg["company_list_in_default_folderpath"] = False
-        #     show_warn("The 'company_list_in_default_folderpath' argument is ignored since it's 'Market' mode")
-        # if param_cfg["company_list_in_folderpath"] is not None:
-        #     param_cfg["company_list_in_folderpath"] = None
-        #     show_warn("The 'company_list_in_folderpath' argument is ignored since it's 'Market' mode")
-        # if param_cfg["company"] is not None:
-        #     param_cfg["company"] = None
-        #     show_warn("The 'company' argument is ignored since it's 'Market' mode")
-        # if param_cfg["company_from_file"] is not None:
-        #     param_cfg["company_from_file"] = None
-        #     show_warn("The 'company_from_file' argument is ignored since it's 'Market' mode")
         if param_cfg["renew_statement_field"]:
             param_cfg["renew_statement_field"] = False
             show_warn("The 'renew_statement_field' argument is ignored since it's 'Market' mode")
@@ -455,15 +350,6 @@ def check_param():
             param_cfg["multi_thread"] = None
             show_warn("The 'multi_thread' argument is invalid since it's 'Market' mode")
     else:
-        # if param_cfg["company_list_in_default_folderpath"]:
-        #     if param_cfg["company_list_in_folderpath"] is not None:
-        #         show_warn("The 'company_list_in_folderpath' argument is ignored since 'company_list_in_default_folderpath' is set")
-        #     else:
-        #         param_cfg["company_list_in_folderpath"] = CMN.DEF.CSV_ROOT_FOLDERPATH
-        # if param_cfg["company_from_file"] is not None:
-        #     if param_cfg["company"] is not None:
-        #         param_cfg["company"] = None
-        #         show_warn("The 'company' argument is ignored since 'company_from_file' is set")
         if param_cfg["multi_thread"] is not None:
             if param_cfg["renew_statement_field"]:
                 param_cfg["multi_thread"] = None
@@ -484,8 +370,6 @@ def check_param():
         # import pdb; pdb.set_trace()
         param_cfg["config_from_file"] = False
         param_cfg["method"] = "{0}-{1}".format(*CMN.FUNC.get_statement_scrapy_method_index_range())
-        # param_cfg["company_from_file"] = None
-        # param_cfg["company"] = None
         param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
 
 
@@ -530,10 +414,6 @@ def setup_param():
         g_mgr.set_method_time_duration(method_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
 # Set Company
         if CMN.DEF.IS_FINANCE_STOCK_MODE:
-# Set company list. For stock mode only
-            # if param_cfg["company_from_file"] is not None:
-            #     g_mgr.set_company_from_file(param_cfg["company_from_file"])
-            # else:
             company_word_list = None
             if param_cfg["company"] is not None:
                 g_mgr.set_company(param_cfg["company"])
@@ -623,46 +503,7 @@ def do_clone():
     show_debug("Clone the finance folder to %s" % clone_foldername)
     subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
 
-
-# def calculate_profit(total_count):
-#     import random
-#     filename = "profit"
-#     money = 100
-#     win_count = 0
-#     loss_count = 0
-#     with open(filename, "w") as fp:
-#         for index in range(1, total_count + 1):
-#             dice_index = random.randint(1, 6)
-#             money_old = money
-#             if dice_index % 2 == 1:
-#                 loss_count += 1
-#                 money -= dice_index
-#                 msg = "%03d %03d * - - %03d" % (index, money_old, money)
-#                 print msg
-#                 fp.write(msg + "\n")
-#             else:
-#                 win_count += 1
-#                 dice_index = random.randint(1, 6)
-#                 money += dice_index
-#                 msg = "%03d %03d - * %d %03d" % (index, money_old, dice_index, money)
-#                 print msg
-#                 fp.write(msg + "\n")
-#         msg = "Total: %d, Win: %d, Loss: %d" % (total_count, win_count, loss_count)
-#         print msg
-#         fp.write(msg + "\n")
-
-
-# from libs.stock import web_scrapy_company_profile as CompanyProfile
-
 if __name__ == "__main__":
-    # calculate_profit(262)
-    # company_profile = CompanyProfile.CompanyProfile.Instance()
-    # import pdb; pdb.set_trace()
-    # # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_DAY)
-    # # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_WEEK)
-    # # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_MONTH)
-    # print company_profile.lookup_company_first_data_date("3709", CMN.DEF.DATA_TIME_UNIT_QUARTER)
-    # sys.exit(0)
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
@@ -693,15 +534,11 @@ if __name__ == "__main__":
 # Check the parameters for the manager
     check_param()
     # import pdb; pdb.set_trace()
-    # if param_cfg["company_list_in_folderpath"] is not None:
-    #     show_company_list_in_folerpath_and_exit()
 # Setup the parameters for the manager
     setup_param()
 # Merge the finance folders...
     if param_cfg["merge_finance_folderpath_src_list"] is not None:
         merge_finance_folder_and_exit(param_cfg["merge_finance_folderpath_src_list"], param_cfg["merge_finance_folderpath_dst"])
-    # if param_cfg["renew_statement_field"]:
-    #     renew_statement_field_and_exit()
 # Start to do something about scrapy......
 # Reset the file positon of the log file to 0
     # if param_cfg["check"]:

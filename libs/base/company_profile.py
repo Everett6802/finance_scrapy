@@ -675,12 +675,14 @@ class CompanyProfile(object):
 
 
     def lookup_company_group_name(self, company_number):
-        COMPANY_PROFILE = self.lookup_company_profile(company_number)
+        COMPANY_PROFILE = self.lookup_company_profile(company_number, disable_exception)
         return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME]
 
 
-    def lookup_company_group_number(self, company_number):
+    def lookup_company_group_number(self, company_number, disable_exception=False):
         COMPANY_PROFILE = self.lookup_company_profile(company_number)
+        if not disable_exception and COMPANY_PROFILE is None:
+            return None
         return COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER]
 
 
@@ -720,10 +722,22 @@ class CompanyProfile(object):
         return None
 
 
-    def is_company_exist(self, company_number):
-        return True if self.lookup_company_profile(company_number, True) is not None else False
+    def is_company_exist(self, company_number, company_group_number=None):
+        COMPANY_PROFILE = self.lookup_company_profile(company_number, True)
+        if COMPANY_PROFILE is None:
+            return False
+# Check company is in certain a group if necessary
+        if company_group_number is not None:
+            if int(COMPANY_PROFILE[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER]) != int(company_group_number):
+                return False
+        return True
 
 
     def is_company_etf(self, company_number):
         assert self.is_company_exist(company_number), "The company number[%s] does NOT exist" % company_number
         return True if (re.match(ETF_COMPANY_CODE_NUMBER_PATTERN, company_number, re.U) is not None) else False
+
+
+    def is_company_group_number_in_range(self, company_group_number):
+        company_group_number = int(company_group_number)
+        return False if (company_group_number < 0 or company_group_number >= self.__company_group_size) else True

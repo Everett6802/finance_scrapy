@@ -204,9 +204,10 @@ class CompanyGroupSet(object):
         self.altered_company_number_in_group_dict = None
         self.is_whole = False
         self.is_add_done = False
-        self.check_company_exist = True
+        # self.check_company_exist = True
         self.company_amount = None
         self.market_type = CMN.DEF.MARKET_TYPE_NONE
+        self.enable_company_not_found_exception = False
 
 
     def items(self):
@@ -235,10 +236,25 @@ class CompanyGroupSet(object):
         self.set_market_type(CMN.DEF.MARKET_TYPE_NONE)
 
 
-    def add_company_in_group_list(self, company_group_number, company_code_number_in_group_list):
+    def __check_company_in_group_exist(self, company_code_number, company_group_number):
+        exist = True
+        if not self.__get_company_profile().is_company_exist(company_code_number, company_group_number):
+            msg = "The company [%s] of company group number[%s] does NOT exist" % (str(company_code_number), str(company_group_number))
+            if self.enable_company_not_found_exception:
+                g_logger.error(msg)
+                raise CMN.EXCEPTION.WebScrapyNotFoundException(msg)
+            else:
+                g_logger.warn(msg)
+            exist = False
+        return exist
+
+
+    def __add_company_in_group_list(self, company_group_number, company_code_number_in_group_list, need_check_company=True):
         if self.is_add_done:
             g_logger.error("The add_done flag has already been set to True");
             raise RuntimeError("The add_done flag has already been set to True")
+        if not self.__check_company_group_number_in_range(company_group_number):
+            return
         if self.company_number_in_group_dict is None:
             self.company_number_in_group_dict = {}
         if self.company_number_in_group_dict.get(company_group_number, None) is None:
@@ -249,10 +265,9 @@ class CompanyGroupSet(object):
                 raise ValueError("The company group[%d] has already been set to NULL" % company_group_number)
         for company_code_number in company_code_number_in_group_list:
             # import pdb; pdb.set_trace()
-            if self.check_company_exist:
-                if not self.__get_company_profile().is_company_exist(company_code_number):
-                    g_logger.warn("The company of company code number[%s] does NOT exist" % (str(company_code_number), str(company_group_number)))
-                    continue
+# Check if the company exist and company exist in the group
+            if need_check_company and not self.__check_company_in_group_exist(company_code_number, company_group_number):
+                continue
             if company_code_number in self.company_number_in_group_dict[company_group_number]:
                 g_logger.warn("The company code number[%s] has already been added to the group[%s]" % (str(company_code_number), str(company_group_number)))
                 continue
@@ -264,32 +279,66 @@ class CompanyGroupSet(object):
             self.company_number_in_group_dict[company_group_number].append(company_code_number)
 
 
+    def __lookup_and_check_company_group_number(self, company_code_number):
+        company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number, True)
+        if company_group_number is None:
+            msg = "The company [%s] does NOT exist" % str(company_code_number)
+            if self.enable_company_not_found_exception:
+                g_logger.error(msg)
+                raise CMN.EXCEPTION.WebScrapyNotFoundException(msg)
+            else:
+                g_logger.warn(msg)
+        return company_group_number
+
+
+    def __check_company_group_number_in_range(self, company_group_number):
+        company_group_number = int(company_group_number)
+        if not self.__get_company_profile().is_company_group_number_in_range(company_group_number):
+            errmsg = "The company group number[%d] is Out-of-Range [0, %d)" % (company_group_number, self.__get_company_profile().CompanyGroupSize)
+            if self.enable_company_not_found_exception:
+                g_logger.error(errmsg)
+                raise CMN.EXCEPTION.WebScrapyIncorrectValueException(errmsg)
+            else:
+                g_logger.warn(errmsg)
+                return False
+        return True
+
+
+    def add_company_in_group_list(self, company_group_number, company_code_number_in_group_list):
+        return self.__add_company_in_group_list(company_group_number, company_code_number_in_group_list)
+
+
     def add_company_list(self, company_code_number_list):
 # Categorize the company code number in the list into correct group
         company_code_number_in_group_dict = {}
         for company_code_number in company_code_number_list:
-            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            company_group_number = self.__lookup_and_check_company_group_number(company_code_number)
+            if company_group_number is None:
+                continue
             if company_code_number_in_group_dict.get(company_group_number, None) is None:
                 company_code_number_in_group_dict[company_group_number] = []
             company_code_number_in_group_dict[company_group_number].append(company_code_number)
 # Add data by group
         for company_group_number, company_code_number_in_group_list in company_code_number_in_group_dict.items():
-            self.add_company_in_group_list(company_group_number, company_code_number_in_group_list)
+            self.__add_company_in_group_list(company_group_number, company_code_number_in_group_list, False)
 
 
     def add_company(self, company_code_number, company_group_number=None):
         if company_group_number is None:
-            company_group_number = self.__get_company_profile().lookup_company_group_number(company_code_number)
+            company_group_number = self.__lookup_and_check_company_group_number(company_code_number)
+            if company_group_number is None:
+                return
         company_code_number_in_group_array = []
         company_code_number_in_group_array.append(company_code_number)
-        self.add_company_in_group_list(company_group_number, company_code_number_in_group_array)
+        self.__add_company_in_group_list(company_group_number, company_code_number_in_group_array, False)
 
 
     def add_company_group(self, company_group_number):
         if self.is_add_done:
             g_logger.error("The add_done flag has already been set to True");
             raise RuntimeError("The add_done flag has already been set to True")
-
+        if not self.__check_company_group_number_in_range(company_group_number):
+            return
         if self.company_number_in_group_dict is None:
             self.company_number_in_group_dict = {}
 
@@ -325,38 +374,6 @@ class CompanyGroupSet(object):
             self.altered_company_number_in_group_dict = {}
             for key, value in self.company_number_in_group_dict.items():
                 self.altered_company_number_in_group_dict[key] = value if (value is not None) else (self.get_whole_company_number_in_group_dict(self.market_type))[key]
-
-
-    @property
-    def CompanyAmount(self):
-        # import pdb; pdb.set_trace()
-        if not self.is_add_done:
-            g_logger.error("The add_done flag is NOT set to True");
-            raise RuntimeError("The add_done flag is NOT set to True")
-        if self.company_amount is None:
-            self.company_amount = 0;
-            for company_group_number, company_number_list in self.altered_company_number_in_group_dict.items():
-                for company_number in company_number_list:
-                    self.company_amount += 1
-        return self.company_amount
-
-
-    @property
-    def CurrentCompanyAmount(self):
-        company_amount = 0
-        if self.altered_company_number_in_group_dict is not None:
-            for company_group_number, company_number_list in self.altered_company_number_in_group_dict.items():
-                for company_number in company_number_list:
-                    company_amount += 1
-        return company_amount
-
-
-    @property
-    def IsWhole(self):
-        if not self.is_add_done:
-            g_logger.error("The add_done flag is NOT set to True");
-            raise RuntimeError("The add_done flag is NOT set to True")
-        return self.is_whole
 
 
     def get_sub_company_group_set_in_market_type(self, market_type):
@@ -466,3 +483,45 @@ class CompanyGroupSet(object):
         except ValueError:
             return False
         return True
+
+
+    @property
+    def CompanyAmount(self):
+        # import pdb; pdb.set_trace()
+        if not self.is_add_done:
+            g_logger.error("The add_done flag is NOT set to True");
+            raise RuntimeError("The add_done flag is NOT set to True")
+        if self.company_amount is None:
+            self.company_amount = 0;
+            for company_group_number, company_number_list in self.altered_company_number_in_group_dict.items():
+                for company_number in company_number_list:
+                    self.company_amount += 1
+        return self.company_amount
+
+
+    @property
+    def CurrentCompanyAmount(self):
+        company_amount = 0
+        if self.altered_company_number_in_group_dict is not None:
+            for company_group_number, company_number_list in self.altered_company_number_in_group_dict.items():
+                for company_number in company_number_list:
+                    company_amount += 1
+        return company_amount
+
+
+    @property
+    def IsWhole(self):
+        if not self.is_add_done:
+            g_logger.error("The add_done flag is NOT set to True");
+            raise RuntimeError("The add_done flag is NOT set to True")
+        return self.is_whole
+
+
+    @property
+    def EnableCompanyNotFoundException(self):
+        return self.enable_company_not_found_exception
+
+
+    @EnableCompanyNotFoundException.setter
+    def EnableCompanyNotFoundException(self, enable):
+        self.enable_company_not_found_exception = True
