@@ -6,23 +6,14 @@ import errno
 import logging
 import calendar
 from datetime import datetime, timedelta
-import common_function as CMN_FUNC
-# import web_scrapy_logging as WSL
-# g_logger = WSL.get_web_scrapy_logger()
+# import common_function as CMN_FUNC
 
 
 FINANCE_MODE_UNKNOWN = -1
 FINANCE_MODE_MARKET = 0
 FINANCE_MODE_STOCK = 1
 
-FINANCE_MODE = FINANCE_MODE_UNKNOWN
-IS_FINANCE_MARKET_MODE = False
-IS_FINANCE_STOCK_MODE = True
-
 FINANCE_MODE_DESCRIPTION = ["Market", "Stock",]
-
-PROJECT_FOLDERPATH = CMN_FUNC.get_project_folderpath()
-PROJECT_LIB_FOLDERPATH = "%s/libs" % PROJECT_FOLDERPATH
 
 TIME_OVERLAP_NONE = 0 # The new and original time range does NOT overlap
 TIME_OVERLAP_BEFORE = 1 # The new time range overlaps the original one
@@ -144,7 +135,8 @@ TODAY_MARKET_DATA_EXIST_HOUR = 20
 TODAY_MARKET_DATA_EXIST_MINUTE = 0
 TODAY_STOCK_DATA_EXIST_HOUR = 20
 TODAY_STOCK_DATA_EXIST_MINUTE = 0
-CONF_FOLDER = "conf"
+LIB_FOLDERNAME = "libs"
+CONF_FOLDERNAME = "conf"
 CSV_ROOT_FOLDERPATH = "/var/tmp/finance"
 CSV_DST_MERGE_ROOT_FOLDERPATH = "/var/tmp/finance_merge"
 CSV_MARKET_FOLDERNAME = "market"

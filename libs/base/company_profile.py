@@ -11,6 +11,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 import timeslice_generator as TimesliceGenerator
 import libs.common as CMN
+from libs.common.common_variable import GlobalVar as GV
 # import libs.base as BASE
 g_logger = CMN.LOG.get_logger()
 
@@ -160,13 +161,13 @@ class CompanyProfile(object):
     def __copy_company_profile_config_file(self):
         # import pdb; pdb.set_trace()
         # current_path = os.path.dirname(os.path.realpath(__file__))
-        [working_folder, project_name] = CMN.DEF.PROJECT_FOLDERPATH.rsplit('/', 1)
+        [working_folder, project_name] = GV.PROJECT_FOLDERPATH.rsplit('/', 1)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.CONF_FOLDER),
-            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.CONF_FOLDERNAME),
+            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.CONF_FOLDERNAME),
         ]
-        company_profile_src_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
-        company_group_src_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
+        company_profile_src_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+        company_group_src_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             # if os.path.exists(dst_folderpath):
             #     g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
@@ -181,7 +182,7 @@ class CompanyProfile(object):
         need_update_from_web = False
         # current_path = os.path.dirname(os.path.realpath(__file__))
         # [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+        conf_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Try to Acquire the Company Code Number data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Company Code Number config file does NOT exist")
@@ -432,7 +433,7 @@ class CompanyProfile(object):
     def __write_company_profile_to_file(self, cur_timestamp_str=None):
         # import pdb; pdb.set_trace()
 # File for keeping track of the company code number info
-#         conf_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+#         conf_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
 #         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
 #         with open(conf_filepath, 'wb') as fp:
 #             try:
@@ -460,7 +461,7 @@ class CompanyProfile(object):
 # Can be readable for the CSV reader by encoding utf-8 unicode
         CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
 # File for keeping track of the company group info
-#         conf_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
+#         conf_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
 #         g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
 #         with open(conf_filepath, 'wb') as fp:
 #             try:
@@ -507,7 +508,7 @@ class CompanyProfile(object):
 
     def __write_company_group_to_file(self):
         # import pdb; pdb.set_trace()
-#         conf_filepath = "%s/%s/%s" % (CMN.DEF.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+#         conf_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
 #         g_logger.debug("Write the Company Code Number info to the file: %s......" % conf_filepath)
 #         with open(conf_filepath, 'wb') as fp:
 #             try:

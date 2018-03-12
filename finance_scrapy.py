@@ -8,8 +8,8 @@ import time
 import subprocess
 from datetime import datetime, timedelta
 from libs import common as CMN
+from libs.common.common_variable import GlobalVar as GV
 from libs import base as BASE
-# g_configurer = None
 g_mgr = None
 g_logger = CMN.LOG.get_logger()
 param_cfg = {}
@@ -19,7 +19,6 @@ def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
-    # print "--market_mode --stock_mode\nDescription: Switch the market/stock mode\nCaution: Read parameters from %s when NOT set" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
     print "--silent\nDescription: Disable print log on console"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
@@ -49,7 +48,7 @@ def show_usage_and_exit():
     print "  Format 2 (,end_time): ,2015-01-01"
     print "  Format 3 (start_time,end_time): 2015-01-01,2015-09-04"
     print "--time_today --time_last --time_duration_range\nCaution: Shuold NOT be set simultaneously. Will select the first one"
-    if CMN.DEF.IS_FINANCE_STOCK_MODE:
+    if GV.IS_FINANCE_STOCK_MODE:
         print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only take effect when config_from_file is NOT set"
         print "  Format1: Company code number (ex. 2347)"
         print "  Format2: Company code number range (ex. 2100-2200)"
@@ -109,10 +108,10 @@ def update_workday_calendar_and_exit():
 
 
 def show_command_example_and_exit():
-    project_folderpath = CMN.FUNC.get_project_folderpath()
+    project_folderpath = GV.PROJECT_FOLDERPATH
     # print project_folderpath
-    project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.CONF_FOLDER)
-    os.chdir(project_config_folderpath)
+    # project_config_folderpath = "%s/%s" % (project_folderpath, CMN.DEF.CONF_FOLDER)
+    os.chdir(GV.PROJECT_CONF_FOLDERPATH)
     cmd = "cat %s" % CMN.DEF.COMMAND_EXAMPLE_FILENAME
     p = subprocess.Popen(cmd, shell=True)
     os.waitpid(p.pid, 0)
@@ -122,7 +121,7 @@ def show_command_example_and_exit():
 def check_url_and_exit():
     scrapy_class_index_list = CMN.FUNC.get_scrapy_class_index_range_list()
     error_found = False
-    errmsg = "**************** Check %s URL ****************\n" % CMN.DEF.FINANCE_MODE_DESCRIPTION[CMN.DEF.FINANCE_MODE]
+    errmsg = "**************** Check %s URL ****************\n" % CMN.DEF.FINANCE_MODE_DESCRIPTION[GV.FINANCE_MODE]
     for scrapy_class_index in scrapy_class_index_list:
         try:
             g_mgr.do_scrapy_debug(scrapy_class_index, True)
@@ -288,13 +287,13 @@ def parse_param(early_parse=False):
             index_offset = 2
         elif re.match("(-c|--company)", sys.argv[index]):
             if not early_parse:
-                if CMN.DEF.IS_FINANCE_MARKET_MODE:
+                if GV.IS_FINANCE_MARKET_MODE:
                     g_logger.warn("The company arguemnt is ignored in the Market mode")
                 else:
                     param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--enable_company_not_found_exception", sys.argv[index]):
-            if not early_parse:
+            if early_parse:
                 param_cfg["enable_company_not_found_exception"] = True
             index_offset = 1
         elif re.match("--multi_thread", sys.argv[index]):
@@ -335,11 +334,11 @@ def check_param():
         if param_cfg["time_duration_type"] != CMN.DEF.DATA_TIME_DURATION_RANGE:
             param_cfg["time_duration_range"] = None
             show_warn("The 'time_duration_range' argument is ignored since 'time_duration_type' is NOT 'DATA_TIME_DURATION_TODAY'")
-        if CMN.DEF.IS_FINANCE_MARKET_MODE:
+        if GV.IS_FINANCE_MARKET_MODE:
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
                 show_warn("The 'company' argument is ignored since it's 'Market' mode")
-    if CMN.DEF.IS_FINANCE_MARKET_MODE:
+    if GV.IS_FINANCE_MARKET_MODE:
         if param_cfg["renew_statement_field"]:
             param_cfg["renew_statement_field"] = False
             show_warn("The 'renew_statement_field' argument is ignored since it's 'Market' mode")
@@ -413,7 +412,7 @@ def setup_param():
         # import pdb; pdb.set_trace()
         g_mgr.set_method_time_duration(method_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
 # Set Company
-        if CMN.DEF.IS_FINANCE_STOCK_MODE:
+        if GV.IS_FINANCE_MARKET_MODE:
             company_word_list = None
             if param_cfg["company"] is not None:
                 g_mgr.set_company(param_cfg["company"])
@@ -424,32 +423,39 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
-def determine_finance_mode():
-    parse_param(True)
-    CMN.DEF.FINANCE_MODE = CMN.FUNC.get_finance_mode()
-    if CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_MARKET:
+def update_finance_mode_global_variable():
+    # assert not GV.GLOBAL_VARIABLE_UPDATED, "GV.GLOBAL_VARIABLE_UPDATED should NOT be True"
+    finance_mode = CMN.FUNC.get_finance_mode()
+    if finance_mode == CMN.DEF.FINANCE_MODE_MARKET:
         # from libs.market import web_scrapy_market_configurer as CONF
         # g_configurer = CONF.MarketConfigurer.Instance()
-        CMN.DEF.IS_FINANCE_MARKET_MODE = True
-        CMN.DEF.IS_FINANCE_STOCK_MODE = False
+        GV.IS_FINANCE_MARKET_MODE = True
+        GV.IS_FINANCE_STOCK_MODE = False
         show_info("Instantiate in MARKET mode.......")
-    elif CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_STOCK:
+    elif finance_mode == CMN.DEF.FINANCE_MODE_STOCK:
         # from libs.stock import web_scrapy_stock_configurer as CONF
         # g_configurer = CONF.StockConfigurer.Instance()
-        CMN.DEF.IS_FINANCE_MARKET_MODE = False
-        CMN.DEF.IS_FINANCE_STOCK_MODE = True
+        GV.IS_FINANCE_MARKET_MODE = False
+        GV.IS_FINANCE_STOCK_MODE = True
         show_info("Instantiate in STOCK mode.......")
     else:
         raise ValueError("Unknown finance mode !!!")
+    GV.FINANCE_MODE = finance_mode
+
+
+def update_global_variable():
+    # assert not GV.GLOBAL_VARIABLE_UPDATED, "GV.GLOBAL_VARIABLE_UPDATED should NOT be True"
+    GV.ENABLE_COMPANY_NOT_FOUND_EXCEPTION = param_cfg["enable_company_not_found_exception"]
+    GV.GLOBAL_VARIABLE_UPDATED = True
 
 
 def get_manager(update_cfg):
     # assert g_configurer is None, "g_configurer should NOT be None"
     mgr_obj = None
-    if CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_MARKET:
+    if GV.IS_FINANCE_MARKET_MODE:
         from libs.market import market_mgr as MGR
         mgr_obj = MGR.MarketMgr(**update_cfg)
-    elif CMN.DEF.FINANCE_MODE == CMN.DEF.FINANCE_MODE_STOCK:
+    elif GV.IS_FINANCE_STOCK_MODE:
         from libs.stock import stock_mgr as MGR
         mgr_obj = MGR.StockMgr(**update_cfg)
     else:
@@ -503,29 +509,31 @@ def do_clone():
     show_debug("Clone the finance folder to %s" % clone_foldername)
     subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
 
+
 if __name__ == "__main__":
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
+    update_finance_mode_global_variable()
+    parse_param(True)
+    update_global_variable()
     parse_param()
+
+# Determine the mode and initialize the manager class
     if param_cfg["update_workday_calendar"]:
         update_workday_calendar_and_exit()
     if param_cfg["show_command_example"]:
         show_command_example_and_exit()
-# Determine the mode and initialize the manager class
-    determine_finance_mode()
-
     if param_cfg["help"]:
         show_usage_and_exit()
-# Prepare the param for initializing the manager class
-    update_cfg = {}
-    if param_cfg["multi_thread"] is not None:
-        update_cfg["multi_thread_amount"] = param_cfg["multi_thread"]
-    if param_cfg["show_progress"]:
-        update_cfg["show_progress"] = param_cfg["show_progress"]
     # import pdb; pdb.set_trace()
-    g_mgr = get_manager(update_cfg)
-
+# Initialize the manager class
+    g_mgr = get_manager(
+        {
+            "multi_thread_amount": param_cfg["multi_thread"],
+            "show_progress": param_cfg["show_progress"],
+        }
+    )
 # RUN the argument that will return after the execution is done
     if param_cfg["check_url"]:
         check_url_and_exit()

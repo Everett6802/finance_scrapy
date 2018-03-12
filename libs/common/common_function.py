@@ -13,6 +13,8 @@ import inspect
 import warnings
 from datetime import datetime, timedelta
 import common_definition as CMN_DEF
+# import common_variable as _PROJECT_FOLDERPATH
+from libs.common.common_variable import GlobalVar as GV
 import common_class as CMN_CLS
 import common_exception as CMN_EXCEPTION
 import common_logging as LOG
@@ -94,7 +96,7 @@ def get_full_stack_traceback():
 
 def import_web_scrapy_module(module_folder, module_name):
     # import pdb; pdb.set_trace()
-    module_path = "%s/%s" % (CMN_DEF.PROJECT_LIB_FOLDERPATH, module_folder)
+    module_path = "%s/%s" % (GV.PROJECT_LIB_FOLDERPATH, module_folder)
     sys.path.insert(0, module_path)
     module_file = '%s/%s.py' % (module_path, module_name)
     assert os.path.exists(module_file), "module file does not exist: %s" % module_file
@@ -153,63 +155,63 @@ def instantiate_web_scrapy_object(scrapy_class_index, **kwargs):
 
 
 def check_scrapy_class_index_in_range(scrapy_class_index):
-    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+    if GV.IS_FINANCE_MARKET_MODE:
         return True if CMN_DEF.SCRAPY_MARKET_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_MARKET_CLASS_END else False
-    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+    elif GV.IS_FINANCE_STOCK_MODE:
         return True if CMN_DEF.SCRAPY_STOCK_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_END else False
     raise RuntimeError("Unknown finance mode")
 
 
 def check_statement_scrapy_class_index_in_range(scrapy_class_index):
-    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+    if GV.IS_FINANCE_MARKET_MODE:
         return False
-    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+    elif GV.IS_FINANCE_STOCK_MODE:
         return True if CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_END else False
     raise RuntimeError("Unknown finance mode")
 
 
 def get_scrapy_class_index_range():
-    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+    if GV.IS_FINANCE_MARKET_MODE:
         return (CMN_DEF.SCRAPY_MARKET_CLASS_START, CMN_DEF.SCRAPY_MARKET_CLASS_END)
-    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+    elif GV.IS_FINANCE_STOCK_MODE:
         return (CMN_DEF.SCRAPY_STOCK_CLASS_START, CMN_DEF.SCRAPY_STOCK_CLASS_END)
     raise RuntimeError("Unknown finance mode")
 
 
 def get_scrapy_class_size():
-    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+    if GV.IS_FINANCE_MARKET_MODE:
         return CMN_DEF.SCRAPY_MARKET_CLASS_SIZE
-    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+    elif GV.IS_FINANCE_STOCK_MODE:
         return CMN_DEF.SCRAPY_STOCK_CLASS_SIZE
     raise RuntimeError("Unknown finance mode")
 
 
 def get_scrapy_method_index_range():
-    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+    if GV.IS_FINANCE_MARKET_MODE:
         return (CMN_DEF.SCRAPY_MARKET_METHOD_START, CMN_DEF.SCRAPY_MARKET_METHOD_END)
-    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+    elif GV.IS_FINANCE_STOCK_MODE:
         return (CMN_DEF.SCRAPY_STOCK_METHOD_START, CMN_DEF.SCRAPY_STOCK_METHOD_END)
     raise RuntimeError("Unknown finance mode")
 
 
 def get_statement_scrapy_method_index_range():
-    if CMN_DEF.IS_FINANCE_STOCK_MODE:
+    if GV.IS_FINANCE_STOCK_MODE:
         return (CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_START, CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_END)
     raise RuntimeError("Unknown finance mode")
 
 
 def check_scrapy_method_index_in_range(scrapy_method_index):
-    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+    if GV.IS_FINANCE_MARKET_MODE:
         return True if CMN_DEF.SCRAPY_MARKET_METHOD_START <= scrapy_class_index < CMN_DEF.SCRAPY_MARKET_METHOD_END else False
-    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+    elif GV.IS_FINANCE_STOCK_MODE:
         return True if CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_METHOD_END else False
     raise RuntimeError("Unknown finance mode")
 
 
 def check_statement_scrapy_method_index_in_range(scrapy_method_index):
-    if CMN_DEF.IS_FINANCE_MARKET_MODE:
+    if GV.IS_FINANCE_MARKET_MODE:
         return False
-    elif CMN_DEF.IS_FINANCE_STOCK_MODE:
+    elif GV.IS_FINANCE_STOCK_MODE:
         return True if CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_END else False
     raise RuntimeError("Unknown finance mode")
 
@@ -422,23 +424,15 @@ def get_last_url_data_date(today_data_exist_hour, today_data_exst_minute):
     return CMN_CLS.FinanceDate(datetime_today) if datetime_now >= datetime_threshold else CMN_CLS.FinanceDate(datetime_yesterday)
 
 
-def get_project_folderpath():
-    RELATIVE_COMMON_FOLDERPATH = ""
-    current_path = os.path.dirname(os.path.realpath(__file__))
-    # print current_path
-    [project_folder, lib_folder, common_folder] = current_path.rsplit('/', 2)
-    assert (lib_folder == "libs"), "The lib folder name[%s] is NOT as expected: libs" %  lib_folder
-    assert (common_folder == "common"), "The common folder name[%s] is NOT as expected: common" % common_folder
-    return project_folder
-
-
 def get_config_filepath(conf_filename, conf_folderpath=None):
+    # import pdb; pdb.set_trace()
     # current_path = os.path.dirname(os.path.realpath(__file__))
     # [project_folder, lib_folder] = current_path.rsplit('/', 1)
-    if conf_folderpath is None:
-        conf_filepath = "%s/%s/%s" % (CMN_DEF.PROJECT_FOLDERPATH, CMN_DEF.CONF_FOLDER, conf_filename)
-    else:
-        conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
+    # if conf_folderpath is None:
+    #     conf_filepath = "%s/%s" % (GV.CONF_PROJECT_FOLDERPATH, conf_filename)
+    # else:
+    #     conf_filepath = "%s/%s" % (conf_folderpath, conf_filename)
+    conf_filepath = "%s/%s" % (GV.PROJECT_CONF_FOLDERPATH if conf_folderpath is None else conf_folderpath, conf_filename)
     # g_logger.debug("Parse the config file: %s" % conf_filepath)
     return conf_filepath
 

@@ -85,10 +85,10 @@ class WorkdayCanlendar(object):
         current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.CONF_FOLDER),
-            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.CONF_FOLDER),
+            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.CONF_FOLDERNAME),
+            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.CONF_FOLDERNAME),
         ]
-        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.CONF_FOLDER, CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
+        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
         for dst_folderpath in dst_folderpath_list:
             if os.path.exists(dst_folderpath):
                 g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))

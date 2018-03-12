@@ -10,6 +10,7 @@ TimeDurationTuple = collections.namedtuple('TimeDurationTuple', ('time_duration_
 ScrapyClassTimeDurationTuple = collections.namedtuple('ScrapyClassTimeDurationTuple', ('scrapy_class_index', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
 ScrapyClassCompanyTimeDurationTuple = collections.namedtuple('ScrapyClassCompanyTimeDurationTuple', ('scrapy_class_index', 'company_code_number', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
 import common_definition as CMN_DEF
+from libs.common.common_variable import GlobalVar as GV
 import common_function as CMN_FUNC
 
 singleton_thread_lock = threading.Lock()
@@ -237,8 +238,8 @@ class FinanceDate(FinanceTimeBase):
     @classmethod
     def get_last_finance_date(cls):
         if cls.last_finance_date is None:
-            today_data_exist_hour = CMN_DEF.TODAY_MARKET_DATA_EXIST_HOUR if CMN_DEF.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
-            today_data_exist_minute = CMN_DEF.TODAY_MARKET_DATA_EXIST_MINUTE if CMN_DEF.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
+            today_data_exist_hour = CMN_DEF.TODAY_MARKET_DATA_EXIST_HOUR if GV.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
+            today_data_exist_minute = CMN_DEF.TODAY_MARKET_DATA_EXIST_MINUTE if GV.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
             cls.last_finance_date = CMN_FUNC.get_last_url_data_date(today_data_exist_hour, today_data_exist_minute) 
         return cls.last_finance_date
 

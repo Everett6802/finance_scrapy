@@ -5,6 +5,7 @@ import collections
 import threading
 import company_profile as CompanyProfile
 import libs.common as CMN
+from libs.common.common_variable import GlobalVar as GV
 g_logger = CMN.LOG.get_logger()
 g_lock = threading.Lock()
 
@@ -207,7 +208,7 @@ class CompanyGroupSet(object):
         # self.check_company_exist = True
         self.company_amount = None
         self.market_type = CMN.DEF.MARKET_TYPE_NONE
-        self.enable_company_not_found_exception = False
+        self.enable_company_not_found_exception = GV.ENABLE_COMPANY_NOT_FOUND_EXCEPTION
 
 
     def items(self):

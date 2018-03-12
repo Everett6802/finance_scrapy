@@ -1,4 +1,4 @@
 # Market Mode
-./finance_scrapy.py --source 1 --time_duration_range 2016-10-19,2016-10-21 --market_mode
+./finance_scrapy.py --method 1 --time_duration_range 2016-10-19,2016-10-21
 # Stock Mode
-./finance_scrapy.py --source 8 --company 6269,3189  --time_duration_range 2016-10-19,2016-10-21 --stock_mode
+./finance_scrapy.py --method 8 --company 6269,3189  --time_duration_range 2016-10-19,2016-10-21
