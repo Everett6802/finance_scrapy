@@ -10,6 +10,7 @@ from datetime import datetime, timedelta
 from abc import ABCMeta, abstractmethod
 import worker_thread_pool as ThreadPool
 import libs.common as CMN
+from libs.common.common_variable import GlobalVar as GV
 g_logger = CMN.LOG.get_logger()
 
 
@@ -205,7 +206,7 @@ class MgrBase(object):
         g_logger.debug("************* Source Type Time Range *************")
         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
             if not CMN.FUNC.check_scrapy_class_index_in_range(scrapy_class_time_duration.scrapy_class_index):
-                raise ValueError("The scrapy class index[%d] is NOT in %s mode" % (scrapy_class_time_duration.scrapy_class_index, CMN.DEF.FINANCE_MODE_DESCRIPTION[CMN.DEF.FINANCE_MODE]))
+                raise ValueError("The scrapy class index[%d] is NOT in %s mode" % (scrapy_class_time_duration.scrapy_class_index, CMN.DEF.FINANCE_MODE_DESCRIPTION[GV.FINANCE_MODE]))
             g_logger.debug("[%s] %s-%s" % (
                 CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], 
                 scrapy_class_time_duration.time_duration_start, 

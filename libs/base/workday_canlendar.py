@@ -5,9 +5,7 @@ import sys
 import re
 import requests
 import json
-# import shutil
 from bs4 import BeautifulSoup
-# from datetime import datetime, timedelta
 import libs.common as CMN
 g_logger = CMN.LOG.get_logger()
 
@@ -481,6 +479,17 @@ class WorkdayCanlendar(object):
         if not self.is_workday(date_cur):
             g_logger.debug("Find the nearest previous workday[%s]: %s" % (date_cur, date_nearest_prev))
         return date_nearest_prev
+
+
+    @property
+    def FirstWorkday(self):
+        return self.get_first_workday()
+
+
+    @property
+    def LastWorkday(self):
+        return self.get_last_workday()
+
 
 ####################################################################################################
 

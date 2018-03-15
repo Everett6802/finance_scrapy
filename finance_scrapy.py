@@ -338,6 +338,23 @@ def check_param():
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
                 show_warn("The 'company' argument is ignored since it's 'Market' mode")
+# Check time range
+    time_range_start = None
+    if param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
+        time_range_start = CMN.CLS.FinanceDate.get_today_finance_date()
+    elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
+        time_range_start = CMN.CLS.FinanceDate.get_last_finance_date()
+    elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
+        (time_range_start, _) = CMN.FUNC.parse_time_duration_range_str_to_object(param_cfg["time_duration_range"])
+    else:
+        raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
+
+    if time_range_start is not None:
+        workday_calendar = BASE.WC.WorkdayCanlendar.Instance()
+        if time_range_start > workday_calendar.LastWorkday:
+            errmsg = "ERROR!! The start date[%s] is later than the last workday[%s]" % (time_range_start, workday_calendar.LastWorkday)
+            show_error_and_exit(errmsg)
+
     if GV.IS_FINANCE_MARKET_MODE:
         if param_cfg["renew_statement_field"]:
             param_cfg["renew_statement_field"] = False
