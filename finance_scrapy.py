@@ -17,30 +17,38 @@ param_cfg = {}
 
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
-    print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set"
-    print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set"
-    print "--silent\nDescription: Disable print log on console"
-    print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
-    print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set"
+    print "--silent\nDescription: Disable print log on console\n"
+    print "--force_switch_finance_mode\nDescription: Force to switch the finance mode. Overwrite the setting in %s. 0: Market, 1: Stock\n" % CMN.DEF.FINANCE_MODE_SWITCH_CONF_FILENAME
+    print "--show_command_example\nDescription: Show command example\nCaution: Ignore other parameters when set\n"
+    print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set\n"
+    print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set\n"
+    print "--check_url\nDescription: Check URL of every source type\nCaution: Ignore other parameters when set\n"
     print "--debug_scrapy_class\nDescription: Debug a specific scrapy class only\nCaution: Ignore other parameters when set"
+    print "Scrapy Class:"
     scrapy_class_index_list = CMN.FUNC.get_scrapy_class_index_range_list()
     for scrapy_class_index in scrapy_class_index_list:
         print "  %d: %s" % (scrapy_class_index, CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index])
     print "  Format: Scrapy class index (ex. 1)"
-    print "--no_scrapy\nDescription: Don't scrape Web data"
-    print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrapy flag is NOT set"
-    print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only take effect when --check is set"
-    print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
-    print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web"
-    print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s" % CMN.DEF.CSV_ROOT_FOLDERPATH
-    print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
+    print ""
+    print "--merge_finance_folderpath\nDescription: Merge a list of source folderpaths to a destination folderpath\nCaution: The CSV file in different finance folder can NOT be duplicate. If so, the merge progress aborts !!!"
+    print "  Format (src_folderpath1[,src_folderpath2,src_folderpath3,...]:[dst_folderpath]) (ex. /var/tmp/finance1[,/var/tmp/finance2,/var/tmp/finance3,...]:/var/tmp/merge_finance)\nCaution: Exploit the default destination folderpath[%s] when not set" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
+    print ""
+    print "--no_scrapy\nDescription: Don't scrape Web data\n"
+    print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrapy flag is NOT set\n"
+    print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only take effect when --check is set\n"
+    print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
+    print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web\n"
+    print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s\n" % CMN.DEF.CSV_ROOT_FOLDERPATH
+    print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s\n" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
     print "--method\nDescription: The list of the methods\nDefault: All finance methods\nCaution: Only take effect when config_from_file is NOT set"
+    print "Scrapy Method:"
     method_index_list = CMN.FUNC.get_method_index_range_list()
     for method_index in method_index_list:
         print "  %d: %s" % (method_index, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
     print "  Format 1: Method (ex. 1,3,5)"
     print "  Format 2: Method range (ex. 2-6)"
     print "  Format 3: Method/Method range hybrid (ex. 1,3-4,6)"
+    print ""
     print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "--time_duration_range\nDescription: The data in the time range of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
@@ -48,19 +56,18 @@ def show_usage_and_exit():
     print "  Format 2 (,end_time): ,2015-01-01"
     print "  Format 3 (start_time,end_time): 2015-01-01,2015-09-04"
     print "--time_today --time_last --time_duration_range\nCaution: Shuold NOT be set simultaneously. Will select the first one"
+    print ""
     if GV.IS_FINANCE_STOCK_MODE:
         print "-c --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only take effect when config_from_file is NOT set"
         print "  Format1: Company code number (ex. 2347)"
         print "  Format2: Company code number range (ex. 2100-2200)"
         print "  Format3: Company group number (ex. [Gg]12)"
         print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
+        print ""
         print "--multi_thread\nDescription: Scrape web data in multi-thread"
         print "  Format: multi-thread number (ex. 4)"
-        print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number"
-    print "--merge_finance_folderpath_src_list\nDescription: The list of source folderpaths to be merged\nCaution: The CSV file in different finance folder can NOT be duplicate. If so, the merge progress aborts"
-    print "  Format 1 (folderpath): /var/tmp/finance"
-    print "  Format 2 (folderpath1,folderpath2,folderpath3): /var/tmp/finance1,/var/tmp/finance2,/var/tmp/finance3"
-    print "--merge_finance_folderpath_dst\nDescription: The destination folderpath after merging\nDefault: %s" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
+        print ""
+        print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
     print "============================================================="
     sys.exit(0)
 
@@ -141,10 +148,17 @@ def debug_scrapy_class_and_exit(scrapy_class_index):
     sys.exit(0)
 
 
-def merge_finance_folder_and_exit(merge_finance_folderpath_src_list, merge_finance_folderpath_dst):
-    show_info("Merge several finance folders to: %s" % merge_finance_folderpath_dst)
-    merge_finance_folderpath_src_list = param_cfg["merge_finance_folderpath_src_list"].split(",")
-    g_mgr.merge_finance_folder(merge_finance_folderpath_src_list, merge_finance_folderpath_dst)
+def merge_finance_folder_and_exit(merge_finance_folderpath):
+    split_str = merge_finance_folderpath.split(CMN.DEF.COLON_DATA_SPLIT)
+    if len(split_str) != 2:
+        raise ValueError("Incorrect format for merging folder: %s" % merge_finance_folderpath)
+    (src_folderpath, dst_folderpath) = split_str
+    if len(dst_folderpath) == 0:
+        show_warn("Set the destination folderpath as default: %s" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
+        dst_folderpath = CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
+    src_folderpath_list = src_folderpath.split(CMN.DEF.COMMA_DATA_SPLIT)
+    show_info("Merge several finance folders%s to: %s" % (src_folderpath_list, dst_folderpath))
+    g_mgr.merge_finance_folder(src_folderpath_list, dst_folderpath)
     sys.exit(0)
 
 
@@ -175,12 +189,16 @@ def renew_statement_field_and_exit():
 
 def init_param():
     # import pdb; pdb.set_trace()
+    param_cfg["silent"] = False
+    param_cfg["force_switch_finance_mode"] = None
     param_cfg["update_workday_calendar"] = False
     param_cfg["show_command_example"] = False
     param_cfg["help"] = False
     param_cfg["check_url"] = False
     param_cfg["debug_scrapy_class"] = None
-    param_cfg["silent"] = False
+    param_cfg["merge_finance_folderpath"] = None
+    # param_cfg["merge_finance_folderpath_src_list"] = None
+    # param_cfg["merge_finance_folderpath_dst"] = None
     param_cfg["no_scrapy"] = False
     param_cfg["show_progress"] = False
     param_cfg["clone"] = False
@@ -195,8 +213,6 @@ def init_param():
     param_cfg["renew_statement_field"] = False
     param_cfg["enable_company_not_found_exception"] = False
     param_cfg["multi_thread"] = None
-    param_cfg["merge_finance_folderpath_src_list"] = None
-    param_cfg["merge_finance_folderpath_dst"] = None
 
 
 def parse_param(early_parse=False):
@@ -208,16 +224,22 @@ def parse_param(early_parse=False):
         if not sys.argv[index].startswith('-'):
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
         if re.match("--show_command_example", sys.argv[index]):
-            param_cfg["show_command_example"] = True
-            return
+            if not early_parse:
+                param_cfg["show_command_example"] = True
+                break
         elif re.match("--update_workday_calendar", sys.argv[index]):
-            param_cfg["update_workday_calendar"] = True
-            index_offset = 1
+            if not early_parse:
+                param_cfg["update_workday_calendar"] = True
+                break
         elif re.match("--silent", sys.argv[index]):
             if early_parse:
                 param_cfg["silent"] = True
                 CMN.DEF.CAN_PRINT_CONSOLE = not param_cfg["silent"]
             index_offset = 1
+        elif re.match("--force_switch_finance_mode", sys.argv[index]):
+            if early_parse:
+                param_cfg["force_switch_finance_mode"] = int(sys.argv[index + 1])
+            index_offset = 2
         elif re.match("(-h|--help)", sys.argv[index]):
             if not early_parse:
                 param_cfg["help"] = True
@@ -230,6 +252,10 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["debug_scrapy_class"] = int(sys.argv[index + 1])
             index_offset = 2 
+        elif re.match("--merge_finance_folderpath", sys.argv[index]):
+            if not early_parse:
+                param_cfg["merge_finance_folderpath"] = sys.argv[index + 1]
+            index_offset = 2
         elif re.match("--no_scrapy", sys.argv[index]):
             if not early_parse:
                 param_cfg["no_scrapy"] = True
@@ -300,20 +326,12 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["multi_thread"] = int(sys.argv[index + 1])
             index_offset = 2
-        elif re.match("--merge_finance_folderpath_src_list", sys.argv[index]):
-            if not early_parse:
-                param_cfg["merge_finance_folderpath_src_list"] = sys.argv[index + 1]
-            index_offset = 2
-        elif re.match("--merge_finance_folderpath_dst", sys.argv[index]):
-            if not early_parse:
-                param_cfg["merge_finance_folderpath_dst"] = sys.argv[index + 1]
-            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
 
 
-def check_param():
+def check_param():    
     if param_cfg["config_from_file"] is not False:
         if param_cfg["method"] is not None:
             param_cfg["method"] = None
@@ -371,9 +389,6 @@ def check_param():
                 param_cfg["multi_thread"] = None
                 show_warn("The 'multi_thread' argument is invalid when the 'renew_statement_field' argument is true")
 
-    if param_cfg["merge_finance_folderpath_src_list"] is not None and param_cfg["merge_finance_folderpath_dst"] is None:
-        param_cfg["merge_finance_folderpath_dst"] = CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
-        show_warn("Set the 'merge_finance_folderpath_dst' argument to default destination folderpath: %s" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     if param_cfg["show_progress"] and param_cfg["no_scrapy"]:
         param_cfg["show_progress"] = False
         show_warn("Set the 'show_progress' argument to False since 'no_scrapy' is set")
@@ -440,9 +455,10 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 
 
-def update_finance_mode_global_variable():
+def update_finance_mode_global_variable(finance_mode=None):
     # assert not GV.GLOBAL_VARIABLE_UPDATED, "GV.GLOBAL_VARIABLE_UPDATED should NOT be True"
-    finance_mode = CMN.FUNC.get_finance_mode()
+    if finance_mode is None:
+        finance_mode = CMN.FUNC.get_finance_mode()
     if finance_mode == CMN.DEF.FINANCE_MODE_MARKET:
         # from libs.market import web_scrapy_market_configurer as CONF
         # g_configurer = CONF.MarketConfigurer.Instance()
@@ -461,7 +477,12 @@ def update_finance_mode_global_variable():
 
 
 def update_global_variable():
+    # import pdb; pdb.set_trace()
     # assert not GV.GLOBAL_VARIABLE_UPDATED, "GV.GLOBAL_VARIABLE_UPDATED should NOT be True"
+    if param_cfg["force_switch_finance_mode"] is not None and param_cfg["force_switch_finance_mode"] != CMN.FUNC.get_finance_mode():
+        show_warn("Force to switch finance mode to %s. Will OVERWRITE the setting in %s" % (CMN.DEF.FINANCE_MODE_DESCRIPTION[param_cfg["force_switch_finance_mode"]], CMN.DEF.FINANCE_MODE_SWITCH_CONF_FILENAME))
+        update_finance_mode_global_variable(param_cfg["force_switch_finance_mode"])
+
     GV.ENABLE_COMPANY_NOT_FOUND_EXCEPTION = param_cfg["enable_company_not_found_exception"]
     GV.GLOBAL_VARIABLE_UPDATED = True
 
@@ -556,14 +577,14 @@ if __name__ == "__main__":
         check_url_and_exit()
     if param_cfg["debug_scrapy_class"] is not None:
         debug_scrapy_class_and_exit(param_cfg["debug_scrapy_class"])
+# Merge the finance folders...
+    if param_cfg["merge_finance_folderpath"] is not None:
+        merge_finance_folder_and_exit(param_cfg["merge_finance_folderpath"])
 # Check the parameters for the manager
     check_param()
     # import pdb; pdb.set_trace()
 # Setup the parameters for the manager
     setup_param()
-# Merge the finance folders...
-    if param_cfg["merge_finance_folderpath_src_list"] is not None:
-        merge_finance_folder_and_exit(param_cfg["merge_finance_folderpath_src_list"], param_cfg["merge_finance_folderpath_dst"])
 # Start to do something about scrapy......
 # Reset the file positon of the log file to 0
     # if param_cfg["check"]:
