@@ -38,6 +38,7 @@ def show_usage_and_exit():
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrapy flag is NOT set\n"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only take effect when --check is set\n"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
+    print "--disable_flush_scrapy\nDescription: Disable the flag of flushing web scrapy data in buffer into CSV files while exception occurs during scraping"
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web\n"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s\n" % CMN.DEF.CSV_ROOT_FOLDERPATH
     print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s\n" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
@@ -206,12 +207,11 @@ def init_param():
     param_cfg["check_url"] = False
     param_cfg["debug_scrapy_class"] = None
     param_cfg["merge_finance_folderpath"] = None
-    # param_cfg["merge_finance_folderpath_src_list"] = None
-    # param_cfg["merge_finance_folderpath_dst"] = None
     param_cfg["no_scrapy"] = False
     param_cfg["show_progress"] = False
     param_cfg["clone"] = False
     param_cfg["reserve_old"] = False
+    param_cfg["disable_flush_scrapy"] = False
     param_cfg["dry_run"] = False
     param_cfg["finance_folderpath"] = None
     param_cfg["config_from_file"] = False
@@ -287,6 +287,10 @@ def parse_param(early_parse=False):
         elif re.match("--reserve_old", sys.argv[index]):
             if not early_parse:
                 param_cfg["reserve_old"] = True
+            index_offset = 1
+        elif re.match("--disable_flush_scrapy", sys.argv[index]):
+            if not early_parse:
+                param_cfg["disable_flush_scrapy"] = True
             index_offset = 1
         elif re.match("--dry_run", sys.argv[index]):
             if not early_parse:
@@ -465,7 +469,8 @@ def setup_param():
             if param_cfg["company"] is not None:
                 g_mgr.set_company(param_cfg["company"])
 
-    g_mgr.enable_old_finance_folder_reservation(param_cfg["reserve_old"])
+    g_mgr.reserve_old_finance_folder(param_cfg["reserve_old"])
+    g_mgr.disable_flush_scrapy_while_exception(param_cfg["disable_flush_scrapy"])
     g_mgr.enable_dry_run(param_cfg["dry_run"])
     if param_cfg["finance_folderpath"] is not None:
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
@@ -473,8 +478,13 @@ def setup_param():
 
 def update_finance_mode_global_variable(finance_mode=None):
     # assert not GV.GLOBAL_VARIABLE_UPDATED, "GV.GLOBAL_VARIABLE_UPDATED should NOT be True"
+    # import pdb; pdb.set_trace()
     if finance_mode is None:
-        finance_mode = CMN.FUNC.get_finance_mode()
+        if not CMN.FUNC.check_config_file_exist(CMN.DEF.FINANCE_MODE_SWITCH_CONF_FILENAME):
+            show_warn("The config file[%s] does NOT exist, set finance mode to %s" % (CMN.DEF.FINANCE_MODE_SWITCH_CONF_FILENAME, CMN.DEF.FINANCE_MODE_DESCRIPTION[CMN.DEF.FINANCE_MODE_MARKET]))
+            finance_mode = CMN.DEF.FINANCE_MODE_MARKET
+        else:
+            finance_mode = CMN.FUNC.get_finance_mode()
     if finance_mode == CMN.DEF.FINANCE_MODE_MARKET:
         # from libs.market import web_scrapy_market_configurer as CONF
         # g_configurer = CONF.MarketConfigurer.Instance()

@@ -477,6 +477,7 @@ class ScrapyBase(object):
 
     def __init__(self, **kwargs):
         self.xcfg = {
+            "disable_flush_scrapy_while_exception": False,
             "time_duration_type": CMN.DEF.DATA_TIME_DURATION_TODAY,
             "time_duration_start": None,
             "time_duration_end": None,

@@ -147,15 +147,22 @@ class ScrapyMarketBase(BASE.BASE.ScrapyBase):
                         self._write_to_csv(csv_filepath, csv_data_list_each_year)
                         csv_data_list_each_year = []
                     cur_year = timeslice.year
-                web_data = self._scrape_web_data(timeslice)
-                if len(web_data) == 0:
+                try:
+                    web_data = self._scrape_web_data(timeslice)
+                    if len(web_data) == 0:
 # Keep track of the time range in which the web data is empty
-                    self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SCRAPY_CLASS_INDEX)
-                else:
-                    csv_data_list = self._parse_web_data(web_data)
-                    if len(csv_data_list) == 0:
-                        raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
-                    csv_data_list_each_year.append(csv_data_list)
+                        self.csv_file_no_scrapy_record.add_web_data_not_found_record(timeslice, self.SCRAPY_CLASS_INDEX)
+                    else:
+                        csv_data_list = self._parse_web_data(web_data)
+                        if len(csv_data_list) == 0:
+                            raise CMN.EXCEPTION.WebScrapyNotFoundException("No entry in the web data from URL: %s" % url)
+                        csv_data_list_each_year.append(csv_data_list)
+                except Exception as err:
+                    if self.xcfg["disable_flush_scrapy_while_exception"]:
+                        if len(csv_data_list_each_year) > 0:
+                            g_logger.debug("Flush the web data into CSV since exception occurs......")
+                            self._write_to_csv(csv_filepath, csv_data_list_each_year)                        
+                    raise err
 # Flush the last data into the list if required
             self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX)
 # Write the data of last year into csv

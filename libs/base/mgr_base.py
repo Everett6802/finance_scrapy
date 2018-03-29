@@ -21,7 +21,8 @@ class MgrBase(object):
     __metaclass__ = ABCMeta
     def __init__(self, **cfg):
         self.xcfg = {
-            "old_finance_folder_reservation": False,
+            "reserve_old_finance_folder": False,
+            "disable_flush_scrapy_while_exception": False,
             "try_to_scrape_all": True,
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
@@ -123,7 +124,7 @@ class MgrBase(object):
     def do_scrapy(self):
         # import pdb; pdb.set_trace()
         self._init_csv_time_duration()
-        if not self.xcfg["old_finance_folder_reservation"]:
+        if not self.xcfg["reserve_old_finance_folder"]:
             self._remove_old_finance_folder()
         else:
             self._read_old_csv_time_duration()
@@ -292,14 +293,24 @@ class MgrBase(object):
         return self.xcfg["finance_root_folderpath"]
 
 
-    def enable_old_finance_folder_reservation(self, enable):
-        g_logger.debug("%s the old finance folder reservation" % ("Enable" if enable else "Disable"))
-        self.xcfg["old_finance_folder_reservation"] = enable
+    def reserve_old_finance_folder(self, enable):
+        g_logger.debug("Reserve Old Finance Folder: %s" % ("True" if enable else "False"))
+        self.xcfg["reserve_old_finance_folder"] = enable
 
 
     @property
-    def OldFinanceFolderReservation(self):
-        return self.xcfg["old_finance_folder_reservation"]
+    def ReserveOld(self):
+        return self.xcfg["reserve_old_finance_folder"]
+
+
+    def disable_flush_scrapy_while_exception(self, disable):
+        g_logger.debug("Flush Scrapy Data while Exception Occurs: %s" % ("False" if disable else "True"))
+        self.xcfg["disable_flush_scrapy_while_exception"] = disable
+
+
+    @property
+    def DisableFlushScrapy(self):
+        return self.xcfg["disable_flush_scrapy_while_exception"]
 
 
     def enable_dry_run(self, enable):
@@ -327,7 +338,7 @@ class MgrBase(object):
                 g_logger.error(errmsg)
                 raise ValueError(errmsg)
         # import pdb; pdb.set_trace()
-        if self.xcfg["old_finance_folder_reservation"]:
+        if self.xcfg["reserve_old_finance_folder"]:
             if CMN.FUNC.check_file_exist(finance_folderpath_dst):
                 errmsg = "The destination folderpath[%s] after merging already exist" % finance_folderpath_dst
                 g_logger.error(errmsg)

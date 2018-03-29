@@ -257,6 +257,7 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
 # Setup the time duration configuration for the scrapy object
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(scrapy_class_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
+        scrapy_obj_cfg["disable_flush_scrapy_while_exception"] = self.xcfg["disable_flush_scrapy_while_exception"]
 # Market type
         market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_class_time_duration.scrapy_class_index]["company_group_market_type"]
         not_support_multithread = False

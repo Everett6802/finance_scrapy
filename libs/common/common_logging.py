@@ -43,8 +43,6 @@ class CmnLogger(object):
 
 def get_raw_logger(log_file_name=LOG_FILE_PATH, log_file_level=logging.DEBUG):
 # Create the folder for log file if it does NOT exist
-    if not os.path.exists(LOG_FILE_FOLDER):
-        os.makedirs(LOG_FILE_FOLDER)
     logging.basicConfig(filename=log_file_name, level=log_file_level, format='%(asctime)-15s %(filename)s:%(lineno)d [%(levelname)s]: %(message)s')
 # Log to console
     # console = logging.StreamHandler()
@@ -61,4 +59,6 @@ def get_raw_logger(log_file_name=LOG_FILE_PATH, log_file_level=logging.DEBUG):
 
 
 def get_logger(need_rotate=True):
+    if not os.path.exists(LOG_FILE_FOLDER):
+        os.makedirs(LOG_FILE_FOLDER)
     return CmnLogger.Instance(logger_cfg).LoggerInstance if need_rotate else get_raw_logger()

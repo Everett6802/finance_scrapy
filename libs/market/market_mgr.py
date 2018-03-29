@@ -99,72 +99,9 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
 # Setup the time duration configuration for the scrapy object
         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(scrapy_class_time_duration)
         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration
+        scrapy_obj_cfg["disable_flush_scrapy_while_exception"] = self.xcfg["disable_flush_scrapy_while_exception"]
 # Create the scrapy object to transform the data from Web to CSV
         self._scrape_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
-
-
-#     def check_scrapy(self):
-#         # import pdb; pdb.set_trace()
-#         file_not_found_list = []
-#         file_is_empty_list = []
-#         for scrapy_class_time_duration in self.scrapy_class_time_duration_list:
-#             csv_filepath = CMN.FUNC.assemble_market_csv_filepath(self.xcfg["finance_root_folderpath"], scrapy_class_time_duration.scrapy_class_index)
-# # Check if the file exists
-#             if not os.path.exists(csv_filepath):
-#                 file_not_found_list.append(
-#                     {
-#                         "index": scrapy_class_time_duration.scrapy_class_index,
-#                         "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
-#                     }
-#                 )
-#             elif os.path.getsize(csv_filepath) == 0:
-#                 file_is_empty_list.append(
-#                     {
-#                         "index": scrapy_class_time_duration.scrapy_class_index,
-#                         "filename" : CMN.FUNC.get_filename_from_filepath(csv_filepath)
-#                     }
-#                 )
-# # Output the missing CSV to the file if necessary
-#         if not self.xcfg["disable_output_missing_csv"]:
-#             file_not_found_list_len = len(file_not_found_list)
-#             file_is_empty_list_len = len(file_is_empty_list)  
-#             if file_not_found_list_len != 0 or file_is_empty_list_len != 0:
-#                 missing_csv_filepath = "%s/%s" % (self.xcfg["finance_root_folderpath"], CMN.DEF.MISSING_CSV_MARKET_FILENAME)
-#                 g_logger.debug("Write missing CSVs to the file: %s......" % missing_csv_filepath)
-#                 with open(missing_csv_filepath, 'wb') as fp:
-#                     try:
-# # Output the file not found list
-#                         if file_not_found_list_len != 0:
-#                             fp.write("[FileNotFound]\n") 
-#                             for file_not_found in file_not_found_list[:-1]:
-#                                 fp.write("%d;" % file_not_found["index"])
-#                             fp.write("%d\n" % file_not_found_list[-1]["index"])
-# # Output the file is empty list
-#                         if file_is_empty_list_len != 0:
-#                             fp.write("[FileIsEmpty]\n")
-#                             for file_is_empty in file_is_empty_list[:-1]:
-#                                 fp.write("%d;" % file_is_empty["index"])
-#                             fp.write("%d\n" % file_is_empty_list[-1]["index"])
-#                     except Exception as e:
-#                         g_logger.error(u"Fail to write data to missing CSV file, due to %s" %str(e))
-#                         # g_logger.error(u"Error occur while writing Company Code Number[%s] info into config file, due to %s" % (company_profile_unicode, str(e)))
-#                         raise e
-#         return (file_not_found_list, file_is_empty_list)
-
-
-#     def check_scrapy_to_string(self):
-#         (file_not_found_list, file_is_empty_list) = self.check_scrapy()
-#         error_msg = None
-#         error_msg_list = []
-#         for file_not_found in file_not_found_list:
-#             error_msg = u"FileNotFound: %s, %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[file_not_found['index']], file_not_found['filename'])
-#             error_msg_list.append(error_msg)
-#         for file_is_empty in file_is_empty_list:
-#             error_msg = u"FileIsEmpty: %s, %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[file_is_empty['index']], file_is_empty['filename'])
-#             error_msg_list.append(error_msg)
-#         if len(error_msg_list) != 0:
-#             error_msg = "\n".join(error_msg_list)
-#         return error_msg
 
 
     def _find_existing_source_type_finance_folder_index(self, csv_time_duration_cfg_list, scrapy_class_index):
@@ -179,10 +116,6 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
                 else:
                     finance_folder_index = index
         return finance_folder_index
-
-
-    # def _increment_scrapy_class_type_progress_count(self, scrapy_class_index):
-    #     self.scrapy_class_type_progress_count += 1
 
 
     def merge_finance_folder(self, finance_folderpath_src_list, finance_folderpath_dst):
@@ -215,26 +148,3 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
 
     def enable_multithread(self, thread_amount):
         raise ValueError("Multi-Thread is NOT supported in market mode")
-
-
-    # def count_scrapy_amount(self):
-    #     if self.scrapy_amount is None:
-    #         self.scrapy_amount = len(self.scrapy_class_time_duration_list)
-    #     g_logger.debug("There are totally %d scrapy times" % self.scrapy_amount)
-    #     return self.scrapy_amount
-
-
-    # def count_scrapy_progress(self):
-    #     if self.scrapy_amount is None:
-    #         raise ValueError("self.scrapy_amount shoudl NOT be None")
-    #     return (float(self.scrapy_class_type_progress_count) / self.scrapy_amount * 100.0)
-
-
-    # @property
-    # def ScrapyAmount(self):
-    #     return self.count_scrapy_amount()
-
-
-    # @property
-    # def ScrapyProgress(self):
-    #     return self.count_scrapy_progress()
