@@ -3,14 +3,16 @@
 import os
 import logging
 import logrotate as LR
+import common_definition as CMN_DEF
 import common_class as CMN_CLS
-# import common_definition as CMN_DEF
+
 
 
 LOG_FILE_FOLDER = "log"
 LOG_FILE_NAME = "web_scrapy.log"
 LOG_FILE_PATH = "%s/%s" % (LOG_FILE_FOLDER, LOG_FILE_NAME)
-LOG_WORKING_FOLDER = os.path.dirname(os.path.realpath(__file__)).rsplit('/', 2)[0]
+# LOG_WORKING_FOLDER = os.path.dirname(os.path.realpath(__file__)).rsplit('/', 2)[0]
+LOG_WORKING_FOLDER = os.path.dirname(os.path.realpath(__file__)).split(CMN_DEF.PROJECT_NAME_PREFIX)[0] + "%s" % CMN_DEF.FINANCE_SCRAPY_PROJECT_NAME
 
 logger_cfg = {
     "log_working_folder": LOG_WORKING_FOLDER,

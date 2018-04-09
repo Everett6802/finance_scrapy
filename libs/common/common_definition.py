@@ -3,7 +3,7 @@
 import os
 import re
 import errno
-import logging
+# import logging
 import calendar
 from datetime import datetime, timedelta
 # import common_function as CMN_FUNC
@@ -129,8 +129,10 @@ FINANCE_MODE_CONF_FILENAME = ".finance_analysis.conf"
 CSV_DATA_TIME_DURATION_FILENAME = ".csv_time_range.conf"
 COMMAND_EXAMPLE_FILENAME = "command_example"
 # Constants
-COPY_CONF_FILE_DST_PROJECT_NAME1 = "finance_recorder"
-COPY_CONF_FILE_DST_PROJECT_NAME2 = "finance_analyzer"
+PROJECT_NAME_PREFIX = "finance_"
+FINANCE_SCRAPY_PROJECT_NAME = "finance_scrapy"
+FINANCE_RECORDER_PROJECT_NAME = "finance_recorder"
+FINANCE_ANALYZER_PROJECT_NAME = "finance_analyzer"
 TODAY_MARKET_DATA_EXIST_HOUR = 20
 TODAY_MARKET_DATA_EXIST_MINUTE = 0
 TODAY_STOCK_DATA_EXIST_HOUR = 20

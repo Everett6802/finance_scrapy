@@ -163,8 +163,8 @@ class CompanyProfile(object):
         # current_path = os.path.dirname(os.path.realpath(__file__))
         [working_folder, project_name] = GV.PROJECT_FOLDERPATH.rsplit('/', 1)
         dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME1, CMN.DEF.CONF_FOLDERNAME),
-            "%s/%s/%s" % (working_folder, CMN.DEF.COPY_CONF_FILE_DST_PROJECT_NAME2, CMN.DEF.CONF_FOLDERNAME),
+            "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_RECORDER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
+            "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_ANALYZER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
         ]
         company_profile_src_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
         company_group_src_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
