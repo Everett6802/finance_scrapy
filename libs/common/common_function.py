@@ -13,7 +13,6 @@ import inspect
 import warnings
 from datetime import datetime, timedelta
 import common_definition as CMN_DEF
-# import common_variable as _PROJECT_FOLDERPATH
 from libs.common.common_variable import GlobalVar as GV
 import common_class as CMN_CLS
 import common_exception as CMN_EXCEPTION
@@ -474,17 +473,33 @@ def get_config_filepath(conf_filename, conf_folderpath=None):
 #     return CMN_DEF.FINANCE_MODE_DESCRIPTION[CMN_DEF.FINANCE_MODE]
 
 
-def read_file_lines_ex(filepath, file_read_attribute):
+def read_file_lines_ex(filepath, file_read_attribute='r', finance_time_range=None, line_split=CMN_DEF.COMMA_DATA_SPLIT, time_index_in_line=0, is_list_in_line=False):
+    # import pdb; pdb.set_trace()
     line_list = []
     try:
+        time_in_range = False
         with open(filepath, file_read_attribute) as fp:
             for line in fp:
                 if line.startswith('#'):
                     continue
-                line_strip = line.strip('\n')
+                line_strip = line.strip('\n').strip('\r')
                 if len(line_strip) == 0:
                     continue
-                line_list.append(line_strip)
+                need_line_split = (finance_time_range is not None) or (is_list_in_line)
+                line_strip_split = line_strip.split(line_split) if need_line_split else None
+                if finance_time_range is not None:
+                    # line_strip_split = line_strip.split(line_split)
+                    cur_time_string = line_strip_split[time_index_in_line]
+                    cur_finance_time = CMN_CLS.FinanceTimeBase.from_time_string(cur_time_string)
+                    if not time_in_range:
+                        if finance_time_range.is_greater_than_time_start(cur_finance_time):
+                            time_in_range = True
+                    else:
+                        if not finance_time_range.is_less_than_time_end(cur_finance_time):
+                            break
+                    if not time_in_range:
+                        continue
+                line_list.append((line_strip_split if is_list_in_line else line_strip))
     except Exception as e:
         errmsg = "Error occur while reading file[%s], due to %s" % (filepath, str(e))
         g_logger.error(errmsg)
@@ -529,10 +544,25 @@ def unicode_read_config_file_lines(conf_filename, conf_folderpath=None, conf_uni
     return unicode_read_config_file_lines_ex(conf_filename, 'rb', conf_folderpath, conf_unicode_encode)
 
 
-def write_file_lines_ex(line_list, filepath, file_write_attribute):
+def write_file_lines_ex(line_list, filepath, file_write_attribute='w', finance_time_range=None, line_split=CMN_DEF.COMMA_DATA_SPLIT, time_index_in_line=0, is_list_in_line=False):
+    # import pdb; pdb.set_trace()
     try:
+        time_in_range = False
         with open(filepath, file_write_attribute) as fp:
             for line in line_list:
+                if is_list_in_line:
+                    line = line_split.join(line)
+                if finance_time_range is not None:
+                    cur_time_string = line.split(line_split)[time_index_in_line]
+                    cur_finance_time = CMN_CLS.FinanceTimeBase.from_time_string(cur_time_string)
+                    if not time_in_range:
+                        if finance_time_range.is_greater_than_time_start(cur_finance_time):
+                            time_in_range = True
+                    else:
+                        if not finance_time_range.is_less_than_time_end(cur_finance_time):
+                            break
+                    if not time_in_range:
+                        continue
                 if not line.endswith("\n"):
                     line += "\n"
                 fp.write(line)
@@ -1029,3 +1059,78 @@ def get_scrapy_sleep_time(need_long_sleep=False):
         scrapy_sleep_time = DEFAULT_SLEEP_TIME
         while True:
             yield scrapy_sleep_time
+
+
+def merge_multi_csv(src_csv_filepath_config_list, dst_csv_filepath, finance_time_range=None, line_split=CMN_DEF.COMMA_DATA_SPLIT, time_index_in_line=0):
+    assert len(src_csv_filepath_config_list) >= 1, "len(src_csv_filepath_config_list) should be at least 1"
+    time_list = None
+    merge_csv_data_list = None
+# Merge the csv files
+    for src_csv_filepath_config in src_csv_filepath_config_list:
+        csv_filepath = src_csv_filepath_config.get('csv_filepath', None)
+        assert csv_filepath != None, "csv_filepath should NOT be None"
+        line_list = read_file_lines_ex(csv_filepath, 'r', finance_time_range, line_split, time_index_in_line, True)
+        if time_list is None:
+            # time_list = [line.split()[time_index_in_line] for line in line_list]
+            time_list = map(lambda line_split : line_split[time_index_in_line], line_list)
+            merge_csv_data_list = [[time,] for time in time_list]
+        field_index_list = src_csv_filepath_config.get('field_index_list', None)
+        for line_index, line in enumerate(line_list):
+            assert time_list[line_index] == line[time_index_in_line], "The time[%s, %s] is NOT identical" % (time_list[line_index], line[time_index_in_line])
+            if field_index_list is None:
+# All columns in CSV
+                merge_csv_data_list[line_index].extend(line[1:])
+            else:
+# Just some columns in CSV
+                merge_csv_data_list[line_index].extend([line[field_index] for field_index in field_index_list])
+# Write into a new file
+    write_file_lines_ex(merge_csv_data_list, dst_csv_filepath, 'w', None, line_split, time_index_in_line, True)
+
+
+def merge_market_csv(src_folderpath, dst_folderpath, method_index_list=None, method_field_index_dict=None, time_range=None, line_split=CMN_DEF.COMMA_DATA_SPLIT, time_index_in_line=0):
+# *** method_field_index_dict ***
+# method_index: [field_index1,field_index2,field_index3,...]
+    assert (method_index_list is None or method_field_index_dict is None), "method_index_list and method_field_index_dict should NOT Not-None simultaneously"
+    src_csv_filepath_config_list = []
+    if method_field_index_dict is None:
+        if method_index_list is None:
+            method_index_list = get_method_index_range_list(CMN_DEF.FINANCE_MODE_MARKET)
+        method_field_index_dict = {}          
+    else:
+        method_index_list = method_field_index_dict.keys()
+        method_index_list.sort()
+    for method_index in method_index_list:
+        src_csv_filepath_config = {}
+        src_csv_filepath_config["csv_filepath"] = assemble_market_csv_filepath_by_method_index(src_folderpath, method_index)
+        field_index_list = (method_field_index_dict.get(method_index, None) if (method_field_index_dict is not None) else None)
+        if field_index_list is not None:
+            src_csv_filepath_config["field_index_list"] = field_index_list
+        src_csv_filepath_config_list.append(src_csv_filepath_config)
+    dst_csv_filepath = "%s/%s.csv" % (dst_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME)
+    merge_multi_csv(src_csv_filepath_config_list, dst_csv_filepath, time_range)
+
+
+def merge_stock_csv(src_folderpath, dst_folderpath, company_dict, method_index_list=None, method_field_index_dict=None, time_range=None, line_split=CMN_DEF.COMMA_DATA_SPLIT, time_index_in_line=0):
+# *** company_dict ***
+# company_code_number: company_group_number
+# *** method_field_index_dict ***
+# method_index: [field_index1,field_index2,field_index3,...]
+    assert (method_index_list is None or method_field_index_dict is None), "method_index_list and method_field_index_dict should NOT Not-None simultaneously"
+    src_csv_filepath_config_list = []
+    if method_field_index_dict is None:
+        if method_index_list is None:
+            method_index_list = get_method_index_range_list(CMN_DEF.FINANCE_MODE_STOCK)
+        method_field_index_dict = {}          
+    else:
+        method_index_list = method_field_index_dict.keys()
+        method_index_list.sort()
+    for company_code_number, company_group_number in company_dict.items():
+        for method_index in method_index_list:
+            src_csv_filepath_config = {}
+            src_csv_filepath_config["csv_filepath"] = assemble_stock_csv_filepath_by_method_index(src_folderpath, method_index, company_code_number, company_group_number)
+            field_index_list = (method_field_index_dict.get(method_index, None) if (method_field_index_dict is not None) else None)
+            if field_index_list is not None:
+                src_csv_filepath_config["field_index_list"] = field_index_list
+            src_csv_filepath_config_list.append(src_csv_filepath_config)
+        dst_csv_filepath = "%s/%s.csv" % (dst_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME)
+        merge_multi_csv(src_csv_filepath_config_list, dst_csv_filepath, time_range)

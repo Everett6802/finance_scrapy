@@ -4,14 +4,15 @@ import threading
 from datetime import datetime, timedelta
 import math
 import collections
+import common_definition as CMN_DEF
+from libs.common.common_variable import GlobalVar as GV
+import common_function as CMN_FUNC
+
 MonthTuple = collections.namedtuple('MonthTuple', ('year', 'month'))
 QuarterTuple = collections.namedtuple('QuarterTuple', ('year', 'quarter'))
 TimeDurationTuple = collections.namedtuple('TimeDurationTuple', ('time_duration_start', 'time_duration_end'))
 ScrapyClassTimeDurationTuple = collections.namedtuple('ScrapyClassTimeDurationTuple', ('scrapy_class_index', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
 ScrapyClassCompanyTimeDurationTuple = collections.namedtuple('ScrapyClassCompanyTimeDurationTuple', ('scrapy_class_index', 'company_code_number', 'time_duration_type', 'time_duration_start', 'time_duration_end'))
-import common_definition as CMN_DEF
-from libs.common.common_variable import GlobalVar as GV
-import common_function as CMN_FUNC
 
 singleton_thread_lock = threading.Lock()
 
@@ -552,6 +553,40 @@ class FinanceQuarter(FinanceTimeBase):
 
     def get_value_tuple(self):
         return (self.year, self.quarter)
+
+
+class FinanceTimeRange(object):
+
+    def __init__(self, *args):
+        self.time_start = None
+        self.time_end = None
+        self.time_range_str = None
+        # import pdb; pdb.set_trace()
+        try:
+            if len(args) == 1:
+                if isinstance(args[0], str):
+                    (self.time_start, self.time_end) = CMN_FUNC.parse_time_duration_range_str_to_object(args[0])
+                else:
+                    raise
+            elif len(args) == 2:
+                for index in range(2):
+                    if not isinstance(args[index], FinanceTimeBase):
+                        raise
+                self.time_start = args[0]
+                self.time_end = args[1]
+            else:
+                raise
+        except Exception:
+            raise ValueError("Unknown argument in FormatQuarter format: %s" % args)
+
+
+    def is_greater_than_time_start(self, finance_time):
+        return False if ((self.time_start is not None) and (finance_time < self.time_start)) else True
+
+
+    def is_less_than_time_end(self, finance_time):
+        return False if ((self.time_end is not None) and (finance_time > self.time_end)) else True
+
 
 # class ParseURLDataType:
 
