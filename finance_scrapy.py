@@ -36,7 +36,8 @@ def show_usage_and_exit():
     print ""
     print "--no_scrapy\nDescription: Don't scrape Web data\n"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrapy flag is NOT set\n"
-    print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only take effect when --check is set\n"
+    print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only clone the folder when scrapy is successful\n"
+    print "--clone_finance_foldername\nDescription: Clone folder name\nCaution: Only take effect when --clone is set\n"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--disable_flush_scrapy\nDescription: Disable the flag of flushing web scrapy data in buffer into CSV files while exception occurs during scraping"
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web\n"
@@ -210,6 +211,7 @@ def init_param():
     param_cfg["no_scrapy"] = False
     param_cfg["show_progress"] = False
     param_cfg["clone"] = False
+    param_cfg["clone_finance_foldername"] = None
     param_cfg["reserve_old"] = False
     param_cfg["disable_flush_scrapy"] = False
     param_cfg["dry_run"] = False
@@ -280,6 +282,10 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["show_progress"] = True
             index_offset = 1
+        elif re.match("--clone_finance_foldername", sys.argv[index]):
+            if not early_parse:
+                param_cfg["clone_finance_foldername"] = sys.argv[index + 1]
+            index_offset = 2
         elif re.match("--clone", sys.argv[index]):
             if not early_parse:
                 param_cfg["clone"] = True
@@ -415,6 +421,10 @@ def check_param():
     if param_cfg["clone"] and param_cfg["no_scrapy"]:
         param_cfg["clone"] = False
         show_warn("Set the 'clone' argument to False since 'no_scrapy' is set")
+    if param_cfg["clone_finance_foldername"] is not None:
+        if not param_cfg["clone"]:
+            param_cfg["clone_finance_foldername"] = None
+            show_warn("The 'clone_finance_foldername' argument is invalid since clone is not set")
 # Special check
 # renew_statement_field
     if param_cfg["renew_statement_field"]:
@@ -568,10 +578,16 @@ def do_scrapy():
 @record_exe_time("CLONE")
 def do_clone():
     show_info("* Clone the finance folder: %s" % g_mgr.FinanceRootFolderPath)
-    datetime_now = datetime.today()
-    clone_foldername = g_mgr.FinanceRootFolderPath + "_ok" + CMN.DEF.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
-    show_debug("Clone the finance folder to %s" % clone_foldername)
-    subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_foldername])
+    clone_finance_folderpath = None
+    if param_cfg["clone_finance_foldername"] is None:
+        datetime_now = datetime.today()
+        clone_finance_folderpath = g_mgr.FinanceRootFolderPath + "_ok" + CMN.DEF.TIME_FILENAME_FORMAT % (datetime_now.year, datetime_now.month, datetime_now.day, datetime_now.hour, datetime_now.minute)
+    else:
+        clone_finance_folderpath = os.path.dirname(g_mgr.FinanceRootFolderPath) + "/" + param_cfg["clone_finance_foldername"]
+    CMN.FUNC.remove_folder_if_exist(clone_finance_folderpath)
+    show_debug("Clone the finance folder to %s" % clone_finance_folderpath)
+    subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_finance_folderpath])
+
 
 
 if __name__ == "__main__":

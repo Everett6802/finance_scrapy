@@ -1002,3 +1002,30 @@ def parse_time_duration_range_str_to_object(time_duration_range_list_str):
     elif time_duration_range_list_len == 1:
         time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
     return (time_range_start, time_range_end)
+
+
+def get_scrapy_sleep_time(need_long_sleep=False):
+    NEED_SLEEP_TIMES = 5
+    NEED_LONG_SLEEP_TIMES = 25
+    DEFAULT_SLEEP_TIME = 2
+    LONG_SLEEP_TIME = 300
+    count = 0
+
+    scrapy_sleep_time = 0
+# No need sleep if scrapy times are less than NEED_SLEEP_TIMES
+    while count <= NEED_SLEEP_TIMES:
+        count += 1
+        yield scrapy_sleep_time
+# Consider to sleep between scrapies if the scrapy times are more than NEED_SLEEP_TIMES
+    if need_long_sleep:
+        while True:
+            count += 1
+# Consider to long-sleep between scrapies if the scrapy times are more than NEED_LONG_SLEEP_TIMES
+            scrapy_sleep_time = LONG_SLEEP_TIME if count == NEED_LONG_SLEEP_TIMES else DEFAULT_SLEEP_TIME
+            if count == NEED_LONG_SLEEP_TIMES:
+                count = 0
+            yield scrapy_sleep_time
+    else:
+        scrapy_sleep_time = DEFAULT_SLEEP_TIME
+        while True:
+            yield scrapy_sleep_time

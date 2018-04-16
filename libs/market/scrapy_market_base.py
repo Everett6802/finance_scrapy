@@ -129,6 +129,7 @@ class ScrapyMarketBase(BASE.BASE.ScrapyBase):
             return
         # import pdb; pdb.set_trace()
 # Scrape the web data from each time duration
+        scrapy_sleep_time_generator = None
         for web2csv_time_duration_update in web2csv_time_duration_update_tuple:
 # Adjust the config if necessary
             self._adjust_config_before_scrapy(web2csv_time_duration_update)
@@ -163,6 +164,16 @@ class ScrapyMarketBase(BASE.BASE.ScrapyBase):
                             g_logger.debug("Flush the web data into CSV since exception occurs......")
                             self._write_to_csv(csv_filepath, csv_data_list_each_year)                        
                     raise err
+                else:
+# Slow down the scrapy process
+                    # import pdb; pdb.set_trace()
+                    if scrapy_sleep_time_generator is None:
+                        scrapy_sleep_time_generator = CMN.FUNC.get_scrapy_sleep_time(self.SCRAPY_NEED_LONG_SLEEP)
+                    scrapy_sleep_time = scrapy_sleep_time_generator.next()
+                    if scrapy_sleep_time != 0:
+                        if scrapy_sleep_time > 30:
+                            g_logger.info("Sleep %d seconds before next scrapy")
+                        time.sleep(scrapy_sleep_time)
 # Flush the last data into the list if required
             self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX)
 # Write the data of last year into csv

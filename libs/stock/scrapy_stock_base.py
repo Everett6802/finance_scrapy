@@ -162,6 +162,7 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
         # import pdb; pdb.set_trace()
         self._calculate_progress_amount()
         self.new_csv_time_duration_dict = {}
+        scrapy_sleep_time_generator = None
         for company_group_number, company_code_number_list in self.company_group_set.items():
             for company_code_number in company_code_number_list:
 #  Filter the company which should NOT be scraped in certain a scrapy class
@@ -232,6 +233,15 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
                                     g_logger.debug("Flush the web data into CSV since exception occurs......")
                                     self._write_to_csv(csv_filepath, csv_data_list_each_year)                        
                             raise err
+                        else:
+# Slow down the scrapy process
+                            if scrapy_sleep_time_generator is None:
+                                scrapy_sleep_time_generator = CMN.FUNC.get_scrapy_sleep_time(self.SCRAPY_NEED_LONG_SLEEP)
+                            scrapy_sleep_time = scrapy_sleep_time_generator.next()
+                            if scrapy_sleep_time != 0:
+                                if scrapy_sleep_time > 30:
+                                    g_logger.info("Sleep %d seconds before next scrapy")
+                                time.sleep(scrapy_sleep_time)
 # Flush the last data into the list if required
                     self.csv_file_no_scrapy_record.add_web_data_not_found_record(None, self.SCRAPY_CLASS_INDEX, company_code_number)
 # Write the data of last year into csv
