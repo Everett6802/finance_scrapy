@@ -185,10 +185,12 @@ def get_scrapy_class_size():
     raise RuntimeError("Unknown finance mode")
 
 
-def get_scrapy_method_index_range():
-    if GV.IS_FINANCE_MARKET_MODE:
+def get_scrapy_method_index_range(finance_mode=None):
+    is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
+    is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
+    if is_finance_market_mode:
         return (CMN_DEF.SCRAPY_MARKET_METHOD_START, CMN_DEF.SCRAPY_MARKET_METHOD_END)
-    elif GV.IS_FINANCE_STOCK_MODE:
+    elif is_finance_stock_mode:
         return (CMN_DEF.SCRAPY_STOCK_METHOD_START, CMN_DEF.SCRAPY_STOCK_METHOD_END)
     raise RuntimeError("Unknown finance mode")
 
@@ -261,9 +263,9 @@ def get_scrapy_class_index_range_list():
     return scrapy_class_index_list
 
 
-def get_method_index_range_list():
+def get_method_index_range_list(finance_mode=None):
     method_index_list = []
-    (method_start_index, method_end_index) = get_scrapy_method_index_range()
+    (method_start_index, method_end_index) = get_scrapy_method_index_range(finance_mode)
 # Semi-open interval
     method_index_list += range(method_start_index, method_end_index)
     return method_index_list
@@ -906,6 +908,10 @@ def assemble_market_csv_filepath(finance_root_folderpath, scrapy_class_index):
     return csv_filepath
 
 
+def assemble_market_csv_filepath_by_method_index(finance_root_folderpath, scrapy_method_index):
+    csv_filepath = "%s/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[scrapy_method_index]) 
+    return csv_filepath
+
 def assemble_stock_csv_group_filepath(finance_root_folderpath, company_group_number):
     csv_filepath = "%s/%s%02d" % (finance_root_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number)) 
     return csv_filepath
@@ -918,6 +924,11 @@ def assemble_stock_csv_folderpath(finance_root_folderpath, company_code_number, 
 
 def assemble_stock_csv_filepath(finance_root_folderpath, scrapy_class_index, company_code_number, company_group_number):
     csv_filepath = "%s/%s%02d/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]) 
+    return csv_filepath
+
+
+def assemble_stock_csv_filepath_by_method_index(finance_root_folderpath, scrapy_method_index, company_code_number, company_group_number):
+    csv_filepath = "%s/%s%02d/%s/%s.csv" % (finance_root_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number), company_code_number, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[scrapy_method_index]) 
     return csv_filepath
 
 

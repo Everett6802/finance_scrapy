@@ -591,14 +591,6 @@ def do_clone():
 
 
 if __name__ == "__main__":
-    # src_csv_filepath_config_list = [
-    #     {'csv_filepath': "/var/tmp/finance/market/stock_exchange_and_volume.csv"},
-    #     {'csv_filepath': "/var/tmp/finance/market/stock_top3_legal_persons_net_buy_or_sell.csv"},
-    # ]
-    # dest_csv_filepath = '/home/super/test_merge.csv'
-    # # import pdb; pdb.set_trace()
-    # CMN.FUNC.merge_multi_csv(src_csv_filepath_config_list, dest_csv_filepath)
-    # sys.exit(0)
 # Parse the parameters and apply to manager class
     init_param()
     update_finance_mode_global_variable()
