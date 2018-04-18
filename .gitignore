@@ -19,3 +19,4 @@ conf/statement_of_changes_in_equity_interest_field_metadata
 *_metadata
 .time_range
 !dataset/*/*.csv
+.ipynb_checkpoints/
