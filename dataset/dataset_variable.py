@@ -11,6 +11,7 @@ class DatasetVarMeta(type):
     _param_update = False
     # __MY_VALUE = None
     _PARAM_DICT = None
+    _DATASET_FOLDER_PATH = None
 
 
     def __init__(cls, name, bases, dct):
@@ -31,10 +32,17 @@ class DatasetVarMeta(type):
 
 
     @property
-    def CUR_DATASET_SELECTION(self):
-        if not self._param_update:
+    def CUR_DATASET_SELECTION(cls):
+        if not cls._param_update:
             raise ValueError("Param not update !!!")
-        return self._PARAM_DICT["cur_dataset_selection"]
+        return cls._PARAM_DICT["cur_dataset_selection"]
+
+
+    @property
+    def DATASET_FOLDER_PATH(cls):
+        if cls._DATASET_FOLDER_PATH is None:
+            cls._DATASET_FOLDER_PATH = "%s/%s/.%s" % (GV.PROJECT_FOLDERPATH, DS_DEF.DATASET_FOLDERNAME, cls.CUR_DATASET_SELECTION)
+        return cls._DATASET_FOLDER_PATH
 
 
 class DatasetVar(object):

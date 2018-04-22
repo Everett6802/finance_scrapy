@@ -153,10 +153,12 @@ def instantiate_web_scrapy_object(scrapy_class_index, **kwargs):
     return web_scrapy_obj
 
 
-def check_scrapy_class_index_in_range(scrapy_class_index):
-    if GV.IS_FINANCE_MARKET_MODE:
+def check_scrapy_class_index_in_range(scrapy_class_index, finance_mode=None):
+    is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
+    is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
+    if is_finance_market_mode:
         return True if CMN_DEF.SCRAPY_MARKET_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_MARKET_CLASS_END else False
-    elif GV.IS_FINANCE_STOCK_MODE:
+    elif is_finance_stock_mode:
         return True if CMN_DEF.SCRAPY_STOCK_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_END else False
     raise RuntimeError("Unknown finance mode")
 
@@ -201,11 +203,13 @@ def get_statement_scrapy_method_index_range():
     raise RuntimeError("Unknown finance mode")
 
 
-def check_scrapy_method_index_in_range(scrapy_method_index):
-    if GV.IS_FINANCE_MARKET_MODE:
-        return True if CMN_DEF.SCRAPY_MARKET_METHOD_START <= scrapy_class_index < CMN_DEF.SCRAPY_MARKET_METHOD_END else False
-    elif GV.IS_FINANCE_STOCK_MODE:
-        return True if CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_METHOD_END else False
+def check_scrapy_method_index_in_range(scrapy_method_index, finance_mode=None):
+    is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
+    is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
+    if is_finance_market_mode:
+        return True if CMN_DEF.SCRAPY_MARKET_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END else False
+    elif is_finance_stock_mode:
+        return True if CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END else False
     raise RuntimeError("Unknown finance mode")
 
 

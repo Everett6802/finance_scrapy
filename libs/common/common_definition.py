@@ -170,6 +170,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "url_data_selector": 'data',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
         "scrapy_need_long_sleep": True,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 三大法人買賣金額統計表
@@ -184,6 +185,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "url_data_selector": 'data',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
         "scrapy_need_long_sleep": True,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 融資融券餘額統計表
@@ -201,6 +203,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "url_data_selector": 'creditList',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
         "scrapy_need_long_sleep": True,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', 'tr'),
     },
     {# 期貨和選擇權未平倉口數與契約金額
@@ -215,6 +218,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "url_data_selector": '.table_c tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_c tr'), 
     },
     {# 期貨或選擇權未平倉口數與契約金額
@@ -229,6 +233,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "url_data_selector": '.table_f tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),
     },
     {# 臺指選擇權買賣權未平倉口數與契約金額
@@ -243,6 +248,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "url_data_selector": '.table_f tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),  
     },
     {# 臺指選擇權賣權買權比
@@ -257,6 +263,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "url_data_selector": '.table_a tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_a tr'),    
     },
     {# 期貨大額交易人未沖銷部位結構表 : 臺股期貨
@@ -271,6 +278,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "url_data_selector": '.table_f tr',
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('utf-8', '.table_f tr'),    
     },
 # Market End
@@ -289,6 +297,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER,
         "company_group_market_type": MARKET_TYPE_NONE,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 資產負債表
@@ -304,6 +313,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
         "company_group_market_type": MARKET_TYPE_NONE,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 損益表
@@ -319,6 +329,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
         "company_group_market_type": MARKET_TYPE_NONE,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 現金流量表, the data are accumulated quarter by quarter in each year
@@ -334,6 +345,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
         "company_group_market_type": MARKET_TYPE_NONE,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 股東權益變動表
@@ -350,6 +362,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON,
         "company_group_market_type": MARKET_TYPE_NONE,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', 'table tbody tr'),
     },
     {# 上市日股價及成交量
@@ -366,6 +379,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
         "company_group_market_type": MARKET_TYPE_STOCK_EXCHANGE,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 上櫃日股價及成交量
@@ -382,6 +396,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
         "company_group_market_type": MARKET_TYPE_OVER_THE_COUNTER,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": True,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 上市三大法人個股買賣超日報
@@ -398,6 +413,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
         "company_group_market_type": MARKET_TYPE_STOCK_EXCHANGE,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": False,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
     {# 上櫃三大法人個股買賣超日報
@@ -414,6 +430,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "timeslice_generate_method": TIMESLICE_GENERATE_BY_WORKDAY,
         "company_group_market_type": MARKET_TYPE_OVER_THE_COUNTER,
         "scrapy_need_long_sleep": False,
+        "is_duplicate_module": True,
         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
     },
 # Stock End
@@ -471,7 +488,9 @@ NO_SUPPORT_MULTITHREAD_SCRAPY_CLASS_INDEX.append(TOP3_LEGAL_PERSONS_STOCK_NET_BU
 SCRAPY_MODULE_NAME_MAPPING = [cfg["module_name"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
 SCRAPY_MODULE_NAME_MAPPING_LEN = len(SCRAPY_MODULE_NAME_MAPPING)
 
-SCRAPY_MODULE_NAME_BY_METHOD_MAPPING = list(set(SCRAPY_MODULE_NAME_MAPPING))
+# NOT in order
+# SCRAPY_MODULE_NAME_BY_METHOD_MAPPING = list(set(SCRAPY_MODULE_NAME_MAPPING))
+SCRAPY_MODULE_NAME_BY_METHOD_MAPPING = [cfg['module_name'] for cfg in filter(lambda cfg : not cfg['is_duplicate_module'], SCRAPY_CLASS_CONSTANT_CFG)]
 SCRAPY_MODULE_NAME_BY_METHOD_MAPPING_LEN = len(SCRAPY_MODULE_NAME_BY_METHOD_MAPPING)
 
 SCRAPY_MODULE_FOLDER_MAPPING = [cfg["module_folder"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]

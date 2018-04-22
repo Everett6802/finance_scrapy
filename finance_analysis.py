@@ -83,48 +83,58 @@ def setup_param():
     pass
 
 
-class MyTestClassMeta(type):
+# class MyTestClassMeta(type):
 
-    _param_update = False
-    # __MY_VALUE = None
-    _PARAM_DICT = None
+#     _param_update = False
+#     # __MY_VALUE = None
+#     _PARAM_DICT = None
 
-    def __init__(cls, name, bases, dct):
-        cls.__update_param()
-        super(MyTestClassMeta, cls).__init__(name, bases, dct)
-
-
-    @classmethod
-    def __update_param(cls):
-        config_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, "dataset", ".dataset.conf")
-        line_list = CMN.FUNC.read_file_lines_ex(config_filepath)
-        cls._PARAM_DICT = {}
-        for key, value in map(lambda line : line.split("="), line_list):
-            cls._PARAM_DICT[key] = value
-# validate the parameter
-        assert cls._PARAM_DICT.get("cur_dataset_selection", None) is not None, "The cur_dataset_selection field is NOT set"
-        cls._param_update = True
+#     def __init__(cls, name, bases, dct):
+#         cls.__update_param()
+#         super(MyTestClassMeta, cls).__init__(name, bases, dct)
 
 
-    @property
-    def CUR_DATASET_SELECTION(self):
-        if not self._param_update:
-            raise ValueError("Param not update !!!")
-        return self._PARAM_DICT["cur_dataset_selection"]
+#     @classmethod
+#     def __update_param(cls):
+#         config_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, "dataset", ".dataset.conf")
+#         line_list = CMN.FUNC.read_file_lines_ex(config_filepath)
+#         cls._PARAM_DICT = {}
+#         for key, value in map(lambda line : line.split("="), line_list):
+#             cls._PARAM_DICT[key] = value
+# # validate the parameter
+#         assert cls._PARAM_DICT.get("cur_dataset_selection", None) is not None, "The cur_dataset_selection field is NOT set"
+#         cls._param_update = True
+
+
+#     @property
+#     def CUR_DATASET_SELECTION(self):
+#         if not self._param_update:
+#             raise ValueError("Param not update !!!")
+#         return self._PARAM_DICT["cur_dataset_selection"]
 
 
 
-class MyTestClass(object):
+# class MyTestClass(object):
 
-    __metaclass__ = MyTestClassMeta
+#     __metaclass__ = MyTestClassMeta
 
 
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
 
 if __name__ == "__main__":
-    DSL.load()
+    # import pdb; pdb.set_trace()
+    df, _ = DSL.load_raw(0)
     # my_test_class = MyTestClass()
     # print MyTestClass.CUR_DATASET_SELECTION
+    # df = pd.DataFrame([[0,1],[2,3],[4,5]],index=['a','b','c'],columns=[u'可以',u'使用'])
+    df.info()
+    print df.index
+    print df.columns
+
     sys.exit(0)
 # Parse the parameters and apply to manager class
     init_param()
