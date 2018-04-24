@@ -126,14 +126,13 @@ import seaborn as sns
 
 
 if __name__ == "__main__":
-    # import pdb; pdb.set_trace()
-    df, _ = DSL.load_raw(0)
-    # my_test_class = MyTestClass()
-    # print MyTestClass.CUR_DATASET_SELECTION
-    # df = pd.DataFrame([[0,1],[2,3],[4,5]],index=['a','b','c'],columns=[u'可以',u'使用'])
-    df.info()
-    print df.index
-    print df.columns
+    # df, _ = DSL.load_raw(0)
+    # # my_test_class = MyTestClass()
+    # # print MyTestClass.CUR_DATASET_SELECTION
+    # # df = pd.DataFrame([[0,1],[2,3],[4,5]],index=['a','b','c'],columns=[u'可以',u'使用'])
+    # df.info()
+    # print df.index
+    # print df.columns
 
     sys.exit(0)
 # Parse the parameters and apply to manager class
