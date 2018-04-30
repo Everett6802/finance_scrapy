@@ -36,12 +36,7 @@ class StockTop3LegalPersonsNetBuyOrSell(ScrapyMarketBase.ScrapyMarketBase):
     def _parse_web_data(self, web_data):
         # import pdb; pdb.set_trace()
         data_list = [self.cur_date_str,]
-        # for tr in web_data[2:6]:
-        #     td = tr.select('td')
-        #     for i in range(1, 4):
-        #         element = str(td[i].text).replace(',', '')
-        #         data_list.append(element)
-        for entry in web_data[:-1]:
+        for entry in web_data[:4]:
             for i in range(1, 4):
                 element = str(entry[i]).replace(',', '')
                 data_list.append(element)
