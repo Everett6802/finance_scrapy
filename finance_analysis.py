@@ -6,14 +6,11 @@ import re
 import sys
 import time
 import subprocess
-
-
 # from datetime import datetime, timedelta
 from libs import common as CMN
 from libs.common.common_variable import GlobalVar as GV
 from libs import base as BASE
 from dataset import dataset_loader as DSL
-# g_mgr = None
 g_logger = CMN.LOG.get_logger()
 param_cfg = {}
 
@@ -83,40 +80,7 @@ def setup_param():
     pass
 
 
-# class MyTestClassMeta(type):
 
-#     _param_update = False
-#     # __MY_VALUE = None
-#     _PARAM_DICT = None
-
-#     def __init__(cls, name, bases, dct):
-#         cls.__update_param()
-#         super(MyTestClassMeta, cls).__init__(name, bases, dct)
-
-
-#     @classmethod
-#     def __update_param(cls):
-#         config_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, "dataset", ".dataset.conf")
-#         line_list = CMN.FUNC.read_file_lines_ex(config_filepath)
-#         cls._PARAM_DICT = {}
-#         for key, value in map(lambda line : line.split("="), line_list):
-#             cls._PARAM_DICT[key] = value
-# # validate the parameter
-#         assert cls._PARAM_DICT.get("cur_dataset_selection", None) is not None, "The cur_dataset_selection field is NOT set"
-#         cls._param_update = True
-
-
-#     @property
-#     def CUR_DATASET_SELECTION(self):
-#         if not self._param_update:
-#             raise ValueError("Param not update !!!")
-#         return self._PARAM_DICT["cur_dataset_selection"]
-
-
-
-# class MyTestClass(object):
-
-#     __metaclass__ = MyTestClassMeta
 
 
 import numpy as np
@@ -126,7 +90,22 @@ import seaborn as sns
 
 
 if __name__ == "__main__":
-    # df, _ = DSL.load_raw(0)
+    # line_list = CMN.FUNC.read_file_lines_ex("/home/super/source/finance_scrapy/dataset/.180414/market/stock_top3_legal_persons_net_buy_or_sell.csv.bak")
+    # new_line_list = []
+    # for line in line_list:
+    #     line_element_list = line.split(',')
+    #     if len(line_element_list) > 13 :
+    #         new_line = ",".join(line_element_list[:13])   
+    #         new_line_list.append(new_line)
+    #     else:
+    #         new_line_list.append(line)
+    # CMN.FUNC.write_file_lines_ex(new_line_list, "/home/super/source/finance_scrapy/dataset/.180414/market/stock_top3_legal_persons_net_buy_or_sell.csv")
+    # df0, _ = DSL.load_raw(0)
+    # df3, _ = DSL.load_raw(3)
+    # df0 = df0.merge(df3, right_index=True, left_index=True)
+    # df, column_description_list = DSL.load_market_hybrid([0, 1])
+    df, column_description_list = DSL.load_market_hybrid([0, 1], {0:[5,], 1:[3, 6, 9, 12]})
+    # import pdb; pdb.set_trace()
     # # my_test_class = MyTestClass()
     # # print MyTestClass.CUR_DATASET_SELECTION
     # # df = pd.DataFrame([[0,1],[2,3],[4,5]],index=['a','b','c'],columns=[u'可以',u'使用'])
