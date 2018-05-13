@@ -510,12 +510,13 @@ def update_finance_mode_global_variable(finance_mode=None):
     else:
         raise ValueError("Unknown finance mode !!!")
     GV.FINANCE_MODE = finance_mode
+    return finance_mode
 
 
-def update_global_variable():
+def update_global_variable(cur_finance_mode):
     # import pdb; pdb.set_trace()
     # assert not GV.GLOBAL_VARIABLE_UPDATED, "GV.GLOBAL_VARIABLE_UPDATED should NOT be True"
-    if param_cfg["force_switch_finance_mode"] is not None and param_cfg["force_switch_finance_mode"] != CMN.FUNC.get_finance_mode():
+    if (param_cfg["force_switch_finance_mode"] is not None) and (param_cfg["force_switch_finance_mode"] != cur_finance_mode):
         show_warn("Force to switch finance mode to %s. Will OVERWRITE the setting in %s" % (CMN.DEF.FINANCE_MODE_DESCRIPTION[param_cfg["force_switch_finance_mode"]], CMN.DEF.FINANCE_MODE_SWITCH_CONF_FILENAME))
         update_finance_mode_global_variable(param_cfg["force_switch_finance_mode"])
 
@@ -593,9 +594,9 @@ def do_clone():
 if __name__ == "__main__":
 # Parse the parameters and apply to manager class
     init_param()
-    update_finance_mode_global_variable()
+    cur_finance_mode = update_finance_mode_global_variable()
     parse_param(True)
-    update_global_variable()
+    update_global_variable(cur_finance_mode)
     parse_param()
 
     if param_cfg["show_workday_calendar_range"]:
