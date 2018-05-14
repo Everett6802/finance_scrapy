@@ -66,19 +66,19 @@ class DailyStockPriceAndVolumeBase(ScrapyStockBase.ScrapyStockBase):
         return CMN.FUNC.transform_date_str(int(date_list[0]), int(date_list[1]), int(date_list[2]))
 
 
-    @classmethod
-    def find_time_range_start(cls, company_code_number):
-        # import pdb; pdb.set_trace()
-        profile_lookup = BASE.CP.CompanyProfile.Instance()
-        listing_date_str = None
-        try:
-            listing_date_unicode = profile_lookup.lookup_company_listing_date(company_code_number)
-            listing_date_str = str(listing_date_unicode)
-            if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.START_DATE_OBJ:
-                listing_date_str = CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
-        except ValueError:
-            g_logger.debug("The profile of the company code number does NOT exist")
-        return listing_date_str
+    # @classmethod
+    # def find_time_range_start(cls, company_code_number):
+    #     # import pdb; pdb.set_trace()
+    #     profile_lookup = BASE.CP.CompanyProfile.Instance()
+    #     listing_date_str = None
+    #     try:
+    #         listing_date_unicode = profile_lookup.lookup_company_listing_date(company_code_number)
+    #         listing_date_str = str(listing_date_unicode)
+    #         if CMN.CLS.FinanceDate.from_string(listing_date_str) < cls.START_DATE_OBJ:
+    #             listing_date_str = CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR
+    #     except ValueError:
+    #         g_logger.debug("The profile of the company code number does NOT exist")
+    #     return listing_date_str
 
 
     def __init__(self, **kwargs):
@@ -156,8 +156,8 @@ class DailyStockPriceAndVolume(DailyStockPriceAndVolumeBase):
 # CAUTION: This function MUST be called by the LEAF derived class
         if cls.URL_DATA_EXIST_SELECTOR is None:
             cls.URL_DATA_EXIST_SELECTOR = cls.CLASS_CONSTANT_CFG["url_data_exist_selector"]
-        if cls.START_DATE_OBJ is None:
-            cls.START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
+        # if cls.START_DATE_OBJ is None:
+        #     cls.START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
 
 
     @classmethod
@@ -314,8 +314,8 @@ class OTCDailyStockPriceAndVolume(DailyStockPriceAndVolumeBase):
 # CAUTION: This function MUST be called by the LEAF derived class
         if cls.URL_DATA_EXIST_SELECTOR is None:
             cls.URL_DATA_EXIST_SELECTOR = cls.CLASS_CONSTANT_CFG["url_data_exist_selector"]
-        if cls.START_DATE_OBJ is None:
-            cls.START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
+        # if cls.START_DATE_OBJ is None:
+        #     cls.START_DATE_OBJ = CMN.CLS.FinanceDate.from_string(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR)
 
 
     @classmethod

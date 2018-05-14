@@ -671,7 +671,7 @@ class ScrapyBase(object):
 # args[0]: scrapy_class_index
 # in Stock mode
 # args[0]: scrapy_class_index
-# args[1]: company_code_number
+# args[1]: company_code_number, None for stopping the auto-scan the start time
 # Define the suitable time range
 # define the function for transforming the time unit
         def transfrom_time_duration_start_time_unit_from_date(url_time_unit, time_duration_start):

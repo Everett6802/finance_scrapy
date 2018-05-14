@@ -30,25 +30,30 @@ class StockURLTimeRange(object):
         # g_profile_lookup = BASE.CP.CompanyProfile.Instance()
         self.COMPANY_GROUP_SIZE = g_profile_lookup.CompanyGroupSize
         # self.stock_offset_scrapy_class_index_list = [scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START for scrapy_class_index in self.scrapy_class_index_list]
+        first_url_data_date = CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -1))
         self.METHOD_START_SCAN_TIME_CFG = [
-            CMN.CLS.FinanceDate(CMN.FUNC.get_year_offset_datetime_cfg(datetime.today(), -1)),
-            CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
-            CMN.CLS.FinanceDate(CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
+            first_url_data_date,
+            # # CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
+            # # CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
+            # # CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
+            # # CMN.CLS.FinanceQuarter(CMN.DEF.STATEMENT_START_QUARTER_STR),
+            # CMN.CLS.FinanceDate(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
+            # CMN.CLS.FinanceDate(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_START_DATE_STR),
+            # CMN.CLS.FinanceDate(CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
+            # CMN.CLS.FinanceDate(CMN.DEF.TOP3_LEGAL_PERSONS_STOCK_NET_BUY_OR_SELL_SUMMARY_START_DATE_STR),
+            first_url_data_date,
+            first_url_data_date,
+            first_url_data_date,
+            first_url_data_date,
         ]
         last_url_data_date = CMN.CLS.FinanceDate.get_last_finance_date()
-        last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)
+        # last_url_data_quarter = CMN.CLS.FinanceQuarter.get_end_finance_quarter_from_date(last_url_data_date)
         self.METHOD_END_TIME_CFG = [
             last_url_data_date,
-            last_url_data_quarter,
-            last_url_data_quarter,
-            last_url_data_quarter,
-            last_url_data_quarter,
+            # last_url_data_quarter,
+            # last_url_data_quarter,
+            # last_url_data_quarter,
+            # last_url_data_quarter,
             last_url_data_date,
             last_url_data_date,
             last_url_data_date,
@@ -280,6 +285,7 @@ class StockURLTimeRange(object):
 
     def get_time_range(self, scrapy_class_index, company_number=None, company_group=None):
         # import pdb;pdb.set_trace()
+# If the company_number is None, stop scanning the start time, just exploit the default start time
         if company_number is None:
             return (self.METHOD_START_SCAN_TIME_CFG[scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START], self.METHOD_END_TIME_CFG[scrapy_class_index - CMN.DEF.SCRAPY_STOCK_CLASS_START])
         return (self.get_time_range_start(scrapy_class_index, company_number, company_group), self.get_time_range_end(scrapy_class_index))

@@ -54,6 +54,7 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
         # self.scrapy_company_progress_count = 0
         self.company_profile = None
         self.cur_company_code_number = None # Caution: This value is updated every time when _scrape_web_data() is called
+        self.auto_scan_start_time = False
 
 
     def _get_url_time_range(self):
@@ -175,7 +176,8 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
                 #     if not CompanyGroupSet.CompanyGroupSet.check_company_market_type(company_code_number, self.COMPANY_MARKET_TYPE):
                 #         continue
 # Limit the searching time range from the web site
-                time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SCRAPY_CLASS_INDEX, company_code_number)
+                company_code_number_for_auto_scan = company_code_number if self.auto_scan_start_time else None
+                time_duration_after_lookup_time = self._adjust_time_range_from_web(self.SCRAPY_CLASS_INDEX, company_code_number_for_auto_scan)
                 if time_duration_after_lookup_time is None:
                     self.csv_file_no_scrapy_record.add_time_range_not_overlap_record(self.SCRAPY_CLASS_INDEX, company_code_number)
                     g_logger.debug("[%s:%s] %s => The searching time range is NOT in the time range of web data !!!" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]]))
@@ -265,6 +267,16 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
     # @property
     # def CompanyProgressCount(self):
     #     return self.scrapy_company_progress_count
+
+
+    @property
+    def AutoScanStartTime(self):
+        return self.auto_scan_start_time
+
+
+    @AutoScanStartTime.setter
+    def AutoScanStartTime(self, new_auto_scan_start_time):
+        self.auto_scan_start_time = new_auto_scan_start_time
 
 
     @abstractmethod
