@@ -474,8 +474,7 @@ def setup_param():
         # import pdb; pdb.set_trace()
         g_mgr.set_method_time_duration(method_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
 # Set Company
-        if GV.IS_FINANCE_MARKET_MODE:
-            company_word_list = None
+        if GV.IS_FINANCE_STOCK_MODE:
             if param_cfg["company"] is not None:
                 g_mgr.set_company(param_cfg["company"])
 
