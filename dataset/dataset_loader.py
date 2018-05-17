@@ -6,11 +6,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import libs.common as CMN
+import libs.base as BASE
 import dataset_definition as DS_DEF
 import dataset_variable as DS_VAR
 
+g_profile_lookup = BASE.CP.CompanyProfile.Instance()
 
-def load_raw(method_index, field_index_list=None, company_code_number=None, company_group_number=None):
+
+def load_raw(method_index, company_code_number=None, field_index_list=None, company_group_number=None):
 	'''
 	CAUTION: 
 	The start field index must be 1
@@ -24,7 +27,9 @@ def load_raw(method_index, field_index_list=None, company_code_number=None, comp
 	else:
 # Stock mode
 		CMN.FUNC.check_scrapy_method_index_in_range(method_index, CMN.DEF.FINANCE_MODE_STOCK)
-		raise NotImplementedError
+		if company_group_number is None:
+			profile_lookup = BASE.CP.CompanyProfile.Instance()
+			company_group_number = profile_lookup.lookup_company_group_number(company_code_number)
 # Read the column description list
 	conf_filename = CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index] + DS_DEF.DATASET_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
 # Define the column name
@@ -51,6 +56,7 @@ def load_raw(method_index, field_index_list=None, company_code_number=None, comp
 	if company_code_number is None:
 		filepath = "%s/%s/%s.csv" % (DS_VAR.DatasetVar.DATASET_FOLDER_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
 	else:
+		company_group_number = int(company_group_number)
 		filepath = "%s/%s%02d/%s/%s.csv" % (DS_VAR.DatasetVar.DATASET_FOLDER_PATH, CMN.DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_code_number, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
 	# print DS_VAR.DatasetVar.DATASET_FOLDER_PATH
 	df = None
@@ -67,7 +73,7 @@ def load_raw(method_index, field_index_list=None, company_code_number=None, comp
 	return df, column_description_list
 
 
-def load_market_hybrid(method_index_list, field_index_dict=None):
+def load_hybrid(method_index_list, company_code_number=None, field_index_dict=None, company_group_number=None):
 	'''
 	# field_index_dict: The field index list in each method
 	# Format: 
@@ -84,7 +90,7 @@ def load_market_hybrid(method_index_list, field_index_dict=None):
 	# import pdb; pdb.set_trace()
 	for method_index in method_index_list:
 		field_index_list = (field_index_dict.get(method_index, None) if (field_index_dict is not None) else None)
-		df_new, column_description_list_new = load_raw(method_index, field_index_list)
+		df_new, column_description_list_new = load_raw(method_index, company_code_number, field_index_list, company_group_number)
 		if df is None:
 			df = df_new
 			column_description_list.extend(column_description_list_new)
@@ -92,3 +98,11 @@ def load_market_hybrid(method_index_list, field_index_dict=None):
 			df = pd.merge(df, df_new, right_index=True, left_index=True)
 			column_description_list.extend(column_description_list_new[1:])
 	return df, column_description_list
+
+
+def load_market_hybrid(method_index_list, field_index_dict=None):
+	return load_hybrid(method_index_list, field_index_dict=field_index_dict)
+
+
+def load_stock_hybrid(method_index_list, company_code_number, field_index_dict=None, company_group_number=None):
+	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number)

@@ -199,4 +199,16 @@ if __name__ == "__main__":
     # # # plt.show()
     # # if param_cfg["visualize"]:
     # #     sns.heatmap(df.corr(), annot=True)
-    df, column_description_list = find_dataset_correlation7()
+    # df, column_description_list = find_dataset_correlation0()
+    # df, column_description_list = DSL.load_market_hybrid([0, 1], {0:[5,], 1:[3,6,9,12,]})
+
+    df, column_description_list = DSL.load_stock_hybrid([9,],"2367")
+    print "*** Time Period ***"
+    print "%s - %s" % (df.index[0].strftime("%Y-%m-%d"), df.index[-1].strftime("%Y-%m-%d"))
+    print "*** Column Mapping ***"
+    for index in range(1, len(column_description_list)):
+        print u"%s: %s" % (df.columns[index - 1], column_description_list[index])
+    plt.show()
+
+    # # import pdb; pdb.set_trace()
+    # print column_description_list
