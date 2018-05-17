@@ -1,8 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf8 -*-
 
-from selenium import webdriver
 import time
+from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 # available since 2.4.0
 from selenium.webdriver.support.ui import WebDriverWait
@@ -11,6 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
+from selenium.webdriver.common.keys import Keys
 
 
 def __statementdog_stock_search(driver, company_search_string):
@@ -58,7 +59,7 @@ def _scrape_cashflow_statement_(driver, *args, **kwargs):
 def _scrape_dividend_(driver, *args, **kwargs):
 # args[0]: company_search_string
 # parse the argument
-	company_search_string = args[0]
+	# company_search_string = args[0]
 	import pdb; pdb.set_trace()
 # scrape web
 	element = driver.find_element_by_id("stockid")
@@ -114,6 +115,8 @@ class StatementDogWebScrapy(object):
 
 	__metaclass__ = StatementDogWebScrapyMeta
 
+	__HOME_URL = 'https://statementdog.com/analysis'
+
 	__FUNC_PTR = {
 		"income statement": _scrape_income_statement_,
 		"balance sheet: asset": _scrape_balance_sheet_asset_,
@@ -132,29 +135,40 @@ class StatementDogWebScrapy(object):
 		self.url = url
 		self.webdriver = None
 		self.company_number = None
-		self.compnay_name = None
-		self.company_search_string = None
+		self.company_number_changed = True
+		# self.compnay_name = None
+		# self.company_search_string = None
 
 
 	def __enter__(self):
 		self.webdriver = webdriver.Chrome()
-		self.webdriver.get(self.url)
-		print self.webdriver.title
+		self.webdriver.get(self.__HOME_URL)
 		return self
 
 
 	def __exit__(self, type, msg, traceback):
-		self.webdriver.quit()
+		if self.webdriver is not None:
+			self.webdriver.quit()
 		return False
 
 
-	def set_company(self, company_number, company_name=None):
-		self.company_search_string = u"%s %s" % (company_number, company_name)
+	# def set_company(self, company_number, company_name=None):
+	# 	self.company_search_string = u"%s %s" % (company_number, company_name)
 
 
 	def scrape(self, scrapy_method, *args, **kwargs):
+		if self.company_number is None:
+			raise ValueError("Unknown company number !!!")
 		if self.__FUNC_PTR.get(scrapy_method, None) is None:
 			raise ValueError("The scrapy method[%s] is NOT defined" % scrapy_method)
+
+		# print self.webdriver.title
+# Switch to certain a company
+		if self.company_number_changed:
+			element = driver.find_element_by_id("stockid")
+			element.clear()
+			element.send_keys(self.company_number)
+			element.send_keys(Keys.RETURN)
 		return (self.__FUNC_PTR[scrapy_method])(self.webdriver, self.company_search_string, *args, **kwargs)
 
 
@@ -164,12 +178,11 @@ class StatementDogWebScrapy(object):
 			raise ValueError("self.company_number is NOT set")
 		return self.company_number
 
-
-	@property
-	def CompanyName(self):
-		if self.company_name is None:
-			raise ValueError("self.company_name is NOT set")
-		return self.company_name
+	@CompanyNumber.setter
+	def CompanyNumber(self, company_number):
+		if self.company_number != company_number:
+			self.company_number_changed = True
+			self.company_number = company_number
 
 
 if __name__ == '__main__':
@@ -189,7 +202,13 @@ if __name__ == '__main__':
 	# element = driver.find_element_by_class_name("navi-search")
 	element = driver.find_element_by_id("stockid")
 	# element.send_keys(u"2317 鴻海")
-	element.send_keys(u"2317")
+	element.clear()
+	element.send_keys("2317")
+	element.send_keys(Keys.RETURN)
+	import pdb; pdb.set_trace()
+	element.clear()	
+	element.send_keys("2367")
+	element.send_keys(Keys.RETURN)
 	# # 提交
 	# # element = driver.find_element_by_class_name("navi-search")
 	# element.submit()
