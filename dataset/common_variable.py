@@ -3,15 +3,17 @@
 import os
 import libs.common as CMN
 from libs.common.common_variable import GlobalVar as GV
-import dataset_definition as DS_DEF
+import common_definition as DS_CMN_DEF
 
 
 class DatasetVarMeta(type):
 
     _param_update = False
     # __MY_VALUE = None
+    _GLOBAL_VARIABLE_UPDATED = False
     _PARAM_DICT = None
     _DATASET_FOLDER_PATH = None
+    _CAN_VISUALIZE = False
 
 
     def __init__(cls, name, bases, dct):
@@ -21,7 +23,7 @@ class DatasetVarMeta(type):
 
     @classmethod
     def __update_param(cls):
-        config_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, DS_DEF.DATASET_FOLDERNAME, DS_DEF.DATASET_CONF_FILENAME)
+        config_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, DS_CMN_DEF.DATASET_FOLDERNAME, DS_CMN_DEF.DATASET_CONF_FILENAME)
         line_list = CMN.FUNC.read_file_lines_ex(config_filepath)
         cls._PARAM_DICT = {}
         for key, value in map(lambda line : line.split("="), line_list):
@@ -29,6 +31,17 @@ class DatasetVarMeta(type):
 # validate the parameter
         assert cls._PARAM_DICT.get("cur_dataset_selection", None) is not None, "The cur_dataset_selection field is NOT set"
         cls._param_update = True
+
+
+    @property
+    def GLOBAL_VARIABLE_UPDATED(cls):
+        raise RuntimeError("Can NOT be invoked")
+
+    @GLOBAL_VARIABLE_UPDATED.setter
+    def GLOBAL_VARIABLE_UPDATED(cls, global_variable_updated):
+        if cls._GLOBAL_VARIABLE_UPDATED:
+            raise RuntimeError("Global variables have already been UPDATED !!!")
+        cls._GLOBAL_VARIABLE_UPDATED = global_variable_updated
 
 
     @property
@@ -41,8 +54,21 @@ class DatasetVarMeta(type):
     @property
     def DATASET_FOLDER_PATH(cls):
         if cls._DATASET_FOLDER_PATH is None:
-            cls._DATASET_FOLDER_PATH = "%s/%s/.%s" % (GV.PROJECT_FOLDERPATH, DS_DEF.DATASET_FOLDERNAME, cls.CUR_DATASET_SELECTION)
+            cls._DATASET_FOLDER_PATH = "%s/%s/.%s" % (GV.PROJECT_FOLDERPATH, DS_CMN_DEF.DATASET_FOLDERNAME, cls.CUR_DATASET_SELECTION)
         return cls._DATASET_FOLDER_PATH
+
+
+    @property
+    def CAN_VISUALIZE(cls):
+        if not cls._GLOBAL_VARIABLE_UPDATED:
+            raise RuntimeError("Global variables are NOT updated !!!")
+        return cls._CAN_VISUALIZE   
+
+    @CAN_VISUALIZE.setter
+    def CAN_VISUALIZE(cls, can_visualize):
+        if cls._GLOBAL_VARIABLE_UPDATED:
+            raise RuntimeError("Global variables have already been UPDATED !!!")
+        cls._CAN_VISUALIZE = can_visualize
 
 
 class DatasetVar(object):
