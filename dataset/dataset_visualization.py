@@ -152,6 +152,9 @@ def plot_candles_v2(pricing, title=None,
     if title:
         ax1.set_title(title)
     # import pdb; pdb.set_trace()
+# Set the background color of candle stick
+    ax1.patch.set_facecolor('black')
+
     pricing_len = len(pricing)
     x = np.arange(pricing_len)
     candle_colors = [color_function(i, open_price, close_price, low_price, high_price) for i in x]
@@ -172,7 +175,9 @@ def plot_candles_v2(pricing, title=None,
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
 
-    ax1.xaxis.grid(False)
+    ax1.grid(color='white', linestyle=':', linewidth=0.5)
+    ax1.xaxis.grid(True)
+    ax1.yaxis.grid(True)
     ax1.xaxis.set_tick_params(which='major', length=3.0, direction='in', top='off')
     # Assume minute frequency if first two bars are in the same day.
     frequency = 'minute' if (pricing.index[1] - pricing.index[0]).days == 0 else 'day'
@@ -206,6 +211,7 @@ def plot_candles_v2(pricing, title=None,
             volume_title = 'Volume (%s)' % volume_scale
         ax2.set_title(volume_title)
         ax2.xaxis.grid(False)
+        ax2.yaxis.grid(True)
     # Plot additional technical indicators
     for (i, technical) in enumerate(technicals):
         ax = subplots[i - len(technicals)] # Technical indicator plots are shown last
