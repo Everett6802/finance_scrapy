@@ -101,12 +101,19 @@ class ConfigurerBase(object):
 
 
     @property
-    def MethodTimeDurationRange(self):
-        # import pdb; pdb.set_trace()
-        if not hasattr(self, "method_time_duration_range"):
-            self.method_time_duration_range = {}
-            method_description_time_duration_range_dict = self.get_config("MethodTimeDurationRange")
-            for method_description, time_duration_range_list_str in method_description_time_duration_range_dict.items():
-                method_index = CMN.FUNC.get_method_index_from_description(method_description.decode(CMN.DEF.URL_ENCODING_UTF8))
-                self.method_time_duration_range[method_index] = CMN.FUNC.parse_time_duration_range_str_to_object(time_duration_range_list_str)
-        return self.method_time_duration_range
+    def CurDatasetSelection(self):
+        if not hasattr(self, "cur_dataset_selection"):
+            self.cur_dataset_selection = self.get_config("Dataset", "cur_dataset_selection")
+        return self.cur_dataset_selection
+
+
+    # @property
+    # def MethodTimeDurationRange(self):
+    #     # import pdb; pdb.set_trace()
+    #     if not hasattr(self, "method_time_duration_range"):
+    #         self.method_time_duration_range = {}
+    #         method_description_time_duration_range_dict = self.get_config("MethodTimeDurationRange")
+    #         for method_description, time_duration_range_list_str in method_description_time_duration_range_dict.items():
+    #             method_index = CMN.FUNC.get_method_index_from_description(method_description.decode(CMN.DEF.URL_ENCODING_UTF8))
+    #             self.method_time_duration_range[method_index] = CMN.FUNC.parse_time_duration_range_str_to_object(time_duration_range_list_str)
+    #     return self.method_time_duration_range

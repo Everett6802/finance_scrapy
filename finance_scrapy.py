@@ -42,6 +42,7 @@ def show_usage_and_exit():
     print "--disable_flush_scrapy\nDescription: Disable the flag of flushing web scrapy data in buffer into CSV files while exception occurs during scraping"
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web\n"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s\n" % CMN.DEF.CSV_ROOT_FOLDERPATH
+    print "--dataset_finance_folderpath\nDescription: Set the finance root folder to the dataset folder\n"
     print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s\n" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
     print "--method\nDescription: The list of the methods\nDefault: All finance methods\nCaution: Only take effect when config_from_file is NOT set"
     print "Scrapy Method:"
@@ -215,6 +216,7 @@ def init_param():
     param_cfg["reserve_old"] = False
     param_cfg["disable_flush_scrapy"] = False
     param_cfg["dry_run"] = False
+    param_cfg["dataset_finance_folderpath"] = False
     param_cfg["finance_folderpath"] = None
     param_cfg["config_from_file"] = False
     param_cfg["method"] = None
@@ -302,6 +304,10 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["dry_run"] = True
             index_offset = 1
+        elif re.match("--dataset_finance_folderpath", sys.argv[index]):
+            if not early_parse:
+                param_cfg["dataset_finance_folderpath"] = True
+            index_offset = 1
         elif re.match("--finance_folderpath", sys.argv[index]):
             if not early_parse:
                 param_cfg["finance_folderpath"] = sys.argv[index + 1]
@@ -382,22 +388,25 @@ def check_param():
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
                 show_warn("The 'company' argument is ignored since it's 'Market' mode")
-# Check time range
-    time_range_start = None
-    if param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
-        time_range_start = CMN.CLS.FinanceDate.get_today_finance_date()
-    elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
-        time_range_start = CMN.CLS.FinanceDate.get_last_finance_date()
-    elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
-        (time_range_start, _) = CMN.FUNC.parse_time_duration_range_str_to_object(param_cfg["time_duration_range"])
-    else:
-        raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
+# # Check time range
+#     time_range_start = None
+#     if param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
+#         time_range_start = CMN.CLS.FinanceDate.get_today_finance_date()
+#     elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
+#         time_range_start = CMN.CLS.FinanceDate.get_last_finance_date()
+#     elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
+#         (time_range_start, _) = CMN.FUNC.parse_time_duration_range_str_to_object(param_cfg["time_duration_range"])
+#     else:
+#         raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
 
-    if time_range_start is not None:
-        workday_calendar = BASE.WC.WorkdayCanlendar.Instance()
-        if time_range_start > workday_calendar.LastWorkday:
-            errmsg = "ERROR!! The start date[%s] is later than the last workday[%s]" % (time_range_start, workday_calendar.LastWorkday)
-            show_error_and_exit(errmsg)
+#     if time_range_start is not None:
+#         workday_calendar = BASE.WC.WorkdayCanlendar.Instance()
+#         if time_range_start > workday_calendar.LastWorkday:
+#             errmsg = "ERROR!! The start date[%s] is later than the last workday[%s]" % (time_range_start, workday_calendar.LastWorkday)
+#             show_error_and_exit(errmsg)
+    if param_cfg["dataset_finance_folderpath"]:
+        if param_cfg["finance_folderpath"] is not None:
+            show_warn("The 'finance_folderpath' argument is invalid since dataset_finance_folderpath is set")
 
     if GV.IS_FINANCE_MARKET_MODE:
         if param_cfg["renew_statement_field"]:
@@ -405,7 +414,7 @@ def check_param():
             show_warn("The 'renew_statement_field' argument is ignored since it's 'Market' mode")
         if param_cfg["enable_company_not_found_exception"]:
             param_cfg["enable_company_not_found_exception"] = False
-            show_warn("The 'enable_company_not_found_exception' argument is ignored since it's 'Market' mode")
+            show_warn("The 'enable_company_not_found_exception' argument is invalid since it's 'Market' mode")
         if param_cfg["multi_thread"] is not None:
             param_cfg["multi_thread"] = None
             show_warn("The 'multi_thread' argument is invalid since it's 'Market' mode")
@@ -481,8 +490,10 @@ def setup_param():
     g_mgr.reserve_old_finance_folder(param_cfg["reserve_old"])
     g_mgr.disable_flush_scrapy_while_exception(param_cfg["disable_flush_scrapy"])
     g_mgr.enable_dry_run(param_cfg["dry_run"])
-    if param_cfg["finance_folderpath"] is not None:
-        g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
+    if param_cfg["dataset_finance_folderpath"]:
+        g_mgr.set_finance_root_folderpath(update_dataset=param_cfg["dataset_finance_folderpath"])
+    elif param_cfg["finance_folderpath"] is not None:
+        g_mgr.set_finance_root_folderpath(csv_root_folderpath=param_cfg["finance_folderpath"])
 
 
 def update_finance_mode_global_variable(finance_mode=None):

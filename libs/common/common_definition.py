@@ -127,6 +127,7 @@ COMPANY_GROUP_CONF_FILENAME = ".company_group.conf"
 FINANCE_MODE_CONF_FILENAME = ".finance_analysis.conf"
 # MARKET_STOCK_SWITCH_CONF_FILENAME = "market_stock_switch.conf"
 CSV_DATA_TIME_DURATION_FILENAME = ".csv_time_range.conf"
+DATASET_CONF_FILENAME = ".dataset.conf"
 COMMAND_EXAMPLE_FILENAME = "command_example"
 # Constants
 PROJECT_NAME_PREFIX = "finance_"
@@ -139,6 +140,7 @@ TODAY_STOCK_DATA_EXIST_HOUR = 20
 TODAY_STOCK_DATA_EXIST_MINUTE = 0
 LIB_FOLDERNAME = "libs"
 CONF_FOLDERNAME = "conf"
+DATASET_FOLDERNAME = "dataset"
 CSV_ROOT_FOLDERPATH = "/var/tmp/finance"
 CSV_DST_MERGE_ROOT_FOLDERPATH = "/var/tmp/finance_merge"
 CSV_MARKET_FOLDERNAME = "market"
