@@ -117,7 +117,7 @@ class GlobalVar(object):
         def PROJECT_DATASET_FOLDERPATH(cls):
             if cls._PROJECT_DATASET_FOLDERPATH is None:
                 cls._PROJECT_DATASET_FOLDERPATH = "%s/%s" % (cls.PROJECT_FOLDERPATH, cls.__DATASET_FOLDERNAME_IN_PROJECT)
-            return cls._PROJECT_CONF_FOLDERPATH
+            return cls._PROJECT_DATASET_FOLDERPATH
 
 
         @property
