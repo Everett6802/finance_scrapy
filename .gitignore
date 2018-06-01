@@ -24,4 +24,7 @@ snapshot/
 *_metadata
 .time_range
 !dataset/*/*.csv
+!dataset/*/*.conf
+!dataset/*/*/*/*.csv
+!dataset/*/*/*/*.conf
 .ipynb_checkpoints/

@@ -239,8 +239,8 @@ class FinanceDate(FinanceTimeBase):
     @classmethod
     def get_last_finance_date(cls):
         if cls.last_finance_date is None:
-            today_data_exist_hour = CMN_DEF.TODAY_MARKET_DATA_EXIST_HOUR if GV.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
-            today_data_exist_minute = CMN_DEF.TODAY_MARKET_DATA_EXIST_MINUTE if GV.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
+            today_data_exist_hour = CMN_DEF.TODAY_DATA_EXIST_HOUR # if GV.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
+            today_data_exist_minute = CMN_DEF.TODAY_DATA_EXIST_MINUTE # if GV.IS_FINANCE_MARKET_MODE else CMN_DEF.TODAY_STOCK_DATA_EXIST_HOUR
             cls.last_finance_date = CMN_FUNC.get_last_url_data_date(today_data_exist_hour, today_data_exist_minute) 
         return cls.last_finance_date
 

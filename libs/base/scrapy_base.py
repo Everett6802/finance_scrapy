@@ -481,7 +481,7 @@ class ScrapyBase(object):
     def __init__(self, **kwargs):
         self.xcfg = {
             "disable_flush_scrapy_while_exception": False,
-            "time_duration_type": CMN.DEF.DATA_TIME_DURATION_TODAY,
+            "time_duration_type": CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST,
             "time_duration_start": None,
             "time_duration_end": None,
             "dry_run_only": False,
@@ -698,15 +698,15 @@ class ScrapyBase(object):
         # import pdb; pdb.set_trace()
         time_duration_start = None
         time_duration_end = None
-        if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
-            time_duration_start = time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, CMN.CLS.FinanceDate.get_today_finance_date())
-            # time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
-            # time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
-        elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
+        # if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
+        #     time_duration_start = time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, CMN.CLS.FinanceDate.get_today_finance_date())
+        #     # time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
+        #     # time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
+        if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
             time_duration_start = time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, CMN.CLS.FinanceDate.get_last_finance_date())
             # time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, time_duration_start)
             # time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, time_duration_end)
-        elif self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_RANGE:
+        else:
             (time_duration_start_from_lookup_table, time_duration_end_from_lookup_table) = self._get_url_time_range().get_time_range(*args)
             time_start_from_table = False
             if self.xcfg["time_duration_start"] is None:
@@ -716,6 +716,8 @@ class ScrapyBase(object):
 # Trasform the start time unit
                 time_duration_start = transfrom_time_duration_start_time_unit_from_date(self.URL_TIME_UNIT, self.xcfg["time_duration_start"])
                 assert time_duration_start.get_time_unit_type() == time_duration_start_from_lookup_table.get_time_unit_type() , "The time duration start time unit is NOT identical, %d, %d" % (time_duration_start.get_time_unit_type(), time_duration_start_from_lookup_table.get_time_unit_type()) 
+            if self.xcfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST:
+                time_duration_end = transfrom_time_duration_end_time_unit_from_date(self.URL_TIME_UNIT, CMN.CLS.FinanceDate.get_last_finance_date())
             time_end_from_table = False
             if self.xcfg["time_duration_end"] is None:
                 time_duration_end = time_duration_end_from_lookup_table
@@ -734,8 +736,8 @@ class ScrapyBase(object):
                 time_duration_start = time_duration_start_from_lookup_table
             if (not time_end_from_table) and (time_duration_end > time_duration_end_from_lookup_table):
                 time_duration_end = time_duration_end_from_lookup_table
-        else:
-            raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
+        # else:
+        #     raise ValueError("Unknown time duration type: %d" % self.xcfg["time_duration_type"])
         # import pdb; pdb.set_trace()
         assert time_duration_start.get_time_unit_type() == self.URL_TIME_UNIT, "The time unit shold be: %d, NOT: %d" % (self.TIMESLICE_TIME_UNIT, time_duration_start.get_time_unit_type())
         assert time_duration_start.get_time_unit_type() == time_duration_end.get_time_unit_type(), "The time unit is NOT identical, start: %d, end: %d" % (time_duration_start.get_time_unit_type(), time_duration_end.get_time_unit_type())

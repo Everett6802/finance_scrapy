@@ -35,6 +35,7 @@ def show_usage_and_exit():
     print "  Format (src_folderpath1[,src_folderpath2,src_folderpath3,...]:[dst_folderpath]) (ex. /var/tmp/finance1[,/var/tmp/finance2,/var/tmp/finance3,...]:/var/tmp/merge_finance)\nCaution: Exploit the default destination folderpath[%s] when not set" % CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH
     print ""
     print "--no_scrapy\nDescription: Don't scrape Web data\n"
+    print "--disable_auto_update_workday_calendar\nDescription: Disable automatically updating the workday calendar every time when running\n"
     print "--show_progress\nDescription: Show the progress of scraping Web data\nCaution: Only take effect when the no_scrapy flag is NOT set\n"
     print "--clone\nDescription: Clone the CSV files if no error occurs\nCaution: Only clone the folder when scrapy is successful\n"
     print "--clone_finance_foldername\nDescription: Clone folder name\nCaution: Only take effect when --clone is set\n"
@@ -53,13 +54,14 @@ def show_usage_and_exit():
     print "  Format 2: Method range (ex. 2-6)"
     print "  Format 3: Method/Method range hybrid (ex. 1,3-4,6)"
     print ""
-    print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
-    print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "--time_duration_range\nDescription: The data in the time range of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "  Format 1 (start_time): 2015-01-01"
     print "  Format 2 (,end_time): ,2015-01-01"
     print "  Format 3 (start_time,end_time): 2015-01-01,2015-09-04"
-    print "--time_today --time_last --time_duration_range\nCaution: Shuold NOT be set simultaneously. Will select the first one"
+    # print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
+    print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
+    print "--time_until_last\nDescription: The data of the selected finance data source until last day\nCaution: Only take effect when config_from_file is NOT set"
+    print "--time_duration_range --time_last --time_until_last\nCaution: Shuold NOT be set simultaneously. Will select the first one"
     print ""
     if GV.IS_FINANCE_STOCK_MODE:
         print "-c | --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only take effect when config_from_file is NOT set"
@@ -72,6 +74,7 @@ def show_usage_and_exit():
         print "  Format: multi-thread number (ex. 4)"
         print ""
         print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
+        print "--update_company_stock_price\nDescription: Update the stock price of specific companies\nCaution: This arugment is equal to the argument combination as below: --force_switch_finance_mode 1 --method 9 --time_until_last --dataset_finance_folderpath --reserve_old --company xxxx\n"
     print "============================================================="
     sys.exit(0)
 
@@ -210,6 +213,7 @@ def init_param():
     param_cfg["debug_scrapy_class"] = None
     param_cfg["merge_finance_folderpath"] = None
     param_cfg["no_scrapy"] = False
+    param_cfg["disable_auto_update_workday_calendar"] = False
     param_cfg["show_progress"] = False
     param_cfg["clone"] = False
     param_cfg["clone_finance_foldername"] = None
@@ -223,9 +227,10 @@ def init_param():
     param_cfg["time_duration_type"] = None # Should be check in check_param()
     param_cfg["time_duration_range"] = None
     param_cfg["company"] = None
-    param_cfg["renew_statement_field"] = False
+    # param_cfg["renew_statement_field"] = False
     param_cfg["enable_company_not_found_exception"] = False
     param_cfg["multi_thread"] = None
+    param_cfg["update_company_stock_price"] = None
 
 
 def parse_param(early_parse=False):
@@ -280,6 +285,10 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["no_scrapy"] = True
             index_offset = 1
+        elif re.match("--disable_auto_update_workday_calendar", sys.argv[index]):
+            if not early_parse:
+                param_cfg["disable_auto_update_workday_calendar"] = True
+            index_offset = 1
         elif re.match("--show_progress", sys.argv[index]):
             if not early_parse:
                 param_cfg["show_progress"] = True
@@ -320,20 +329,6 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["method"] = sys.argv[index + 1]
             index_offset = 2
-        elif re.match("--time_today", sys.argv[index]):
-            if not early_parse:
-                if param_cfg["time_duration_type"] is not None:
-                    g_logger.debug("Time duration has already been set to: %d, ignore the time_today attribute...", param_cfg["time_duration_type"])
-                else:
-                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
-            index_offset = 1
-        elif re.match("--time_last", sys.argv[index]):
-            if not early_parse:
-                if param_cfg["time_duration_type"] is not None:
-                    g_logger.debug("Time duration has already been set to: %d, ignore the time_last attribute...", param_cfg["time_duration_type"])
-                else:
-                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
-            index_offset = 1
         elif re.match("--time_duration_range", sys.argv[index]):
             if not early_parse:
                 if param_cfg["time_duration_type"] is not None:
@@ -343,6 +338,27 @@ def parse_param(early_parse=False):
                     param_cfg["time_duration_range"] = sys.argv[index + 1]
                 # g_logger.debug("Param time range: %s", param_cfg["time_duration_range"])
             index_offset = 2
+        # elif re.match("--time_today", sys.argv[index]):
+        #     if not early_parse:
+        #         if param_cfg["time_duration_type"] is not None:
+        #             g_logger.debug("Time duration has already been set to: %d, ignore the time_today attribute...", param_cfg["time_duration_type"])
+        #         else:
+        #             param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
+        #     index_offset = 1
+        elif re.match("--time_last", sys.argv[index]):
+            if not early_parse:
+                if param_cfg["time_duration_type"] is not None:
+                    g_logger.debug("Time duration has already been set to: %d, ignore the time_last attribute...", param_cfg["time_duration_type"])
+                else:
+                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
+            index_offset = 1
+        elif re.match("--time_until_last", sys.argv[index]):
+            if not early_parse:
+                if param_cfg["time_duration_type"] is not None:
+                    g_logger.debug("Time duration has already been set to: %d, ignore the time_last attribute...", param_cfg["time_duration_type"])
+                else:
+                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST
+            index_offset = 1
         elif re.match("(-c|--company)", sys.argv[index]):
             if not early_parse:
                 if GV.IS_FINANCE_MARKET_MODE:
@@ -358,9 +374,38 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["multi_thread"] = int(sys.argv[index + 1])
             index_offset = 2
+        elif re.match("--update_company_stock_price", sys.argv[index]):
+            if early_parse:
+                param_cfg["update_company_stock_price"] = sys.argv[index + 1]
+            index_offset = 2            
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
+# Adjust the parameters setting...
+        if param_cfg["update_company_stock_price"] is not None:
+            if param_cfg["config_from_file"]:
+                show_warn("The 'config_from_file' argument won't take effect since 'force_switch_finance_mode' is set")
+                param_cfg["config_from_file"] = False
+            if early_parse:
+                if param_cfg["force_switch_finance_mode"] is not None:
+                    show_warn("The 'force_switch_finance_mode' argument won't take effect since 'force_switch_finance_mode' is set")
+                param_cfg["force_switch_finance_mode"] = 1
+            else:
+                if param_cfg["method"] is not None:
+                    show_warn("The 'method' argument won't take effect since 'force_switch_finance_mode' is set")
+                param_cfg["method"] = "9"
+                if param_cfg["time_duration_type"] is not None:
+                    show_warn("The 'time_duration_type' argument won't take effect since 'force_switch_finance_mode' is set")
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST
+                if not param_cfg["dataset_finance_folderpath"]:
+                    show_warn("dataset_finance_folderpath' argument won't take effect since 'force_switch_finance_mode' is set")
+                param_cfg["dataset_finance_folderpath"] = True
+                if not param_cfg["reserve_old"]:
+                    show_warn("reserve_old' argument won't take effect since 'force_switch_finance_mode' is set")
+                param_cfg["reserve_old"] = True
+                if not param_cfg["company"]:
+                    show_warn("company' argument won't take effect since 'force_switch_finance_mode' is set")
+                param_cfg["company"] = param_cfg["update_company_stock_price"]
 
 
 def check_param():    
@@ -379,11 +424,11 @@ def check_param():
             show_warn("The 'company' argument is ignored since it's 'Market' mode")
     else:
         if param_cfg["time_duration_type"] is None:
-            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
-            show_warn("Set the 'time_duration_type' argument to DATA_TIME_DURATION_TODAY as default")
+            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST
+            show_warn("Set the 'time_duration_type' argument to DATA_TIME_DURATION_LAST as default")
         if param_cfg["time_duration_type"] != CMN.DEF.DATA_TIME_DURATION_RANGE:
             param_cfg["time_duration_range"] = None
-            show_warn("The 'time_duration_range' argument is ignored since 'time_duration_type' is NOT 'DATA_TIME_DURATION_TODAY'")
+            show_warn("The 'time_duration_range' argument is ignored since 'time_duration_type' is NOT 'DATA_TIME_DURATION_RANGE'")
         if GV.IS_FINANCE_MARKET_MODE:
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
@@ -409,20 +454,20 @@ def check_param():
             show_warn("The 'finance_folderpath' argument is invalid since dataset_finance_folderpath is set")
 
     if GV.IS_FINANCE_MARKET_MODE:
-        if param_cfg["renew_statement_field"]:
-            param_cfg["renew_statement_field"] = False
-            show_warn("The 'renew_statement_field' argument is ignored since it's 'Market' mode")
+        # if param_cfg["renew_statement_field"]:
+        #     param_cfg["renew_statement_field"] = False
+        #     show_warn("The 'renew_statement_field' argument is ignored since it's 'Market' mode")
         if param_cfg["enable_company_not_found_exception"]:
             param_cfg["enable_company_not_found_exception"] = False
             show_warn("The 'enable_company_not_found_exception' argument is invalid since it's 'Market' mode")
         if param_cfg["multi_thread"] is not None:
             param_cfg["multi_thread"] = None
             show_warn("The 'multi_thread' argument is invalid since it's 'Market' mode")
-    else:
-        if param_cfg["multi_thread"] is not None:
-            if param_cfg["renew_statement_field"]:
-                param_cfg["multi_thread"] = None
-                show_warn("The 'multi_thread' argument is invalid when the 'renew_statement_field' argument is true")
+    # else:
+    #     if param_cfg["multi_thread"] is not None:
+    #         if param_cfg["renew_statement_field"]:
+    #             param_cfg["multi_thread"] = None
+    #             show_warn("The 'multi_thread' argument is invalid when the 'renew_statement_field' argument is true")
 
     if param_cfg["show_progress"] and param_cfg["no_scrapy"]:
         param_cfg["show_progress"] = False
@@ -434,13 +479,13 @@ def check_param():
         if not param_cfg["clone"]:
             param_cfg["clone_finance_foldername"] = None
             show_warn("The 'clone_finance_foldername' argument is invalid since clone is not set")
-# Special check
-# renew_statement_field
-    if param_cfg["renew_statement_field"]:
-        # import pdb; pdb.set_trace()
-        param_cfg["config_from_file"] = False
-        param_cfg["method"] = "{0}-{1}".format(*CMN.FUNC.get_statement_scrapy_method_index_range())
-        param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
+# # Special check
+# # renew_statement_field
+#     if param_cfg["renew_statement_field"]:
+#         # import pdb; pdb.set_trace()
+#         param_cfg["config_from_file"] = False
+#         param_cfg["method"] = "{0}-{1}".format(*CMN.FUNC.get_statement_scrapy_method_index_range())
+#         param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_LAST
 
 
 def setup_param():
@@ -480,6 +525,12 @@ def setup_param():
                 else:
                     errmsg = "Incorrect time range format: %s" % param_cfg["time_duration_range"]
                     show_error_and_exit(errmsg)
+        elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_LAST:
+            time_range_start = time_range_end = CMN.CLS.FinanceDate.get_last_finance_date()
+        elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST:
+            time_range_end = CMN.CLS.FinanceDate.get_last_finance_date()
+        else:
+            raise ValueError("Unknown time duration type: %d" % param_cfg["time_duration_type"])
         # import pdb; pdb.set_trace()
         g_mgr.set_method_time_duration(method_index_list, param_cfg["time_duration_type"], time_range_start, time_range_end)
 # Set Company
@@ -635,6 +686,8 @@ if __name__ == "__main__":
         merge_finance_folder_and_exit(param_cfg["merge_finance_folderpath"])
 # Check the parameters for the manager
     check_param()
+    if not param_cfg["disable_auto_update_workday_calendar"]:
+        workday_calendar = BASE.WC.WorkdayCanlendar.Instance()
     # import pdb; pdb.set_trace()
 # Setup the parameters for the manager
     setup_param()
