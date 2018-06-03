@@ -35,7 +35,8 @@ class DatasetVarMeta(type):
 
     @property
     def GLOBAL_VARIABLE_UPDATED(cls):
-        raise RuntimeError("Can NOT be invoked")
+        # raise RuntimeError("Can NOT be invoked")
+        return cls._GLOBAL_VARIABLE_UPDATED
 
     @GLOBAL_VARIABLE_UPDATED.setter
     def GLOBAL_VARIABLE_UPDATED(cls, global_variable_updated):

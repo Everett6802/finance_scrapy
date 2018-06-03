@@ -91,6 +91,7 @@ def setup_param():
 
 
 def update_global_variable():
+    print DV.GLOBAL_VARIABLE_UPDATED
     DV.CAN_VISUALIZE = param_cfg["visualize"]
     DV.GLOBAL_VARIABLE_UPDATED = True
 
@@ -105,8 +106,8 @@ def analyze_stock_and_exit(company_number):
 
     if DV.CAN_VISUALIZE:
         SMA = DS.FUNC.get_dataset_sma(df, "close")
-        import matplotlib.pyplot as plt
         DS.VS.plot_candles(df, title=company_number, volume_bars=True, overlays=[SMA], mark_dates=['2017-11-01','2017-11-15','2018-03-30','2018-04-13',])
+        import matplotlib.pyplot as plt
         plt.show()
 
 
