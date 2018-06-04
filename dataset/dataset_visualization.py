@@ -10,6 +10,7 @@ import libs.common as CMN
 # from libs.common.common_variable import GlobalVar as GV
 # import common_definition as DS_CMN_DEF
 # import common_variable as DS_CMN_VAR
+import common_function as DS_CMN_FUNC
 from dataset.common_variable import DatasetVar as DV
 g_logger = CMN.LOG.get_logger()
 
@@ -222,3 +223,34 @@ def plot_candles_v2(pricing, title=None,
     # plt.show()
 
 plot_candles = plot_candles_v2
+
+
+def plot_stock_price_statistics(df, cur_price, price_range_low_percentage=12, price_range_high_percentage=12):
+    price_statistics = DS_CMN_FUNC.sort_stock_price_statistics(df, cur_price, price_range_low_percentage=price_range_low_percentage, price_range_high_percentage=price_range_high_percentage)
+    price_statistics_len = len(price_statistics)
+    fig = plt.figure(figsize=(50,20))
+    # fig.suptitle('bold figure suptitle', fontsize=14, fontweight='bold')
+
+    ax = fig.add_subplot(111)
+    # fig.subplots_adjust(top=0.85)
+    # ax.set_title('axes title')
+
+    # ax.set_xlabel('xlabel')
+    # ax.set_ylabel('ylabel')
+
+    # ax.text(3, 8, 'boxed italics text in data coords', style='italic',
+    #         bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
+    line_cnt = price_statistics_len
+    for price, df_data in price_statistics:
+        data_str = ",".join([row['date'].strftime("%y%m%d")+row['type'] for index, row in df_data.iterrows()])    
+        # if not cur_price_print and cur_price < price:
+        #     print "\033[1;31;47m" + "CUR: %f" % cur_price
+        #     cur_price_print = True
+        # print "\033[1;30;47m" + "Price: %f, Data: %s" % (price,data_str)
+        ax.text(2, 2* line_cnt, data_str, style='italic',
+            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+        line_cnt -= 1
+
+    ax.axis([0, 10, 0, 2* price_statistics_len + 1])
+
+    # plt.show()

@@ -96,18 +96,36 @@ def update_global_variable():
     DV.GLOBAL_VARIABLE_UPDATED = True
 
 
-def analyze_stock_and_exit(company_number):
+def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
     # import pdb; pdb.set_trace()
     df, column_description_list = DS.LD.load_stock_hybrid([9,], company_number)
     df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0908': 'volume'}, inplace=True)
-    DS.FUNC.print_dataset_metadata(df, column_description_list)
+    # DS.FUNC.print_dataset_metadata(df, column_description_list)
+    if cur_price is None:
+        cur_price = df.ix[-1]['close']
+        cur_date = df.index[-1].strftime("%y%m%d")
+        print "** Date: %s Price: %s **\n" % (cur_date, cur_price) 
 
-    DS.FUNC.print_stock_price_statistics(df, 21.9)
+    # import pdb; pdb.set_trace()
+    stock_price_statistics_config = DS.FUNC.parse_stock_price_statistics_config(company_number)
+    DS.FUNC.print_stock_price_statistics(
+        df, 
+        cur_price, 
+        stock_price_statistics_config=stock_price_statistics_config, 
+        show_stock_price_statistics_fiter=
+            {
+                "show_marked_only": show_marked_only,
+                "group_size_thres": group_size_thres,
+            }
+        )
+    print "\n"
 
     if DV.CAN_VISUALIZE:
         SMA = DS.FUNC.get_dataset_sma(df, "close")
         DS.VS.plot_candles(df, title=company_number, volume_bars=True, overlays=[SMA], mark_dates=['2017-11-01','2017-11-15','2018-03-30','2018-04-13',])
+        # DS.VS.plot_stock_price_statistics(df, 21.9)
         import matplotlib.pyplot as plt
+
         plt.show()
 
 

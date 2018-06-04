@@ -1,11 +1,13 @@
 # -*- coding: utf8 -*-
 
+import re
 import numpy as np
 import pandas as pd
 import talib
 # conda install -c quantopian ta-lib=0.4.9
 # https://blog.csdn.net/fortiy/article/details/76531700
 import libs.common as CMN
+import common_definition as CMN_DEF
 g_logger = CMN.LOG.get_logger()
 
 
@@ -22,7 +24,40 @@ def get_dataset_sma(df, column_name):
     return SMA
 
 
-def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=None, price_range_low_percentage=None, price_range_high_value=None, price_range_high_percentage=None):
+def Date2date(Date_str):
+    element_list = Date_str.split("-")
+    return "%02s%02s%02s" % (element_list[0][2:], element_list[1], element_list[2])  
+
+def date2Date(date_str):
+    return "20%s-%02s-%02s" % (date_str[0:2], date_str[2:4], date_str[4:6])  
+
+
+def parse_stock_price_statistics_config(company_code_number, config_folderpath=None):
+    if config_folderpath is None:
+        config_folderpath = CMN_DEF.DEF_SUPPORT_RESISTANCE_FOLDER_PATH
+    config_filepath = "%s/%s.conf" % (config_folderpath, company_code_number)
+    stock_price_statistics_config = {}
+    conf_line_list = CMN.FUNC.read_file_lines_ex(config_filepath)
+    cur_conf_title = None
+    for conf_line in conf_line_list:
+        if re.match("\[[\w]+\]", conf_line) is not None:
+            cur_conf_title = conf_line.strip("[]")
+            stock_price_statistics_config[cur_conf_title] = []
+        else:
+            assert cur_conf_title is not None, "cur_conf_title should NOT be None"
+            assert stock_price_statistics_config.has_key(cur_conf_title), "The config title[%s] is Unknown" % cur_conf_title
+            if "=" in conf_line:
+                raise ValueError("Unknown config")
+                # element_list = conf_line.split("=")
+                # assert len(element_list) == 2, "The length[%d] of element_list is NOT 2" % len(element_list)
+                # [key, value] = element_list
+                # stock_price_statistics_config[cur_conf_title][key] = value
+            else:
+                stock_price_statistics_config[cur_conf_title].append(conf_line)
+    return stock_price_statistics_config
+
+
+def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=None, price_range_low_percentage=None, price_range_high_value=None, price_range_high_percentage=None, stock_price_statistics_config=None):
     # import pdb; pdb.set_trace()
     if cur_price is None:
         if price_range_low_value is not None:
@@ -59,21 +94,54 @@ def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=Non
 
     df_copy = df.copy()
     # df_copy.sort_index(ascending=True)
+    df_copy['open_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
+    df_copy['open_mark'].astype('category')
+    df_copy['high_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
+    df_copy['high_mark'].astype('category')
+    df_copy['low_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
+    df_copy['low_mark'].astype('category')
+    df_copy['close_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
+    df_copy['close_mark'].astype('category')
+    # import pdb; pdb.set_trace()
+    if stock_price_statistics_config is not None:
+        key_support_resistance_list = stock_price_statistics_config["key_support_resistance"]
+        for key_support_resistance in key_support_resistance_list:
+            key_support_resistance_mark_list = CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_MARK
+            if len(key_support_resistance) > CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN:
+                key_support_resistance_mark_list = key_support_resistance[CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN:]
+            key_support_resistance_date = key_support_resistance[:CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN]
+            key_support_resistance_date_index = date2Date(key_support_resistance_date)
+# Check if the date exist
+            if key_support_resistance_date_index not in df_copy.index:
+                g_logger.warn("The date[%s] does NOT exist in data" % key_support_resistance_date)
+                continue
+            for key_support_resistance_mark in key_support_resistance_mark_list:
+                if key_support_resistance_mark == 'O':
+                    df_copy.ix[key_support_resistance_date_index, 'open_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
+                elif key_support_resistance_mark == 'H':
+                    df_copy.ix[key_support_resistance_date_index, 'high_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
+                elif key_support_resistance_mark == 'L':
+                    df_copy.ix[key_support_resistance_date_index, 'low_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
+                elif key_support_resistance_mark == 'C':
+                    df_copy.ix[key_support_resistance_date_index, 'close_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
+                else:
+                    raise ValueError("Unkown mark type" % key_support_resistance_mark)
+
     df_copy.reset_index(inplace=True)
-    df_copy.head()
-    df_open = (df_copy[['date','open']].copy())
+    df_open = (df_copy[['date','open','open_mark']].copy())
     df_open['type'] = "O"
-    df_open.rename(columns={'open': 'price'}, inplace=True)
-    df_high = df_copy[['date','high']].copy()
+    df_open.rename(columns={'open': 'price', 'open_mark': 'mark'}, inplace=True)
+    df_high = df_copy[['date','high','high_mark']].copy()
     df_high['type'] = "H"
-    df_high.rename(columns={'high': 'price'}, inplace=True)
-    df_low = df_copy[['date','low']].copy()
+    df_high.rename(columns={'high': 'price', 'high_mark': 'mark'}, inplace=True)
+    df_low = df_copy[['date','low','low_mark']].copy()
     df_low['type'] = "L"
-    df_low.rename(columns={'low': 'price'}, inplace=True)
-    df_close = df_copy[['date','close']].copy()
+    df_low.rename(columns={'low': 'price', 'low_mark': 'mark'}, inplace=True)
+    df_close = df_copy[['date','close','close_mark']].copy()
     df_close['type'] = "C"
-    df_close.rename(columns={'close': 'price'}, inplace=True)
+    df_close.rename(columns={'close': 'price', 'close_mark': 'mark'}, inplace=True)
     df_total_value = pd.concat([df_open, df_high, df_low, df_close])
+
 # Display the price in range
     if price_range_low is not None:
         df_total_value = df_total_value[df_total_value['price'] >= price_range_low]
@@ -85,16 +153,50 @@ def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=Non
     return price_statistics
 
 
-def sort_stock_price_statistics(df, cur_price, price_range_low_percentage=12, price_range_high_percentage=12):
-    return sort_stock_price_statistics_ex(df, cur_price, price_range_low_percentage=price_range_low_percentage, price_range_high_percentage=price_range_high_percentage)
+def sort_stock_price_statistics(df, cur_price, price_range_low_percentage=12, price_range_high_percentage=12, stock_price_statistics_config=None):
+    return sort_stock_price_statistics_ex(df, cur_price, price_range_low_percentage=price_range_low_percentage, price_range_high_percentage=price_range_high_percentage, stock_price_statistics_config=stock_price_statistics_config)
 
 
-def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=12, price_range_high_percentage=12):
-    price_statistics = sort_stock_price_statistics(df, cur_price, price_range_low_percentage=price_range_low_percentage, price_range_high_percentage=price_range_high_percentage)
+def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=12, price_range_high_percentage=12, stock_price_statistics_config=None, show_stock_price_statistics_fiter=None):
+    price_statistics = sort_stock_price_statistics(df, cur_price, price_range_low_percentage=price_range_low_percentage, price_range_high_percentage=price_range_high_percentage, stock_price_statistics_config=stock_price_statistics_config)
+    price_statistics_size = len(price_statistics)
+
+    show_marked_only = CMN_DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY
+    group_size_thres = CMN_DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES
+# parse the filter
+    if show_stock_price_statistics_fiter is not None:
+        show_marked_only = show_stock_price_statistics_fiter.get("show_marked_only", CMN_DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY)
+        group_size_thres = show_stock_price_statistics_fiter.get("group_size_thres", CMN_DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES)
+
     cur_price_print = False
     for price, df_data in price_statistics:
-        data_str = ",".join([row['date'].strftime("%y%m%d")+row['type'] for index, row in df_data.iterrows()])    
+        is_marked = False
+        # import pdb; pdb.set_trace()
+        for index, row in df_data.iterrows():
+            if row['mark'] != CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE:
+                is_marked = True
+                break
+        price_color_str = CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK if is_marked else CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE
+        
+        can_print = True
+        if not is_marked:
+            if show_marked_only and len(df_data) < group_size_thres:
+                can_print = False
+        if can_print:
+            total_str = ""
+            total_str += (" " + price_color_str + ("%.2f" % price) + CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + "  ")
+            for index, row in df_data.iterrows():
+                if row['mark'] != CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE:
+                    total_str += (CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + row['date'].strftime("%y%m%d") + row['type'] + CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + " ")
+                else:
+                    total_str += (CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + row['date'].strftime("%y%m%d") + row['type'] + " ")
+            print total_str
         if not cur_price_print and cur_price < price:
-            print "\033[1;31;47m" + "CUR: %f" % cur_price
+            print CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + ">> %.2f <<" % cur_price
             cur_price_print = True
-        print "\033[1;30;47m" + "Price: %f, Data: %s" % (price,data_str)
+        # print "\n"
+        # data_str = ",".join([if .strftime("%y%m%d")+row['type'] for index, row in df_data.iterrows()])    
+        # if not cur_price_print and cur_price < price:
+        #     print CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + "CUR: %f" % cur_price
+        #     cur_price_print = True
+        # print "\033[1;30;47m" + "Price: %f, Data: %s" % (price,data_str)
