@@ -9,11 +9,11 @@ import subprocess
 # from datetime import datetime, timedelta
 # import numpy as np
 # import pandas as pd
-# import matplotlib.pyplot as plt
+import matplotlib.pyplot as plt
 # import seaborn as sns
-import talib
-# conda install -c quantopian ta-lib=0.4.9
-# https://blog.csdn.net/fortiy/article/details/76531700
+# import talib
+# # conda install -c quantopian ta-lib=0.4.9
+# # https://blog.csdn.net/fortiy/article/details/76531700
 from libs import common as CMN
 from libs.common.common_variable import GlobalVar as GV
 from libs import base as BASE
@@ -28,6 +28,8 @@ def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "-h | --help\nDescription: The usage\nCaution: Ignore other parameters when set\n"
     print "-v | --visualize\nDescription: Visualize the graphes while running script on Jupyter Notebook\n"
+    print "-c | --company\nDescription: The company to be analyzed"
+    print "  Format: Company code number (ex. 2347)"
     sys.exit(0)
 
 
@@ -77,13 +79,20 @@ def parse_param(early_parse=False):
                 param_cfg["visualize"] = True
                 break
             index_offset = 1
+        elif re.match("(-c|--company)", sys.argv[index]):
+            if not early_parse:
+                param_cfg["company"] = sys.argv[index + 1]
+                break
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
 
 
 def check_param():    
-    pass
+    if param_cfg["company"] is None:
+        param_cfg["company"] = None
+        show_error_and_exit("The 'company' argument is NOT set")
 
 
 def setup_param():
@@ -124,8 +133,7 @@ def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.D
         SMA = DS.FUNC.get_dataset_sma(df, "close")
         DS.VS.plot_candles(df, title=company_number, volume_bars=True, overlays=[SMA], mark_dates=['2017-11-01','2017-11-15','2018-03-30','2018-04-13',])
         # DS.VS.plot_stock_price_statistics(df, 21.9)
-        import matplotlib.pyplot as plt
-
+        
         plt.show()
 
 
@@ -254,7 +262,4 @@ if __name__ == "__main__":
     # for index in range(1, len(column_description_list)):
     #     print u"%s: %s" % (df.columns[index - 1], column_description_list[index])
     # plt.show()
-    analyze_stock_and_exit("2367")
-
-    # # import pdb; pdb.set_trace()
-    # print column_description_list
+    analyze_stock_and_exit(param_cfg["company"])
