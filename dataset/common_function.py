@@ -7,7 +7,7 @@ import talib
 # conda install -c quantopian ta-lib=0.4.9
 # https://blog.csdn.net/fortiy/article/details/76531700
 import libs.common as CMN
-import common_definition as CMN_DEF
+import common_definition as DS_CMN_DEF
 g_logger = CMN.LOG.get_logger()
 
 
@@ -34,7 +34,7 @@ def date2Date(date_str):
 
 def parse_stock_price_statistics_config(company_code_number, config_folderpath=None):
     if config_folderpath is None:
-        config_folderpath = CMN_DEF.DEF_SUPPORT_RESISTANCE_FOLDER_PATH
+        config_folderpath = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_FOLDER_PATH
     config_filepath = "%s/%s.conf" % (config_folderpath, company_code_number)
     stock_price_statistics_config = {}
     conf_line_list = CMN.FUNC.read_file_lines_ex(config_filepath)
@@ -43,19 +43,19 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
     for conf_line in conf_line_list:
         if re.match("\[[\w]+\]", conf_line) is not None:
             cur_conf_field = conf_line.strip("[]")
-            if cur_conf_field == CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE:
-                cur_conf_field_index = CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE_INDEX
+            if cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE_INDEX
                 stock_price_statistics_config[cur_conf_field] = None
-            elif cur_conf_field == CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE:
-                cur_conf_field_index = CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE_INDEX
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE_INDEX
                 stock_price_statistics_config[cur_conf_field] = []
             else:
                 raise ValueError("Unknown config field: %s" % cur_conf_field)                
         else:
             assert cur_conf_field is not None, "cur_conf_field should NOT be None"
-            if cur_conf_field_index == CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE_INDEX:
+            if cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE_INDEX:
                 stock_price_statistics_config[cur_conf_field] = conf_line
-            elif cur_conf_field_index == CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE_INDEX:
+            elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE_INDEX:
                 stock_price_statistics_config[cur_conf_field].append(conf_line)
             else:
                 raise ValueError("Unknown config field index: %d" % cur_conf_field_index)
@@ -100,7 +100,7 @@ def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=Non
     # import pdb; pdb.set_trace()
     start_date = None
     if stock_price_statistics_config is not None:
-        start_date = stock_price_statistics_config.get(CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
+        start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
     df_copy = None
     if start_date is None: 
         df_copy = df.copy()
@@ -109,22 +109,22 @@ def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=Non
         mask = (df.index >= start_date_index)
         df_copy = df[mask].copy()
     # df_copy.sort_index(ascending=True)
-    df_copy['open_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
+    df_copy['open_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
     df_copy['open_mark'].astype('category')
-    df_copy['high_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
+    df_copy['high_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
     df_copy['high_mark'].astype('category')
-    df_copy['low_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
+    df_copy['low_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
     df_copy['low_mark'].astype('category')
-    df_copy['close_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
+    df_copy['close_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE
     df_copy['close_mark'].astype('category')
     # import pdb; pdb.set_trace()
     if stock_price_statistics_config is not None:
-        key_support_resistance_list = stock_price_statistics_config[CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE]
+        key_support_resistance_list = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE]
         for key_support_resistance in key_support_resistance_list:
-            key_support_resistance_mark_list = CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_MARK
-            if len(key_support_resistance) > CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN:
-                key_support_resistance_mark_list = key_support_resistance[CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN:]
-            key_support_resistance_date = key_support_resistance[:CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN]
+            key_support_resistance_mark_list = DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_MARK
+            if len(key_support_resistance) > DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN:
+                key_support_resistance_mark_list = key_support_resistance[DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN:]
+            key_support_resistance_date = key_support_resistance[:DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN]
             key_support_resistance_date_index = date2Date(key_support_resistance_date)
 # Check if the date exist
             if key_support_resistance_date_index not in df_copy.index:
@@ -132,13 +132,13 @@ def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=Non
                 continue
             for key_support_resistance_mark in key_support_resistance_mark_list:
                 if key_support_resistance_mark == 'O':
-                    df_copy.ix[key_support_resistance_date_index, 'open_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
+                    df_copy.ix[key_support_resistance_date_index, 'open_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
                 elif key_support_resistance_mark == 'H':
-                    df_copy.ix[key_support_resistance_date_index, 'high_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
+                    df_copy.ix[key_support_resistance_date_index, 'high_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
                 elif key_support_resistance_mark == 'L':
-                    df_copy.ix[key_support_resistance_date_index, 'low_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
+                    df_copy.ix[key_support_resistance_date_index, 'low_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
                 elif key_support_resistance_mark == 'C':
-                    df_copy.ix[key_support_resistance_date_index, 'close_mark'] = CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
+                    df_copy.ix[key_support_resistance_date_index, 'close_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
                 else:
                     raise ValueError("Unkown mark type" % key_support_resistance_mark)
 
@@ -176,27 +176,27 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
     price_statistics = sort_stock_price_statistics(df, cur_price, price_range_low_percentage=price_range_low_percentage, price_range_high_percentage=price_range_high_percentage, stock_price_statistics_config=stock_price_statistics_config)
     price_statistics_size = len(price_statistics)
 
-    show_marked_only = CMN_DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY
-    group_size_thres = CMN_DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES
+    show_marked_only = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY
+    group_size_thres = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES
 # parse the filter
     if show_stock_price_statistics_fiter is not None:
-        show_marked_only = show_stock_price_statistics_fiter.get("show_marked_only", CMN_DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY)
-        group_size_thres = show_stock_price_statistics_fiter.get("group_size_thres", CMN_DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES)
+        show_marked_only = show_stock_price_statistics_fiter.get("show_marked_only", DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY)
+        group_size_thres = show_stock_price_statistics_fiter.get("group_size_thres", DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES)
 
     cur_price_print = False
     for price, df_data in price_statistics:
 # Print the current stock price      
         if not cur_price_print and cur_price < price:
-            print CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + ">> %.2f <<" % cur_price
+            print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + ">> %.2f <<" % cur_price
             cur_price_print = True
 # Print the support and resistance
         is_marked = False
         # import pdb; pdb.set_trace()
         for index, row in df_data.iterrows():
-            if row['mark'] != CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE:
+            if row['mark'] != DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE:
                 is_marked = True
                 break
-        price_color_str = CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK if is_marked else CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE
+        price_color_str = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK if is_marked else DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE
         
         can_print = True
         if not is_marked:
@@ -204,20 +204,14 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
                 can_print = False
         if can_print:
             total_str = ""
-            total_str += (" " + price_color_str + ("%.2f" % price) + CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + "  ")
+            total_str += (" " + price_color_str + ("%.2f" % price) + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + "  ")
             for index, row in df_data.iterrows():
-                if row['mark'] != CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE:
-                    total_str += (CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + row['date'].strftime("%y%m%d") + row['type'] + CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + " ")
+                if row['mark'] != DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE:
+                    total_str += (DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + row['date'].strftime("%y%m%d") + row['type'] + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + " ")
                 else:
-                    total_str += (CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + row['date'].strftime("%y%m%d") + row['type'] + " ")
+                    total_str += (DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + row['date'].strftime("%y%m%d") + row['type'] + " ")
             print total_str
 # Print the current stock price      
         if not cur_price_print and cur_price == price:
-            print CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + ">> %.2f <<" % cur_price
+            print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + ">> %.2f <<" % cur_price
             cur_price_print = True
-        # print "\n"
-        # data_str = ",".join([if .strftime("%y%m%d")+row['type'] for index, row in df_data.iterrows()])    
-        # if not cur_price_print and cur_price < price:
-        #     print CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + "CUR: %f" % cur_price
-        #     cur_price_print = True
-        # print "\033[1;30;47m" + "Price: %f, Data: %s" % (price,data_str)

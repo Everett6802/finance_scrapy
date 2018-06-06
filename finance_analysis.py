@@ -77,12 +77,10 @@ def parse_param(early_parse=False):
         elif re.match("(-v|--visualize)", sys.argv[index]):
             if not early_parse:
                 param_cfg["visualize"] = True
-                break
             index_offset = 1
         elif re.match("(-c|--company)", sys.argv[index]):
             if not early_parse:
                 param_cfg["company"] = sys.argv[index + 1]
-                break
             index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
@@ -130,27 +128,27 @@ def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.D
     print "\n"
 
     if DV.CAN_VISUALIZE:
+        # import pdb; pdb.set_trace()
         SMA = DS.FUNC.get_dataset_sma(df, "close")
-        DS.VS.plot_candles(df, title=company_number, volume_bars=True, overlays=[SMA], mark_dates=['2017-11-01','2017-11-15','2018-03-30','2018-04-13',])
+        DS.VS.plot_candles(df, title=company_number, volume_bars=True, overlays=[SMA], stock_price_statistics_config=stock_price_statistics_config)
         # DS.VS.plot_stock_price_statistics(df, 21.9)
-        
         plt.show()
 
 
-def find_correlation(df, column_description_list, visualize=True, figsize=None):
-    print "*** Time Period ***"
-    print "%s - %s" % (df.index[0].strftime("%Y-%m-%d"), df.index[-1].strftime("%Y-%m-%d"))
-    print "*** Column Mapping ***"
-    for index in range(1, len(column_description_list)):
-        print u"%s: %s" % (df.columns[index - 1], column_description_list[index])
-    plt.show()
-    if param_cfg["visualize"]:
-        ax = None
-        if figsize is not None:
-            plt.figure(figsize=figsize)
-            ax = plt.subplot(111)
-        sns.heatmap(df.corr(), annot=True, ax=ax)
+# def find_correlation(df, column_description_list, visualize=True, figsize=None):
+#     print "*** Time Period ***"
+#     print "%s - %s" % (df.index[0].strftime("%Y-%m-%d"), df.index[-1].strftime("%Y-%m-%d"))
+#     print "*** Column Mapping ***"
+#     for index in range(1, len(column_description_list)):
+#         print u"%s: %s" % (df.columns[index - 1], column_description_list[index])
 
+#     if param_cfg["visualize"]:
+#         ax = None
+#         if figsize is not None:
+#             plt.figure(figsize=figsize)
+#             ax = plt.subplot(111)
+#         sns.heatmap(df.corr(), annot=True, ax=ax)
+#     plt.show()
 
 # def find_dataset_correlation0():
 #     df, column_description_list = DS.LD.load_market_hybrid([0, 1], {0:[5,], 1:[3,6,9,12,]})
@@ -210,29 +208,14 @@ def find_correlation(df, column_description_list, visualize=True, figsize=None):
 
 
 if __name__ == "__main__":
-    # line_list = CMN.FUNC.read_file_lines_ex("/home/super/source/finance_scrapy/dataset/.180414/market/stock_top3_legal_persons_net_buy_or_sell.csv.bak")
-    # new_line_list = []
-    # for line in line_list:
-    #     line_element_list = line.split(',')
-    #     if len(line_element_list) > 13 :
-    #         new_line = ",".join(line_element_list[:13])   
-    #         new_line_list.append(new_line)
-    #     else:
-    #         new_line_list.append(line)
-    # CMN.FUNC.write_file_lines_ex(new_line_list, "/home/super/source/finance_scrapy/dataset/.180414/market/stock_top3_legal_persons_net_buy_or_sell.csv")
-    # df0, _ = DSL.load_raw(0)
-    # df3, _ = DSL.load_raw(3)
-    # df0 = df0.merge(df3, right_index=True, left_index=True)
-    # df, column_description_list = DSL.load_market_hybrid([0, 1])
-    # sys.exit(0)
+    # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
-    parse_param(True)
+    # parse_param(True)
     parse_param()
 
     if param_cfg["help"]:
         show_usage_and_exit()
-    # import pdb; pdb.set_trace()
 # Check the parameters for the manager
     check_param()
 # Update the dataset global variables

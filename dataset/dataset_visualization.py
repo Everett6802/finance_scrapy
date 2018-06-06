@@ -8,7 +8,7 @@ import seaborn as sns
 
 import libs.common as CMN
 # from libs.common.common_variable import GlobalVar as GV
-# import common_definition as DS_CMN_DEF
+import common_definition as DS_CMN_DEF
 # import common_variable as DS_CMN_VAR
 import common_function as DS_CMN_FUNC
 from dataset.common_variable import DatasetVar as DV
@@ -72,8 +72,8 @@ def plot_candles_v1(pricing, title=None,
 # type(pricing.index): <class 'pandas.tseries.index.DatetimeIndex'>
 # type(pricing.index[0]): <class 'pandas.tslib.Timestamp'>
 # Only mark the xtick of Monday
-    [x_tick, x_tick_lable] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
-    plt.xticks(x_tick, x_tick_lable, rotation='vertical')
+    [x_tick, x_tick_label] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
+    plt.xticks(x_tick, x_tick_label, rotation='vertical')
 #     plt.xticks(x, [date.strftime(time_format) for date in pricing.index], rotation='vertical')
     for indicator in technicals:
         ax1.plot(x, indicator)
@@ -104,7 +104,7 @@ def plot_candles_v2(pricing, title=None,
                  overlays=None,
                  technicals=None,
                  technicals_titles=None,
-                 mark_dates=None):
+                 stock_price_statistics_config=None):
     """ Plots a candlestick chart using quantopian pricing data.
     
     Author: Daniel Treiman
@@ -125,10 +125,23 @@ def plot_candles_v2(pricing, title=None,
     def default_color(index, open_price, close_price, low, high):
         return 'r' if open_price[index] > close_price[index] else 'g'
 
+# Parse the config if not None
+    start_date = None
+    key_support_resistance = None
+    if stock_price_statistics_config is not None:
+        start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
+        key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+
     color_function = color_function or default_color
     overlays = overlays or []
     technicals = technicals or []
     technicals_titles = technicals_titles or []
+
+    if start_date is not None:
+        # import pdb; pdb.set_trace()
+        start_date_index = DS_CMN_FUNC.date2Date(start_date)
+        pricing = pricing[pricing.index >= start_date_index]
+
     open_price = pricing['open']
     close_price = pricing['close']
     low_price = pricing['low']
@@ -162,13 +175,16 @@ def plot_candles_v2(pricing, title=None,
 # Draw candle stick
     candles = ax1.bar(x, oc_max-oc_min, bottom=oc_min, color=candle_colors, linewidth=0)
     lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
+# Show the price statistics on the candle stick plot
 # Mark the important candle stick
-    if mark_dates is not None:
-        if type(mark_dates) is not list:
-            mark_dates = [mark_dates,]
-        for mark_date in mark_dates:
+    if key_support_resistance is not None:
+        # mark_dates = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE]
+        # if type(mark_dates) is not list:
+        #     mark_dates = [mark_dates,]
+        for mark_date in key_support_resistance:
+            mark_date_index = DS_CMN_FUNC.date2Date(mark_date)
             try:
-                loc = pricing.index.get_loc(mark_date)
+                loc = pricing.index.get_loc(mark_date_index)
                 # Create a Rectangle patch
                 rect = patches.Rectangle((x[loc]-0.1, low_price[loc]-0.15), 1, high_price[loc]-low_price[loc]+0.3, linewidth=2, edgecolor='y', facecolor='none')
                 # Add the patch to the Axes
@@ -189,11 +205,15 @@ def plot_candles_v2(pricing, title=None,
 # type(pricing.index): <class 'pandas.tseries.index.DatetimeIndex'>
 # type(pricing.index[0]): <class 'pandas.tslib.Timestamp'>
 # Only mark the xtick of Monday
-    [x_tick, x_tick_lable] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
-    plt.xticks(x_tick, x_tick_lable, rotation='vertical')
+    [x_tick, x_tick_label] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
+    plt.xticks(x_tick, x_tick_label, rotation='vertical')
 #     plt.xticks(x, [date.strftime(time_format) for date in pricing.index], rotation='vertical')
+    # import pdb; pdb.set_trace()
     for overlay in overlays:
-        ax1.plot(x, overlay)
+        start_index = 0
+        if start_date is not None:
+            start_index = len(overlay) - pricing_len
+        ax1.plot(x, overlay[start_index:])
     # Plot volume bars if needed
     if volume_bars:
         ax2 = subplots[1]
@@ -238,19 +258,11 @@ def plot_stock_price_statistics(df, cur_price, price_range_low_percentage=12, pr
     # ax.set_xlabel('xlabel')
     # ax.set_ylabel('ylabel')
 
-    # ax.text(3, 8, 'boxed italics text in data coords', style='italic',
-    #         bbox={'facecolor':'red', 'alpha':0.5, 'pad':10})
     line_cnt = price_statistics_len
     for price, df_data in price_statistics:
         data_str = ",".join([row['date'].strftime("%y%m%d")+row['type'] for index, row in df_data.iterrows()])    
-        # if not cur_price_print and cur_price < price:
-        #     print "\033[1;31;47m" + "CUR: %f" % cur_price
-        #     cur_price_print = True
-        # print "\033[1;30;47m" + "Price: %f, Data: %s" % (price,data_str)
         ax.text(2, 2* line_cnt, data_str, style='italic',
             bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
         line_cnt -= 1
-
     ax.axis([0, 10, 0, 2* price_statistics_len + 1])
-
     # plt.show()
