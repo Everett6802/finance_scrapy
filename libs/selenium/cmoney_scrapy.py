@@ -3,16 +3,24 @@
 
 import time
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException
+# available since 2.4.0
+from selenium.webdriver.support.ui import WebDriverWait
+# available since 2.26.0
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.common.by import By
+
 import common_definition as CMN_DEF
 # import libs.common as CMN
 # g_logger = CMN.LOG.get_logger()
 
 
-###################################################
-
+PRINT_SCRAPY = True
 
 def __parse_data_from_table_element(table_element, table_column_count=CMN_DEF.CMONEY_TABLE_DEF_COLUMN_COUNT):
-	assert table_column_count >= 1 and table_column_count <= table_column_count, "The table_column_count[%d] is Out-of-Range; [1, %d]" % (table_column_count, CMN_DEF.CMONEY_TABLE_MAX_COLUMN_COUNT)
+	# import pdb; pdb.set_trace()
+	assert (table_column_count >= 1 and table_column_count <= CMN_DEF.CMONEY_TABLE_MAX_COLUMN_COUNT), "The table_column_count[%d] is Out-of-Range: [1, %d]" % (table_column_count, CMN_DEF.CMONEY_TABLE_MAX_COLUMN_COUNT)
 	table_column_end_index = table_column_count + 1
 	tr_elements = table_element.find_elements_by_tag_name("tr")
 	data_time_list = None
@@ -35,13 +43,20 @@ def __parse_data_from_table_element(table_element, table_column_count=CMN_DEF.CM
 			data_name_list.append(row_list[0])
 			for index, data in enumerate(row_list[1:table_column_end_index]):
 				data_list[index].append(data)
+
 	return (data_list, data_time_list, data_name_list)
 
 
 def __parse_data_from_table(driver, *args, **kwargs):
 	assert kwargs.get("table_xpath", None) is not None, "The kwargs::table_xpath is NOT found"
 	table_xpath = kwargs["table_xpath"]
-	table_element = driver.find_element_by_xpath(table_xpath)
+
+# Wait for the table
+	wait = WebDriverWait(driver, 10)
+	table_element = wait.until(
+		EC.presence_of_element_located((By.XPATH, table_xpath))
+	)
+	# table_element = driver.find_element_by_xpath(table_xpath)
 # Argument setting
 # table_column_count
 	table_column_count = None
@@ -57,7 +72,17 @@ def __parse_data_from_table(driver, *args, **kwargs):
 	if table_column_count is None:
 		table_column_count = CMN_DEF.CMONEY_TABLE_DEF_COLUMN_COUNT
 
-	return __parse_data_from_table_element(table_element, table_column_count)
+	(data_list, data_time_list, data_name_list) = __parse_data_from_table_element(table_element, table_column_count)
+	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_time_list, data_name_list)
+	return (data_list, data_time_list, data_name_list)
+
+
+def __print_table_scrapy_result(data_list, data_time_list, data_name_list):
+	# import pdb; pdb.set_trace()
+	data_time_list_len = len(data_time_list)
+	print "  ".join(data_name_list)
+	for index in range(data_time_list_len):
+		print "%s: %s" % (data_time_list[index], "  ".join(data_list[index]))
 
 
 def _scrape_income_statement_(driver, *args, **kwargs):
@@ -178,7 +203,6 @@ class CMoneyWebScrapy(object):
 	__STOCK_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
 	__STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
 
-
 	__FUNC_PTR = {
 # market start
 # market end
@@ -196,12 +220,17 @@ class CMoneyWebScrapy(object):
 
 
 	@classmethod
-	def list_scrapy_method(cls):
-		print ", ".join(cls.__FUNC_PTR.keys())
+	def get_scrapy_method_list(cls):
+		return cls.__FUNC_PTR.keys()
 
 
 	@classmethod
-	def list_scrapy_stock_method_time_unit_description(cls, scrapy_method):
+	def print_scrapy_method(cls):
+		print ", ".join(cls.get_scrapy_method_list())
+
+
+	@classmethod
+	def print_scrapy_stock_method_time_unit_description(cls, scrapy_method):
 		print ", ".join(cls.__STOCK_TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
@@ -257,14 +286,12 @@ class CMoneyWebScrapy(object):
 if __name__ == '__main__':
 	with CMoneyWebScrapy() as cmoney:
 		cmoney.CompanyNumber = "2367"
+		kwargs = {}
+		kwargs["table_column_count"] = 2
+		for scrapy_method in CMoneyWebScrapy.get_scrapy_method_list():
+			cmoney.scrape(scrapy_method, **kwargs)
+			print "\n"
 		# import pdb; pdb.set_trace()
-		(scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("income statement", 2)
-		(scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("balance sheet", 3, stock_time_unit=0)
-		(scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("cashflow statement", 4, stock_time_unit=1)
-		(scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("profitability", 5, stock_time_unit=1)
-		(scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("business performance", 6)
-		(scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("management capacity", 7, stock_time_unit=0)
-		(scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("financial structure", 8, stock_time_unit=1)
-		(scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("solvency", 1)
+		# (scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("income statement", 2)
 		# import pdb; pdb.set_trace()
-	# 	print scrapy_res
+	# 	print "Done"

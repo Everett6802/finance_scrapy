@@ -13,13 +13,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 
+import common_definition as CMN_DEF
 
-def __statementdog_stock_search(driver, company_search_string):
-	element = driver.find_element_by_id("stockid")
-	element.send_keys(company_search_string)
-	element = driver.find_element_by_xpath("//*[@id=\"navi-wrapper\"]/div[2]/div[4]/a")
-	element.click()
 
+PRINT_SCRAPY = True
 
 def __statementdog_menu_title(driver, menu_title_index):
 	elements = driver.find_elements_by_class_name("menu-title")
@@ -27,73 +24,125 @@ def __statementdog_menu_title(driver, menu_title_index):
 
 
 def __statementdog_menu_list(driver, list_index):
-	elements = driver.find_elements_by_class_name("menu_wrapper")
-	items = elements[1].find_elements_by_tag_name("li")
+	# elements = driver.find_elements_by_class_name("menu_wrapper")
+	# items = elements[1].find_elements_by_tag_name("li")
+# menu-list, a ordered list
+	element = driver.find_element_by_xpath("//*[@id=\"content\"]/div[1]/div[1]/ol")
+	items = element.find_elements_by_tag_name("li")
 	items[list_index].click()
 
 
-def __goto_statementdog_menu_list(driver, company_search_string, menu_title_index, list_index):
-	__statementdog_stock_search(driver, company_search_string)
-	time.sleep(2)
+def __goto_statementdog_menu_list(driver, menu_title_index, list_index):
+	# __statementdog_stock_search(driver, company_search_string)
 	__statementdog_menu_title(driver, menu_title_index)
-	time.sleep(2)
+	time.sleep(1)
 	__statementdog_menu_list(driver, list_index)
-	time.sleep(2)
+	time.sleep(1)
+
+
+def __switch_sheet_interval(driver):
+	# element = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/div[1]")
+	# element = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/ul")
+	# import pdb; pdb.set_trace()
+	element_sheet_interval = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/div[1]")
+	try:
+		time.sleep(1)
+		# element_sheet_interval.text.encode('utf-8')
+		element_sheet_interval.click()
+	except Exception as e:
+# *** UnicodeEncodeError: 'ascii' codec can't encode characters in position 138-145: ordinal not in range(128)
+		print str(e)
+	element_sheet_interval_options = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/ul")
+# CAUTION: Can' explot 'Select', since the tag of the component is NOT 'Select'
+	# select = Select(element)
+	# select.selectByIndex(CMN_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS);
+	items = element_sheet_interval_options.find_elements_by_tag_name("li")
+	items[CMN_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS].click()
+	# for item in items:
+	# 	print item.text
+
+
+def __parse_item_table(driver):
+	table_element = driver.find_element_by_id("itemTable")
+	td_elements = table_element.find_elements(By.TAG_NAME, "td")
+	data_name_list = []
+	for td_element in td_elements:
+		data_name_list.append(td_element.text)
+	return data_name_list
+
+
+def __parse_data_table(driver):
+	table_element = driver.find_element_by_id("dataTable")
+	tr_elements = table_element.find_elements(By.TAG_NAME, "tr")
+# Time
+	data_time_list = []
+	th_elements = tr_elements[0].find_elements(By.TAG_NAME, "th")
+	for th_element in th_elements:
+		data_time_list.append(th_element.text)
+# Data
+	data_list = []
+	for i in range(len(data_time_list)):
+		data_list.append([])
+	for tr_element in tr_elements[1:]:
+		td_elements = tr_element.find_elements(By.TAG_NAME, "td")
+		for index, td_element in enumerate(td_elements):
+			data_list[index].append(td_element.text)
+
+	return (data_list, data_time_list)
+
+
+def __print_table_scrapy_result(data_list, data_time_list, data_name_list):
+	# import pdb; pdb.set_trace()
+	data_time_list_len = len(data_time_list)
+	print "  ".join(data_name_list)
+	for index in range(data_time_list_len):
+		print "%s: %s" % (data_time_list[index], "  ".join(data_list[index]))
+
+
+def __scrape_table_data(driver, menu_title_index, list_index, *args, **kwargs):
+# Switch the menu page
+	__goto_statementdog_menu_list(driver, menu_title_index, list_index)
+	import pdb; pdb.set_trace()
+	# __switch_sheet_interval(driver)
+# Wait for the table
+	wait = WebDriverWait(driver, 10)
+	element_table = wait.until(
+		EC.presence_of_element_located((By.ID, "datasheet"))
+	)
+
+	element = driver.find_element_by_class_name("sheet-ctrl-option-btn-group")
+	li = element.find_elements_by_tag_name("li")
+	try:
+		li[1].click()
+	except Exception as e:
+# *** UnicodeEncodeError: 'ascii' codec can't encode characters in position 138-145: ordinal not in range(128)
+		print str(e)
+
+# Parse Table
+	data_name_list = __parse_item_table(driver)
+	(data_list, data_time_list) = __parse_data_table(driver)
+	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_time_list, data_name_list)
+	return (data_list, data_time_list, data_name_list)
 
 
 def _scrape_income_statement_(driver, *args, **kwargs):
-	pass
+	return __scrape_table_data(driver, 1, 3, *args, **kwargs)
+
 
 def _scrape_balance_sheet_asset_(driver, *args, **kwargs):
-	pass
+	return __scrape_table_data(driver, 1, 4, *args, **kwargs)
 
 
 def _scrape_balance_sheet_liability_equity_(driver, *args, **kwargs):
-	pass
+	return __scrape_table_data(driver, 1, 5, *args, **kwargs)
 
 
 def _scrape_cashflow_statement_(driver, *args, **kwargs):
-	pass
+	return __scrape_table_data(driver, 1, 6, *args, **kwargs)
 
 
 def _scrape_dividend_(driver, *args, **kwargs):
-# args[0]: company_search_string
-# parse the argument
-	# company_search_string = args[0]
-	import pdb; pdb.set_trace()
-# scrape web
-	element = driver.find_element_by_id("stockid")
-	element.send_keys(company_search_string)
-	element1 = driver.find_element_by_xpath("//*[@id=\"navi-wrapper\"]/div[2]/div[4]/a")
-	element1.click()
-
-	elements = driver.find_elements_by_class_name("menu-title")
-	elements[1].click()
-	time.sleep(2)
-
-	elements = driver.find_elements_by_class_name("menu_wrapper")
-	items = elements[1].find_elements_by_tag_name("li")
-	items[7].click()
-	time.sleep(2)
-	# __goto_statementdog_menu_list(driver, company_search_string, 1, 7)
-
-
-	element = driver.find_element_by_id("datasheet")
-	items = element.find_elements_by_tag_name("li")
-# Find the table
-	rows = items[1].find_elements(By.TAG_NAME, "tr")
-# # Table Header
-# 	cols = rows[0].find_elements(By.TAG_NAME, "th")
-# 	for col in cols:
-# 		print col.text #prints text from the element
-	table_data_list = []
-# Table Data
-	for row in rows[1:]:
-		cols = row.find_elements(By.TAG_NAME, "td") #note: index start from 0, 1 is col 2
-		for col in cols:
-			# print col.text #prints text from the element
-			table_data_list.append(col.text)
-	return table_data_list
+	return __scrape_table_data(driver, 1, 7, *args, **kwargs)
 
 
 class StatementDogWebScrapyMeta(type):
@@ -127,17 +176,19 @@ class StatementDogWebScrapy(object):
 
 
 	@classmethod
-	def list_scrapy_method(cls):
-		print ", ".join(cls.__FUNC_PTR.keys())
+	def get_scrapy_method_list(cls):
+		return cls.__FUNC_PTR.keys()
 
 
-	def __init__(self, url):
-		self.url = url
+	@classmethod
+	def print_scrapy_method(cls):
+		print ", ".join(cls.get_scrapy_method_list())
+
+
+	def __init__(self):
 		self.webdriver = None
 		self.company_number = None
 		self.company_number_changed = True
-		# self.compnay_name = None
-		# self.company_search_string = None
 
 
 	def __enter__(self):
@@ -152,10 +203,6 @@ class StatementDogWebScrapy(object):
 		return False
 
 
-	# def set_company(self, company_number, company_name=None):
-	# 	self.company_search_string = u"%s %s" % (company_number, company_name)
-
-
 	def scrape(self, scrapy_method, *args, **kwargs):
 		if self.company_number is None:
 			raise ValueError("Unknown company number !!!")
@@ -165,11 +212,21 @@ class StatementDogWebScrapy(object):
 		# print self.webdriver.title
 # Switch to certain a company
 		if self.company_number_changed:
-			element = driver.find_element_by_id("stockid")
-			element.clear()
-			element.send_keys(self.company_number)
-			element.send_keys(Keys.RETURN)
-		return (self.__FUNC_PTR[scrapy_method])(self.webdriver, self.company_search_string, *args, **kwargs)
+# Wait until the web element shows-up
+			# element = driver.find_element_by_id("stockid")
+			wait = WebDriverWait(self.webdriver, 10)
+			element_stockid = wait.until(
+			    EC.presence_of_element_located((By.ID, "stockid"))
+			)
+
+			element_stockid.clear()
+			time.sleep(1)
+			element_stockid.send_keys(self.company_number)
+			time.sleep(1)
+			element_stockid.send_keys(Keys.RETURN)
+			self.company_number_changed = False
+		self.webdriver.implicitly_wait(5) # seconds
+		return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **kwargs)
 
 
 	@property
@@ -186,59 +243,11 @@ class StatementDogWebScrapy(object):
 
 
 if __name__ == '__main__':
-	# with StatementDogWebScrapy('https://statementdog.com/analysis') as statement_dog:
-	# 	# statement_dog.list_scrapy_method()
-	# 	statement_dog.set_company(u"2317", u"鴻海")
-	# 	# scrapy_res = statement_dog.scrape("income statement")
-	# 	scrapy_res = statement_dog.scrape("dividend")
-	# 	import pdb; pdb.set_trace()
-	# 	print scrapy_res
-
-	driver = webdriver.Chrome()
-	driver.get('https://statementdog.com/analysis')
-	print driver.title
-
-	import pdb; pdb.set_trace()
-	# element = driver.find_element_by_class_name("navi-search")
-	element = driver.find_element_by_id("stockid")
-	# element.send_keys(u"2317 鴻海")
-	element.clear()
-	element.send_keys("2317")
-	element.send_keys(Keys.RETURN)
-	import pdb; pdb.set_trace()
-	element.clear()	
-	element.send_keys("2367")
-	element.send_keys(Keys.RETURN)
-	# # 提交
-	# # element = driver.find_element_by_class_name("navi-search")
-	# element.submit()
-	# element1 = driver.find_element_by_class_name("stock_search_btn")
-	element1 = driver.find_element_by_xpath("//*[@id=\"navi-wrapper\"]/div[2]/div[4]/a")
-	element1.click()
-
-	elements = driver.find_elements_by_class_name("menu-title")
-	elements[1].click()
-	time.sleep(2)
-
-	elements = driver.find_elements_by_class_name("menu_wrapper")
-	items = elements[1].find_elements_by_tag_name("li")
-	items[7].click()
-	time.sleep(2)
-
-	element = driver.find_element_by_id("datasheet")
-	items = element.find_elements_by_tag_name("li")
-	# for item in items:
-	#     print item.text
-	# Find the table
-	rows = items[1].find_elements(By.TAG_NAME, "tr")
-	# Table Header
-	cols = rows[0].find_elements(By.TAG_NAME, "th")
-	for col in cols:
-	   	print col.text #prints text from the element
-	# Table Data
-	for row in rows[1:]:
-	    cols = row.find_elements(By.TAG_NAME, "td") #note: index start from 0, 1 is col 2
-	    for col in cols:
-	    	print col.text #prints text from the element
-
-	driver.quit()
+	with StatementDogWebScrapy() as statement_dog:
+		statement_dog.CompanyNumber = "2367"
+		# import pdb; pdb.set_trace()
+		for scrapy_method in StatementDogWebScrapy.get_scrapy_method_list():
+			statement_dog.scrape(scrapy_method)
+			print "\n"
+		# statement_dog.scrape("cashflow statement")
+		print "Done"
