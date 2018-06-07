@@ -6,6 +6,7 @@ import re
 import sys
 import time
 import libs.common as CMN
+from libs.common.common_variable import GlobalVar as GV
 import libs.base.company_profile as CompanyProfile
 import libs.base.company_group_set as CompanyGroupSet
 import libs.stock.stock_url_time_range as URLTimeRange
@@ -109,34 +110,48 @@ def show_group_statistics(show_detail, company_group_size):
     print "There are totally %d groups" % company_group_size
 
 
+def update_global_variable():
+    GV.GLOBAL_VARIABLE_UPDATED = True
+
+
+def get_company_profile_instance():
+    return CompanyProfile.CompanyProfile.Instance()    
+
+
+def get_url_time_range_instance():
+    return URLTimeRange.StockURLTimeRange.Instance()    
+
+
 if __name__ == "__main__":
     # import pdb; pdb.set_trace()
 # Parse the parameters
     param_dict = parse_param()
 # Initialize the instance
-    company_profile_obj = CompanyProfile.CompanyProfile.Instance()
-    url_time_range_obj = URLTimeRange.StockURLTimeRange.Instance()
+    # company_profile_obj = CompanyProfile.CompanyProfile.Instance()
+    # url_time_range_obj = URLTimeRange.StockURLTimeRange.Instance()
     cleanup_old_start_time = False
 # Run by argument
     if param_dict.get("cleanup_old_start_time", None) is not None:
         cleanup_old_start_time = True
     # import pdb; pdb.set_trace()
+    update_global_variable()
+
 # Renew the company data
     if param_dict.get("renew_company_start_time", None) is not None:
         company_code_number_list = CompanyGroupSet.CompanyGroupSet.to_company_number_list(param_dict["renew_company_start_time"])
         # print "Renew Company Start time:"
         for company_code_number in company_code_number_list:
-            url_time_range_obj.renew_time_range(company_code_number, cleanup_old_start_time)
+            get_url_time_range_instance().renew_time_range(company_code_number, cleanup_old_start_time)
         sys.exit(0)
     elif param_dict.get("renew_start_time", None) is not None:
-        url_time_range_obj.renew_time_range(None, cleanup_old_start_time)
+        get_url_time_range_instance().renew_time_range(None, cleanup_old_start_time)
         sys.exit(0)
     elif param_dict.get("renew_company", None) is not None:
-        company_profile_obj.renew_table()
+        get_company_profile_instance().renew_table()
         sys.exit(0)
     elif param_dict.get("renew", None) is not None:
-        company_profile_obj.renew_table()
-        url_time_range_obj.renew_time_range(None, cleanup_old_start_time)
+        get_company_profile_instance().renew_table()
+        get_url_time_range_instance().renew_time_range(None, cleanup_old_start_time)
         sys.exit(0)
 
 # Show the test result in different division method
@@ -153,7 +168,7 @@ if __name__ == "__main__":
         company_code_number_list = CompanyGroupSet.CompanyGroupSet.to_company_number_list(param_dict["lookup_company"])
         print "Company Profile:"
         for company_code_number in company_code_number_list:
-            company_profile = company_profile_obj.lookup_company_profile(company_code_number)
+            company_profile = get_company_profile_instance().lookup_company_profile(company_code_number)
             company_profile_str = u",".join(company_profile)
             print company_profile_str
     # if param_dict.get("lookup_company_group", None) is not None:
