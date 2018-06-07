@@ -85,6 +85,35 @@ def __print_table_scrapy_result(data_list, data_time_list, data_name_list):
 		print "%s: %s" % (data_time_list[index], "  ".join(data_list[index]))
 
 
+def _scrape_revenue_(driver, *args, **kwargs):
+	assert kwargs.get("table_xpath", None) is not None, "The kwargs::table_xpath is NOT found"
+	table_xpath = kwargs["table_xpath"]
+# Wait for the table
+	wait = WebDriverWait(driver, 10)
+	table_element = wait.until(
+		EC.presence_of_element_located((By.XPATH, table_xpath))
+	)
+	tr_elements = table_element.find_elements_by_tag_name("tr")
+# Parse the data name
+	th_elements = tr_elements[0].find_elements_by_tag_name("th")
+	data_name_list = []
+	for th_element in th_elements[1:]:
+		data_name_list.append(th_element.text)
+# Parse the data time and data
+	# data_name_list_len = len(data_name_list)
+	data_time_list = []
+	data_list = []
+	for tr_element in tr_elements[1:]:
+		td_elements = tr_element.find_elements_by_tag_name("td")
+		data_time_list.append(td_elements[0].text)
+		data_element_list = []
+		for td_element in td_elements[1:]:
+			data_element_list.append(td_element.text)
+		data_list.append(data_element_list)
+	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_time_list, data_name_list)
+	return (data_list, data_time_list, data_name_list)
+
+
 def _scrape_income_statement_(driver, *args, **kwargs):
 	return __parse_data_from_table(driver, *args, **kwargs)
 
@@ -123,6 +152,7 @@ class CMoneyWebScrapyMeta(type):
 # market start
 # market end
 # stock start
+		"_scrape_revenue_": _scrape_revenue_,
 		"_scrape_income_statement_": _scrape_income_statement_,
 		"_scrape_balance_sheet_": _scrape_balance_sheet_,
 		"_scrape_cashflow_statement_": _scrape_cashflow_statement_,
@@ -146,6 +176,12 @@ class CMoneyWebScrapy(object):
 	__CMONEY_ULR_PREFIX = "https://www.cmoney.tw/finance/"
 
 	__STOCK_SCRAPY_CFG = {
+		"revenue": {
+			"url_format": __CMONEY_ULR_PREFIX + "f00029.aspx?s=%s",
+			"table_xpath": "//*[@id=\"MainContent\"]/ul/li[4]/article/div/div/div/table",
+			"table_time_unit_list": ["&o=1", "&o=2",],
+			"table_time_unit_description_list": [u"月營收", u"合併月營收",],
+		},
 		"income statement": {
 			"url_format": __CMONEY_ULR_PREFIX + "f00040.aspx?s=%s",
 			"table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div[2]/div/table",
@@ -207,6 +243,7 @@ class CMoneyWebScrapy(object):
 # market start
 # market end
 # stock start
+		"revenue": _scrape_revenue_,
 		"income statement": _scrape_income_statement_,
 		"balance sheet": _scrape_balance_sheet_,
 		"cashflow statement": _scrape_cashflow_statement_,
@@ -288,9 +325,10 @@ if __name__ == '__main__':
 		cmoney.CompanyNumber = "2367"
 		kwargs = {}
 		kwargs["table_column_count"] = 2
-		for scrapy_method in CMoneyWebScrapy.get_scrapy_method_list():
-			cmoney.scrape(scrapy_method, **kwargs)
-			print "\n"
+		# for scrapy_method in CMoneyWebScrapy.get_scrapy_method_list():
+		# 	cmoney.scrape(scrapy_method, **kwargs)
+		# 	print "\n"
+		cmoney.scrape("revenue", **kwargs)
 		# import pdb; pdb.set_trace()
 		# (scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("income statement", 2)
 		# import pdb; pdb.set_trace()
