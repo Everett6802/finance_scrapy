@@ -105,6 +105,8 @@ def update_global_variable():
 
 def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
     # import pdb; pdb.set_trace()
+    stock_price_statistics_config = DS.FUNC.parse_stock_price_statistics_config(company_number)
+
     df, column_description_list = DS.LD.load_stock_hybrid([9,], company_number)
     df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0908': 'volume'}, inplace=True)
     # DS.FUNC.print_dataset_metadata(df, column_description_list)
@@ -114,7 +116,6 @@ def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.D
         print "** Date: %s Price: %s **\n" % (cur_date, cur_price) 
 
     # import pdb; pdb.set_trace()
-    stock_price_statistics_config = DS.FUNC.parse_stock_price_statistics_config(company_number)
     DS.FUNC.print_stock_price_statistics(
         df, 
         cur_price, 
