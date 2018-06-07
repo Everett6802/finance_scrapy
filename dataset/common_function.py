@@ -183,6 +183,8 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
         show_marked_only = show_stock_price_statistics_fiter.get("show_marked_only", DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY)
         group_size_thres = show_stock_price_statistics_fiter.get("group_size_thres", DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES)
 
+    key_support_list = []
+    key_resistance_list = []
     cur_price_print = False
     for price, df_data in price_statistics:
 # Print the current stock price      
@@ -203,11 +205,18 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
             if show_marked_only and len(df_data) < group_size_thres:
                 can_print = False
         if can_print:
+            # import pdb; pdb.set_trace()
             total_str = ""
             total_str += (" " + price_color_str + ("%.2f" % price) + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + "  ")
+            df_data.sort_index(ascending=False, inplace=True)
             for index, row in df_data.iterrows():
                 if row['mark'] != DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE:
                     total_str += (DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + row['date'].strftime("%y%m%d") + row['type'] + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + " ")
+                    key_price_str = "%.2f[%s%s]" % (price, row['date'].strftime("%y%m%d"), row['type'])
+                    if cur_price_print:
+                        key_resistance_list.append(key_price_str)
+                    else:
+                        key_support_list.append(key_price_str)
                 else:
                     total_str += (DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + row['date'].strftime("%y%m%d") + row['type'] + " ")
             print total_str
@@ -215,3 +224,9 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
         if not cur_price_print and cur_price == price:
             print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + ">> %.2f <<" % cur_price
             cur_price_print = True
+
+    print "\n ***** Key Support Resistance *****"
+    print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "S:" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + " " + " > ".join(reversed(key_support_list))
+    print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "R:" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + " " + " > ".join(key_resistance_list)
+    print "**********************************\n"
+
