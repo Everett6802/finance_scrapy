@@ -9,7 +9,7 @@ import subprocess
 # from datetime import datetime, timedelta
 # import numpy as np
 # import pandas as pd
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 # import seaborn as sns
 # import talib
 # # conda install -c quantopian ta-lib=0.4.9
@@ -105,35 +105,8 @@ def update_global_variable():
 
 def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
     # import pdb; pdb.set_trace()
-    stock_price_statistics_config = DS.FUNC.parse_stock_price_statistics_config(company_number)
-
-    df, column_description_list = DS.LD.load_stock_hybrid([9,], company_number)
-    df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0908': 'volume'}, inplace=True)
-    # DS.FUNC.print_dataset_metadata(df, column_description_list)
-    if cur_price is None:
-        cur_price = df.ix[-1]['close']
-        cur_date = df.index[-1].strftime("%y%m%d")
-        print "** Date: %s Price: %s **\n" % (cur_date, cur_price) 
-
-    # import pdb; pdb.set_trace()
-    DS.FUNC.print_stock_price_statistics(
-        df, 
-        cur_price, 
-        stock_price_statistics_config=stock_price_statistics_config, 
-        show_stock_price_statistics_fiter=
-            {
-                "show_marked_only": show_marked_only,
-                "group_size_thres": group_size_thres,
-            }
-        )
-    print "\n"
-
-    if DV.CAN_VISUALIZE:
-        # import pdb; pdb.set_trace()
-        SMA = DS.FUNC.get_dataset_sma(df, "close")
-        DS.VS.plot_candles(df, title=company_number, volume_bars=True, overlays=[SMA], stock_price_statistics_config=stock_price_statistics_config)
-        # DS.VS.plot_stock_price_statistics(df, 21.9)
-        plt.show()
+    DS.AS.analyze_stock(company_number, cur_price)
+    sys.exit(0)
 
 
 # def find_correlation(df, column_description_list, visualize=True, figsize=None):
@@ -209,6 +182,28 @@ def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.D
 
 
 if __name__ == "__main__":
+    # price_up = 499
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 1))
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 2))
+    # # import pdb; pdb.set_trace()
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 3))
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 4))
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 5))
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 6))
+    # print ""
+    # # import pdb; pdb.set_trace()
+    # price_down = 502
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -1))
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -2))
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -3))
+    # # import pdb; pdb.set_trace()
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -4))
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -5))
+    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -6))
+
+    # print DS.CLS.StockPrice(1000.00)
+    # sys.exit(0)
+
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()

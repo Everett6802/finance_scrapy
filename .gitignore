@@ -20,9 +20,9 @@ snapshot/
 !conf/.company_profile.conf
 !conf/.company_group.conf
 #!conf/.company_profile_change_list.conf
-!dataset/*/*.conf
 *_metadata
 .time_range
+!dataset/*.conf
 !dataset/*/*.csv
 !dataset/*/*.conf
 !dataset/*/*/*/*.csv

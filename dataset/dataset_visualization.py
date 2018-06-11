@@ -126,21 +126,23 @@ def plot_candles_v2(pricing, title=None,
         return 'r' if open_price[index] > close_price[index] else 'g'
 
 # Parse the config if not None
-    start_date = None
+    # start_date = None
     key_support_resistance = None
+    jump_gap = None
     if stock_price_statistics_config is not None:
-        start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
+        # start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
         key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+        jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_JUMP_GAP, None)
 
     color_function = color_function or default_color
     overlays = overlays or []
     technicals = technicals or []
     technicals_titles = technicals_titles or []
 
-    if start_date is not None:
-        # import pdb; pdb.set_trace()
-        start_date_index = DS_CMN_FUNC.date2Date(start_date)
-        pricing = pricing[pricing.index >= start_date_index]
+    # if start_date is not None:
+    #     # import pdb; pdb.set_trace()
+    #     start_date_index = DS_CMN_FUNC.date2Date(start_date)
+    #     pricing = pricing[pricing.index >= start_date_index]
 
     open_price = pricing['open']
     close_price = pricing['close']
@@ -192,6 +194,26 @@ def plot_candles_v2(pricing, title=None,
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
 
+    if jump_gap is not None:
+       for mark_date_range in jump_gap:
+            mark_date_cur_index = DS_CMN_FUNC.date2Date(mark_date_range[0])
+            mark_date_next_index = DS_CMN_FUNC.date2Date(mark_date_range[2])
+            try:
+                loc_cur = pricing.index.get_loc(mark_date_cur_index)
+                loc_next = pricing.index.get_loc(mark_date_next_index)
+                # Create a Rectangle patch
+                if mark_date_range[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
+                    rect = patches.Rectangle((x[loc_cur]-0.1, high_price[loc_cur]-0.15), 1.8, low_price[loc_next]-high_price[loc_cur]+0.3, linewidth=1.5, edgecolor='Magenta', facecolor='none')
+                elif mark_date_range[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
+                    rect = patches.Rectangle((x[loc_cur]-0.1, high_price[loc_next]-0.15), 1.8, low_price[loc_cur]-high_price[loc_next]+0.3, linewidth=1.5, edgecolor='Magenta', facecolor='none')
+                else:
+                    raise ValueError("Unkown mark type in jump gap: %s" % jump_gap[1])
+                # Add the patch to the Axes
+                ax1.add_patch(rect)
+            except KeyError:
+                g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
+
+
     ax1.grid(color='white', linestyle=':', linewidth=0.5)
     ax1.xaxis.grid(True)
     ax1.yaxis.grid(True)
@@ -211,8 +233,8 @@ def plot_candles_v2(pricing, title=None,
     # import pdb; pdb.set_trace()
     for overlay in overlays:
         start_index = 0
-        if start_date is not None:
-            start_index = len(overlay) - pricing_len
+        # if start_date is not None:
+        #     start_index = len(overlay) - pricing_len
         ax1.plot(x, overlay[start_index:])
     # Plot volume bars if needed
     if volume_bars:
@@ -266,3 +288,7 @@ def plot_stock_price_statistics(df, cur_price, price_range_low_percentage=12, pr
         line_cnt -= 1
     ax.axis([0, 10, 0, 2* price_statistics_len + 1])
     # plt.show()
+
+
+def show_plot():
+    plt.show()
