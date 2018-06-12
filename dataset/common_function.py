@@ -51,6 +51,9 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
             elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE:
                 cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE_INDEX
                 stock_price_statistics_config[cur_conf_field] = []
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE_INDEX
+                stock_price_statistics_config[cur_conf_field] = []
             else:
                 raise ValueError("Unknown config field: %s" % cur_conf_field)                
         else:
@@ -58,6 +61,8 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
             if cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE_INDEX:
                 stock_price_statistics_config[cur_conf_field] = conf_line
             elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE_INDEX:
+                stock_price_statistics_config[cur_conf_field].append(conf_line)
+            elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE_INDEX:
                 stock_price_statistics_config[cur_conf_field].append(conf_line)
             else:
                 raise ValueError("Unknown config field index: %d" % cur_conf_field_index)
@@ -155,11 +160,13 @@ def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=Non
                 jump_gap_date_next = jump_gap[2]
                 jump_gap_date_next_index = date2Date(jump_gap_date_next)
                 if jump_gap[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
-                    df_copy.ix[jump_gap_date_cur_index, 'high_mark'] = df_copy.ix[jump_gap_date_cur_index, 'high_mark'] | DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_JUMP_GAP
-                    df_copy.ix[jump_gap_date_next_index, 'low_mark'] = df_copy.ix[jump_gap_date_next_index, 'low_mark'] | DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_JUMP_GAP
+# The type of the return value of ix() is float, I DON'T known why
+                    df_copy.ix[jump_gap_date_cur_index, 'high_mark'] = int(df_copy.ix[jump_gap_date_cur_index, 'high_mark']) | DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_JUMP_GAP
+                    df_copy.ix[jump_gap_date_next_index, 'low_mark'] = int(df_copy.ix[jump_gap_date_next_index, 'low_mark']) | DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_JUMP_GAP
                 elif jump_gap[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
-                    df_copy.ix[jump_gap_date_cur_index, 'low_mark'] = df_copy.ix[jump_gap_date_cur_index, 'low_mark'] | DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_JUMP_GAP
-                    df_copy.ix[jump_gap_date_next_index, 'high_mark'] = df_copy.ix[jump_gap_date_next_index, 'high_mark'] | DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_JUMP_GAP
+# The type of the return value of ix() is float, I DON'T known why
+                    df_copy.ix[jump_gap_date_cur_index, 'low_mark'] = int(df_copy.ix[jump_gap_date_cur_index, 'low_mark']) | DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_JUMP_GAP
+                    df_copy.ix[jump_gap_date_next_index, 'high_mark'] = int(df_copy.ix[jump_gap_date_next_index, 'high_mark']) | DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_JUMP_GAP
                 else:
                     raise ValueError("Unkown mark type in jump gap: %s" % jump_gap[1])
 
@@ -234,6 +241,7 @@ def find_stock_price_jump_gap(df, tick_for_jump_gap=2):
             print "%s[%sL]:%s[%sH]" % (PRICE(df.ix[jump_gat_date_cur_index, 'low']), jump_gap[0], PRICE(df.ix[jump_gat_date_next_index, 'high']), jump_gap[2])
         else:
             raise ValueError("Incorrect Support Resistance Price Type: %s" % jump_gap[1])
+    print "\n"
     return jump_gap_list
 
 

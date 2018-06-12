@@ -103,7 +103,7 @@ def update_global_variable():
     DV.GLOBAL_VARIABLE_UPDATED = True
 
 
-def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
+def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES, ignore_jump_gap=DS.DEF.DEF_SUPPORT_RESISTANCE_IGNORE_JUMP_GAP):
     # import pdb; pdb.set_trace()
     DS.AS.analyze_stock(company_number, cur_price)
     sys.exit(0)

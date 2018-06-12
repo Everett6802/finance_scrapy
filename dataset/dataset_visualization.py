@@ -129,10 +129,12 @@ def plot_candles_v2(pricing, title=None,
     # start_date = None
     key_support_resistance = None
     jump_gap = None
+    trend_line = None
     if stock_price_statistics_config is not None:
         # start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
         key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
         jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_JUMP_GAP, None)
+        trend_line = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE, None)
 
     color_function = color_function or default_color
     overlays = overlays or []
@@ -173,6 +175,7 @@ def plot_candles_v2(pricing, title=None,
 
     pricing_len = len(pricing)
     x = np.arange(pricing_len)
+
     candle_colors = [color_function(i, open_price, close_price, low_price, high_price) for i in x]
 # Draw candle stick
     candles = ax1.bar(x, oc_max-oc_min, bottom=oc_min, color=candle_colors, linewidth=0)
@@ -193,7 +196,7 @@ def plot_candles_v2(pricing, title=None,
                 ax1.add_patch(rect)
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
-
+# Mark the jump gap
     if jump_gap is not None:
        for mark_date_range in jump_gap:
             mark_date_cur_index = DS_CMN_FUNC.date2Date(mark_date_range[0])
@@ -213,6 +216,40 @@ def plot_candles_v2(pricing, title=None,
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
 
+# Draw Trend line
+# Parse the trend line
+    # trend_line_segment_list = None
+    if trend_line is not None:
+        def get_extended_point_y(s_x1, s_y1, s_x2, s_y2, e_x):
+            if s_x1 == s_x2:
+                raise ValueError("The x[%d] position should NOT be the same" % s_x1)
+            slope = float(s_y2 - s_y1) / (s_x2 - s_x1)
+            e_y = s_y1 + slope * (e_x - s_x1)
+            return e_y
+        # import pdb; pdb.set_trace()
+        # trend_line_price_list = []
+        for line in trend_line:
+            line_split = line.split(":")
+            if len(line_split) != 2:
+                raise ValueError("Incorrect trend line format: %s" % line)
+            x_pt = []
+            y_pt = []
+            for pt in line_split:
+                if len(pt) != 7:
+                    raise ValueError("Incorrect trend line point format: %s" % pt)
+                pt_date_index = DS_CMN_FUNC.date2Date(pt[:6])
+                loc = pricing.index.get_loc(pt_date_index)
+                x_pt.append(x[loc])
+                if pt[6] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
+                    y_pt.append(high_price.iloc[loc])
+                elif pt[6] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
+                    y_pt.append(low_price.iloc[loc])
+                else:
+                    raise ValueError("Unkown mark type in trend line: %s" % pt[6])
+            last_x_pt = x[-1]
+            last_y_pt = get_extended_point_y(x_pt[0], y_pt[0], x_pt[1], y_pt[1], last_x_pt)
+
+            ax1.plot([x_pt[0], last_x_pt], [y_pt[0], last_y_pt])
 
     ax1.grid(color='white', linestyle=':', linewidth=0.5)
     ax1.xaxis.grid(True)
