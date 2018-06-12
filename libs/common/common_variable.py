@@ -126,7 +126,6 @@ class GlobalVar(object):
                 dataset_filepath = "%s/%s" % (cls.PROJECT_DATASET_FOLDERPATH, CMN_DEF.DATASET_CONF_FILENAME)
 
 
-
         @classmethod
         def __get_project_folderpath(cls):
             RELATIVE_COMMON_FOLDERPATH = ""

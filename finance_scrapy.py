@@ -384,27 +384,27 @@ def parse_param(early_parse=False):
 # Adjust the parameters setting...
         if param_cfg["update_company_stock_price"] is not None:
             if param_cfg["config_from_file"]:
-                show_warn("The 'config_from_file' argument won't take effect since 'force_switch_finance_mode' is set")
+                show_warn("The 'config_from_file' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["config_from_file"] = False
             if early_parse:
                 if param_cfg["force_switch_finance_mode"] is not None:
-                    show_warn("The 'force_switch_finance_mode' argument won't take effect since 'force_switch_finance_mode' is set")
+                    show_warn("The 'force_switch_finance_mode' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["force_switch_finance_mode"] = 1
             else:
                 if param_cfg["method"] is not None:
-                    show_warn("The 'method' argument won't take effect since 'force_switch_finance_mode' is set")
+                    show_warn("The 'method' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["method"] = "9"
                 if param_cfg["time_duration_type"] is not None:
-                    show_warn("The 'time_duration_type' argument won't take effect since 'force_switch_finance_mode' is set")
+                    show_warn("The 'time_duration_type' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST
                 if not param_cfg["dataset_finance_folderpath"]:
-                    show_warn("dataset_finance_folderpath' argument won't take effect since 'force_switch_finance_mode' is set")
+                    show_warn("dataset_finance_folderpath' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["dataset_finance_folderpath"] = True
                 if not param_cfg["reserve_old"]:
-                    show_warn("reserve_old' argument won't take effect since 'force_switch_finance_mode' is set")
+                    show_warn("reserve_old' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["reserve_old"] = True
                 if not param_cfg["company"]:
-                    show_warn("company' argument won't take effect since 'force_switch_finance_mode' is set")
+                    show_warn("company' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["company"] = param_cfg["update_company_stock_price"]
 
 
