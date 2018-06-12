@@ -18,19 +18,55 @@ import common_definition as CMN_DEF
 
 PRINT_SCRAPY = True
 
-def __parse_data_from_table_element(table_element, table_column_count=CMN_DEF.CMONEY_TABLE_DEF_COLUMN_COUNT):
+
+def __parse_data_from_table0_element(table_element, table_data_count=CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT):
+# Parse the data in the table
+	tr_elements = table_element.find_elements_by_tag_name("tr")
+# Parse the data name
+	th_elements = tr_elements[0].find_elements_by_tag_name("th")
+	data_name_list = []
+	for th_element in th_elements[1:]:
+		data_name_list.append(th_element.text)
+# Parse the data time and data
+	# data_name_list_len = len(data_name_list)
+	data_time_list = []
+	data_list = []
+	tr_elements_len = len(tr_elements)
+# Restrict to the max data
+	if table_data_count > tr_elements_len:
+		# g_logger.warn("There are just %d data !!!" % tr_elements_len)
+		table_data_count = tr_elements_len
+	table_column_end_index = table_data_count + 1
+	for tr_element in tr_elements[1:table_column_end_index]:
+		td_elements = tr_element.find_elements_by_tag_name("td")
+		data_time_list.append(td_elements[0].text)
+		data_element_list = []
+		for td_element in td_elements[1:]:
+			data_element_list.append(td_element.text)
+		data_list.append(data_element_list)
+
+	return (data_list, data_time_list, data_name_list)
+
+
+def __parse_data_from_table1_element(table_element, table_data_count=CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT):
 	# import pdb; pdb.set_trace()
-	assert (table_column_count >= 1 and table_column_count <= CMN_DEF.CMONEY_TABLE_MAX_COLUMN_COUNT), "The table_column_count[%d] is Out-of-Range: [1, %d]" % (table_column_count, CMN_DEF.CMONEY_TABLE_MAX_COLUMN_COUNT)
-	table_column_end_index = table_column_count + 1
 	tr_elements = table_element.find_elements_by_tag_name("tr")
 	data_time_list = None
 	data_name_list = None
 	data_list = None
 	# import pdb; pdb.set_trace()
+	table_column_end_index = None
 	for tr_element in tr_elements:
 		# print tr_element.text
 		row_list = tr_element.text.split(' ')
+		row_list_len = len(row_list)
+# Restrict to the max data
+		if table_data_count > row_list_len:
+			# g_logger.warn("There are just %d data !!!" % row_list_len)
+			table_data_count = row_list_len
+
 		if data_time_list is None:
+			table_column_end_index = table_data_count + 1
 			data_time_list = []
 			data_time_list.extend(row_list[1:table_column_end_index])
 			data_name_list = []
@@ -47,7 +83,7 @@ def __parse_data_from_table_element(table_element, table_column_count=CMN_DEF.CM
 	return (data_list, data_time_list, data_name_list)
 
 
-def __parse_data_from_table(driver, *args, **kwargs):
+def __parse_data_from_table(driver, table_element_parse_func, *args, **kwargs):
 	assert kwargs.get("table_xpath", None) is not None, "The kwargs::table_xpath is NOT found"
 	table_xpath = kwargs["table_xpath"]
 
@@ -58,21 +94,23 @@ def __parse_data_from_table(driver, *args, **kwargs):
 	)
 	# table_element = driver.find_element_by_xpath(table_xpath)
 # Argument setting
-# table_column_count
-	table_column_count = None
+	# import pdb; pdb.set_trace()
+# table_data_count
+	table_data_count = None
 	args_len = len(args)
 	if args_len >= 1:
-		table_column_count = args[0]
-	if kwargs.get("table_column_count", None) is not None:
-		if table_column_count is not None:
-			assert table_column_count == kwargs["table_column_count"], "Duplicate table_column_count arguments"
+		table_data_count = args[0]
+	if kwargs.get("table_data_count", None) is not None:
+		if table_data_count is not None:
+			assert table_data_count == kwargs["table_data_count"], "Duplicate table_data_count arguments"
 			pass
 		else:
-			table_column_count = kwargs["table_column_count"]
-	if table_column_count is None:
-		table_column_count = CMN_DEF.CMONEY_TABLE_DEF_COLUMN_COUNT
+			table_data_count = kwargs["table_data_count"]
+	if table_data_count is None:
+		table_data_count = CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT
+	assert table_data_count >= 1, "The table_data_count[%d] should be greater than 1" % table_data_count
 
-	(data_list, data_time_list, data_name_list) = __parse_data_from_table_element(table_element, table_column_count)
+	(data_list, data_time_list, data_name_list) = table_element_parse_func(table_element, table_data_count)
 	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_time_list, data_name_list)
 	return (data_list, data_time_list, data_name_list)
 
@@ -85,65 +123,44 @@ def __print_table_scrapy_result(data_list, data_time_list, data_name_list):
 		print "%s: %s" % (data_time_list[index], "  ".join(data_list[index]))
 
 
+def _scrape_dividend_(driver, *args, **kwargs):
+	return __parse_data_from_table(driver, __parse_data_from_table0_element, *args, **kwargs)
+
+
 def _scrape_revenue_(driver, *args, **kwargs):
-	assert kwargs.get("table_xpath", None) is not None, "The kwargs::table_xpath is NOT found"
-	table_xpath = kwargs["table_xpath"]
-# Wait for the table
-	wait = WebDriverWait(driver, 10)
-	table_element = wait.until(
-		EC.presence_of_element_located((By.XPATH, table_xpath))
-	)
-	tr_elements = table_element.find_elements_by_tag_name("tr")
-# Parse the data name
-	th_elements = tr_elements[0].find_elements_by_tag_name("th")
-	data_name_list = []
-	for th_element in th_elements[1:]:
-		data_name_list.append(th_element.text)
-# Parse the data time and data
-	# data_name_list_len = len(data_name_list)
-	data_time_list = []
-	data_list = []
-	for tr_element in tr_elements[1:]:
-		td_elements = tr_element.find_elements_by_tag_name("td")
-		data_time_list.append(td_elements[0].text)
-		data_element_list = []
-		for td_element in td_elements[1:]:
-			data_element_list.append(td_element.text)
-		data_list.append(data_element_list)
-	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_time_list, data_name_list)
-	return (data_list, data_time_list, data_name_list)
+	return __parse_data_from_table(driver, __parse_data_from_table0_element, *args, **kwargs)
 
 
 def _scrape_income_statement_(driver, *args, **kwargs):
-	return __parse_data_from_table(driver, *args, **kwargs)
+	return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
 def _scrape_balance_sheet_(driver, *args, **kwargs):
-	return __parse_data_from_table(driver, *args, **kwargs)
+	return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
 def _scrape_cashflow_statement_(driver, *args, **kwargs):
-	return __parse_data_from_table(driver, *args, **kwargs)
+	return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
 def _scrape_profitability_(driver, *args, **kwargs):
-	return __parse_data_from_table(driver, *args, **kwargs)
+	return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
 def _scrape_business_performance_(driver, *args, **kwargs):
-	return __parse_data_from_table(driver, *args, **kwargs)
+	return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
 def _scrape_management_capacity_(driver, *args, **kwargs):
-	return __parse_data_from_table(driver, *args, **kwargs)
+	return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
 def _scrape_financial_structure_(driver, *args, **kwargs):
-	return __parse_data_from_table(driver, *args, **kwargs)
+	return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
 def _scrape_solvency_(driver, *args, **kwargs):
-	return __parse_data_from_table(driver, *args, **kwargs)
+	return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
 class CMoneyWebScrapyMeta(type):
@@ -152,6 +169,7 @@ class CMoneyWebScrapyMeta(type):
 # market start
 # market end
 # stock start
+		"_scrape_dividend_": _scrape_dividend_,
 		"_scrape_revenue_": _scrape_revenue_,
 		"_scrape_income_statement_": _scrape_income_statement_,
 		"_scrape_balance_sheet_": _scrape_balance_sheet_,
@@ -176,6 +194,12 @@ class CMoneyWebScrapy(object):
 	__CMONEY_ULR_PREFIX = "https://www.cmoney.tw/finance/"
 
 	__STOCK_SCRAPY_CFG = {
+		"dividend": { # 股利政策
+			"url_format": __CMONEY_ULR_PREFIX + "f00027.aspx?s=%s",
+			"table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div/div/div[2]/table",
+			"table_time_unit_list": ["&o=1",], # Uselesss, only for compatibility
+			"table_time_unit_description_list": [u"Dummy",], # Uselesss, only for compatibility
+		},
 		"revenue": {
 			"url_format": __CMONEY_ULR_PREFIX + "f00029.aspx?s=%s",
 			"table_xpath": "//*[@id=\"MainContent\"]/ul/li[4]/article/div/div/div/table",
@@ -243,6 +267,7 @@ class CMoneyWebScrapy(object):
 # market start
 # market end
 # stock start
+		"dividend": _scrape_dividend_,
 		"revenue": _scrape_revenue_,
 		"income statement": _scrape_income_statement_,
 		"balance sheet": _scrape_balance_sheet_,
@@ -324,11 +349,11 @@ if __name__ == '__main__':
 	with CMoneyWebScrapy() as cmoney:
 		cmoney.CompanyNumber = "2367"
 		kwargs = {}
-		kwargs["table_column_count"] = 2
-		# for scrapy_method in CMoneyWebScrapy.get_scrapy_method_list():
-		# 	cmoney.scrape(scrapy_method, **kwargs)
-		# 	print "\n"
-		cmoney.scrape("revenue", **kwargs)
+		kwargs["table_data_count"] = 2
+		for scrapy_method in CMoneyWebScrapy.get_scrapy_method_list():
+			cmoney.scrape(scrapy_method, **kwargs)
+			print "\n"
+		# cmoney.scrape("dividend", **kwargs)
 		# import pdb; pdb.set_trace()
 		# (scrapy_list, scrapy_time_list, scrapy_name_list) = cmoney.scrape("income statement", 2)
 		# import pdb; pdb.set_trace()
