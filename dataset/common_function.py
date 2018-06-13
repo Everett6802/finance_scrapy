@@ -287,17 +287,24 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
             total_str = ""
             total_str += (" " + price_color_str + "%s" % PRICE(price) + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + "  ")
             df_data.sort_index(ascending=False, inplace=True)
+            cur_price_key_support_list = []
+            cur_price_key_resistance_list = []
             for index, row in df_data.iterrows():
                 if row['mark'] != DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_NONE:
                     total_str += (DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + row['date'].strftime("%y%m%d") + row['type'] + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + " ")
-                    key_price_str = "%s[%s%s]" % (PRICE(price), row['date'].strftime("%y%m%d"), row['type'])
+                    # key_price_str = "%s[%s%s]" % (PRICE(price), row['date'].strftime("%y%m%d"), row['type'])
+                    key_price_str = "%s%s" % (row['date'].strftime("%y%m%d"), row['type'])
                     if cur_price_print:
-                        key_resistance_list.append(key_price_str)
+                        cur_price_key_resistance_list.append(key_price_str)
                     else:
-                        key_support_list.append(key_price_str)
+                        cur_price_key_support_list.append(key_price_str)
                 else:
                     total_str += (DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + row['date'].strftime("%y%m%d") + row['type'] + " ")
             print total_str
+            if len(cur_price_key_support_list) > 0:
+                key_support_list.append("%s[" % PRICE(price) + ','.join(cur_price_key_support_list) + "]")
+            if len(cur_price_key_resistance_list) > 0:
+                key_resistance_list.append("%s[" % PRICE(price) + ','.join(cur_price_key_resistance_list) + "]")
 # Print the current stock price      
         if not cur_price_print and cur_price == price:
             print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + ">> %s <<" % PRICE(cur_price)

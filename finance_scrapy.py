@@ -61,7 +61,10 @@ def show_usage_and_exit():
     # print "--time_today\nDescription: The today's data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "--time_last\nDescription: The last data of the selected finance data source\nCaution: Only take effect when config_from_file is NOT set"
     print "--time_until_last\nDescription: The data of the selected finance data source until last day\nCaution: Only take effect when config_from_file is NOT set"
-    print "--time_duration_range --time_last --time_until_last\nCaution: Shuold NOT be set simultaneously. Will select the first one"
+    print "--time_today\nDescription: The selected finance data source today\nCaution: Only take effect when config_from_file is NOT set"
+    print "--time_until_today\nDescription: The data of the selected finance data source until today\nCaution: Only take effect when config_from_file is NOT set"
+    print "*** --time_last --time_today ***\nCaution: Different date sources are updated at different time in a day. Only the same after %02d:%02d" % (CMN.DEF.TODAY_DATA_EXIST_HOUR, CMN.DEF.TODAY_DATA_EXIST_MINUTE)
+    print "*** --time_duration_range --time_last --time_until_last --time_today --time_until_today ***\nCaution: Shuold NOT be set simultaneously. Will select the first one"
     print ""
     if GV.IS_FINANCE_STOCK_MODE:
         print "-c | --company\nDescription: The list of the company code number\nDefault: All company code nubmers\nCaution: Only take effect when config_from_file is NOT set"
@@ -74,7 +77,7 @@ def show_usage_and_exit():
         print "  Format: multi-thread number (ex. 4)"
         print ""
         print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
-        print "--update_company_stock_price\nDescription: Update the stock price of specific companies\nCaution: This arugment is equal to the argument combination as below: --force_switch_finance_mode 1 --method 9 --time_until_last --dataset_finance_folderpath --reserve_old --company xxxx\n"
+        print "--update_company_stock_price\nDescription: Update the stock price of specific companies\nCaution: This arugment is equal to the argument combination as below: --force_switch_finance_mode 1 --method 9 --time_until_today --dataset_finance_folderpath --reserve_old --company xxxx\n"
     print "============================================================="
     sys.exit(0)
 
@@ -359,6 +362,20 @@ def parse_param(early_parse=False):
                 else:
                     param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST
             index_offset = 1
+        elif re.match("--time_today", sys.argv[index]):
+            if not early_parse:
+                if param_cfg["time_duration_type"] is not None:
+                    g_logger.debug("Time duration has already been set to: %d, ignore the time_last attribute...", param_cfg["time_duration_type"])
+                else:
+                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_TODAY
+            index_offset = 1
+        elif re.match("--time_until_today", sys.argv[index]):
+            if not early_parse:
+                if param_cfg["time_duration_type"] is not None:
+                    g_logger.debug("Time duration has already been set to: %d, ignore the time_last attribute...", param_cfg["time_duration_type"])
+                else:
+                    param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_TODAY
+            index_offset = 1
         elif re.match("(-c|--company)", sys.argv[index]):
             if not early_parse:
                 if GV.IS_FINANCE_MARKET_MODE:
@@ -396,7 +413,7 @@ def parse_param(early_parse=False):
                 param_cfg["method"] = "9"
                 if param_cfg["time_duration_type"] is not None:
                     show_warn("The 'time_duration_type' argument won't take effect since 'update_company_stock_price' is set")
-                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST
+                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_TODAY
                 if not param_cfg["dataset_finance_folderpath"]:
                     show_warn("dataset_finance_folderpath' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["dataset_finance_folderpath"] = True
@@ -529,6 +546,10 @@ def setup_param():
             time_range_start = time_range_end = CMN.CLS.FinanceDate.get_last_finance_date()
         elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST:
             time_range_end = CMN.CLS.FinanceDate.get_last_finance_date()
+        elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_TODAY:
+            time_range_start = time_range_end = CMN.CLS.FinanceDate.get_today_finance_date()
+        elif param_cfg["time_duration_type"] == CMN.DEF.DATA_TIME_DURATION_UNTIL_TODAY:
+            time_range_end = CMN.CLS.FinanceDate.get_today_finance_date()
         else:
             raise ValueError("Unknown time duration type: %d" % param_cfg["time_duration_type"])
         # import pdb; pdb.set_trace()
