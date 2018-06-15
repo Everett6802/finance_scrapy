@@ -105,3 +105,9 @@ def load_market_hybrid(method_index_list, field_index_dict=None):
 
 def load_stock_hybrid(method_index_list, company_code_number, field_index_dict=None, company_group_number=None):
 	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number)
+
+
+def load_stock_price_history(company_number):
+    df, column_description_list = load_stock_hybrid([9,], company_number)
+    df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0908': 'volume'}, inplace=True)
+    return df, column_description_list
