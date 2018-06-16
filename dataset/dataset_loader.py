@@ -8,6 +8,8 @@ import libs.common as CMN
 import libs.base as BASE
 import common_definition as DS_CMN_DEF
 import common_variable as DS_CMN_VAR
+import common_function as DS_CMN_FUNC
+# import common_class as DS_CMN_CLS
 
 g_profile_lookup = BASE.CP.CompanyProfile.Instance()
 
@@ -107,7 +109,51 @@ def load_stock_hybrid(method_index_list, company_code_number, field_index_dict=N
 	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number)
 
 
-def load_stock_price_history(company_number):
+def load_stock_price_history(company_number, overwrite_stock_price_list=None):
+# overwrite_stock_price_list
+# Format: Date O:OpenPrice H:HighPrice L:LowPrice C:ClosePrice; Ex. 180613 O:98.6 H: 100.5 L: 97.9 C 99.9
     df, column_description_list = load_stock_hybrid([9,], company_number)
     df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0908': 'volume'}, inplace=True)
+    # import pdb; pdb.set_trace()
+    if overwrite_stock_price_list is not None:
+		new_entry_list = []
+		for line in overwrite_stock_price_list:
+			line_split = line.split(' ')
+			overwrite_date = line_split[0]
+			overwrite_date_index = DS_CMN_FUNC.date2Date(overwrite_date)
+			entry = None
+			try:
+# The data already exists
+				loc = df.index.get_loc(overwrite_date_index)
+				entry = df.iloc[loc]
+			except KeyError as e:
+				entry = pd.DataFrame(index=[overwrite_date_index,])
+				entry.index = pd.to_datetime(entry.index)
+				entry.index.name = 'date'
+				new_entry_list.append(entry)
+# The data does NOT exist
+			for price_entry in line_split[1:]:
+				price_entry_split = price_entry.split(":")
+				if len(price_entry_split) != 2:
+					raise ValueError("Incorrect config format: %s" % price_entry)
+				if price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_OPEN:
+					entry['open'] = float(price_entry_split[1])
+				elif price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
+					entry['high'] = float(price_entry_split[1])
+				elif price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
+					entry['low'] = float(price_entry_split[1])
+				elif price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_CLOSE:
+					entry['close'] = float(price_entry_split[1])
+				elif price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_VOLUME:
+					entry['volume'] = int(price_entry_split[1])
+				else:
+					raise ValueError("Unkown mark type: %s" % price_entry_split[0])
+		# import pdb; pdb.set_trace()
+# Append the new entry
+		if len(new_entry_list) != 0:
+			data_list = [df,]
+			data_list.extend(new_entry_list)
+			df = pd.concat(data_list)
+			df.sort_index(ascending=True)
+
     return df, column_description_list

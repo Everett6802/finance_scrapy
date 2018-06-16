@@ -16,10 +16,9 @@ g_logger = CMN.LOG.get_logger()
 def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
     # import pdb; pdb.set_trace()
     stock_price_statistics_config = DS_CMN_FUNC.parse_stock_price_statistics_config(company_number)
+    overwrite_dataset = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_OVERWRITE_DATASET, None)
 
-    # df, column_description_list = DS_LD.load_stock_hybrid([9,], company_number)
-    # df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0908': 'volume'}, inplace=True)
-    df, column_description_list = DS_LD.load_stock_price_history(company_number)
+    df, column_description_list = DS_LD.load_stock_price_history(company_number, overwrite_stock_price_list=overwrite_dataset)
     # DS_CMN_FUNC.print_dataset_metadata(df, column_description_list)
     if cur_price is None:
         cur_price = df.ix[-1]['close']
