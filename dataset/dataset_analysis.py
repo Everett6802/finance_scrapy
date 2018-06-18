@@ -41,6 +41,10 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
             if SMA_len > df_len:
                 start_index = SMA_len - df_len
                 SMA = SMA[start_index:]
+# Find the main key support and resistance
+    show_main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_DEFAULT)
+    if show_main_key_support_resistance != DS_CMN_DEF.SHOW_MAIN_NO_KEY_SUPPORT_RESISTANCE:
+        stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_MAIN_KEY_SUPPORT_RESISTANCE] = DS_CMN_FUNC.find_stock_price_main_key_supprot_resistance(df)
 
     # import pdb; pdb.set_trace()
     DS_CMN_FUNC.print_stock_price_statistics(

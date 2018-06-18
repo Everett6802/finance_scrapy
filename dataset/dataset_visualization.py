@@ -130,11 +130,13 @@ def plot_candles_v2(pricing, title=None,
     key_support_resistance = None
     jump_gap = None
     trend_line = None
+    main_key_support_resistance = None
     if stock_price_statistics_config is not None:
         # start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
         key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
         jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP, None)
         trend_line = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE, None)
+        main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_MAIN_KEY_SUPPORT_RESISTANCE, None)
 
     color_function = color_function or default_color
     overlays = overlays or []
@@ -250,6 +252,17 @@ def plot_candles_v2(pricing, title=None,
             last_y_pt = get_extended_point_y(x_pt[0], y_pt[0], x_pt[1], y_pt[1], last_x_pt)
 
             ax1.plot([x_pt[0], last_x_pt], [y_pt[0], last_y_pt])
+
+    if main_key_support_resistance is not None:
+        show_main_key_support_resistance = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE]
+        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
+            date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[0])
+            stock_price = pricing.ix[date_index, 'high']
+            ax1.plot([x[0], x[-1],], [stock_price, stock_price,], color='orange', linewidth=1)
+        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_RESISTANCE_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
+            date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[1])
+            stock_price = pricing.ix[date_index, 'low']
+            ax1.plot([x[0], x[-1],], [stock_price, stock_price,], color='orange', linewidth=1)
 
     ax1.grid(color='white', linestyle=':', linewidth=0.5)
     ax1.xaxis.grid(True)
