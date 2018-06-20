@@ -338,7 +338,7 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
                 print "R: %s, %s%s" % (PRICE(df.ix[resistance_date_index, 'low']), resistance_date, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW)
             print "***************************************\n"
 
-    print "\n***** Key Support Resistance *****"
+    print "\n***** Key Support Resistance: *****"
     print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "S" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(reversed(key_support_list))
     print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "R" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(key_resistance_list)
     print "**********************************\n"

@@ -109,7 +109,7 @@ def update_global_variable():
 
 # def analyze_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
 def analyze_and_exit():
-    FUNC_PTR_ARRAY = [DS.AS.find_support_resistance, DS.AS.find_jump_gap,]
+    FUNC_PTR_ARRAY = [DS.AS.find_support_resistance, DS.AS.find_jump_gap, DS.AS.lookup_support_resistance_price,]
     kwargs = {"company_number": param_cfg["company"],}
     # import pdb; pdb.set_trace()
     # DS.AS.analyze_stock(company_number, cur_price)

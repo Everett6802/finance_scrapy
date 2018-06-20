@@ -7,6 +7,8 @@ import libs.common as CMN
 import common_definition as DS_CMN_DEF
 # import common_variable as DS_CMN_VAR
 import common_function as DS_CMN_FUNC
+# import common_class as DS_CMN_CLS
+from common_class import StockPrice as PRICE
 import dataset_loader as DS_LD
 import dataset_visualization as DS_VS
 from dataset.common_variable import DatasetVar as DV
@@ -76,3 +78,21 @@ def find_jump_gap(company_number, start_date=None, tick_for_jump_gap=2):
         stock_price_statistics_config = {DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP: jump_gap_list}
         DS_VS.plot_candles(df, title=company_number, volume_bars=True, stock_price_statistics_config=stock_price_statistics_config)
         DS_VS.show_plot()
+
+
+def lookup_support_resistance_price(company_number):
+    # import pdb; pdb.set_trace()
+    stock_price_statistics_config = DS_CMN_FUNC.parse_stock_price_statistics_config(company_number)
+
+    df, _ = DS_LD.load_stock_price_history(company_number)
+    key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+    if key_support_resistance is None:
+        print "***** No Key Support Resistance Data !!! *****\n"
+        return
+
+    print "\n***** %s Key Support Resistance Price *****" % company_number
+    for key_date in key_support_resistance:
+        key_date_index = DS_CMN_FUNC.date2Date(key_date)
+        row = df.ix[key_date_index]
+        print "%s O:%s H:%s L:%s C:%s" % (key_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
+    print "*********************************************\n"
