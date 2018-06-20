@@ -14,13 +14,14 @@ class GlobalVar(object):
     _PROJECT_LIB_FOLDERPATH = None
     _PROJECT_CONF_FOLDERPATH = None
     _PROJECT_DATASET_FOLDERPATH = None
-    _CUR_DATASET_SELECTION = None
+    # _CUR_DATASET_SELECTION = None
+    _PROJECT_PARENT_FOLDERPATH = None
 
 
     class __metaclass__(type):
         __LIB_FOLDERNAME_IN_PROJECT = CMN_DEF.LIB_FOLDERNAME
         __CONF_FOLDERNAME_IN_PROJECT = CMN_DEF.CONF_FOLDERNAME
-        __DATASET_FOLDERNAME_IN_PROJECT = CMN_DEF.DATASET_FOLDERNAME
+        # __DATASET_FOLDERNAME_IN_PROJECT = CMN_DEF.DATASET_FOLDERNAME
 
         @property
         def GLOBAL_VARIABLE_UPDATED(cls):
@@ -114,16 +115,25 @@ class GlobalVar(object):
 
 
         @property
-        def PROJECT_DATASET_FOLDERPATH(cls):
-            if cls._PROJECT_DATASET_FOLDERPATH is None:
-                cls._PROJECT_DATASET_FOLDERPATH = "%s/%s" % (cls.PROJECT_FOLDERPATH, cls.__DATASET_FOLDERNAME_IN_PROJECT)
-            return cls._PROJECT_DATASET_FOLDERPATH
+        def PROJECT_PARENT_FOLDERPATH(cls):
+            if cls._PROJECT_PARENT_FOLDERPATH is None:
+                [project_parent_folder, project_folder] = cls.PROJECT_FOLDERPATH.rsplit('/', 1)
+                assert (project_folder == CMN_DEF.FINANCE_SCRAPY_PROJECT_NAME), "The project folder name[%s] is NOT as expected: %s" % (project_folder, CMN_DEF.FINANCE_SCRAPY_PROJECT_NAME)
+                cls._PROJECT_PARENT_FOLDERPATH = project_parent_folder
+            return cls._PROJECT_PARENT_FOLDERPATH
 
 
         @property
-        def CUR_DATASET_SELECTION(cls):
-            if cls.__CUR_DATASET_SELECTION is None:
-                dataset_filepath = "%s/%s" % (cls.PROJECT_DATASET_FOLDERPATH, CMN_DEF.DATASET_CONF_FILENAME)
+        def PROJECT_DATASET_FOLDERPATH(cls):
+            if cls._PROJECT_DATASET_FOLDERPATH is None:
+                cls._PROJECT_DATASET_FOLDERPATH = "%s/%s" % (cls.PROJECT_PARENT_FOLDERPATH, CMN_DEF.FINANCE_DATASET_PROJECT_NAME)
+            return cls._PROJECT_DATASET_FOLDERPATH
+
+
+        # @property
+        # def CUR_DATASET_SELECTION(cls):
+        #     if cls.__CUR_DATASET_SELECTION is None:
+        #         dataset_filepath = "%s/%s" % (cls.PROJECT_DATASET_FOLDERPATH, CMN_DEF.DATASET_CONF_FILENAME)
 
 
         @classmethod

@@ -12,7 +12,7 @@ class DatasetVarMeta(type):
     # __MY_VALUE = None
     _GLOBAL_VARIABLE_UPDATED = False
     _PARAM_DICT = None
-    _DATASET_FOLDER_PATH = None
+    _FINANCE_DATASET_FOLDER_PATH = None
     _CAN_VISUALIZE = False
 
 
@@ -53,10 +53,10 @@ class DatasetVarMeta(type):
 
 
     @property
-    def DATASET_FOLDER_PATH(cls):
-        if cls._DATASET_FOLDER_PATH is None:
-            cls._DATASET_FOLDER_PATH = "%s/%s/.%s" % (GV.PROJECT_FOLDERPATH, DS_CMN_DEF.DATASET_FOLDERNAME, cls.CUR_DATASET_SELECTION)
-        return cls._DATASET_FOLDER_PATH
+    def FINANCE_DATASET_FOLDER_PATH(cls):
+        if cls._FINANCE_DATASET_FOLDER_PATH is None:
+            cls._FINANCE_DATASET_FOLDER_PATH = "%s/%s" % (GV.PROJECT_DATASET_FOLDERPATH, cls.CUR_DATASET_SELECTION)
+        return cls._FINANCE_DATASET_FOLDER_PATH
 
 
     @property

@@ -35,7 +35,7 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 	conf_filename = CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index] + DS_CMN_DEF.DATASET_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
 # Define the column name
 	# import pdb; pdb.set_trace()
-	column_description_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename, DS_CMN_VAR.DatasetVar.DATASET_FOLDER_PATH)
+	column_description_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename, DS_CMN_VAR.DatasetVar.FINANCE_DATASET_FOLDER_PATH)
 	column_name_list = [DS_CMN_DEF.DATESET_DATE_COLUMN_NAME,]
 	column_index_list = [DS_CMN_DEF.DATESET_DATE_COLUMN_INDEX,]
 	if field_index_list is not None:
@@ -55,10 +55,10 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 # Read the data in dataset
 	filepath = None
 	if company_code_number is None:
-		filepath = "%s/%s/%s.csv" % (DS_CMN_VAR.DatasetVar.DATASET_FOLDER_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+		filepath = "%s/%s/%s.csv" % (DS_CMN_VAR.DatasetVar.FINANCE_DATASET_FOLDER_PATH, CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
 	else:
 		company_group_number = int(company_group_number)
-		filepath = "%s/%s%02d/%s/%s.csv" % (DS_CMN_VAR.DatasetVar.DATASET_FOLDER_PATH, CMN.DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_code_number, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+		filepath = "%s/%s%02d/%s/%s.csv" % (DS_CMN_VAR.DatasetVar.FINANCE_DATASET_FOLDER_PATH, CMN.DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_code_number, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
 	# print DS_CMN_VAR.DatasetVar.DATASET_FOLDER_PATH
 	df = None
 	# import pdb; pdb.set_trace()
