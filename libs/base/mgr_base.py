@@ -286,7 +286,7 @@ class MgrBase(object):
     def set_finance_root_folderpath(self, csv_root_folderpath=None, update_dataset=False):
         assert ((csv_root_folderpath is None) or (not update_dataset)), "incorrect arguments in the 'set_finance_root_folderpath' function"
         if update_dataset:
-            csv_root_folderpath = "%s/%s" % (GV.PROJECT_DATASET_FOLDERPATH, self._get_configurer().CurDatasetSelection)
+            csv_root_folderpath = GV.FINANCE_DATASET_DATA_FOLDERPATH
         g_logger.debug("Set CSV root folder path: %s" % csv_root_folderpath)
         self.xcfg["finance_root_folderpath"] = csv_root_folderpath
 

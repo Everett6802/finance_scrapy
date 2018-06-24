@@ -13,14 +13,16 @@ class GlobalVar(object):
     _PROJECT_FOLDERPATH = None #CMN_FUNC.get_project_folderpath()
     _PROJECT_LIB_FOLDERPATH = None
     _PROJECT_CONF_FOLDERPATH = None
-    _PROJECT_DATASET_FOLDERPATH = None
     # _CUR_DATASET_SELECTION = None
     _PROJECT_PARENT_FOLDERPATH = None
+    _FINANCE_DATASET_FOLDERPATH = None
+    _FINANCE_DATASET_CONF_FOLDERPATH = None
+    _FINANCE_DATASET_DATA_FOLDERPATH = None
 
 
     class __metaclass__(type):
-        __LIB_FOLDERNAME_IN_PROJECT = CMN_DEF.LIB_FOLDERNAME
-        __CONF_FOLDERNAME_IN_PROJECT = CMN_DEF.CONF_FOLDERNAME
+        # __LIB_FOLDERNAME_IN_PROJECT = CMN_DEF.LIB_FOLDERNAME
+        # __CONF_FOLDERNAME_IN_PROJECT = CMN_DEF.CONF_FOLDERNAME
         # __DATASET_FOLDERNAME_IN_PROJECT = CMN_DEF.DATASET_FOLDERNAME
 
         @property
@@ -103,14 +105,14 @@ class GlobalVar(object):
         @property
         def PROJECT_LIB_FOLDERPATH(cls):
             if cls._PROJECT_LIB_FOLDERPATH is None:
-                cls._PROJECT_LIB_FOLDERPATH = "%s/%s" % (cls.PROJECT_FOLDERPATH, cls.__LIB_FOLDERNAME_IN_PROJECT)
+                cls._PROJECT_LIB_FOLDERPATH = "%s/%s" % (cls.PROJECT_FOLDERPATH, CMN_DEF.LIB_FOLDERNAME)
             return cls._PROJECT_LIB_FOLDERPATH
 
 
         @property
         def PROJECT_CONF_FOLDERPATH(cls):
             if cls._PROJECT_CONF_FOLDERPATH is None:
-                cls._PROJECT_CONF_FOLDERPATH = "%s/%s" % (cls.PROJECT_FOLDERPATH, cls.__CONF_FOLDERNAME_IN_PROJECT)
+                cls._PROJECT_CONF_FOLDERPATH = "%s/%s" % (cls.PROJECT_FOLDERPATH, CMN_DEF.CONF_FOLDERNAME)
             return cls._PROJECT_CONF_FOLDERPATH
 
 
@@ -124,16 +126,31 @@ class GlobalVar(object):
 
 
         @property
-        def PROJECT_DATASET_FOLDERPATH(cls):
-            if cls._PROJECT_DATASET_FOLDERPATH is None:
-                cls._PROJECT_DATASET_FOLDERPATH = "%s/%s" % (cls.PROJECT_PARENT_FOLDERPATH, CMN_DEF.FINANCE_DATASET_PROJECT_NAME)
-            return cls._PROJECT_DATASET_FOLDERPATH
+        def FINANCE_DATASET_FOLDERPATH(cls):
+            # import pdb; pdb.set_trace()
+            if cls._FINANCE_DATASET_FOLDERPATH is None:
+                cls._FINANCE_DATASET_FOLDERPATH = "%s/%s" % (cls.PROJECT_PARENT_FOLDERPATH, CMN_DEF.FINANCE_DATASET_PROJECT_NAME)
+            return cls._FINANCE_DATASET_FOLDERPATH
 
+
+        @property
+        def FINANCE_DATASET_CONF_FOLDERPATH(cls):
+            if cls._FINANCE_DATASET_CONF_FOLDERPATH is None:
+                cls._FINANCE_DATASET_CONF_FOLDERPATH = "%s/%s" % (cls.FINANCE_DATASET_FOLDERPATH, CMN_DEF.CONF_FOLDERNAME)
+            return cls._FINANCE_DATASET_CONF_FOLDERPATH
+
+
+        @property
+        def FINANCE_DATASET_DATA_FOLDERPATH(cls):
+            # import pdb; pdb.set_trace()
+            if cls._FINANCE_DATASET_DATA_FOLDERPATH is None:
+                cls._FINANCE_DATASET_DATA_FOLDERPATH = "%s/%s" % (cls.FINANCE_DATASET_FOLDERPATH, CMN_DEF.DATA_FOLDERNAME)
+            return cls._FINANCE_DATASET_DATA_FOLDERPATH
 
         # @property
         # def CUR_DATASET_SELECTION(cls):
         #     if cls.__CUR_DATASET_SELECTION is None:
-        #         dataset_filepath = "%s/%s" % (cls.PROJECT_DATASET_FOLDERPATH, CMN_DEF.DATASET_CONF_FILENAME)
+        #         dataset_filepath = "%s/%s" % (cls.FINANCE_DATASET_FOLDERPATH, CMN_DEF.DATASET_CONF_FILENAME)
 
 
         @classmethod

@@ -11,26 +11,26 @@ class DatasetVarMeta(type):
     _param_update = False
     # __MY_VALUE = None
     _GLOBAL_VARIABLE_UPDATED = False
-    _PARAM_DICT = None
-    _FINANCE_DATASET_FOLDER_PATH = None
+    # _PARAM_DICT = None
+    # _FINANCE_DATASET_FOLDER_PATH = None
     _CAN_VISUALIZE = False
 
 
     def __init__(cls, name, bases, dct):
-        cls.__update_param()
+        # cls.__update_param()
         super(DatasetVarMeta, cls).__init__(name, bases, dct)
 
 
-    @classmethod
-    def __update_param(cls):
-        config_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, DS_CMN_DEF.DATASET_FOLDERNAME, DS_CMN_DEF.DATASET_CONF_FILENAME)
-        line_list = CMN.FUNC.read_file_lines_ex(config_filepath)
-        cls._PARAM_DICT = {}
-        for key, value in map(lambda line : line.split("="), line_list):
-            cls._PARAM_DICT[key] = value
-# validate the parameter
-        assert cls._PARAM_DICT.get("cur_dataset_selection", None) is not None, "The cur_dataset_selection field is NOT set"
-        cls._param_update = True
+#     @classmethod
+#     def __update_param(cls):
+#         config_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, DS_CMN_DEF.DATASET_FOLDERNAME, DS_CMN_DEF.DATASET_CONF_FILENAME)
+#         line_list = CMN.FUNC.read_file_lines_ex(config_filepath)
+#         cls._PARAM_DICT = {}
+#         for key, value in map(lambda line : line.split("="), line_list):
+#             cls._PARAM_DICT[key] = value
+# # validate the parameter
+#         assert cls._PARAM_DICT.get("cur_dataset_selection", None) is not None, "The cur_dataset_selection field is NOT set"
+#         cls._param_update = True
 
 
     @property
@@ -45,18 +45,18 @@ class DatasetVarMeta(type):
         cls._GLOBAL_VARIABLE_UPDATED = global_variable_updated
 
 
-    @property
-    def CUR_DATASET_SELECTION(cls):
-        if not cls._param_update:
-            raise ValueError("Param not update !!!")
-        return cls._PARAM_DICT["cur_dataset_selection"]
+#     @property
+#     def CUR_DATASET_SELECTION(cls):
+#         if not cls._param_update:
+#             raise ValueError("Param not update !!!")
+#         return cls._PARAM_DICT["cur_dataset_selection"]
 
 
-    @property
-    def FINANCE_DATASET_FOLDER_PATH(cls):
-        if cls._FINANCE_DATASET_FOLDER_PATH is None:
-            cls._FINANCE_DATASET_FOLDER_PATH = "%s/%s" % (GV.PROJECT_DATASET_FOLDERPATH, cls.CUR_DATASET_SELECTION)
-        return cls._FINANCE_DATASET_FOLDER_PATH
+#     # @property
+#     # def FINANCE_DATASET_FOLDER_PATH(cls):
+#     #     if cls._FINANCE_DATASET_FOLDER_PATH is None:
+#     #         cls._FINANCE_DATASET_FOLDER_PATH = "%s/%s" % (GV.PROJECT_DATASET_FOLDERPATH, cls.CUR_DATASET_SELECTION)
+#     #     return cls._FINANCE_DATASET_FOLDER_PATH
 
 
     @property
