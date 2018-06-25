@@ -336,12 +336,21 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
                 resistance_date = main_key_support_resistance[1]
                 resistance_date_index = date2Date(resistance_date)
                 print "R: %s, %s%s" % (PRICE(df.ix[resistance_date_index, 'low']), resistance_date, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW)
-            print "***************************************\n"
+            print "***************************************"
 
-    print "\n***** Key Support Resistance: *****"
-    print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "S" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(reversed(key_support_list))
-    print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "R" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(key_resistance_list)
-    print "**********************************\n"
+        print "\n***** Key Support Resistance: *****"
+        print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "S" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(reversed(key_support_list))
+        print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "R" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(key_resistance_list)
+        print "**********************************"
+
+        key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+        if key_support_resistance is not None:
+            print "\n***** Key Support Resistance Price *****"
+            for key_date in key_support_resistance:
+                key_date_index = date2Date(key_date)
+                row = df.ix[key_date_index]
+                print "%s O:%s H:%s L:%s C:%s" % (key_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
+            print "****************************************\n"
 
 
 def find_stock_price_jump_gap(df, tick_for_jump_gap=DS_CMN_DEF.DEF_TICK_FOR_JUMP_GAP):
@@ -420,6 +429,23 @@ def find_stock_price_main_key_supprot_resistance(df):
             max_price_date = index
     return (min_price_date.strftime("%y%m%d"), max_price_date.strftime("%y%m%d"))
 
+
+def print_key_support_resistance_price(df, key_support_resistance):
+    # import pdb; pdb.set_trace()
+    # stock_price_statistics_config = DS_CMN_FUNC.parse_stock_price_statistics_config(company_number)
+
+    # df, _ = DS_LD.load_stock_price_history(company_number)
+    # key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+    # if key_support_resistance is None:
+    #     print "***** No Key Support Resistance Data !!! *****\n"
+    #     return
+
+    print "\n***** Key Support Resistance Price *****"
+    for key_date in key_support_resistance:
+        key_date_index = DS_CMN_FUNC.date2Date(key_date)
+        row = df.ix[key_date_index]
+        print "%s O:%s H:%s L:%s C:%s" % (key_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
+    print "*****************************************\n"
 
 # def print_stock_price_main_key_supprot_resistance(df, main_key_supprot_resistance, ):
 #     print "Main Key Support Resistance:"

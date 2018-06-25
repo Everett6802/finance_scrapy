@@ -217,11 +217,21 @@ def plot_candles_v2(pricing, title=None,
                 rect = patches.Rectangle((x[loc]-0.1, low_price[loc]-0.15), 1, high_price[loc]-low_price[loc]+0.3, linewidth=2, edgecolor='y', facecolor='none')
                 # Add the patch to the Axes
                 ax1.add_patch(rect)
-                row = pricing.iloc[loc]
                 # import pdb; pdb.set_trace()
-                row_date = pricing.index[loc].strftime("%y%m%d")
-                row_str = "%s O: %s H: %s L: %s C: %s" % (row_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
-                ax1.text(x[loc], 18, row_str, color='yellow', horizontalalignment='center', fontsize=11)
+                if draw_key_support_resistance_str:
+                    row_date = pricing.index[loc].strftime("%y%m%d")
+                    row = pricing.iloc[loc]
+                    # row_str = "%s O: %s H: %s L: %s C: %s" % (row_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
+                    row_str = "%s" % row_date
+                    y = None
+                    verticalalignment = None
+                    if row['close'] >= row['open']:
+                        y = int(row['high'] * 1.1)
+                        verticalalignment = "bottom"
+                    else:
+                        y = int(row['low'] * 0.9)
+                        verticalalignment = "top"
+                    ax1.text(x[loc], y, row_str, color='yellow', horizontalalignment='center', verticalalignment=verticalalignment, fontsize=10)
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
 # Mark the jump gap
@@ -313,9 +323,9 @@ def plot_candles_v2(pricing, title=None,
         #     start_index = len(overlay) - pricing_len
         ax1.plot(x, overlay[start_index:])
 
-    if draw_key_support_resistance_str:
-        x1, x2, y1, y2 = ax1.axis()
-        ax1.axis([x1, x2, y1, y2 + 3])
+    # if draw_key_support_resistance_str:
+    #     x1, x2, y1, y2 = ax1.axis()
+    #     ax1.axis([x1, x2, y1, y2 + 3])
 
     # Plot volume bars if needed
     if volume_bars:

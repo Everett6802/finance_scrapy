@@ -80,19 +80,19 @@ def find_jump_gap(company_number, start_date=None, tick_for_jump_gap=2):
         DS_VS.show_plot()
 
 
-def lookup_support_resistance_price(company_number):
-    # import pdb; pdb.set_trace()
-    stock_price_statistics_config = DS_CMN_FUNC.parse_stock_price_statistics_config(company_number)
+# def lookup_support_resistance_price(company_number):
+#     # import pdb; pdb.set_trace()
+#     stock_price_statistics_config = DS_CMN_FUNC.parse_stock_price_statistics_config(company_number)
 
-    df, _ = DS_LD.load_stock_price_history(company_number)
-    key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
-    if key_support_resistance is None:
-        print "***** No Key Support Resistance Data !!! *****\n"
-        return
+#     df, _ = DS_LD.load_stock_price_history(company_number)
+#     key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+#     if key_support_resistance is None:
+#         print "***** No Key Support Resistance Data !!! *****\n"
+#         return
 
-    print "\n***** %s Key Support Resistance Price *****" % company_number
-    for key_date in key_support_resistance:
-        key_date_index = DS_CMN_FUNC.date2Date(key_date)
-        row = df.ix[key_date_index]
-        print "%s O:%s H:%s L:%s C:%s" % (key_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
-    print "*********************************************\n"
+#     print "\n***** %s Key Support Resistance Price *****" % company_number
+#     for key_date in key_support_resistance:
+#         key_date_index = DS_CMN_FUNC.date2Date(key_date)
+#         row = df.ix[key_date_index]
+#         print "%s O:%s H:%s L:%s C:%s" % (key_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
+#     print "*********************************************\n"
