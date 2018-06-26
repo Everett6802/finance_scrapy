@@ -22,10 +22,14 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
 
     df, column_description_list = DS_LD.load_stock_price_history(company_number, overwrite_stock_price_list=overwrite_dataset)
     # DS_CMN_FUNC.print_dataset_metadata(df, column_description_list)
+    dataset_visualization_title = None
     if cur_price is None:
         cur_price = df.ix[-1]['close']
         cur_date = df.index[-1].strftime("%y%m%d")
-        print "** Date: %s Price: %s **\n" % (cur_date, cur_price) 
+        print "** Date: %s Price: %s **\n" % (cur_date, PRICE(cur_price))
+        if DV.CAN_VISUALIZE:
+            cur_rise_or_fall = df.ix[-1]['rise_or_fall']
+            dataset_visualization_title = "%s     %s  %s %s" % (company_number, cur_date, PRICE(cur_price), cur_rise_or_fall)
 
     SMA = None
     if DV.CAN_VISUALIZE:
@@ -61,7 +65,7 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
         )
 
     if DV.CAN_VISUALIZE:
-        DS_VS.plot_candles(df, title=company_number, volume_bars=True, overlays=[SMA], stock_price_statistics_config=stock_price_statistics_config)
+        DS_VS.plot_candles(df, title=dataset_visualization_title, volume_bars=True, overlays=[SMA], stock_price_statistics_config=stock_price_statistics_config)
         DS_VS.show_plot()
 
 

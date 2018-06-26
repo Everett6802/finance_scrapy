@@ -167,11 +167,11 @@ def plot_candles_v2(pricing, title=None,
     oc_min = oc.min(axis=1)
     oc_max = oc.max(axis=1)
 
-    min_low_price = None
-    max_high_price = None
-    if draw_key_support_resistance_str:
-        min_low_price = low_price.min()
-        max_high_price = high_price.max()
+    # min_low_price = None
+    # max_high_price = None
+    # if draw_key_support_resistance_str:
+    #     min_low_price = low_price.min()
+    #     max_high_price = high_price.max()
     
     subplot_count = 1
     if volume_bars:
@@ -219,19 +219,26 @@ def plot_candles_v2(pricing, title=None,
                 ax1.add_patch(rect)
                 # import pdb; pdb.set_trace()
                 if draw_key_support_resistance_str:
-                    row_date = pricing.index[loc].strftime("%y%m%d")
                     row = pricing.iloc[loc]
+                    is_top = True
+                    if loc >= 1:
+                        row_prev = pricing.iloc[loc - 1]
+                        if row['high'] > row_prev['high']:
+                            is_top = True
+                        elif row['low'] < row_prev['low']:
+                            is_top = False
+                        else:
+                            raise ValueError("Unkown condition !!!")
                     # row_str = "%s O: %s H: %s L: %s C: %s" % (row_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
-                    row_str = "%s" % row_date
                     y = None
                     verticalalignment = None
-                    if row['close'] >= row['open']:
-                        y = int(row['high'] * 1.1)
+                    if is_top:
+                        y = row['high'] * 1.015
                         verticalalignment = "bottom"
                     else:
-                        y = int(row['low'] * 0.9)
+                        y = row['low'] * 0.985
                         verticalalignment = "top"
-                    ax1.text(x[loc], y, row_str, color='yellow', horizontalalignment='center', verticalalignment=verticalalignment, fontsize=10)
+                    ax1.text(x[loc], y, pricing.index[loc].strftime("%y%m%d"), color='yellow', horizontalalignment='center', verticalalignment=verticalalignment, fontsize=10)
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
 # Mark the jump gap
@@ -300,6 +307,9 @@ def plot_candles_v2(pricing, title=None,
             stock_price = pricing.ix[date_index, 'low']
             ax1.plot([x[0], x[-1],], [stock_price, stock_price,], color='orange', linewidth=1)
 
+    cur_stock_price = pricing.ix[-1, 'close']
+    ax1.plot([x[0], x[-1],], [cur_stock_price, cur_stock_price,], color='gray', linewidth=1)
+
     ax1.grid(color='white', linestyle=':', linewidth=0.5)
     ax1.xaxis.grid(True)
     ax1.yaxis.grid(True)
@@ -312,8 +322,26 @@ def plot_candles_v2(pricing, title=None,
     # Set X axis tick labels.
 # type(pricing.index): <class 'pandas.tseries.index.DatetimeIndex'>
 # type(pricing.index[0]): <class 'pandas.tslib.Timestamp'>
-# Only mark the xtick of Monday
-    [x_tick, x_tick_label] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
+# # Only mark the xtick of Monday
+#     [x_tick, x_tick_label] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
+# Only mark the xtick of the first day of the month
+    # import pdb; pdb.set_trace()
+    cur_month = None
+    x_tick = None
+    x_tick_label = None
+    for index, pricing_date in enumerate(pricing.index):
+        if cur_month == pricing_date.month:
+            continue
+        if x_tick is None:
+            x_tick = [x[index],]
+            x_tick_label = [pricing_date.strftime("%y%m%d"),]        
+        elif pricing_date.month == 1:
+            x_tick.append(x[index])
+            x_tick_label.append(pricing_date.strftime("%y%m"))
+        else:
+            x_tick.append(x[index])
+            x_tick_label.append(pricing_date.strftime("%m"))
+        cur_month = pricing_date.month
     plt.xticks(x_tick, x_tick_label, rotation='vertical')
 #     plt.xticks(x, [date.strftime(time_format) for date in pricing.index], rotation='vertical')
     # import pdb; pdb.set_trace()
