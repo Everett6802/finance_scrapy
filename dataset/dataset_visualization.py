@@ -11,6 +11,7 @@ import libs.common as CMN
 import common_definition as DS_CMN_DEF
 # import common_variable as DS_CMN_VAR
 import common_function as DS_CMN_FUNC
+from common_class import StockPrice as PRICE
 from dataset.common_variable import DatasetVar as DV
 g_logger = CMN.LOG.get_logger()
 
@@ -123,18 +124,25 @@ def plot_candles_v2(pricing, title=None,
         return
 
     def default_color(index, open_price, close_price, low, high):
-        return 'r' if open_price[index] > close_price[index] else 'g'
+        if open_price[index] > close_price[index]:
+            return 'g'
+        elif open_price[index] < close_price[index]:
+            return 'r'
+        return 'w'
 
 # Parse the config if not None
     # start_date = None
     key_support_resistance = None
     jump_gap = None
     trend_line = None
+    main_key_support_resistance = None
+    draw_key_support_resistance_str = True
     if stock_price_statistics_config is not None:
         # start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
         key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
-        jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_JUMP_GAP, None)
+        jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP, None)
         trend_line = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE, None)
+        main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_MAIN_KEY_SUPPORT_RESISTANCE, None)
 
     color_function = color_function or default_color
     overlays = overlays or []
@@ -151,8 +159,19 @@ def plot_candles_v2(pricing, title=None,
     low_price = pricing['low']
     high_price = pricing['high']
     oc = pd.concat([open_price, close_price], axis=1)
+    # import pdb; pdb.set_trace()
+    def price_flat(oc):
+        return True if oc['open'] == oc['close'] else False
+    oc_flat_flag = oc.apply(price_flat, axis=1) 
+    oc_flat = oc[oc_flat_flag]
     oc_min = oc.min(axis=1)
     oc_max = oc.max(axis=1)
+
+    # min_low_price = None
+    # max_high_price = None
+    # if draw_key_support_resistance_str:
+    #     min_low_price = low_price.min()
+    #     max_high_price = high_price.max()
     
     subplot_count = 1
     if volume_bars:
@@ -179,6 +198,10 @@ def plot_candles_v2(pricing, title=None,
     candle_colors = [color_function(i, open_price, close_price, low_price, high_price) for i in x]
 # Draw candle stick
     candles = ax1.bar(x, oc_max-oc_min, bottom=oc_min, color=candle_colors, linewidth=0)
+    # lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
+    for index, row in oc_flat.iterrows():
+        loc = pricing.index.get_loc(index)
+        ax1.plot([x[loc], x[loc] + 0.8], [row['open'], row['close']], color='w')
     lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
 # Show the price statistics on the candle stick plot
 # Mark the important candle stick
@@ -194,6 +217,28 @@ def plot_candles_v2(pricing, title=None,
                 rect = patches.Rectangle((x[loc]-0.1, low_price[loc]-0.15), 1, high_price[loc]-low_price[loc]+0.3, linewidth=2, edgecolor='y', facecolor='none')
                 # Add the patch to the Axes
                 ax1.add_patch(rect)
+                # import pdb; pdb.set_trace()
+                if draw_key_support_resistance_str:
+                    row = pricing.iloc[loc]
+                    is_top = True
+                    if loc >= 1:
+                        row_prev = pricing.iloc[loc - 1]
+                        if row['high'] > row_prev['high']:
+                            is_top = True
+                        elif row['low'] < row_prev['low']:
+                            is_top = False
+                        else:
+                            raise ValueError("Unkown condition !!!")
+                    # row_str = "%s O: %s H: %s L: %s C: %s" % (row_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
+                    y = None
+                    verticalalignment = None
+                    if is_top:
+                        y = row['high'] * 1.015
+                        verticalalignment = "bottom"
+                    else:
+                        y = row['low'] * 0.985
+                        verticalalignment = "top"
+                    ax1.text(x[loc], y, pricing.index[loc].strftime("%y%m%d"), color='yellow', horizontalalignment='center', verticalalignment=verticalalignment, fontsize=10)
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
 # Mark the jump gap
@@ -250,6 +295,20 @@ def plot_candles_v2(pricing, title=None,
             last_y_pt = get_extended_point_y(x_pt[0], y_pt[0], x_pt[1], y_pt[1], last_x_pt)
 
             ax1.plot([x_pt[0], last_x_pt], [y_pt[0], last_y_pt])
+# Draw main key support and resistance
+    if main_key_support_resistance is not None:
+        show_main_key_support_resistance = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE]
+        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
+            date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[0])
+            stock_price = pricing.ix[date_index, 'high']
+            ax1.plot([x[0], x[-1],], [stock_price, stock_price,], color='orange', linewidth=1)
+        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_RESISTANCE_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
+            date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[1])
+            stock_price = pricing.ix[date_index, 'low']
+            ax1.plot([x[0], x[-1],], [stock_price, stock_price,], color='orange', linewidth=1)
+
+    cur_stock_price = pricing.ix[-1, 'close']
+    ax1.plot([x[0], x[-1],], [cur_stock_price, cur_stock_price,], color='gray', linewidth=1)
 
     ax1.grid(color='white', linestyle=':', linewidth=0.5)
     ax1.xaxis.grid(True)
@@ -263,8 +322,26 @@ def plot_candles_v2(pricing, title=None,
     # Set X axis tick labels.
 # type(pricing.index): <class 'pandas.tseries.index.DatetimeIndex'>
 # type(pricing.index[0]): <class 'pandas.tslib.Timestamp'>
-# Only mark the xtick of Monday
-    [x_tick, x_tick_label] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
+# # Only mark the xtick of Monday
+#     [x_tick, x_tick_label] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
+# Only mark the xtick of the first day of the month
+    # import pdb; pdb.set_trace()
+    cur_month = None
+    x_tick = None
+    x_tick_label = None
+    for index, pricing_date in enumerate(pricing.index):
+        if cur_month == pricing_date.month:
+            continue
+        if x_tick is None:
+            x_tick = [x[index],]
+            x_tick_label = [pricing_date.strftime("%y%m%d"),]        
+        elif pricing_date.month == 1:
+            x_tick.append(x[index])
+            x_tick_label.append(pricing_date.strftime("%y%m"))
+        else:
+            x_tick.append(x[index])
+            x_tick_label.append(pricing_date.strftime("%m"))
+        cur_month = pricing_date.month
     plt.xticks(x_tick, x_tick_label, rotation='vertical')
 #     plt.xticks(x, [date.strftime(time_format) for date in pricing.index], rotation='vertical')
     # import pdb; pdb.set_trace()
@@ -273,6 +350,11 @@ def plot_candles_v2(pricing, title=None,
         # if start_date is not None:
         #     start_index = len(overlay) - pricing_len
         ax1.plot(x, overlay[start_index:])
+
+    # if draw_key_support_resistance_str:
+    #     x1, x2, y1, y2 = ax1.axis()
+    #     ax1.axis([x1, x2, y1, y2 + 3])
+
     # Plot volume bars if needed
     if volume_bars:
         ax2 = subplots[1]

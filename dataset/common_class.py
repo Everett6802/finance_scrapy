@@ -1,11 +1,5 @@
 # -*- coding: utf8 -*-
 
-# import re
-# import numpy as np
-# import pandas as pd
-# import talib
-# # conda install -c quantopian ta-lib=0.4.9
-# # https://blog.csdn.net/fortiy/article/details/76531700
 import libs.common as CMN
 import common_definition as DS_CMN_DEF
 g_logger = CMN.LOG.get_logger()

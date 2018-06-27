@@ -100,11 +100,11 @@ class ConfigurerBase(object):
         return self._get_company()
 
 
-    @property
-    def CurDatasetSelection(self):
-        if not hasattr(self, "cur_dataset_selection"):
-            self.cur_dataset_selection = self.get_config("Dataset", "cur_dataset_selection")
-        return self.cur_dataset_selection
+    # @property
+    # def CurDatasetSelection(self):
+    #     if not hasattr(self, "cur_dataset_selection"):
+    #         self.cur_dataset_selection = self.get_config("Dataset", "cur_dataset_selection")
+    #     return self.cur_dataset_selection
 
 
     # @property

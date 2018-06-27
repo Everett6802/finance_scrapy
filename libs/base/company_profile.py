@@ -158,22 +158,22 @@ class CompanyProfile(object):
             self.update_from_web = True
 
 
-    def __copy_company_profile_config_file(self):
-        # import pdb; pdb.set_trace()
-        # current_path = os.path.dirname(os.path.realpath(__file__))
-        [working_folder, project_name] = GV.PROJECT_FOLDERPATH.rsplit('/', 1)
-        dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_RECORDER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
-            "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_ANALYZER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
-        ]
-        company_profile_src_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
-        company_group_src_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
-        for dst_folderpath in dst_folderpath_list:
-            # if os.path.exists(dst_folderpath):
-            #     g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
-            #     shutil.copy2(src_filepath, dst_folderpath)
-            CMN.FUNC.copy_file_if_exist(company_profile_src_filepath, dst_folderpath)
-            CMN.FUNC.copy_file_if_exist(company_group_src_filepath, dst_folderpath)
+    # def __copy_company_profile_config_file(self):
+    #     # import pdb; pdb.set_trace()
+    #     # current_path = os.path.dirname(os.path.realpath(__file__))
+    #     [working_folder, project_name] = GV.PROJECT_FOLDERPATH.rsplit('/', 1)
+    #     dst_folderpath_list = [
+    #         "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_RECORDER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
+    #         "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_ANALYZER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
+    #     ]
+    #     company_profile_src_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+    #     company_group_src_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
+    #     for dst_folderpath in dst_folderpath_list:
+    #         # if os.path.exists(dst_folderpath):
+    #         #     g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.COMPANY_PROFILE_CONF_FILENAME, dst_folderpath))
+    #         #     shutil.copy2(src_filepath, dst_folderpath)
+    #         CMN.FUNC.copy_file_if_exist(company_profile_src_filepath, dst_folderpath)
+    #         CMN.FUNC.copy_file_if_exist(company_group_src_filepath, dst_folderpath)
 
 
     def __update_company_profile_from_file(self):
@@ -182,7 +182,7 @@ class CompanyProfile(object):
         need_update_from_web = False
         # current_path = os.path.dirname(os.path.realpath(__file__))
         # [project_folder, lib_folder] = current_path.rsplit('/', 1)
-        conf_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+        conf_filepath = "%s/%s" % (GV.FINANCE_DATASET_CONF_FOLDERPATH, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
         g_logger.debug("Try to Acquire the Company Code Number data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Company Code Number config file does NOT exist")
@@ -208,7 +208,7 @@ class CompanyProfile(object):
             #     self.__company_group_size = len(self.company_group_num2name_list)
             #     self.__company_amount = len(self.company_profile_list)
             #     self.__generate_company_group_profile_list()
-            line_unicode_list = CMN.FUNC.unicode_read_config_file_lines(CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+            line_unicode_list = CMN.FUNC.unicode_read_config_file_lines(CMN.DEF.COMPANY_PROFILE_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH)
             for line_unicode in line_unicode_list:
                 element_list = re.split(r",", line_unicode, re.U)
                 if len(element_list) != self.COMPANY_PROFILE_ELEMENT_EX_LEN:
@@ -459,7 +459,7 @@ class CompanyProfile(object):
             company_profile_unicode_list.append(company_profile_unicode)
             # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH)
 # File for keeping track of the company group info
 #         conf_filepath = "%s/%s/%s" % (GV.PROJECT_FOLDERPATH, CMN.DEF.CONF_FOLDER, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
 #         g_logger.debug("Write the Company Group info to the file: %s......" % conf_filepath)
@@ -480,7 +480,7 @@ class CompanyProfile(object):
             company_group_unicode = u"%d %s" % (index, company_group)
             company_group_unicode_list.append(company_group_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-        CMN.FUNC.unicode_write_config_file_lines(company_group_unicode_list, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
+        CMN.FUNC.unicode_write_config_file_lines(company_group_unicode_list, CMN.DEF.COMPANY_GROUP_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH)
 
 
     def __write_company_profile_change_list_to_file(self, old_lost_list=None, new_added_list=None, cur_timestamp_str=None):
@@ -492,10 +492,10 @@ class CompanyProfile(object):
 # Remove the old config file if exist
             CMN.FUNC.remove_config_file_if_exist(CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
             config_line_list.append("Initial update")
-            CMN.FUNC.write_config_file_lines(config_line_list, CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
+            CMN.FUNC.write_config_file_lines(config_line_list, CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH)
         else:
 # Append the company change result
-            if not CMN.FUNC.check_config_file_exist(CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME):
+            if not CMN.FUNC.check_config_file_exist(CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH):
                 raise ValueError("The config file[%s] does NOT exist" % CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME)
             company_change_str = ""
             if old_lost_list is not None:
@@ -503,7 +503,7 @@ class CompanyProfile(object):
             if new_added_list is not None:
                 company_change_str += "NewAdded:" + ",".join(new_added_list) + " "
             config_line_list.append(company_change_str)
-            CMN.FUNC.write_config_file_lines_ex(config_line_list, CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME, "a+")
+            CMN.FUNC.write_config_file_lines_ex(config_line_list, CMN.DEF.COMPANY_PROFILE_CHANGE_LIST_CONF_FILENAME, "a+", GV.FINANCE_DATASET_CONF_FOLDERPATH)
 
 
     def __write_company_group_to_file(self):
@@ -531,7 +531,7 @@ class CompanyProfile(object):
             company_profile_unicode_list.append(company_profile_unicode)
             # g_logger.debug(u"Company Code Number Data: %s", company_profile_unicode)
 # Can be readable for the CSV reader by encoding utf-8 unicode
-        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
+        CMN.FUNC.unicode_write_config_file_lines(company_profile_unicode_list, CMN.DEF.COMPANY_PROFILE_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH)
 
 
     def __get_exceptional_company_industry_by_company_code_number_first_2_digit(self, company_code_number):

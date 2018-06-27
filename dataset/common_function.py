@@ -51,8 +51,20 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
             elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE:
                 cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE_INDEX
                 stock_price_statistics_config[cur_conf_field] = []
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_AUTO_DETECT_JUMP_GAP:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_AUTO_DETECT_JUMP_GAP_INDEX
+                stock_price_statistics_config[cur_conf_field] = None
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP_INDEX
+                stock_price_statistics_config[cur_conf_field] = []
             elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE:
                 cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE_INDEX
+                stock_price_statistics_config[cur_conf_field] = []
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE_INDEX
+                stock_price_statistics_config[cur_conf_field] = None
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_OVERWRITE_DATASET:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_OVERWRITE_DATASET_INDEX
                 stock_price_statistics_config[cur_conf_field] = []
             else:
                 raise ValueError("Unknown config field: %s" % cur_conf_field)                
@@ -62,10 +74,54 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
                 stock_price_statistics_config[cur_conf_field] = conf_line
             elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE_INDEX:
                 stock_price_statistics_config[cur_conf_field].append(conf_line)
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_AUTO_DETECT_JUMP_GAP:
+                stock_price_statistics_config[cur_conf_field] = conf_line
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP:
+                stock_price_statistics_config[cur_conf_field].append(conf_line)
             elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE_INDEX:
+                stock_price_statistics_config[cur_conf_field].append(conf_line)
+            elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE_INDEX:
+                stock_price_statistics_config[cur_conf_field] = conf_line
+            elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_OVERWRITE_DATASET_INDEX:
                 stock_price_statistics_config[cur_conf_field].append(conf_line)
             else:
                 raise ValueError("Unknown config field index: %d" % cur_conf_field_index)
+
+# Transform the value of the config setting
+# Change the type of auto-detect jump gap
+    auto_detect_jump_gap = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_AUTO_DETECT_JUMP_GAP
+    auto_detect_jump_gap_from_config = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_AUTO_DETECT_JUMP_GAP, None)
+    if auto_detect_jump_gap_from_config is not None:
+        if auto_detect_jump_gap_from_config.lower() == "true":
+            auto_detect_jump_gap = True
+        elif auto_detect_jump_gap_from_config.lower() == "false":
+            auto_detect_jump_gap = False
+        else:
+            raise ValueError("Unknown auto detect jump gap: %s" % auto_detect_jump_gap_from_config)
+
+# Cleanup the jump_gap config setting if auto_detect_jump_gap is True
+    if auto_detect_jump_gap:
+        jump_gap_list = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_AUTO_DETECT_JUMP_GAP, None)
+        if jump_gap_list is not None and len(jump_gap_list) > 0:
+            g_logger.warn("The jump_gap parameter in the config is ignored due to auto-detection......")
+# If auto_detect_jump_gap is True, this field is ignored
+            stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP] = None
+    else:
+        jump_gap_from_config = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP, None)
+        if jump_gap_from_config is not None:
+            stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP] = []
+            for line in jump_gap_from_config:
+                line_split = line.split(":")
+                if len(line_split) != 3:
+                    raise ValueError("Incorrect jump gap format: %s" % line)
+                if line_split[1] not in (DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW):
+                    raise ValueError("Incorrect price type in jump gap: %s" % line_split[1])
+                stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP].append(line_split)
+
+# Change the data type of the show_main_key_support_resistance config field
+    show_main_key_support_resistance = int(stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_DEFAULT))
+    stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE] = show_main_key_support_resistance
+
     return stock_price_statistics_config
 
 
@@ -140,19 +196,19 @@ def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=Non
                 g_logger.warn("The date[%s] does NOT exist in data" % key_support_resistance_date)
                 continue
             for key_support_resistance_mark in key_support_resistance_mark_list:
-                if key_support_resistance_mark == 'O':
+                if key_support_resistance_mark == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_OPEN:
                     df_copy.ix[key_support_resistance_date_index, 'open_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
-                elif key_support_resistance_mark == 'H':
+                elif key_support_resistance_mark == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
                     df_copy.ix[key_support_resistance_date_index, 'high_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
-                elif key_support_resistance_mark == 'L':
+                elif key_support_resistance_mark == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
                     df_copy.ix[key_support_resistance_date_index, 'low_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
-                elif key_support_resistance_mark == 'C':
+                elif key_support_resistance_mark == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_CLOSE:
                     df_copy.ix[key_support_resistance_date_index, 'close_mark'] = DS_CMN_DEF.SUPPORT_RESISTANCE_MARK_KEY
                 else:
                     raise ValueError("Unkown mark type" % key_support_resistance_mark)
         # import pdb; pdb.set_trace()
 # Mark Jump Gap
-        jump_gap_list = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_JUMP_GAP, None)
+        jump_gap_list = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP, None)
         if jump_gap_list is not None:
             for jump_gap in jump_gap_list:
                 jump_gap_date_cur = jump_gap[0]
@@ -198,51 +254,6 @@ def sort_stock_price_statistics_ex(df, cur_price=None, price_range_low_value=Non
 
 def sort_stock_price_statistics(df, cur_price, price_range_low_percentage=12, price_range_high_percentage=12, stock_price_statistics_config=None):
     return sort_stock_price_statistics_ex(df, cur_price, price_range_low_percentage=price_range_low_percentage, price_range_high_percentage=price_range_high_percentage, stock_price_statistics_config=stock_price_statistics_config)
-
-
-def find_stock_price_jump_gap(df, tick_for_jump_gap=2):
-    assert tick_for_jump_gap >= 1, "tick_for_jump_gap should be greater than 1"
-    jump_gap_list = []
-# To avoid import loop
-    from common_class import StockPrice as PRICE
-    for index in range(len(df) - 1):
-        row_cur = df.ix[index]
-        row_next = df.ix[index + 1]
-        if row_next['low'] > row_cur['high']:
-            # import pdb; pdb.set_trace()
-# CAUTION: Can't get correct index in this way !!!
-# Need to enhance
-            # jump_gap_list.append((row_cur.index, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH, row_next.index))
-            if tick_for_jump_gap > 1:
-                if PRICE.get_new_stock_price_with_tick(row_cur['high'], tick_for_jump_gap) > row_next['low']:
-                    continue
-            jump_gap_list.append((df.index[index].strftime("%y%m%d"), DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH, df.index[index + 1].strftime("%y%m%d")))
-        elif row_next['high'] < row_cur['low']:
-            # import pdb; pdb.set_trace()
-# CAUTION: Can't get correct index in this way !!!
-# Need to enhance
-            # jump_gap_list.append((row_cur.index, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW, row_next.index))
-            if tick_for_jump_gap > 1:
-                if PRICE.get_new_stock_price_with_tick(row_cur['low'], tick_for_jump_gap * (-1)) < row_next['high']:
-                    continue
-            jump_gap_list.append((df.index[index].strftime("%y%m%d"), DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW, df.index[index + 1].strftime("%y%m%d")))
-    print "Jump Gap:"
-    # import pdb; pdb.set_trace()
-# To avoid import loop
-    from common_class import StockPrice as PRICE
-    for jump_gap in jump_gap_list:
-        jump_gat_date_cur = jump_gap[0]
-        jump_gat_date_cur_index = date2Date(jump_gat_date_cur)
-        jump_gat_date_next = jump_gap[2]
-        jump_gat_date_next_index = date2Date(jump_gat_date_next)
-        if jump_gap[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
-            print "%s[%sH]:%s[%sL]" % (PRICE(df.ix[jump_gat_date_cur_index, 'high']), jump_gap[0], PRICE(df.ix[jump_gat_date_next_index, 'low']), jump_gap[2])
-        elif jump_gap[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
-            print "%s[%sL]:%s[%sH]" % (PRICE(df.ix[jump_gat_date_cur_index, 'low']), jump_gap[0], PRICE(df.ix[jump_gat_date_next_index, 'high']), jump_gap[2])
-        else:
-            raise ValueError("Incorrect Support Resistance Price Type: %s" % jump_gap[1])
-    print "\n"
-    return jump_gap_list
 
 
 def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=12, price_range_high_percentage=12, stock_price_statistics_config=None, show_stock_price_statistics_fiter=None):
@@ -310,8 +321,139 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
             print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_CUR + ">> %s <<" % PRICE(cur_price)
             cur_price_print = True
 
-    print "\n ***** Key Support Resistance *****"
-    print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "S" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(reversed(key_support_list))
-    print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "R" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(key_resistance_list)
-    print "**********************************\n"
+    if stock_price_statistics_config is not None:
+        # import pdb; pdb.set_trace()
+        show_main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE)
+        if show_main_key_support_resistance != DS_CMN_DEF.SHOW_MAIN_NO_KEY_SUPPORT_RESISTANCE:
+            main_key_support_resistance = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_MAIN_KEY_SUPPORT_RESISTANCE]
+            print "\n***** Main Key Support Resistance *****"
+            # from common_class import StockPrice as PRICE
+            if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
+                support_date = main_key_support_resistance[0]
+                support_date_index = date2Date(support_date)
+                print "S: %s, %s%s" % (PRICE(df.ix[support_date_index, 'high']), support_date, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH)
+            if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_RESISTANCE_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
+                resistance_date = main_key_support_resistance[1]
+                resistance_date_index = date2Date(resistance_date)
+                print "R: %s, %s%s" % (PRICE(df.ix[resistance_date_index, 'low']), resistance_date, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW)
+            print "***************************************"
 
+        print "\n***** Key Support Resistance: *****"
+        print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "S" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(reversed(key_support_list))
+        print DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_MARK + "R" + DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_COLOR_STR_NONE + ": " + " > ".join(key_resistance_list)
+        print "**********************************"
+
+        key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+        if key_support_resistance is not None:
+            print "\n***** Key Support Resistance Price *****"
+            for key_date in key_support_resistance:
+                key_date_index = date2Date(key_date)
+                row = df.ix[key_date_index]
+                print "%s O:%s H:%s L:%s C:%s" % (key_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
+            print "****************************************\n"
+
+
+def find_stock_price_jump_gap(df, tick_for_jump_gap=DS_CMN_DEF.DEF_TICK_FOR_JUMP_GAP):
+# Return:
+    # A list, element in a list:
+    # (1) 0: Cur High Price, 1: H, 2: Next Low Price
+    # (2) 0: Cur Low Price, 1: L, 2: Next High Price
+    assert tick_for_jump_gap >= 1, "tick_for_jump_gap should be greater than 1"
+    jump_gap_list = []
+# To avoid import loop
+    from common_class import StockPrice as PRICE
+    for index in range(len(df) - 1):
+        row_cur = df.ix[index]
+        row_next = df.ix[index + 1]
+        if row_next['low'] > row_cur['high']:
+            # import pdb; pdb.set_trace()
+# CAUTION: Can't get correct index in this way !!!
+# Need to enhance
+            # jump_gap_list.append((row_cur.index, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH, row_next.index))
+            if tick_for_jump_gap > 1:
+                if PRICE.get_new_stock_price_with_tick(row_cur['high'], tick_for_jump_gap) > row_next['low']:
+                    continue
+            jump_gap_list.append((df.index[index].strftime("%y%m%d"), DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH, df.index[index + 1].strftime("%y%m%d")))
+        elif row_next['high'] < row_cur['low']:
+            # import pdb; pdb.set_trace()
+# CAUTION: Can't get correct index in this way !!!
+# Need to enhance
+            # jump_gap_list.append((row_cur.index, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW, row_next.index))
+            if tick_for_jump_gap > 1:
+                if PRICE.get_new_stock_price_with_tick(row_cur['low'], tick_for_jump_gap * (-1)) < row_next['high']:
+                    continue
+            jump_gap_list.append((df.index[index].strftime("%y%m%d"), DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW, df.index[index + 1].strftime("%y%m%d")))
+    return jump_gap_list
+
+
+def print_stock_price_jump_gap(df, jump_gap_list):
+    print "Jump Gap:"
+    # import pdb; pdb.set_trace()
+# To avoid import loop
+    from common_class import StockPrice as PRICE
+    for jump_gap in jump_gap_list:
+        jump_gate_date_cur = jump_gap[0]
+        jump_gate_date_cur_index = date2Date(jump_gate_date_cur)
+        jump_gate_date_next = jump_gap[2]
+        jump_gate_date_next_index = date2Date(jump_gate_date_next)
+        if jump_gap[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
+            print "%s[%sH]:%s[%sL]" % (PRICE(df.ix[jump_gate_date_cur_index, 'high']), jump_gap[0], PRICE(df.ix[jump_gate_date_next_index, 'low']), jump_gap[2])
+        elif jump_gap[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
+            print "%s[%sL]:%s[%sH]" % (PRICE(df.ix[jump_gate_date_cur_index, 'low']), jump_gap[0], PRICE(df.ix[jump_gate_date_next_index, 'high']), jump_gap[2])
+        else:
+            raise ValueError("Incorrect Support Resistance Price Type: %s" % jump_gap[1])
+    print "\n"
+
+
+def find_stock_price_main_key_supprot_resistance(df):
+# Return:
+    # A list, element in a list:
+    # 0: supoort date string, 1: resistance date string
+    min_price = df.ix[0]['low']
+    # min_price_H = df.ix[0]['high']
+    min_price_date = df.index[0]
+    max_price = df.ix[0]['high']
+    # max_price_L = df.ix[0]['low']
+    max_price_date = df.index[0]
+
+    for index, row in df.iterrows():
+# Find the key support
+        if row['low'] < min_price:
+            min_price = row['low']
+            # min_price_H = row['high']
+            min_price_date = index
+# Find the key resistance 
+        if row['high'] > max_price:
+            max_price = row['high']
+            # max_price_L = row['low']
+            max_price_date = index
+    return (min_price_date.strftime("%y%m%d"), max_price_date.strftime("%y%m%d"))
+
+
+def print_key_support_resistance_price(df, key_support_resistance):
+    # import pdb; pdb.set_trace()
+    # stock_price_statistics_config = DS_CMN_FUNC.parse_stock_price_statistics_config(company_number)
+
+    # df, _ = DS_LD.load_stock_price_history(company_number)
+    # key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+    # if key_support_resistance is None:
+    #     print "***** No Key Support Resistance Data !!! *****\n"
+    #     return
+
+    print "\n***** Key Support Resistance Price *****"
+    for key_date in key_support_resistance:
+        key_date_index = DS_CMN_FUNC.date2Date(key_date)
+        row = df.ix[key_date_index]
+        print "%s O:%s H:%s L:%s C:%s" % (key_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
+    print "*****************************************\n"
+
+# def print_stock_price_main_key_supprot_resistance(df, main_key_supprot_resistance, ):
+#     print "Main Key Support Resistance:"
+#     from common_class import StockPrice as PRICE
+#     support_date = main_key_supprot_resistance[0]
+#     support_date_index = date2Date(support_date)
+#     print "S: %s, %s%s" % PRICE(df.ix[support_date_index, 'high'], support_date, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH)
+#     resistance_date = main_key_supprot_resistance[1]
+#     resistance_date_index = date2Date(resistance_date)
+#     print "R: %s, %s%s" % PRICE(df.ix[resistance_date_index, 'low'], resistance_date, DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW)
+#     print "\n"

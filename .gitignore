@@ -22,9 +22,9 @@ snapshot/
 #!conf/.company_profile_change_list.conf
 *_metadata
 .time_range
-!dataset/*.conf
-!dataset/*/*.csv
-!dataset/*/*.conf
-!dataset/*/*/*/*.csv
-!dataset/*/*/*/*.conf
+#!dataset/*.conf
+#!dataset/*/*.csv
+#!dataset/*/*.conf
+#!dataset/*/*/*/*.csv
+#!dataset/*/*/*/*.conf
 .ipynb_checkpoints/

@@ -6,14 +6,6 @@ import re
 import sys
 import time
 import subprocess
-# from datetime import datetime, timedelta
-# import numpy as np
-# import pandas as pd
-# import matplotlib.pyplot as plt
-# import seaborn as sns
-# import talib
-# # conda install -c quantopian ta-lib=0.4.9
-# # https://blog.csdn.net/fortiy/article/details/76531700
 from libs import common as CMN
 from libs.common.common_variable import GlobalVar as GV
 from libs import base as BASE
@@ -30,6 +22,10 @@ def show_usage_and_exit():
     print "-v | --visualize\nDescription: Visualize the graphes while running script on Jupyter Notebook\n"
     print "-c | --company\nDescription: The company to be analyzed"
     print "  Format: Company code number (ex. 2347)"
+    print "-a | --analyze\nDescription: Analyze the dataset for the follow purpose:\n"
+    print " 1: Find the support and resistance of a company\n"
+    print " 2: Find the jump gap of a company\n"
+    print "Default: 1\n"
     sys.exit(0)
 
 
@@ -60,6 +56,7 @@ def init_param():
     param_cfg["silent"] = False
     param_cfg["help"] = False
     param_cfg["visualize"] = False
+    param_cfg["analyze"] = None
 
 
 def parse_param(early_parse=False):
@@ -82,6 +79,10 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
+        elif re.match("(-a|--analyze)", sys.argv[index]):
+            if not early_parse:
+                param_cfg["analyze"] = int(sys.argv[index + 1])
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -91,6 +92,9 @@ def check_param():
     if param_cfg["company"] is None:
         param_cfg["company"] = None
         show_error_and_exit("The 'company' argument is NOT set")
+    if param_cfg['analyze'] is None:
+        param_cfg["analyze"] = DS.DEF.ANALYZE_DATASET_DEFAULT
+        g_logger.info("Set the 'analyze' argument to default: %d" % DS.DEF.ANALYZE_DATASET_DEFAULT)
 
 
 def setup_param():
@@ -103,10 +107,20 @@ def update_global_variable():
     DV.GLOBAL_VARIABLE_UPDATED = True
 
 
-def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES, ignore_jump_gap=DS.DEF.DEF_SUPPORT_RESISTANCE_IGNORE_JUMP_GAP):
+# def analyze_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
+def analyze_and_exit():
+    FUNC_PTR_ARRAY = [DS.AS.find_support_resistance, DS.AS.find_jump_gap,]
+    kwargs = {"company_number": param_cfg["company"],}
     # import pdb; pdb.set_trace()
-    DS.AS.analyze_stock(company_number, cur_price)
+    # DS.AS.analyze_stock(company_number, cur_price)
+    (FUNC_PTR_ARRAY[param_cfg["analyze"]])(**kwargs)
     sys.exit(0)
+
+
+# def find_jump_gap_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
+#     # import pdb; pdb.set_trace()
+#     DS.AS.find_jump_gap(company_number, cur_price)
+#     sys.exit(0)
 
 
 # def find_correlation(df, column_description_list, visualize=True, figsize=None):
@@ -182,28 +196,6 @@ def analyze_stock_and_exit(company_number, cur_price=None, show_marked_only=DS.D
 
 
 if __name__ == "__main__":
-    # price_up = 499
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 1))
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 2))
-    # # import pdb; pdb.set_trace()
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 3))
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 4))
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 5))
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_up, 6))
-    # print ""
-    # # import pdb; pdb.set_trace()
-    # price_down = 502
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -1))
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -2))
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -3))
-    # # import pdb; pdb.set_trace()
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -4))
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -5))
-    # print DS.FUNC.get_stock_price_format_str(DS.FUNC.get_new_stock_price_with_tick(price_down, -6))
-
-    # print DS.CLS.StockPrice(1000.00)
-    # sys.exit(0)
-
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
@@ -219,26 +211,4 @@ if __name__ == "__main__":
 # Setup the parameters for the manager
     setup_param()
 
-    # df, column_description_list = DSL.load_market_hybrid([0, 1], {0:[5,], 1:[3, 6, 9, 12]})
-    # df['total'] = df.apply(lambda x : x['0103']+x['0106']+x['0109']+x['0112'], axis=1)
-    # find_correlation(df, column_description_list, param_cfg["visualize"])
-    # # # import pdb; pdb.set_trace()
-    # # print "*** Time Period ***"
-    # # print "%s - %s" % (df.index[0].strftime("%Y-%m-%d"), df.index[-1].strftime("%Y-%m-%d"))
-    # # print "*** Column Mapping ***"
-    # # for index in range(1, len(column_description_list)):
-    # #     print u"%s: %s" % (df.columns[index - 1], column_description_list[index])
-    # # # plt.show()
-    # # if param_cfg["visualize"]:
-    # #     sns.heatmap(df.corr(), annot=True)
-    # df, column_description_list = find_dataset_correlation0()
-    # df, column_description_list = DSL.load_market_hybrid([0, 1], {0:[5,], 1:[3,6,9,12,]})
-
-    # df, column_description_list = DSL.load_stock_hybrid([9,],"2367")
-    # print "*** Time Period ***"
-    # print "%s - %s" % (df.index[0].strftime("%Y-%m-%d"), df.index[-1].strftime("%Y-%m-%d"))
-    # print "*** Column Mapping ***"
-    # for index in range(1, len(column_description_list)):
-    #     print u"%s: %s" % (df.columns[index - 1], column_description_list[index])
-    # plt.show()
-    analyze_stock_and_exit(param_cfg["company"])
+    analyze_and_exit()

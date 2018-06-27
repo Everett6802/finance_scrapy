@@ -7,6 +7,7 @@ import requests
 import json
 from bs4 import BeautifulSoup
 import libs.common as CMN
+from libs.common.common_variable import GlobalVar as GV
 g_logger = CMN.LOG.get_logger()
 
 
@@ -75,27 +76,27 @@ class WorkdayCanlendar(object):
             self.__update_workday_from_web()
 # Write the result into the config file
             self.__write_workday_canlendar_to_file()
-# Copy the config file to the finance_analyzer/finance_recorder_java project
-            self.__copy_workday_canlendar_config_file()
+# # Copy the config file to the finance_analyzer/finance_recorder_java project
+#             self.__copy_workday_canlendar_config_file()
 
 
-    def __copy_workday_canlendar_config_file(self):
-        current_path = os.path.dirname(os.path.realpath(__file__))
-        [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
-        dst_folderpath_list = [
-            "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_RECORDER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
-            "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_ANALYZER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
-        ]
-        src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
-        for dst_folderpath in dst_folderpath_list:
-            if os.path.exists(dst_folderpath):
-                g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
-                shutil.copy2(src_filepath, dst_folderpath)
+    # def __copy_workday_canlendar_config_file(self):
+    #     current_path = os.path.dirname(os.path.realpath(__file__))
+    #     [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
+    #     dst_folderpath_list = [
+    #         "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_RECORDER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
+    #         "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_ANALYZER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
+    #     ]
+    #     src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
+    #     for dst_folderpath in dst_folderpath_list:
+    #         if os.path.exists(dst_folderpath):
+    #             g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
+    #             shutil.copy2(src_filepath, dst_folderpath)
 
 
     def __update_workday_from_file(self):
         need_update_from_web = True
-        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
+        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH)
         g_logger.debug("Try to Acquire the Workday Canlendar data from the file: %s......" % conf_filepath)
         if not os.path.exists(conf_filepath):
             g_logger.warn("The Workday Canlendar config file does NOT exist")
@@ -277,7 +278,7 @@ class WorkdayCanlendar(object):
 
     def __write_workday_canlendar_to_file(self):
         # import pdb; pdb.set_trace()
-        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
+        conf_filepath = CMN.FUNC.get_config_filepath(CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH)
         g_logger.debug("Write the Workday Canlendar data to the file: %s......" % conf_filepath)
         try:
             date_range_str = None
