@@ -427,5 +427,9 @@ def plot_stock_price_statistics(df, cur_price, price_range_low_percentage=12, pr
     # plt.show()
 
 
+def save_plot(filepath):
+    plt.savefig(filepath, format='png')
+
+
 def show_plot():
     plt.show()

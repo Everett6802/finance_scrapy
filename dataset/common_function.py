@@ -81,6 +81,12 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
             elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE:
                 cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE_INDEX
                 stock_price_statistics_config[cur_conf_field] = None
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE_INDEX
+                stock_price_statistics_config[cur_conf_field] = None
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE_FOLDER_PATH:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE_FOLDER_PATH_INDEX
+                stock_price_statistics_config[cur_conf_field] = None
             else:
                 raise ValueError("Unknown config field: %s" % cur_conf_field)                
         else:
@@ -102,6 +108,10 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
             elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE_INDEX:
                 stock_price_statistics_config[cur_conf_field] = conf_line
             elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE_INDEX:
+                stock_price_statistics_config[cur_conf_field] = conf_line
+            elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE_INDEX:
+                stock_price_statistics_config[cur_conf_field] = conf_line
+            elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE_FOLDER_PATH_INDEX:
                 stock_price_statistics_config[cur_conf_field] = conf_line
             else:
                 raise ValueError("Unknown config field index: %d" % cur_conf_field_index)
@@ -149,6 +159,17 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
     if draw_support_resistance_price_from_config is not None:
         draw_support_resistance_price = str2bool(draw_support_resistance_price_from_config)
     stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE] = draw_support_resistance_price
+
+# Change the type of the flag for saving figure
+    save_figure = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_SAVE_FIGURE
+    save_figure_from_config = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE, None)
+    if save_figure_from_config is not None:
+        save_figure = str2bool(save_figure_from_config)
+    stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE] = save_figure
+
+    if save_figure:
+        if stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE_FOLDER_PATH, None) is None:
+            stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SAVE_FIGURE_FOLDER_PATH] = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_SAVE_FIGURE_FOLDER_PATH
 
     return stock_price_statistics_config
 
