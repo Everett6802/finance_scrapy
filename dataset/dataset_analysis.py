@@ -24,12 +24,13 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
     # DS_CMN_FUNC.print_dataset_metadata(df, column_description_list)
     dataset_visualization_title = None
     if cur_price is None:
-        cur_price = df.ix[-1]['close']
+        row = df.ix[-1]
+        cur_price = row['close']
         cur_date = df.index[-1].strftime("%y%m%d")
         print "** Date: %s Price: %s **\n" % (cur_date, PRICE(cur_price))
         if DV.CAN_VISUALIZE:
             cur_rise_or_fall = df.ix[-1]['rise_or_fall']
-            dataset_visualization_title = "%s     %s  %s %s" % (company_number, cur_date, PRICE(cur_price), cur_rise_or_fall)
+            dataset_visualization_title = "%s     %s   O:%s  H:%s  L:%s  C:%s  %s" % (company_number, cur_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']), cur_rise_or_fall)
 
     SMA = None
     if DV.CAN_VISUALIZE:

@@ -136,13 +136,16 @@ def plot_candles_v2(pricing, title=None,
     jump_gap = None
     trend_line = None
     main_key_support_resistance = None
-    draw_key_support_resistance_str = True
+    draw_key_support_resistance_date = None
+    draw_key_support_resistance_price = None 
     if stock_price_statistics_config is not None:
         # start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
         key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
         jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP, None)
         trend_line = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE, None)
         main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_MAIN_KEY_SUPPORT_RESISTANCE, None)
+        draw_key_support_resistance_date = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE]
+        draw_key_support_resistance_price = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE]
 
     color_function = color_function or default_color
     overlays = overlays or []
@@ -169,7 +172,7 @@ def plot_candles_v2(pricing, title=None,
 
     # min_low_price = None
     # max_high_price = None
-    # if draw_key_support_resistance_str:
+    # if draw_key_support_resistance_date:
     #     min_low_price = low_price.min()
     #     max_high_price = high_price.max()
     
@@ -209,8 +212,11 @@ def plot_candles_v2(pricing, title=None,
         # mark_dates = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE]
         # if type(mark_dates) is not list:
         #     mark_dates = [mark_dates,]
-        for mark_date in key_support_resistance:
+        for mark_data in key_support_resistance:
+            # import pdb; pdb.set_trace()
+            mark_date = mark_data[:6]
             mark_date_index = DS_CMN_FUNC.date2Date(mark_date)
+            mark_type = DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_MARK if (len(mark_data) == DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN) else mark_data[6:]
             try:
                 loc = pricing.index.get_loc(mark_date_index)
                 # Create a Rectangle patch
@@ -218,7 +224,7 @@ def plot_candles_v2(pricing, title=None,
                 # Add the patch to the Axes
                 ax1.add_patch(rect)
                 # import pdb; pdb.set_trace()
-                if draw_key_support_resistance_str:
+                if draw_key_support_resistance_date:
                     row = pricing.iloc[loc]
                     is_top = True
                     if loc >= 1:
@@ -239,8 +245,20 @@ def plot_candles_v2(pricing, title=None,
                         y = row['low'] * 0.985
                         verticalalignment = "top"
                     ax1.text(x[loc], y, pricing.index[loc].strftime("%y%m%d"), color='yellow', horizontalalignment='center', verticalalignment=verticalalignment, fontsize=10)
+                # import pdb; pdb.set_trace()
+                if draw_key_support_resistance_price:
+                    x_pt = x[-1] + 1
+                    if DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_OPEN in mark_type:
+                        ax1.text(x_pt, row['open'], "%s" % PRICE(row['open']), color='yellow', verticalalignment='center', fontsize=8)
+                    if DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH in mark_type:
+                        ax1.text(x_pt, row['high'], "%s" % PRICE(row['high']), color='yellow', verticalalignment='center', fontsize=8)
+                    if DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW in mark_type:
+                        ax1.text(x_pt, row['low'], "%s" % PRICE(row['low']), color='yellow', verticalalignment='center', fontsize=8)
+                    if DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_CLOSE in mark_type:
+                        ax1.text(x_pt, row['close'], "%s" % PRICE(row['close']), color='yellow', verticalalignment='center', fontsize=8)
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
+    # ax1.text(x[-1] + 1, 17, "12.34", color='yellow', verticalalignment='center',)
 # Mark the jump gap
     if jump_gap is not None:
        for mark_date_range in jump_gap:
@@ -351,7 +369,7 @@ def plot_candles_v2(pricing, title=None,
         #     start_index = len(overlay) - pricing_len
         ax1.plot(x, overlay[start_index:])
 
-    # if draw_key_support_resistance_str:
+    # if draw_key_support_resistance_date:
     #     x1, x2, y1, y2 = ax1.axis()
     #     ax1.axis([x1, x2, y1, y2 + 3])
 

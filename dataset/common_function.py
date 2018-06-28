@@ -33,6 +33,15 @@ def Date2date(Date_str):
 def date2Date(date_str):
     return "20%s-%02s-%02s" % (date_str[0:2], date_str[2:4], date_str[4:6])  
 
+def str2bool(bool_str):
+    if bool_str.lower() == "true":
+        return True
+    elif bool_str.lower() == "false":
+        return False
+    else:
+        raise ValueError("Unknown boolean string: %s" % bool_str)
+
+
 
 def parse_stock_price_statistics_config(company_code_number, config_folderpath=None):
     if config_folderpath is None:
@@ -66,6 +75,12 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
             elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_OVERWRITE_DATASET:
                 cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_OVERWRITE_DATASET_INDEX
                 stock_price_statistics_config[cur_conf_field] = []
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE_INDEX
+                stock_price_statistics_config[cur_conf_field] = None
+            elif cur_conf_field == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE:
+                cur_conf_field_index = DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE_INDEX
+                stock_price_statistics_config[cur_conf_field] = None
             else:
                 raise ValueError("Unknown config field: %s" % cur_conf_field)                
         else:
@@ -84,6 +99,10 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
                 stock_price_statistics_config[cur_conf_field] = conf_line
             elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_OVERWRITE_DATASET_INDEX:
                 stock_price_statistics_config[cur_conf_field].append(conf_line)
+            elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE_INDEX:
+                stock_price_statistics_config[cur_conf_field] = conf_line
+            elif cur_conf_field_index == DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE_INDEX:
+                stock_price_statistics_config[cur_conf_field] = conf_line
             else:
                 raise ValueError("Unknown config field index: %d" % cur_conf_field_index)
 
@@ -92,12 +111,7 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
     auto_detect_jump_gap = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_AUTO_DETECT_JUMP_GAP
     auto_detect_jump_gap_from_config = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_AUTO_DETECT_JUMP_GAP, None)
     if auto_detect_jump_gap_from_config is not None:
-        if auto_detect_jump_gap_from_config.lower() == "true":
-            auto_detect_jump_gap = True
-        elif auto_detect_jump_gap_from_config.lower() == "false":
-            auto_detect_jump_gap = False
-        else:
-            raise ValueError("Unknown auto detect jump gap: %s" % auto_detect_jump_gap_from_config)
+        auto_detect_jump_gap = str2bool(auto_detect_jump_gap_from_config)
 
 # Cleanup the jump_gap config setting if auto_detect_jump_gap is True
     if auto_detect_jump_gap:
@@ -121,6 +135,20 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
 # Change the data type of the show_main_key_support_resistance config field
     show_main_key_support_resistance = int(stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_DEFAULT))
     stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE] = show_main_key_support_resistance
+
+# Change the type of drawing support resistance date
+    draw_support_resistance_date = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_DRAW_SUPPORT_RESISTANCE_DATE
+    draw_support_resistance_date_from_config = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE, None)
+    if draw_support_resistance_date_from_config is not None:
+        draw_support_resistance_date = str2bool(draw_support_resistance_date_from_config)
+    stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE] = draw_support_resistance_date
+
+# Change the type of drawing support resistance price
+    draw_support_resistance_price = DS_CMN_DEF.DEF_SUPPORT_RESISTANCE_DRAW_SUPPORT_RESISTANCE_PRICE
+    draw_support_resistance_price_from_config = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE, None)
+    if draw_support_resistance_price_from_config is not None:
+        draw_support_resistance_price = str2bool(draw_support_resistance_price_from_config)
+    stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE] = draw_support_resistance_price
 
     return stock_price_statistics_config
 
