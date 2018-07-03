@@ -137,15 +137,15 @@ def load_stock_price_history(company_number, overwrite_stock_price_list=None):
 				price_entry_split = price_entry.split(":")
 				if len(price_entry_split) != 2:
 					raise ValueError("Incorrect config format: %s" % price_entry)
-				if price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_OPEN:
+				if price_entry_split[0] == DS_CMN_DEF.SR_PRICE_TYPE_OPEN:
 					entry['open'] = float(price_entry_split[1])
-				elif price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
+				elif price_entry_split[0] == DS_CMN_DEF.SR_PRICE_TYPE_HIGH:
 					entry['high'] = float(price_entry_split[1])
-				elif price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
+				elif price_entry_split[0] == DS_CMN_DEF.SR_PRICE_TYPE_LOW:
 					entry['low'] = float(price_entry_split[1])
-				elif price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_CLOSE:
+				elif price_entry_split[0] == DS_CMN_DEF.SR_PRICE_TYPE_CLOSE:
 					entry['close'] = float(price_entry_split[1])
-				elif price_entry_split[0] == DS_CMN_DEF.SUPPORT_RESISTANCE_VOLUME:
+				elif price_entry_split[0] == DS_CMN_DEF.SR_VOLUME:
 					entry['volume'] = int(price_entry_split[1])
 				else:
 					raise ValueError("Unkown mark type: %s" % price_entry_split[0])
