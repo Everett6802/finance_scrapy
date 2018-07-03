@@ -34,9 +34,9 @@ def plot_candles_v1(pricing, title=None,
       color_function: A function which, given a row index and price series, returns a candle color.
       technicals: A list of additional data series to add to the chart.  Must be the same length as pricing.
     """
-    if not DV.CAN_VISUALIZE:
-        g_logger.warn("Can NOT Visualize")
-        return
+    # if not DV.CAN_VISUALIZE:
+    #     g_logger.warn("Can NOT Visualize")
+    #     return
 
     def default_color(index, open_price, close_price, low_price, high_price):
         return 'r' if open_price[index] > close_price[index] else 'g'
@@ -119,9 +119,9 @@ def plot_candles_v2(pricing, title=None,
       technicals: A list of additional data series to display as subplots.
       technicals_titles: A list of titles to display for each technical indicator.
     """
-    if not DV.CAN_VISUALIZE:
-        g_logger.warn("Can NOT Visualize")
-        return
+    # if not DV.CAN_VISUALIZE:
+    #     g_logger.warn("Can NOT Visualize")
+    #     return
 
     def default_color(index, open_price, close_price, low, high):
         if open_price[index] > close_price[index]:
@@ -139,13 +139,13 @@ def plot_candles_v2(pricing, title=None,
     draw_key_support_resistance_date = None
     draw_key_support_resistance_price = None 
     if stock_price_statistics_config is not None:
-        # start_date = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_START_DATE, None)
-        key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
-        jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_JUMP_GAP, None)
-        trend_line = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_TREND_LINE, None)
-        main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_MAIN_KEY_SUPPORT_RESISTANCE, None)
-        draw_key_support_resistance_date = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE]
-        draw_key_support_resistance_price = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE]
+        # start_date = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_START_DATE, None)
+        key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+        jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_JUMP_GAP, None)
+        trend_line = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_TREND_LINE, None)
+        main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_MAIN_KEY_SUPPORT_RESISTANCE, None)
+        draw_key_support_resistance_date = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DRAW_SR_DATE]
+        draw_key_support_resistance_price = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DRAW_SR_PRICE]
 
     color_function = color_function or default_color
     overlays = overlays or []
@@ -209,14 +209,14 @@ def plot_candles_v2(pricing, title=None,
 # Show the price statistics on the candle stick plot
 # Mark the important candle stick
     if key_support_resistance is not None:
-        # mark_dates = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_KEY_SUPPORT_RESISTANCE]
+        # mark_dates = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_KEY_SUPPORT_RESISTANCE]
         # if type(mark_dates) is not list:
         #     mark_dates = [mark_dates,]
         for mark_data in key_support_resistance:
             # import pdb; pdb.set_trace()
             mark_date = mark_data[:6]
             mark_date_index = DS_CMN_FUNC.date2Date(mark_date)
-            mark_type = DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_MARK if (len(mark_data) == DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN) else mark_data[6:]
+            mark_type = DS_CMN_DEF.DEF_KEY_SR_MARK if (len(mark_data) == DS_CMN_DEF.DEF_KEY_SR_LEN) else mark_data[6:]
             try:
                 loc = pricing.index.get_loc(mark_date_index)
                 # Create a Rectangle patch
@@ -248,14 +248,14 @@ def plot_candles_v2(pricing, title=None,
                 # import pdb; pdb.set_trace()
                 if draw_key_support_resistance_price:
                     x_pt = x[-1] + 1
-                    if DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_OPEN in mark_type:
-                        ax1.text(x_pt, row['open'], "%s" % PRICE(row['open']), color='yellow', verticalalignment='center', fontsize=8)
-                    if DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH in mark_type:
-                        ax1.text(x_pt, row['high'], "%s" % PRICE(row['high']), color='yellow', verticalalignment='center', fontsize=8)
-                    if DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW in mark_type:
-                        ax1.text(x_pt, row['low'], "%s" % PRICE(row['low']), color='yellow', verticalalignment='center', fontsize=8)
-                    if DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_CLOSE in mark_type:
-                        ax1.text(x_pt, row['close'], "%s" % PRICE(row['close']), color='yellow', verticalalignment='center', fontsize=8)
+                    if DS_CMN_DEF.SR_PRICE_TYPE_OPEN in mark_type:
+                        ax1.text(x_pt, row['open'], "%s" % PRICE(row['open']), color='magenta', verticalalignment='center', fontsize=8)
+                    if DS_CMN_DEF.SR_PRICE_TYPE_HIGH in mark_type:
+                        ax1.text(x_pt, row['high'], "%s" % PRICE(row['high']), color='magenta', verticalalignment='center', fontsize=8)
+                    if DS_CMN_DEF.SR_PRICE_TYPE_LOW in mark_type:
+                        ax1.text(x_pt, row['low'], "%s" % PRICE(row['low']), color='magenta', verticalalignment='center', fontsize=8)
+                    if DS_CMN_DEF.SR_PRICE_TYPE_CLOSE in mark_type:
+                        ax1.text(x_pt, row['close'], "%s" % PRICE(row['close']), color='magenta', verticalalignment='center', fontsize=8)
             except KeyError:
                 g_logger.warn("The data on the date[%s] does NOT exsit" % mark_date)
     # ax1.text(x[-1] + 1, 17, "12.34", color='yellow', verticalalignment='center',)
@@ -268,9 +268,9 @@ def plot_candles_v2(pricing, title=None,
                 loc_cur = pricing.index.get_loc(mark_date_cur_index)
                 loc_next = pricing.index.get_loc(mark_date_next_index)
                 # Create a Rectangle patch
-                if mark_date_range[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
+                if mark_date_range[1] == DS_CMN_DEF.SR_PRICE_TYPE_HIGH:
                     rect = patches.Rectangle((x[loc_cur]-0.1, high_price[loc_cur]-0.15), 1.8, low_price[loc_next]-high_price[loc_cur]+0.3, linewidth=1.5, edgecolor='Magenta', facecolor='none')
-                elif mark_date_range[1] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
+                elif mark_date_range[1] == DS_CMN_DEF.SR_PRICE_TYPE_LOW:
                     rect = patches.Rectangle((x[loc_cur]-0.1, high_price[loc_next]-0.15), 1.8, low_price[loc_cur]-high_price[loc_next]+0.3, linewidth=1.5, edgecolor='Magenta', facecolor='none')
                 else:
                     raise ValueError("Unkown mark type in jump gap: %s" % jump_gap[1])
@@ -303,9 +303,9 @@ def plot_candles_v2(pricing, title=None,
                 pt_date_index = DS_CMN_FUNC.date2Date(pt[:6])
                 loc = pricing.index.get_loc(pt_date_index)
                 x_pt.append(x[loc])
-                if pt[6] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_HIGH:
+                if pt[6] == DS_CMN_DEF.SR_PRICE_TYPE_HIGH:
                     y_pt.append(high_price.iloc[loc])
-                elif pt[6] == DS_CMN_DEF.SUPPORT_RESISTANCE_PRICE_TYPE_LOW:
+                elif pt[6] == DS_CMN_DEF.SR_PRICE_TYPE_LOW:
                     y_pt.append(low_price.iloc[loc])
                 else:
                     raise ValueError("Unkown mark type in trend line: %s" % pt[6])
@@ -315,18 +315,18 @@ def plot_candles_v2(pricing, title=None,
             ax1.plot([x_pt[0], last_x_pt], [y_pt[0], last_y_pt])
 # Draw main key support and resistance
     if main_key_support_resistance is not None:
-        show_main_key_support_resistance = stock_price_statistics_config[DS_CMN_DEF.SUPPORT_RESISTANCE_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE]
-        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
+        show_main_key_support_resistance = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE]
+        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SR_BOTH,]:
             date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[0])
             stock_price = pricing.ix[date_index, 'high']
-            ax1.plot([x[0], x[-1],], [stock_price, stock_price,], color='orange', linewidth=1)
-        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_RESISTANCE_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
+            ax1.plot([x[0], x[-1] + 1,], [stock_price, stock_price,], color='orange', linewidth=1)
+        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_RESISTANCE_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SR_BOTH,]:
             date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[1])
             stock_price = pricing.ix[date_index, 'low']
-            ax1.plot([x[0], x[-1],], [stock_price, stock_price,], color='orange', linewidth=1)
+            ax1.plot([x[0], x[-1] + 1,], [stock_price, stock_price,], color='orange', linewidth=1)
 
     cur_stock_price = pricing.ix[-1, 'close']
-    ax1.plot([x[0], x[-1],], [cur_stock_price, cur_stock_price,], color='gray', linewidth=1)
+    ax1.plot([x[0], x[-1] + 1,], [cur_stock_price, cur_stock_price,], color='gray', linewidth=1)
 
     ax1.grid(color='white', linestyle=':', linewidth=0.5)
     ax1.xaxis.grid(True)
@@ -398,8 +398,6 @@ def plot_candles_v2(pricing, title=None,
         ax.plot(x, technical)
         if i < len(technicals_titles):
             ax.set_title(technicals_titles[i])
-# plt.show() SHOULD be called only once
-    # plt.show()
 
 plot_candles = plot_candles_v2
 
@@ -428,7 +426,7 @@ def plot_stock_price_statistics(df, cur_price, price_range_low_percentage=12, pr
 
 
 def save_plot(filepath):
-    plt.savefig(filepath, format='png')
+    plt.savefig(filepath, format='png', dpi=100)
 
 
 def show_plot():

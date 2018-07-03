@@ -111,3 +111,45 @@ class StockPrice(object):
 
     def __repr__(self):
         return self.get_stock_price_format_str(self.stock_price)
+
+
+class HTMLReportBuilder(object):
+
+    REPORT_HEAD = "<html><head><title>%s</title><style>%s%s%s</style></head><body>"
+    REPORT_TAIL = "</p></body></html>"
+
+    def __init__(self, company_number, save_figure, output_folder_path):
+        self.company_number = company_number
+        self.output_folder_path = output_folder_path
+        self.buffer = self.REPORT_HEAD % (company_number, DS_CMN_DEF.DEF_SR_COLOR_HTML_STYLE_NONE, DS_CMN_DEF.DEF_SR_COLOR_HTML_STYLE_MARK, DS_CMN_DEF.DEF_SR_COLOR_HTML_STYLE_CUR)
+        if save_figure:
+            self.buffer += "<img src='%s.png'><br>" % company_number
+        self.buffer += "<p>"
+
+
+    def newline(self, count=1):
+        while count > 0:
+            self.buffer += "<br>"
+            count -= 1
+        return self
+
+
+    def text(self, data_string, color_index=None, head_newline_count=0, tail_newline_count=1):        
+        if head_newline_count > 0:
+            self.newline(head_newline_count)
+        if color_index is not None:
+            html_color_tag = DS_CMN_DEF.COLOR_HTML_TAG_LIST[color_index]
+            self.buffer += ("<{0}>{1}</{0}>".format(html_color_tag, data_string))
+        else:
+            self.buffer += data_string
+        if tail_newline_count > 0:
+            self.newline(tail_newline_count)
+        return self
+
+
+    def flush(self):
+        self.buffer += self.REPORT_TAIL
+
+        filepath = self.output_folder_path + "/%s.html" % self.company_number
+        with open(filepath, "w") as fp:
+            fp.write(self.buffer)
