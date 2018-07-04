@@ -78,7 +78,7 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
     if save_figure:
         DS_VS.plot_candles(df, title=dataset_visualization_title, volume_bars=True, overlays=[SMA], stock_price_statistics_config=stock_price_statistics_config)
         filepath = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_OUTPUT_FOLDER_PATH] + "/%s.png" % company_number
-        DS_VS.save_plot(filepath)
+        DS_VS.save_plot(filepath, len(df))
     if DV.CAN_VISUALIZE:
         DS_VS.show_plot()
 
