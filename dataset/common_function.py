@@ -53,9 +53,13 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
     cur_conf_field_index = None
     for conf_line in conf_line_list:
         if re.match("\[[\w]+\]", conf_line) is not None:
+            # import pdb; pdb.set_trace()
             cur_conf_field = conf_line.strip("[]")
             if cur_conf_field == DS_CMN_DEF.SR_CONF_FIELD_START_DATE:
                 cur_conf_field_index = DS_CMN_DEF.SR_CONF_FIELD_START_DATE_INDEX
+                stock_price_statistics_config[cur_conf_field] = None
+            elif cur_conf_field == DS_CMN_DEF.SR_CONF_FIELD_MAIN_KEY_SUPPORT_RESISTANCE_START_DATE:
+                cur_conf_field_index = DS_CMN_DEF.SR_CONF_FIELD_MAIN_KEY_SUPPORT_RESISTANCE_START_DATE_INDEX
                 stock_price_statistics_config[cur_conf_field] = None
             elif cur_conf_field == DS_CMN_DEF.SR_CONF_FIELD_KEY_SUPPORT_RESISTANCE:
                 cur_conf_field_index = DS_CMN_DEF.SR_CONF_FIELD_KEY_SR_INDEX
@@ -96,6 +100,8 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
             assert cur_conf_field is not None, "cur_conf_field should NOT be None"
             if cur_conf_field_index == DS_CMN_DEF.SR_CONF_FIELD_START_DATE_INDEX:
                 stock_price_statistics_config[cur_conf_field] = conf_line
+            elif cur_conf_field_index == DS_CMN_DEF.SR_CONF_FIELD_MAIN_KEY_SUPPORT_RESISTANCE_START_DATE_INDEX:
+                stock_price_statistics_config[cur_conf_field] = conf_line
             elif cur_conf_field_index == DS_CMN_DEF.SR_CONF_FIELD_KEY_SR_INDEX:
                 stock_price_statistics_config[cur_conf_field].append(conf_line)
             elif cur_conf_field == DS_CMN_DEF.SR_CONF_FIELD_AUTO_DETECT_JUMP_GAP:
@@ -122,6 +128,10 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
                 raise ValueError("Unknown config field index: %d" % cur_conf_field_index)
 
 # Transform the value of the config setting
+# # Set the default value to main_key_support_resistance_start_date if necessary
+#     main_key_support_resistance_start_date = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_MAIN_KEY_SUPPORT_RESISTANCE_START_DATE, None)
+#     if main_key_support_resistance_start_date is None:
+#         stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_MAIN_KEY_SUPPORT_RESISTANCE_START_DATE] = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_START_DATE]
 # Change the type of auto-detect jump gap
     auto_detect_jump_gap = DS_CMN_DEF.DEF_SR_AUTO_DETECT_JUMP_GAP
     auto_detect_jump_gap_from_config = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_AUTO_DETECT_JUMP_GAP, None)
@@ -489,18 +499,23 @@ def print_stock_price_jump_gap(df, jump_gap_list):
     print "\n"
 
 
-def find_stock_price_main_key_supprot_resistance(df):
+def find_stock_price_main_key_supprot_resistance(df, main_key_support_resistance_start_date=None):
 # Return:
     # A list, element in a list:
     # 0: supoort date string, 1: resistance date string
-    min_price = df.ix[0]['low']
+    start_index = 0
+    if main_key_support_resistance_start_date is not None:
+        main_key_support_resistance_start_date_index = date2Date(main_key_support_resistance_start_date)
+        start_index = df.index.get_loc(main_key_support_resistance_start_date_index)
+    min_price = df.ix[start_index]['low']
     # min_price_H = df.ix[0]['high']
-    min_price_date = df.index[0]
-    max_price = df.ix[0]['high']
+    min_price_date = df.index[start_index]
+    max_price = df.ix[start_index]['high']
     # max_price_L = df.ix[0]['low']
-    max_price_date = df.index[0]
+    max_price_date = df.index[start_index]
+    start_index += 1
 
-    for index, row in df.iterrows():
+    for index, row in df[start_index:].iterrows():
 # Find the key support
         if row['low'] < min_price:
             min_price = row['low']
