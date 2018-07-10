@@ -18,10 +18,13 @@ g_logger = CMN.LOG.get_logger()
 
 def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_CMN_DEF.DEF_SR_SHOW_MARKED_ONLY, group_size_thres=DS_CMN_DEF.DEF_SR_GROUP_SIZE_THRES):
     # import pdb; pdb.set_trace()
+# Parse the config
     stock_price_statistics_config = DS_CMN_FUNC.parse_stock_price_statistics_config(company_number)
     overwrite_dataset = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_OVERWRITE_DATASET, None)
     save_figure = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_SAVE_FIGURE]
     generate_report = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_GENERATE_REPORT]
+    detect_abnormal_volume_enable = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DETECT_ABNORMAL_VOLUME][DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_ENABLE]
+
     html_report = None
     if generate_report:
 # The report-generation object initialization
@@ -57,8 +60,14 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
             if SMA_len > df_len:
                 start_index = SMA_len - df_len
                 SMA = SMA[start_index:]
+
+# Detect the abnormal volume
+    if detect_abnormal_volume_enable:
+        # import pdb; pdb.set_trace()
+        DS_CMN_FUNC.get_dataset_abnormal_value(df, "volume", timeperiod=20, start_detect_date=start_date)
+
 # Find the main key support and resistance
-    show_main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SHOW_MAIN_KEY_SR_DEFAULT)
+    show_main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_DEFAULT)
     if show_main_key_support_resistance != DS_CMN_DEF.SHOW_MAIN_NO_KEY_SUPPORT_RESISTANCE:
         main_key_support_resistance_start_date = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_MAIN_KEY_SUPPORT_RESISTANCE_START_DATE, None)
         stock_price_statistics_config[DS_CMN_DEF.SR_CONF_MAIN_KEY_SUPPORT_RESISTANCE] = DS_CMN_FUNC.find_stock_price_main_key_supprot_resistance(df, main_key_support_resistance_start_date=main_key_support_resistance_start_date)

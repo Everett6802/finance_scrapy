@@ -144,8 +144,8 @@ def plot_candles_v2(pricing, title=None,
         jump_gap = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_JUMP_GAP, None)
         trend_line = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_TREND_LINE, None)
         main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_MAIN_KEY_SUPPORT_RESISTANCE, None)
-        draw_key_support_resistance_date = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DRAW_SR_DATE]
-        draw_key_support_resistance_price = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DRAW_SR_PRICE]
+        draw_key_support_resistance_date = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE]
+        draw_key_support_resistance_price = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE]
 
     color_function = color_function or default_color
     overlays = overlays or []
@@ -216,7 +216,7 @@ def plot_candles_v2(pricing, title=None,
             # import pdb; pdb.set_trace()
             mark_date = mark_data[:6]
             mark_date_index = DS_CMN_FUNC.date2Date(mark_date)
-            mark_type = DS_CMN_DEF.DEF_KEY_SR_MARK if (len(mark_data) == DS_CMN_DEF.DEF_KEY_SR_LEN) else mark_data[6:]
+            mark_type = DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_MARK if (len(mark_data) == DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN) else mark_data[6:]
             try:
                 loc = pricing.index.get_loc(mark_date_index)
                 # Create a Rectangle patch
@@ -316,11 +316,11 @@ def plot_candles_v2(pricing, title=None,
 # Draw main key support and resistance
     if main_key_support_resistance is not None:
         show_main_key_support_resistance = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE]
-        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SR_BOTH,]:
+        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
             date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[0])
             stock_price = pricing.ix[date_index, 'high']
             ax1.plot([x[0], x[-1] + 1,], [stock_price, stock_price,], color='orange', linewidth=1)
-        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_RESISTANCE_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SR_BOTH,]:
+        if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_RESISTANCE_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
             date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[1])
             stock_price = pricing.ix[date_index, 'low']
             ax1.plot([x[0], x[-1] + 1,], [stock_price, stock_price,], color='orange', linewidth=1)
