@@ -72,9 +72,9 @@ def get_dataset_abnormal_value(df, column_name, timeperiod=20, start_detect_date
         # import pdb; pdb.set_trace()
         value = row[column_name]
         if value > threshold_high:
-            over_thres_date_list.append([index.strftime("%y%m%d"), value, threshold_high,])
+            over_thres_date_list.append([index.strftime("%y%m%d"), value, sma_value, threshold_high,])
         elif value < threshold_low:
-            under_thres_date_list.append([index.strftime("%y%m%d"), value, threshold_low,])
+            under_thres_date_list.append([index.strftime("%y%m%d"), value, sma_value, threshold_low,])
         sma_pos_index += 1
 
     return over_thres_date_list, under_thres_date_list
@@ -174,6 +174,7 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
                 detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_TIME_PERIOD] = None
                 detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_THRESHOLD_RATIO_HIGH] = None
                 detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_THRESHOLD_RATIO_LOW] = None
+                detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_SHOW_RESULT] = None
             else:
                 raise ValueError("Unknown config field: %s" % cur_conf_field)                
         else:
@@ -218,6 +219,8 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
                     detect_abnormal_volume_dict[sub_conf_key] = sub_conf_value
                 elif sub_conf_key == DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_THRESHOLD_RATIO_LOW:
                     detect_abnormal_volume_dict[sub_conf_key] = sub_conf_value
+                elif sub_conf_key == DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_SHOW_RESULT:
+                    detect_abnormal_volume_dict[sub_conf_key] = sub_conf_value
                 else:
                     raise ValueError("Unknown sub config field name: %d" % sub_conf_key)
             else:
@@ -254,7 +257,7 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
                 stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_JUMP_GAP].append(line_split)
 
 # Change the data type of the show_main_key_support_resistance config field
-    show_main_key_support_resistance = int(stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_DEFAULT))
+    show_main_key_support_resistance = int(stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.DEF_SHOW_MAIN_KEY_SUPPORT_RESISTANCE))
     stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE] = show_main_key_support_resistance
 
 # Change the type of drawing support resistance date
@@ -300,6 +303,10 @@ def parse_stock_price_statistics_config(company_code_number, config_folderpath=N
         detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_THRESHOLD_RATIO_HIGH] = DS_CMN_DEF.DEF_SR_CONF_DETECT_ABNORMAL_VOLUME_THRESHOLD_RATIO_HIGH
     if detect_abnormal_volume_dict.get(DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_THRESHOLD_RATIO_LOW, None) is None:
         detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_THRESHOLD_RATIO_LOW] = DS_CMN_DEF.DEF_SR_CONF_DETECT_ABNORMAL_VOLUME_THRESHOLD_RATIO_LOW
+    if detect_abnormal_volume_dict.get(DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_SHOW_RESULT, None) is None:
+        detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_SHOW_RESULT] = DS_CMN_DEF.DEF_SR_CONF_DETECT_ABNORMAL_VOLUME_SHOW_RESULT
+    else:
+        detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_SHOW_RESULT] = int(detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_SHOW_RESULT])
 
     return stock_price_statistics_config
 
@@ -453,6 +460,7 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
     key_support_list = []
     key_resistance_list = []
     cur_price_print = False
+# Print the price statistics and the key support resistance
     for price, df_data in price_statistics:
 # Deep copy since the data is probably modified
         df_data = df_data.copy()
@@ -510,8 +518,34 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
             if html_report: html_report.text(">> %s <<" % PRICE(cur_price), color_index=DS_CMN_DEF.SR_COLOR_CUR_INDEX)
             cur_price_print = True
 
+    print DS_CMN_DEF.DEF_SR_COLOR_STR_NONE + ""
+    if html_report: html_report.newline()
+
+# Print extra data from the config
     if stock_price_statistics_config is not None:
         # import pdb; pdb.set_trace()
+        something_detected = False
+        if stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DETECT_ABNORMAL_VOLUME][DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_ENABLE]:
+            today_date = df.index[-1].strftime("%y%m%d")
+            over_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_OVER_THRES_DATE_LIST, None)
+            if over_thres_date_list is not None and len(over_thres_date_list) != 0 and over_thres_date_list[-1][0] == today_date:
+                latest_over_thres_date = over_thres_date_list[-1]
+                volume_over_thrs_str = "Volume[%d] over the Threshold[%.1f]" % (latest_over_thres_date[1], latest_over_thres_date[3])
+                print DS_CMN_DEF.DEF_SR_COLOR_STR_CUR + volume_over_thrs_str + DS_CMN_DEF.DEF_SR_COLOR_STR_NONE
+                if html_report: html_report.text(volume_over_thrs_str, color_index=DS_CMN_DEF.SR_COLOR_CUR_INDEX)
+                something_detected = True
+            under_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_UNDER_THRES_DATE_LIST, None)
+            if under_thres_date_list is not None and len(under_thres_date_list) != 0 and under_thres_date_list[-1][0] == today_date:
+                latest_under_thres_date = under_thres_date_list[-1]
+                volume_under_thrs_str = "Volume[%d] under the Threshold[%.1f]" % (latest_under_thres_date[1], latest_under_thres_date[3])
+                print DS_CMN_DEF.DEF_SR_COLOR_STR_CUR + volume_under_thrs_str + DS_CMN_DEF.DEF_SR_COLOR_STR_NONE
+                if html_report: html_report.text(volume_under_thrs_str, color_index=DS_CMN_DEF.SR_COLOR_CUR_INDEX)
+                something_detected = True
+
+        # if something_detected:
+        #     print DS_CMN_DEF.DEF_SR_COLOR_STR_NONE + ""
+        #     if html_report: html_report.newline()
+
         show_main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE)
         if show_main_key_support_resistance != DS_CMN_DEF.SHOW_MAIN_NO_KEY_SUPPORT_RESISTANCE:
             main_key_support_resistance = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_MAIN_KEY_SUPPORT_RESISTANCE]
@@ -544,8 +578,8 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
 
         key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
         if key_support_resistance is not None:
-            print "\n***** Key Support Resistance Price *****"
-            if html_report is not None: html_report.text("***** Key Support Resistance Price *****", head_newline_count=1)
+            print "\n***** Key Support Resistance Price Detail *****"
+            if html_report is not None: html_report.text("***** Key Support Resistance Price Detail *****", head_newline_count=1)
             for key_date in key_support_resistance:
                 key_date_index = date2Date(key_date)
                 row = df.ix[key_date_index]
@@ -553,7 +587,41 @@ def print_stock_price_statistics(df, cur_price=None, price_range_low_percentage=
                 print data_str
                 if html_report is not None: html_report.text(data_str)
             print "****************************************"
-            if html_report is not None: html_report.text("****************************************", tail_newline_count=2)
+            if html_report is not None: html_report.text("****************************************")
+
+        # key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
+
+        over_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_OVER_THRES_DATE_LIST, None)
+        under_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_UNDER_THRES_DATE_LIST, None)
+        if over_thres_date_list is not None or under_thres_date_list is not None:
+            print "\n***** Abnormal Volume Detection *****"
+            if html_report is not None: html_report.text("***** Abnormal Volume Detection *****", head_newline_count=1)
+            if over_thres_date_list is not None:
+                over_thres_date_list_str = "Over: %s" % (",".join([elem[0] for elem in over_thres_date_list]))
+                print over_thres_date_list_str
+                if html_report is not None: html_report.text(over_thres_date_list_str)
+            if under_thres_date_list is not None:
+                under_thres_date_list_str = "Under: %s" % (",".join([elem for elem in under_thres_date_list]))
+                print under_thres_date_list_str
+                if html_report is not None: html_report.text(under_thres_date_list_str)
+            print "****************************************"
+            if html_report is not None: html_report.text("****************************************")
+        # detect_abnormal_volume_dict = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DETECT_ABNORMAL_VOLUME]
+        # if detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_ENABLE]:
+        #     show_result = detect_abnormal_volume_dict[DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_SHOW_RESULT]
+        #     if show_result != DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_NONE:
+        #         print "\n***** Abnormal Volume Detection *****"
+        #         if html_report is not None: html_report.text("***** Abnormal Volume Detection *****", head_newline_count=1)
+        #         if show_result in [DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_OVER_THRES_ONLY, DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_ALL,]:
+        #             over_thres_date_list_str = "Over: %s" % (",".join([elem[0] for elem in stock_price_statistics_config[DS_CMN_DEF.SR_CONF_OVER_THRES_DATE_LIST]]))
+        #             print over_thres_date_list_str
+        #             if html_report is not None: html_report.text(over_thres_date_list_str)
+        #         if show_result in [DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_UNDER_THRES_ONLY, DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_ALL,]:
+        #             under_thres_date_list_str = ",".join([elem for elem in stock_price_statistics_config[DS_CMN_DEF.SR_CONF_UNDER_THRES_DATE_LIST]])
+        #             print "Under: %s" % under_thres_date_list_str
+        #             if html_report is not None: html_report.text(under_thres_date_list_str)
+        #         print "****************************************"
+        #         if html_report is not None: html_report.text("****************************************")
 
 
 def find_stock_price_jump_gap(df, tick_for_jump_gap=DS_CMN_DEF.DEF_TICK_FOR_JUMP_GAP):

@@ -24,6 +24,7 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
     save_figure = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_SAVE_FIGURE]
     generate_report = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_GENERATE_REPORT]
     detect_abnormal_volume_enable = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DETECT_ABNORMAL_VOLUME][DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_ENABLE]
+    detect_abnormal_volume_show_result = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DETECT_ABNORMAL_VOLUME][DS_CMN_DEF.SR_CONF_DETECT_ABNORMAL_VOLUME_SUB_FIELD_SHOW_RESULT]
 
     html_report = None
     if generate_report:
@@ -43,6 +44,17 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
         if save_figure:
             cur_rise_or_fall = df.ix[-1]['rise_or_fall']
             dataset_visualization_title = "%s     %s   O:%s  H:%s  L:%s  C:%s  %s" % (company_number, cur_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']), cur_rise_or_fall)
+        
+# Detect the abnormal volume
+    # volume_over_thres_date_list = None
+    # volume_under_thres_date_list = None
+    if detect_abnormal_volume_enable:
+        # import pdb; pdb.set_trace()
+        volume_over_thres_date_list, volume_under_thres_date_list = DS_CMN_FUNC.get_dataset_abnormal_value(df, "volume", timeperiod=20) #, start_detect_date=start_date)
+        if detect_abnormal_volume_show_result in [DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_OVER_THRES_ONLY, DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_ALL,]:
+            stock_price_statistics_config[DS_CMN_DEF.SR_CONF_OVER_THRES_DATE_LIST] = volume_over_thres_date_list
+        if detect_abnormal_volume_show_result in [DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_UNDER_THRES_ONLY, DS_CMN_DEF.SHOW_ABNORMAL_VALUE_RESULT_ALL,]:
+            stock_price_statistics_config[DS_CMN_DEF.SR_CONF_UNDER_THRES_DATE_LIST] = volume_under_thres_date_list
 
     SMA = None
     if save_figure:
@@ -60,14 +72,30 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
             if SMA_len > df_len:
                 start_index = SMA_len - df_len
                 SMA = SMA[start_index:]
-
-# Detect the abnormal volume
-    if detect_abnormal_volume_enable:
         # import pdb; pdb.set_trace()
-        DS_CMN_FUNC.get_dataset_abnormal_value(df, "volume", timeperiod=20, start_detect_date=start_date)
-
+        start_date_timestamp = pd.to_datetime(start_date_index)
+# Filter the data of volume_over_thres_date_list
+        volume_over_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_OVER_THRES_DATE_LIST, None)
+        if volume_over_thres_date_list is not None:
+            over_thres_date_start_index = 0
+            for volume_over_thres_date in volume_over_thres_date_list:
+                date_timestamp = pd.to_datetime(DS_CMN_FUNC.date2Date(volume_over_thres_date[0]))
+                if date_timestamp >= start_date_timestamp:
+                    stock_price_statistics_config[DS_CMN_DEF.SR_CONF_OVER_THRES_DATE_LIST] = volume_over_thres_date_list[over_thres_date_start_index:]
+                    break
+                over_thres_date_start_index += 1
+        volume_under_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_UNDER_THRES_DATE_LIST, None)
+        if volume_under_thres_date_list is not None:
+            under_thres_date_start_index = 0
+            for volume_under_thres_date in volume_under_thres_date_list:
+                date_timestamp = pd.to_datetime(DS_CMN_FUNC.date2Date(volume_under_thres_date[0]))
+                if date_timestamp >= start_date_timestamp:
+                    stock_price_statistics_config[DS_CMN_DEF.SR_CONF_UNDER_THRES_DATE_LIST] = volume_under_thres_date_list[under_thres_date_start_index:]
+                    break
+                under_thres_date_start_index += 1
+    # import pdb; pdb.set_trace()
 # Find the main key support and resistance
-    show_main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_DEFAULT)
+    show_main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE, DS_CMN_DEF.DEF_SHOW_MAIN_KEY_SUPPORT_RESISTANCE)
     if show_main_key_support_resistance != DS_CMN_DEF.SHOW_MAIN_NO_KEY_SUPPORT_RESISTANCE:
         main_key_support_resistance_start_date = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_MAIN_KEY_SUPPORT_RESISTANCE_START_DATE, None)
         stock_price_statistics_config[DS_CMN_DEF.SR_CONF_MAIN_KEY_SUPPORT_RESISTANCE] = DS_CMN_FUNC.find_stock_price_main_key_supprot_resistance(df, main_key_support_resistance_start_date=main_key_support_resistance_start_date)
@@ -89,11 +117,12 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
         DS_VS.plot_candles(df, title=dataset_visualization_title, volume_bars=True, overlays=[SMA], stock_price_statistics_config=stock_price_statistics_config)
         filepath = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_OUTPUT_FOLDER_PATH] + "/%s.png" % company_number
         DS_VS.save_plot(filepath, len(df))
-    if DV.CAN_VISUALIZE:
-        DS_VS.show_plot()
-
+# Generate the HTML report
     if html_report is not None:
         html_report.flush()
+# Show the figure
+    if DV.CAN_VISUALIZE:
+        DS_VS.show_plot()
 
 
 def find_jump_gap(company_number, start_date=None, tick_for_jump_gap=2):

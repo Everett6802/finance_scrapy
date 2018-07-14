@@ -119,9 +119,6 @@ def plot_candles_v2(pricing, title=None,
       technicals: A list of additional data series to display as subplots.
       technicals_titles: A list of titles to display for each technical indicator.
     """
-    # if not DV.CAN_VISUALIZE:
-    #     g_logger.warn("Can NOT Visualize")
-    #     return
 
     def default_color(index, open_price, close_price, low, high):
         if open_price[index] > close_price[index]:
@@ -137,7 +134,9 @@ def plot_candles_v2(pricing, title=None,
     trend_line = None
     main_key_support_resistance = None
     draw_key_support_resistance_date = None
-    draw_key_support_resistance_price = None 
+    draw_key_support_resistance_price = None
+    over_thres_date_list = None
+    under_thres_date_list = None
     if stock_price_statistics_config is not None:
         # start_date = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_START_DATE, None)
         key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_FIELD_KEY_SUPPORT_RESISTANCE, None)
@@ -146,6 +145,8 @@ def plot_candles_v2(pricing, title=None,
         main_key_support_resistance = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_MAIN_KEY_SUPPORT_RESISTANCE, None)
         draw_key_support_resistance_date = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_DATE]
         draw_key_support_resistance_price = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_DRAW_SUPPORT_RESISTANCE_PRICE]
+        over_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_OVER_THRES_DATE_LIST, None)
+        under_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_UNDER_THRES_DATE_LIST, None)
 
     color_function = color_function or default_color
     overlays = overlays or []
@@ -369,6 +370,28 @@ def plot_candles_v2(pricing, title=None,
         #     start_index = len(overlay) - pricing_len
         ax1.plot(x, overlay[start_index:])
 
+# Keep track of the event date:
+# * Volume over the threshold
+# * Volume under the thresold
+    event_date_list = []
+    if over_thres_date_list is not None:
+        event_date_list.extend([over_thres_date[0] for over_thres_date in over_thres_date_list])
+    if under_thres_date_list is not None:
+        event_date_list.extend([under_thres_date[0] for under_thres_date in under_thres_date_list])
+# Remove the duplicate dates
+    event_date_list = list(set(event_date_list))
+
+    # import pdb; pdb.set_trace()
+    event_date_loc_x_list = []
+    for event_date in event_date_list:
+        event_date_index = DS_CMN_FUNC.date2Date(event_date)
+        loc = pricing.index.get_loc(event_date_index)
+        event_date_loc_x_list.append(loc)
+    # import pdb; pdb.set_trace()
+    if len(event_date_loc_x_list) != 0:
+        x1, x2, y1, y2 = ax1.axis()
+        for loc_x in event_date_loc_x_list:
+            ax1.text(loc_x, y1, "*", color='yellow', horizontalalignment='center')
     # if draw_key_support_resistance_date:
     #     x1, x2, y1, y2 = ax1.axis()
     #     ax1.axis([x1, x2, y1, y2 + 3])
