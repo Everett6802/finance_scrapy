@@ -78,6 +78,7 @@ def show_usage_and_exit():
         print ""
         print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
         print "--update_company_stock_price\nDescription: Update the stock price of specific companies\nCaution: This arugment is equal to the argument combination as below: --force_switch_finance_mode 1 --method 9 --time_until_today --dataset_finance_folderpath --reserve_old --company xxxx\n"
+        print "--update_company_stock_price_from_file\nDescription: Update the stock price of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --force_switch_finance_mode 1 --method 9 --time_until_today --dataset_finance_folderpath --reserve_old\n"
     print "============================================================="
     sys.exit(0)
 
@@ -234,6 +235,7 @@ def init_param():
     param_cfg["enable_company_not_found_exception"] = False
     param_cfg["multi_thread"] = None
     param_cfg["update_company_stock_price"] = None
+    param_cfg["update_company_stock_price_from_file"] = False
 
 
 def parse_param(early_parse=False):
@@ -391,6 +393,10 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["multi_thread"] = int(sys.argv[index + 1])
             index_offset = 2
+        elif re.match("--update_company_stock_price_from_file", sys.argv[index]):
+            if early_parse:
+                param_cfg["update_company_stock_price_from_file"] = True
+            index_offset = 1
         elif re.match("--update_company_stock_price", sys.argv[index]):
             if early_parse:
                 param_cfg["update_company_stock_price"] = sys.argv[index + 1]
@@ -399,7 +405,16 @@ def parse_param(early_parse=False):
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
 # Adjust the parameters setting...
-        if param_cfg["update_company_stock_price"] is not None:
+        update_company_stock_price_company_list = None
+        if param_cfg["update_company_stock_price_from_file"] and param_cfg["update_company_stock_price"] is not None:
+            show_warn("The 'update_company_stock_price' argument won't take effect since 'update_company_stock_price_from_file' is set")
+            param_cfg["update_company_stock_price"] = None
+        if param_cfg["update_company_stock_price_from_file"]:
+            update_company_stock_price_company_list = BASE.SC.ScrapyConfigurer.Instance().Company
+        elif param_cfg["update_company_stock_price"] is not None:
+            update_company_stock_price_company_list = param_cfg["update_company_stock_price"]
+
+        if update_company_stock_price_company_list is not None:
             if param_cfg["config_from_file"]:
                 show_warn("The 'config_from_file' argument won't take effect since 'update_company_stock_price' is set")
                 param_cfg["config_from_file"] = False
@@ -422,7 +437,7 @@ def parse_param(early_parse=False):
                 param_cfg["reserve_old"] = True
                 if not param_cfg["company"]:
                     show_warn("company' argument won't take effect since 'update_company_stock_price' is set")
-                param_cfg["company"] = param_cfg["update_company_stock_price"]
+                param_cfg["company"] = update_company_stock_price_company_list # param_cfg["update_company_stock_price"]
 
 
 def check_param():    

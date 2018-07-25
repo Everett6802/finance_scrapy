@@ -1,14 +1,15 @@
 # -*- coding: utf8 -*-
 
 import re
-from abc import ABCMeta, abstractmethod
+# from abc import ABCMeta, abstractmethod
 import libs.common as CMN
 g_logger = CMN.LOG.get_logger()
 
 
-class ConfigurerBase(object):
+@CMN.CLS.Singleton
+class ScrapyConfigurer(object):
 
-    __metaclass__ = ABCMeta
+    # __metaclass__ = ABCMeta
 
     def __init__(self):
         # self.finance_mode = None
@@ -43,15 +44,17 @@ class ConfigurerBase(object):
             return self.config[title][subtitle]
 
 
-    def _get_company(self):
-        raise NotImplementedError
+    # def _get_company(self):
+    #     raise NotImplementedError
 
 
     @property
     def FinanceMode(self):
         # if not hasattr(self, "finance_mode"):
         #     self.finance_mode = int(self.get_config("Common", "finance_mode"))
-        assert self.finance_mode is not None, "Unknown finance mode in Configurer"
+        # assert self.finance_mode is not None, "Unknown finance mode in Configurer"
+        if not hasattr(self, "finance_mode"):
+            self.finance_mode = int(self.get_config("Common", "finance_mode"))
         return self.finance_mode
 
 
@@ -97,7 +100,10 @@ class ConfigurerBase(object):
 
     @property
     def Company(self):
-        return self._get_company()
+        # return self._get_company()
+        if not hasattr(self, "company"):
+            self.company = self.get_config("Common", "company")
+        return self.company
 
 
     # @property

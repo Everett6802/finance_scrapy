@@ -43,10 +43,10 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
         if html_report: html_report.text("*** %s ***" % cur_date, tail_newline_count=2)
         if save_figure:
             # import pdb; pdb.set_trace()
-            cur_rise_or_fall = df.ix[-1]['rise_or_fall']
+            change = df.ix[-1]['change']
             dataset_visualization_title = "%s     %s   O:%s  H:%s  L:%s  C:%s" % (company_number, cur_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
-            if not np.isnan(cur_rise_or_fall):
-                dataset_visualization_title += "  %s" % cur_rise_or_fall
+            if not np.isnan(change):
+                dataset_visualization_title += "  %s" % change
          
 # Detect the abnormal volume
     # volume_over_thres_date_list = None

@@ -8,4 +8,5 @@ import workday_canlendar as WC
 import worker_thread_pool as TP
 import company_group_set as CGS
 import company_profile as CP
-__all__ = ['BASE', 'MGR_BASE', 'CFR_BASE', 'THREAD', 'TSG', 'WC', 'TP', 'CGS', 'CP']
+import scrapy_configurer as SC
+__all__ = ['BASE', 'MGR_BASE', 'CFR_BASE', 'THREAD', 'TSG', 'WC', 'TP', 'CGS', 'CP', 'SC']
