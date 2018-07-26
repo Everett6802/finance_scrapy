@@ -4,7 +4,7 @@ import os
 import re
 import json
 import requests
-import csv
+# import csv
 import time
 # import copy
 import collections
@@ -316,10 +316,11 @@ class ScrapyBase(object):
     def _write_to_csv(cls, csv_filepath, csv_data_list):
         csv_data_list = cls._transform_data_for_writing_to_csv(csv_data_list)
         g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
-        with open(csv_filepath, 'a+') as fp:
-            fp_writer = csv.writer(fp, delimiter=',')
-# Write the web data into CSV
-            fp_writer.writerows(csv_data_list)
+        CMN.FUNC.write_csv_file_data(csv_data_list, csv_filepath)
+#         with open(csv_filepath, 'a+') as fp:
+#             fp_writer = csv.writer(fp, delimiter=',')
+# # Write the web data into CSV
+#             fp_writer.writerows(csv_data_list)
 
 
     @classmethod

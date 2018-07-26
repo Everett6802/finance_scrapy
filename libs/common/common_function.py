@@ -3,6 +3,7 @@
 import os
 import re
 import sys
+import csv
 import errno
 import logging
 import calendar
@@ -548,6 +549,19 @@ def unicode_read_config_file_lines(conf_filename, conf_folderpath=None, conf_uni
     if conf_unicode_encode is None:
         conf_unicode_encode = CMN_DEF.UNICODE_ENCODING_IN_FILE
     return unicode_read_config_file_lines_ex(conf_filename, 'rb', conf_folderpath, conf_unicode_encode)
+
+
+def write_csv_file_data(data_list, filepath, file_write_attribute='a+'):
+    # import pdb; pdb.set_trace()
+    try:
+        with open(filepath, file_write_attribute) as fp:
+            fp_writer = csv.writer(fp, delimiter=',')
+# Write the web data into CSV
+            fp_writer.writerows(data_list)
+    except Exception as e:
+        errmsg = "Error occur while writing CSV file[%s], due to %s" % (filepath, str(e))
+        g_logger.error(errmsg)
+        raise ValueError(errmsg)
 
 
 def write_file_lines_ex(line_list, filepath, file_write_attribute='w', finance_time_range=None, line_split=CMN_DEF.COMMA_DATA_SPLIT, time_index_in_line=0, is_list_in_line=False):
@@ -1149,3 +1163,118 @@ def merge_stock_csv(src_folderpath, dst_folderpath, company_dict, method_index_l
             src_csv_filepath_config_list.append(src_csv_filepath_config)
         dst_csv_filepath = "%s/%s.csv" % (dst_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME)
         merge_multi_csv(src_csv_filepath_config_list, dst_csv_filepath, time_range)
+
+
+# def get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count):
+#     yield "%s/%s" % (finance_parent_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME)
+#     for i in range(company_group_count):
+#         yield "%s/%s%02d" % (finance_parent_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, i)
+
+
+# def create_finance_file_system(finance_parent_folderpath, company_group_count, reserve_old=True):
+# # Create parent folder of finance data
+#     need_create = create_folder_if_not_exist(parent_folderpath)
+# # Check if the folder already exist
+#     if not need_create:
+#         if reserve_old:
+#             g_logger.info("The old finance file system[%s] has already existed" % parent_folderpath)
+#             return
+#         else:
+#             g_logger.warn("Remove the old finance file system: %s" % parent_folderpath)
+#             remove_finance_file_system(finance_parent_folderpath, company_group_count)        
+#             create_folder(parent_folderpath)
+# # Create each suub folder 
+#     for filepath in get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count):
+#         create_folder(folderpath)
+
+
+
+# def remove_finance_file_system(finance_parent_folderpath, company_group_count):
+#     for folderpath in get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count):
+#         shutil.rmtree(folderpath, ignore_errors=True)
+#     shutil.rmtree(finance_parent_folderpath, ignore_errors=True)
+
+
+def assemble_finance_data_folder(finance_parent_folderpath, company_group_number=None, company_number=None):
+# company_group_number:
+# None: Ignore
+# -1 : Market
+# >0 : Stock
+    # assert finance_parent_folderpath is not None, "finance_parent_folderpath should NOT be None"
+    folderpath = finance_parent_folderpath
+    if company_group_number is not None:
+        if company_group_number == -1:
+            folderpath += "/%s" % CMN_DEF.CSV_MARKET_FOLDERNAME
+        else:
+            folderpath += "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number)
+            if company_number is not None:
+                folderpath += "/%s" % company_number    
+    return folderpath
+
+
+def check_finance_data_folder_exist(finance_parent_folderpath, company_group_number=None, company_number=None):
+    folderpath = assemble_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
+    return check_file_exist(folderpath)
+
+
+def create_finance_data_folder(finance_parent_folderpath, company_group_number=None, company_number=None, reserve_old=True):
+# company_group_number:
+# None: Ignore
+# -1 : Market
+# >0 : Stock
+# delete the old folder
+    if not reserve_old:
+        delete_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
+# create the new folder
+    folderpath = finance_parent_folderpath
+    create_folder_if_not_exist(folderpath)
+    if company_group_number is not None:
+        if company_group_number == -1:
+# Create finance market folder
+            folderpath += "/%s" % CMN_DEF.CSV_MARKET_FOLDERNAME
+            create_folder_if_not_exist(folderpath)
+        else:
+# Create finance stock folder
+            folderpath += "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number)
+            create_folder_if_not_exist(folderpath)
+            if company_number is not None:
+# Create finance stock company folder
+                folderpath += "/%s" % company_number
+                create_folder_if_not_exist(folderpath)
+    return folderpath
+
+
+def create_finance_stock_data_folders(finance_parent_folderpath, company_group_count=None, reserve_old=True):
+    if not reserve_old:
+        delete_finance_data_folder(finance_parent_folderpath, reserve_old=reserve_old)
+# create the new folder
+    folderpath = finance_parent_folderpath
+    create_folder_if_not_exist(folderpath)
+    stock_folderpath_list = []
+    for index in range(company_group_count):
+# Create finance stock folder
+        stock_folderpath = folderpath + "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, index)
+        create_folder_if_not_exist(stock_folderpath)
+        stock_folderpath_list.append(stock_folderpath)
+    return stock_folderpath_list
+
+
+def delete_finance_data_folder(finance_parent_folderpath, company_group_number=None, company_number=None, reserve_old=True): 
+# company_group_number:
+# None: Ignore
+# -1 : Market
+# >0 : Stock
+    folderpath = assemble_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
+    exist = check_file_exist(folderpath)
+    if exist:
+        shutil.rmtree(folderpath, ignore_errors=True)
+    return exist
+
+
+def delete_finance_stock_data_folders(finance_parent_folderpath, company_group_count=None, reserve_old=True):
+    folderpath = finance_parent_folderpath
+    if check_file_exist(folderpath):
+        for index in range(company_group_count):
+# Delete finance stock folder
+            stock_folderpath = folderpath + "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number)
+            shutil.rmtree(stock_folderpath, ignore_errors=True)

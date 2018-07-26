@@ -76,6 +76,17 @@ class MgrBase(object):
         return self.configurer
 
 
+    # def __get_finance_folderpath_format(self, finance_root_folderpath=None):
+    def _get_finance_root_folderpath(self, finance_root_folderpath=None):
+        folderpath = finance_root_folderpath
+        if folderpath is None:
+            folderpath = self.xcfg["finance_root_folderpath"]
+        if folderpath is None:
+            folderpath = CMN.DEF.CSV_ROOT_FOLDERPATH
+        # return ("%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
+        return folderpath
+
+
     def _scrape_web_data_to_csv_file(self, scrapy_class_index, **kwargs):
         # import pdb; pdb.set_trace()
         web_scrapy_obj = CMN.FUNC.instantiate_web_scrapy_object(scrapy_class_index, **kwargs)

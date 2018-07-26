@@ -21,12 +21,13 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
         self.source_type_csv_time_duration = None
 
 
-    def __get_finance_folderpath(self, finance_root_folderpath=None):
-        if finance_root_folderpath is None:
-            finance_root_folderpath = self.xcfg["finance_root_folderpath"]
-        if finance_root_folderpath is None:
-            finance_root_folderpath = CMN.DEF.SCRAPY_METHOD_DESCRIPTIONCSV_ROOT_FOLDERPATH
-    	return "%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_MARKET_FOLDERNAME)
+    # def __get_finance_folderpath(self, finance_root_folderpath=None):
+    #     if finance_root_folderpath is None:
+    #         finance_root_folderpath = self.xcfg["finance_root_folderpath"]
+    #     if finance_root_folderpath is None:
+    #         finance_root_folderpath = CMN.DEF.CSV_ROOT_FOLDERPATH
+    # 	# return "%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_MARKET_FOLDERNAME)
+    #     return CMN.FUNC.assemble_finance_data_folder(finance_root_folderpath, -1)
 
 
     # def _get_configurer(self):
@@ -36,17 +37,19 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
 
 
     def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
-        self._create_finance_root_folder_if_not_exist(finance_root_folderpath)
-        folderpath = self.__get_finance_folderpath(finance_root_folderpath)
-        g_logger.debug("Try to create new folder: %s" % folderpath)
-        CMN.FUNC.create_folder_if_not_exist(folderpath)
+        # self._create_finance_root_folder_if_not_exist(finance_root_folderpath)
+        # folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        # g_logger.debug("Try to create new folder: %s" % folderpath)
+        # CMN.FUNC.create_folder_if_not_exist(folderpath)
+        CMN.FUNC.create_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
 
 
     def _remove_old_finance_folder(self, finance_root_folderpath=None):
 # Remove the old data if necessary
-        folderpath = self.__get_finance_folderpath(finance_root_folderpath)
-        g_logger.debug("Remove old folder: %s" % folderpath)
-        shutil.rmtree(folderpath, ignore_errors=True)
+        # folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        # g_logger.debug("Remove old folder: %s" % folderpath)
+        # shutil.rmtree(folderpath, ignore_errors=True)
+        CMN.FUNC.delete_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
 
 
     def _init_csv_time_duration(self):
@@ -56,7 +59,8 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
 
 
     def __parse_csv_time_duration_cfg(self, finance_root_folderpath=None):
-        csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        # csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        csv_data_folderpath = CMN.FUNC.assemble_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
         g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
         csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
         if csv_time_duration_dict is None:
@@ -84,7 +88,8 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
 
     def __write_new_csv_time_duration_to_cfg(self, finance_root_folderpath=None, source_type_csv_time_duration=None):
         # import pdb; pdb.set_trace()
-        csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        # csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        csv_data_folderpath = CMN.FUNC.assemble_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
         if source_type_csv_time_duration is None:
             source_type_csv_time_duration = self.source_type_csv_time_duration
         # g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)

@@ -65,30 +65,33 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
         return cls.company_profile
 
 
-    def __get_finance_folderpath_format(self, finance_root_folderpath=None):
-        if finance_root_folderpath is None:
-            finance_root_folderpath = self.xcfg["finance_root_folderpath"]
-        if finance_root_folderpath is None:
-            finance_root_folderpath = CMN.DEF.CSV_ROOT_FOLDERPATH
-        return ("%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
+    # def __get_finance_folderpath_format(self, finance_root_folderpath=None):
+    #     if finance_root_folderpath is None:
+    #         finance_root_folderpath = self.xcfg["finance_root_folderpath"]
+    #     if finance_root_folderpath is None:
+    #         finance_root_folderpath = CMN.DEF.CSV_ROOT_FOLDERPATH
+    #     # return ("%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
+    #     return CMN.FUNC.assemble_finance_data_folder(finance_root_folderpath, -1)
 
 
     def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
-        self._create_finance_root_folder_if_not_exist(finance_root_folderpath)
-        folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
-        for index in range(self.__get_company_profile().CompanyGroupSize):
-            folderpath = folderpath_format % index
-            # g_logger.debug("Try to create new folder: %s" % folderpath)
-            CMN.FUNC.create_folder_if_not_exist(folderpath)
+        # self._create_finance_root_folder_if_not_exist(finance_root_folderpath)
+        # folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
+        # for index in range(self.__get_company_profile().CompanyGroupSize):
+        #     folderpath = folderpath_format % index
+        #     # g_logger.debug("Try to create new folder: %s" % folderpath)
+        #     CMN.FUNC.create_folder_if_not_exist(folderpath)
+        CMN.FUNC.create_finance_stock_data_folders(self._get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
 
 
     def _remove_old_finance_folder(self, finance_root_folderpath=None):
 # Remove the old data if necessary
-        folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
-        for index in range(self.__get_company_profile().CompanyGroupSize):
-            folderpath = folderpath_format % index
-            # g_logger.debug("Remove old folder: %s" % folderpath)
-            shutil.rmtree(folderpath, ignore_errors=True)
+        # folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
+        # for index in range(self.__get_company_profile().CompanyGroupSize):
+        #     folderpath = folderpath_format % index
+        #     # g_logger.debug("Remove old folder: %s" % folderpath)
+        #     shutil.rmtree(folderpath, ignore_errors=True)
+        CMN.FUNC.delete_finance_stock_data_folders(self._get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
 
 
     def _init_csv_time_duration(self, company_group_set=None):
@@ -107,15 +110,17 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
 
     def __parse_csv_time_duration_cfg(self, finance_root_folderpath=None, company_group_set=None):
         # whole_company_number_in_group_dict = BASE.CGS.CompanyGroupSet.get_whole_company_number_in_group_dict()
-        folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
+        # folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
         if company_group_set is None:
             company_group_set = self.__get_market_type_company_group_set()
         # if company_group_set is None:
         #     company_group_set = BASE.CGS.CompanyGroupSet.get_whole_company_number_in_group_dict()
         source_type_csv_time_duration_dict = {}
         # for company_group_number, company_code_number_list in whole_company_number_in_group_dict:
+        finance_root_folderpath = self._get_finance_root_folderpath(finance_root_folderpath)
         for company_group_number, company_code_number_list in company_group_set.items():
-            folderpath_in_group = folderpath_format % int(company_group_number)
+            # folderpath_in_group = folderpath_format % int(company_group_number)
+            folderpath_in_group = CMN.FUNC.assemble_finance_data_folder(finance_root_folderpath, int(company_group_number))
 # If the company group folder does NOT exist, ignore it...
             if not CMN.FUNC.check_file_exist(folderpath_in_group):
                 continue
@@ -166,20 +171,22 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
 
     def __write_new_csv_time_duration_to_cfg(self, finance_root_folderpath=None, source_type_csv_time_duration_dict=None, company_group_set=None):
         # import pdb; pdb.set_trace()
-        folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
+        # folderpath_format = self.__get_finance_folderpath_format(finance_root_folderpath)
         if source_type_csv_time_duration_dict is None:
             source_type_csv_time_duration_dict = self.source_type_csv_time_duration_dict
         if company_group_set is None:
             company_group_set = self.__get_market_type_company_group_set()
         # if company_group_set is None:
         #     company_group_set = BASE.CGS.CompanyGroupSet.get_whole_company_number_in_group_dict()
+        finance_root_folderpath = self._get_finance_root_folderpath(finance_root_folderpath)
         for company_group_number, company_code_number_list in company_group_set.items():
-            folderpath_in_group = folderpath_format % int(company_group_number)
+            # folderpath_in_group = folderpath_format % int(company_group_number)
             for company_code_number in company_code_number_list:
-                csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
+                # csv_data_folderpath = "%s/%s" % (folderpath_in_group, company_code_number) 
 # Create the folder for each company if not exist
-                CMN.FUNC.create_folder_if_not_exist(csv_data_folderpath)
+                # CMN.FUNC.create_folder_if_not_exist(csv_data_folderpath)
                 # g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
+                csv_data_folderpath = CMN.FUNC.create_finance_data_folder(finance_root_folderpath, int(company_group_number), company_code_number)
                 CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration_dict[company_code_number])
 
 
@@ -313,11 +320,13 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
         if not CMN.FUNC.check_file_exist(self.xcfg["finance_root_folderpath"]):
             print "The root finance folder[%s] does NOT exist" % self.xcfg["finance_root_folderpath"]
             return
-        company_group_folderpath_format = self.__get_finance_folderpath_format()
+        # company_group_folderpath_format = self.__get_finance_folderpath_format()
         # for index in range(self.__get_company_profile().CompanyGroupSize):
         whole_company_number_in_group_dict = BASE.CGS.CompanyGroupSet.get_whole_company_number_in_group_dict()
+        finance_root_folderpath = self._get_finance_root_folderpath(finance_root_folderpath)
         for company_group_number, company_code_number_list in whole_company_number_in_group_dict.items():
-            company_group_folderpath = company_group_folderpath_format % company_group_number
+            # company_group_folderpath = company_group_folderpath_format % company_group_number
+            company_group_folderpath = CMN.FUNC.create_finance_data_folder(finance_root_folderpath, company_group_number)
             if not CMN.FUNC.check_file_exist(company_group_folderpath):
                 raise ValueError("The folder[%s] should exist !!!" % company_group_folderpath)
             company_ode_number_in_group_list = []
