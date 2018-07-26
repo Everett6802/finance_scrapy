@@ -43,9 +43,17 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
         if html_report: html_report.text("*** %s ***" % cur_date, tail_newline_count=2)
         if save_figure:
             # import pdb; pdb.set_trace()
-            change = df.ix[-1]['change']
+            change = row['change']
             dataset_visualization_title = "%s     %s   O:%s  H:%s  L:%s  C:%s" % (company_number, cur_date, PRICE(row['open']), PRICE(row['high']), PRICE(row['low']), PRICE(row['close']))
-            if not np.isnan(change):
+            isnan = False
+            try:
+# To avoid the TypeError exception while the change 
+# variable is a minus string
+                isnan = np.isnan(change)
+            except TypeError:
+# Filter the situation when the change is minus
+                pass
+            if not isnan:
                 dataset_visualization_title += "  %s" % change
          
 # Detect the abnormal volume
