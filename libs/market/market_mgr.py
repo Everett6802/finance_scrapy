@@ -9,7 +9,7 @@ from datetime import datetime
 import libs.common as CMN
 import libs.base as BASE
 # import web_scrapy_market_base as MarketBase
-import market_configurer as Configurer
+# import scrapy_configurer as Configurer
 g_logger = CMN.LOG.get_logger()
 
 
@@ -29,10 +29,10 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
     	return "%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_MARKET_FOLDERNAME)
 
 
-    def _get_configurer(self):
-        if self.configurer is None:
-            self.configurer = Configurer.MarketConfigurer.Instance()
-        return self.configurer
+    # def _get_configurer(self):
+    #     if self.configurer is None:
+    #         self.configurer = Configurer.ScrapyConfigurer.Instance()
+    #     return self.configurer
 
 
     def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):

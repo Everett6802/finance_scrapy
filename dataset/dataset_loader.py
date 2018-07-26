@@ -114,7 +114,7 @@ def load_stock_price_history(company_number, overwrite_stock_price_list=None):
 # overwrite_stock_price_list
 # Format: Date O:OpenPrice H:HighPrice L:LowPrice C:ClosePrice; Ex. 180613 O:98.6 H: 100.5 L: 97.9 C 99.9
     df, column_description_list = load_stock_hybrid([9,], company_number)
-    df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'rise_or_fall', '0908': 'volume'}, inplace=True)
+    df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'change', '0908': 'volume'}, inplace=True)
     # import pdb; pdb.set_trace()
     if overwrite_stock_price_list is not None:
 		new_entry_list = []

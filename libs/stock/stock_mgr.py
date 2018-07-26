@@ -12,7 +12,7 @@ import libs.common as CMN
 import libs.base as BASE
 # import web_scrapy_company_profile as CompanyProfile
 # import web_scrapy_company_group_set as CompanyGroupSet
-import stock_configurer as Configurer
+# import scrapy_configurer as Configurer
 g_logger = CMN.LOG.get_logger()
 
 
@@ -31,10 +31,10 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
         self.market_type_company_group_set_dict = None
 
 
-    def _get_configurer(self):
-        if self.configurer is None:
-            self.configurer = Configurer.StockConfigurer.Instance()
-        return self.configurer
+    # def _get_configurer(self):
+    #     if self.configurer is None:
+    #         self.configurer = Configurer.StockConfigurer.Instance()
+    #     return self.configurer
 
 
     def __get_market_type_company_group_set(self, market_type=CMN.DEF.MARKET_TYPE_NONE):

@@ -52,6 +52,7 @@ COMPANY_GROUP_METHOD_DESCRIPTION_LIST = [
 ]
 LARGE_INDUSTRY_COMPANY_GROUP_LIST = [u"光電業", u"半導體業", u"電子零組件業", u"電腦及週邊設備業",]
 
+
 @CMN.CLS.Singleton
 class CompanyProfile(object):
 

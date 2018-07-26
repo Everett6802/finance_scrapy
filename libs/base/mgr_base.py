@@ -11,6 +11,7 @@ from abc import ABCMeta, abstractmethod
 import worker_thread_pool as ThreadPool
 import libs.common as CMN
 from libs.common.common_variable import GlobalVar as GV
+import scrapy_configurer as Configurer
 g_logger = CMN.LOG.get_logger()
 
 
@@ -67,6 +68,12 @@ class MgrBase(object):
                     self.csv_file_check_status_record_description_dict[no_scrapy_type_for_init] = web_scrapy_obj.CSVFileNoScrapyTypeDescriptionList[index_for_init]
 # Keep track of the data of each web scrapy object       
             self.csv_file_check_status_record_string_dict[no_scrapy_type].extend(web_scrapy_obj.CSVFileNoScrapyDescriptionDict[no_scrapy_type])
+
+
+    def _get_configurer(self):
+        if self.configurer is None:
+            self.configurer = Configurer.ScrapyConfigurer.Instance()
+        return self.configurer
 
 
     def _scrape_web_data_to_csv_file(self, scrapy_class_index, **kwargs):
@@ -437,9 +444,9 @@ class MgrBase(object):
         raise NotImplementedError
 
 
-    @abstractmethod
-    def _get_configurer(self):
-        raise NotImplementedError
+    # @abstractmethod
+    # def _get_configurer(self):
+    #     raise NotImplementedError
 
 
     @abstractmethod
