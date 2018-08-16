@@ -71,7 +71,7 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
     #     if finance_root_folderpath is None:
     #         finance_root_folderpath = CMN.DEF.CSV_ROOT_FOLDERPATH
     #     # return ("%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_STOCK_FOLDERNAME)) + "%02d"
-    #     return CMN.FUNC.assemble_finance_data_folder(finance_root_folderpath, -1)
+    #     return CMN.FUNC.get_finance_data_folder(finance_root_folderpath, -1)
 
 
     def _create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
@@ -120,7 +120,7 @@ class StockMgr(BASE.MGR_BASE.MgrBase):
         finance_root_folderpath = self._get_finance_root_folderpath(finance_root_folderpath)
         for company_group_number, company_code_number_list in company_group_set.items():
             # folderpath_in_group = folderpath_format % int(company_group_number)
-            folderpath_in_group = CMN.FUNC.assemble_finance_data_folder(finance_root_folderpath, int(company_group_number))
+            folderpath_in_group = CMN.FUNC.get_finance_data_folder(finance_root_folderpath, int(company_group_number))
 # If the company group folder does NOT exist, ignore it...
             if not CMN.FUNC.check_file_exist(folderpath_in_group):
                 continue

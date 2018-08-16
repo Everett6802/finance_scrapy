@@ -24,6 +24,8 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "module_name": "cmoney_scrapy",
         "class_name": "CMoneyWebScrapy",
         "scrapy_class_method": "revenue",
+        "scrapy_type": "stock", # for defining the method index
+        "scrapy_data_time_unit": CMN.DEF.DATA_TIME_UNIT_MONTH,
     },
 # Stock End
 ]
@@ -35,3 +37,13 @@ SCRAPY_METHOD_LEN = len(SCRAPY_MODULE_DESCRIPTION)
 SCRAPY_MODULE_NAME_MAPPING = [cfg["module_name"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
 
 SCRAPY_CLASS_NAME_MAPPING = [cfg["class_name"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
+
+# __scrapy_class_market_index_list__ = [index for index, cfg in enumerate(SCRAPY_CLASS_CONSTANT_CFG) if cfg['scrapy_type'] == 'market']
+# # semi-open interval
+# SCRAPY_MARKET_METHOD_START = min(__scrapy_class_market_index_list__)
+# SCRAPY_MARKET_METHOD_END = max(__scrapy_class_market_index_list__) + 1
+
+__scrapy_class_stock_index_list__ = [index for index, cfg in enumerate(SCRAPY_CLASS_CONSTANT_CFG) if cfg['scrapy_type'] == 'stock']
+# semi-open interval
+SCRAPY_STOCK_METHOD_START = min(__scrapy_class_stock_index_list__)
+SCRAPY_STOCK_METHOD_END = max(__scrapy_class_stock_index_list__) + 1

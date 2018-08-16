@@ -38,6 +38,48 @@ class SeleniumMgr(object):
         return folderpath
 
 
+    def __parse_csv_time_duration_cfg(self, finance_root_folderpath=None):
+        # csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        csv_data_folderpath = CMN.FUNC.get_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
+        g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
+        csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
+        if csv_time_duration_dict is None:
+            g_logger.debug("The CSV time range config file[%s] does NOT exist !!!" % CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME)
+# # update the time range of each source type from config file
+#         for scrapy_class_index, time_duration_tuple in csv_time_duration_dict.items():
+#             self.source_type_csv_time_duration[scrapy_class_index] = time_duration_tuple
+        return csv_time_duration_dict
+
+
+    def _read_csv_time_duration(self, method_index, company_number=None, company_group_number=None):
+        # import pdb; pdb.set_trace()
+        assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
+        source_type_csv_time_duration = self.__parse_csv_time_duration_cfg()
+        if source_type_csv_time_duration is not None:
+            self.source_type_csv_time_duration = source_type_csv_time_duration
+
+
+    def _update_new_csv_time_duration(self, web_scrapy_obj):
+        # import pdb; pdb.set_trace()
+        assert self.source_type_csv_time_duration is not None, "self.source_type_csv_time_duration should NOT be None"
+        # new_csv_time_duration = web_scrapy_obj.get_new_csv_time_duration()
+        self.source_type_csv_time_duration[web_scrapy_obj.SourceTypeIndex] = web_scrapy_obj.new_csv_time_duration
+
+
+    def __write_new_csv_time_duration_to_cfg(self, finance_root_folderpath=None, source_type_csv_time_duration=None):
+        # import pdb; pdb.set_trace()
+        # csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        csv_data_folderpath = CMN.FUNC.get_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
+        if source_type_csv_time_duration is None:
+            source_type_csv_time_duration = self.source_type_csv_time_duration
+        # g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
+        CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath, source_type_csv_time_duration)
+
+
+    def _write_new_csv_time_duration(self):
+        self.__write_new_csv_time_duration_to_cfg()
+
+
     def set_company(self, company_word_list_string=None):
         if company_word_list_string is not None:
             self.company_group_set = BASE.CGS.CompanyGroupSet.create_instance_from_string(company_word_list_string)
@@ -46,47 +88,27 @@ class SeleniumMgr(object):
             self.company_group_set = BASE.CGS.CompanyGroupSet.get_whole_company_group_set()
 
 
-	def scrape(self, scrapy_method_index, *args, **kwargs):
+	def do_scrapy(self, scrapy_method_index, *args, **kwargs):
 		web_scrapy_class = CMN.FUNC.get_selenium_web_scrapy_class(scrapy_method_index)
 		with web_scrapy_class() as web_scrapy_object:
-			for company_group_number, company_number_list in  self.company_group_set.items():
-				web_scrapy_object.CompanyNumber = company_number
-				(data_list, data_time_list, data_name_list) =  web_scrapy_object.scrape(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]['scrapy_method_in_class'], *args, **kwargs)
+			if CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
+				for company_group_number, company_number_list in  self.company_group_set.items():
+					for company_number in company_number_list:
+# Find the old CSV time duration
+						csv_time_duration_folderpath = CMN.FUNC.get_dataset_stock_folderpath(company_number, company_group_number)
+						csv_time_duration = CMN_FUNC.read_csv_time_duration_config_file(CMN_FUNC.CSV_DATA_TIME_DURATION_FILENAME, conf_folderpath)
+# Update the config of the scrapy object 		
+						web_scrapy_object.CSVTimeDuration = csv_time_duration
+						web_scrapy_object.CompanyNumber = company_number
+						web_scrapy_object.CompanyGroupNumber = company_group_number
+		
+						csv_data_list, _ = web_scrapy_object.scrape_web(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]['scrapy_class_method'], *args, **kwargs)
+						g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
+# Write the data into CSV 
+						filepath = CMN.FUNC.get_dataset_stock_csv_filepath(scrapy_method_index, company_number, company_group_number)
+	        			CMN.FUNC.write_csv_file_data(csv_data_list, csv_filepath)
+# Update the time duration
+						CMN_FUNC.write_csv_time_duration_config_file(CMN_FUNC.CSV_DATA_TIME_DURATION_FILENAME, conf_folderpath, csv_time_duration)
+			else:
+				raise ValueError("Unknown scrapy method index: %d" % scrapy_method_index)
 
-
-#     def _scrape_class_data(self, scrapy_class_time_duration):
-#         # import pdb;pdb.set_trace()
-# # Setup the time duration configuration for the scrapy object
-#         scrapy_obj_cfg = self._init_cfg_for_scrapy_obj(scrapy_class_time_duration)
-#         scrapy_obj_cfg["csv_time_duration_table"] = self.source_type_csv_time_duration_dict
-#         scrapy_obj_cfg["disable_flush_scrapy_while_exception"] = self.xcfg["disable_flush_scrapy_while_exception"]
-# # Market type
-#         market_type = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_class_time_duration.scrapy_class_index]["company_group_market_type"]
-#         not_support_multithread = False
-#         if self.xcfg["multi_thread_amount"] is not None:
-#             try:
-#                 CMN.DEF.NO_SUPPORT_MULTITHREAD_SCRAPY_CLASS_INDEX.index(scrapy_class_time_duration.scrapy_class_index)
-#             except ValueError:
-#                 g_logger.warn(u"%s does NOT support multi-threads......." % CMN.DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index])
-#                 not_support_multithread = True
-# # Create the scrapy object to transform the data from Web to CSV
-#         if self.xcfg["multi_thread_amount"] is not None and (not not_support_multithread):
-#             g_logger.debug("Scrape %s in %d threads" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_class_time_duration.scrapy_class_index], self.xcfg["multi_thread_amount"]))
-# # Run in multi-threads
-#             sub_scrapy_obj_cfg_list = []
-#             sub_company_group_list = self.__get_market_type_company_group_set(market_type).get_sub_company_group_set_list(self.xcfg["multi_thread_amount"])
-# # Perpare the config for each thread
-#             for sub_company_group in sub_company_group_list:
-#                 sub_scrapy_obj_cfg = copy.deepcopy(scrapy_obj_cfg)
-#                 sub_scrapy_obj_cfg["company_group_set"] = sub_company_group
-#                 sub_scrapy_obj_cfg_list.append(sub_scrapy_obj_cfg)
-# # Start the thread to scrap data
-#             self._multi_thread_scrape_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, sub_scrapy_obj_cfg_list)
-#         else:
-#             scrapy_obj_cfg["company_group_set"] = self.__get_market_type_company_group_set(market_type)
-#             self._scrape_web_data_to_csv_file(scrapy_class_time_duration.scrapy_class_index, **scrapy_obj_cfg)
-
-
-
-
-# def scrape_company(company_number, table_data_count=1):

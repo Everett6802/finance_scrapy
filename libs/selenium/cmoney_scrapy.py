@@ -12,6 +12,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 import common_definition as CMN_DEF
+import GUIWebScrapyBase as ScrapyBase
 # import libs.common as CMN
 # g_logger = CMN.LOG.get_logger()
 
@@ -29,7 +30,23 @@ def __parse_data_from_table0_element(table_element, table_data_count=CMN_DEF.CMO
 		data_name_list.append(th_element.text)
 # Parse the data time and data
 	# data_name_list_len = len(data_name_list)
-	data_time_list = []
+# 	data_time_list = []
+# 	data_list = []
+# 	tr_elements_len = len(tr_elements)
+# # Restrict to the max data
+# 	if table_data_count > tr_elements_len:
+# 		# g_logger.warn("There are just %d data !!!" % tr_elements_len)
+# 		table_data_count = tr_elements_len
+# 	table_column_end_index = table_data_count + 1
+# 	for tr_element in tr_elements[1:table_column_end_index]:
+# 		td_elements = tr_element.find_elements_by_tag_name("td")
+# 		data_time_list.append(td_elements[0].text)
+# 		data_element_list = []
+# 		for td_element in td_elements[1:]:
+# 			data_element_list.append(td_element.text)
+# 		data_list.append(data_element_list)
+
+# 	return (data_list, data_time_list, data_name_list)
 	data_list = []
 	tr_elements_len = len(tr_elements)
 # Restrict to the max data
@@ -37,25 +54,49 @@ def __parse_data_from_table0_element(table_element, table_data_count=CMN_DEF.CMO
 		# g_logger.warn("There are just %d data !!!" % tr_elements_len)
 		table_data_count = tr_elements_len
 	table_column_end_index = table_data_count + 1
-	for tr_element in tr_elements[1:table_column_end_index]:
+	for index, tr_element in enumerate(tr_elements[1:table_column_end_index]):
 		td_elements = tr_element.find_elements_by_tag_name("td")
-		data_time_list.append(td_elements[0].text)
-		data_element_list = []
+		data_element_list = [td_elements[0].text,]
 		for td_element in td_elements[1:]:
 			data_element_list.append(td_element.text)
 		data_list.append(data_element_list)
 
-	return (data_list, data_time_list, data_name_list)
+	return (data_list, data_name_list)
 
 
 def __parse_data_from_table1_element(table_element, table_data_count=CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT):
 	# import pdb; pdb.set_trace()
 	tr_elements = table_element.find_elements_by_tag_name("tr")
-	data_time_list = None
 	data_name_list = None
 	data_list = None
-	# import pdb; pdb.set_trace()
+	# data_time_list = None
+	# # import pdb; pdb.set_trace()
 	table_column_end_index = None
+# 	for tr_element in tr_elements:
+# 		# print tr_element.text
+# 		row_list = tr_element.text.split(' ')
+# 		row_list_len = len(row_list)
+# # Restrict to the max data
+# 		if table_data_count > row_list_len:
+# 			# g_logger.warn("There are just %d data !!!" % row_list_len)
+# 			table_data_count = row_list_len
+
+# 		if data_time_list is None:
+# 			table_column_end_index = table_data_count + 1
+# 			data_time_list = []
+# 			data_time_list.extend(row_list[1:table_column_end_index])
+# 			data_name_list = []
+# # CAUTION: Can't write in this way
+# 			# data_list = [[],] * data_time_list_len
+# 			data_list = []
+# 			for i in range(len(data_time_list)):
+# 				data_list.append([])
+# 		else:
+# 			data_name_list.append(row_list[0])
+# 			for index, data in enumerate(row_list[1:table_column_end_index]):
+# 				data_list[index].append(data)
+
+# 	return (data_list, data_time_list, data_name_list)
 	for tr_element in tr_elements:
 		# print tr_element.text
 		row_list = tr_element.text.split(' ')
@@ -65,22 +106,20 @@ def __parse_data_from_table1_element(table_element, table_data_count=CMN_DEF.CMO
 			# g_logger.warn("There are just %d data !!!" % row_list_len)
 			table_data_count = row_list_len
 
-		if data_time_list is None:
+		if data_list is None:
 			table_column_end_index = table_data_count + 1
-			data_time_list = []
-			data_time_list.extend(row_list[1:table_column_end_index])
-			data_name_list = []
+			# data_time_list = []
+			# data_time_list.extend(row_list[1:table_column_end_index])
+			data_list = [[data_time,] for data_time in row_list[1:table_column_end_index]]
 # CAUTION: Can't write in this way
 			# data_list = [[],] * data_time_list_len
-			data_list = []
-			for i in range(len(data_time_list)):
-				data_list.append([])
+			data_name_list = []
 		else:
 			data_name_list.append(row_list[0])
 			for index, data in enumerate(row_list[1:table_column_end_index]):
 				data_list[index].append(data)
 
-	return (data_list, data_time_list, data_name_list)
+	return (data_list, data_name_list)
 
 
 def __parse_data_from_table(driver, table_element_parse_func, *args, **kwargs):
@@ -110,12 +149,12 @@ def __parse_data_from_table(driver, table_element_parse_func, *args, **kwargs):
 		table_data_count = CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT
 	assert table_data_count >= 1, "The table_data_count[%d] should be greater than 1" % table_data_count
 
-	(data_list, data_time_list, data_name_list) = table_element_parse_func(table_element, table_data_count)
-	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_time_list, data_name_list)
-	return (data_list, data_time_list, data_name_list)
+	(data_list, data_name_list) = table_element_parse_func(table_element, table_data_count)
+	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_name_list)
+	return (data_list, data_name_list)
 
 
-def __print_table_scrapy_result(data_list, data_time_list, data_name_list):
+def __print_table_scrapy_result(data_list, data_name_list):
 	# import pdb; pdb.set_trace()
 	data_time_list_len = len(data_time_list)
 	print "  ".join(data_name_list)
@@ -187,7 +226,7 @@ class CMoneyWebScrapyMeta(type):
 		return type.__new__(mcs, name, bases, attrs)
 
 
-class CMoneyWebScrapy(object):
+class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
 	__metaclass__ = CMoneyWebScrapyMeta
 
@@ -299,7 +338,9 @@ class CMoneyWebScrapy(object):
 	def __init__(self):
 		# self.url = url
 		self.webdriver = None
+		self.csv_time_duration = None
 		self.company_number = None
+		self.company_group_number = None
 		self.is_annual = True
 
 
@@ -314,7 +355,7 @@ class CMoneyWebScrapy(object):
 		return False
 
 
-	def scrape(self, scrapy_method, *args, **kwargs):
+	def scrape_web(self, scrapy_method, *args, **kwargs):
 		url = None
 		# import pdb; pdb.set_trace()
 		if self.__MARKET_URL.get(scrapy_method, None) is not None:
@@ -336,6 +377,23 @@ class CMoneyWebScrapy(object):
 		return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **kwargs)
 
 
+
+    def scrape_web_to_csv(self, scrapy_method,  *args, **kwargs):
+        csv_data_list, _ = self.scrape_web(scrapy_method, *args, **kwargs)
+        csv_filepath = 
+        g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
+        CMN.FUNC.write_csv_file_data(csv_data_list, csv_filepath)
+
+
+	@property
+	def CSVTimeDuration(self):
+		return self.csv_time_duration
+
+	@CSVTimeDuration.setter
+	def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
+		self.csv_time_duration = csv_time_duration
+
+
 	@property
 	def CompanyNumber(self):
 		return self.company_number
@@ -343,6 +401,15 @@ class CMoneyWebScrapy(object):
 	@CompanyNumber.setter
 	def CompanyNumber(self, company_number):
 		self.company_number = company_number
+
+
+	@property
+	def CompanyGroupNumber(self):
+		return self.company_group_number
+
+	@CompanyGroupNumber.setter
+	def CompanyGroupNumber(self, company_group_number):
+		self.company_group_number = company_group_number
 
 
 if __name__ == '__main__':

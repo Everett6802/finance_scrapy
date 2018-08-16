@@ -13,6 +13,7 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime, timedelta
 import libs.common as CMN
 import libs.base as BASE
+# import CMN.CLS.CSVTimeRangeUpdate as CSVTimeRangeUpdate
 import stock_url_time_range as URLTimeRange
 g_logger = CMN.LOG.get_logger()
 
@@ -101,11 +102,18 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
             )
             web2csv_time_duration_update_tuple = (web2csv_time_duration_update,)
         else:
-            web2csv_time_duration_update_tuple = self._get_extended_web2csv_time_duration_update_cfg(
+            # web2csv_time_duration_update_tuple = self._get_extended_web2csv_time_duration_update_cfg(
+            #     self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX], 
+            #     time_duration_after_lookup_time.time_duration_start, 
+            #     time_duration_after_lookup_time.time_duration_end
+            # )
+            self.new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_extended_csv_time_duration(
                 self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX], 
                 time_duration_after_lookup_time.time_duration_start, 
                 time_duration_after_lookup_time.time_duration_end
             )
+            # if web2csv_time_duration_update_before is not None or web2csv_time_duration_update_after is not None:
+            #     web2csv_time_duration_update_tuple = (web2csv_time_duration_update_before, web2csv_time_duration_update_after)
         if web2csv_time_duration_update_tuple is not None:
             self.new_csv_time_duration_dict[company_code_number] = self.new_csv_extension_time_duration
         return web2csv_time_duration_update_tuple

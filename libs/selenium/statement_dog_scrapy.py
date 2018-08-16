@@ -14,6 +14,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 
 import common_definition as CMN_DEF
+import GUIWebScrapyBase as ScrapyBase
 
 
 PRINT_SCRAPY = True
@@ -74,24 +75,36 @@ def __parse_item_table(driver):
 def __parse_data_table(driver):
 	table_element = driver.find_element_by_id("dataTable")
 	tr_elements = table_element.find_elements(By.TAG_NAME, "tr")
+# # Time
+# 	data_time_list = []
+# 	th_elements = tr_elements[0].find_elements(By.TAG_NAME, "th")
+# 	for th_element in th_elements:
+# 		data_time_list.append(th_element.text)
+# # Data
+# 	data_list = []
+# 	for i in range(len(data_time_list)):
+# 		data_list.append([])
+# 	for tr_element in tr_elements[1:]:
+# 		td_elements = tr_element.find_elements(By.TAG_NAME, "td")
+# 		for index, td_element in enumerate(td_elements):
+# 			data_list[index].append(td_element.text)
+
+# 	return (data_list, data_time_list)
 # Time
-	data_time_list = []
+	data_list = []
 	th_elements = tr_elements[0].find_elements(By.TAG_NAME, "th")
 	for th_element in th_elements:
-		data_time_list.append(th_element.text)
+		data_list.append([th_element.text,])
 # Data
-	data_list = []
-	for i in range(len(data_time_list)):
-		data_list.append([])
 	for tr_element in tr_elements[1:]:
 		td_elements = tr_element.find_elements(By.TAG_NAME, "td")
 		for index, td_element in enumerate(td_elements):
 			data_list[index].append(td_element.text)
 
-	return (data_list, data_time_list)
+	return data_list
 
 
-def __print_table_scrapy_result(data_list, data_time_list, data_name_list):
+def __print_table_scrapy_result(data_list, data_name_list):
 	# import pdb; pdb.set_trace()
 	data_time_list_len = len(data_time_list)
 	print "  ".join(data_name_list)
@@ -120,9 +133,9 @@ def __scrape_table_data(driver, menu_title_index, list_index, *args, **kwargs):
 
 # Parse Table
 	data_name_list = __parse_item_table(driver)
-	(data_list, data_time_list) = __parse_data_table(driver)
-	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_time_list, data_name_list)
-	return (data_list, data_time_list, data_name_list)
+	data_list = __parse_data_table(driver)
+	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_name_list)
+	return (data_list, data_name_list)
 
 
 def _scrape_income_statement_(driver, *args, **kwargs):
@@ -160,7 +173,7 @@ class StatementDogWebScrapyMeta(type):
 		return type.__new__(mcs, name, bases, attrs)
 
 
-class StatementDogWebScrapy(object):
+class StatementDogWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
 	__metaclass__ = StatementDogWebScrapyMeta
 
@@ -187,7 +200,9 @@ class StatementDogWebScrapy(object):
 
 	def __init__(self):
 		self.webdriver = None
+		self.csv_time_duration = None
 		self.company_number = None
+		self.company_group_number = None
 		self.company_number_changed = True
 
 
@@ -203,7 +218,7 @@ class StatementDogWebScrapy(object):
 		return False
 
 
-	def scrape(self, scrapy_method, *args, **kwargs):
+	def scrape_web(self, scrapy_method, *args, **kwargs):
 		if self.company_number is None:
 			raise ValueError("Unknown company number !!!")
 		if self.__FUNC_PTR.get(scrapy_method, None) is None:
@@ -230,6 +245,15 @@ class StatementDogWebScrapy(object):
 
 
 	@property
+	def CSVTimeDuration(self):
+		return self.csv_time_duration
+
+	@CSVTimeDuration.setter
+	def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
+		self.csv_time_duration = csv_time_duration
+
+
+	@property
 	def CompanyNumber(self):
 		if self.company_number is None:
 			raise ValueError("self.company_number is NOT set")
@@ -240,6 +264,15 @@ class StatementDogWebScrapy(object):
 		if self.company_number != company_number:
 			self.company_number_changed = True
 			self.company_number = company_number
+
+
+	@property
+	def CompanyGroupNumber(self):
+		return self.company_group_number
+
+	@CompanyGroupNumber.setter
+	def CompanyGroupNumber(self, company_group_number):
+		self.company_group_number = company_group_number
 
 
 if __name__ == '__main__':

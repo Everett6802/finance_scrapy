@@ -666,7 +666,7 @@ def get_finance_mode():
     return finance_mode
 
 
-def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as_list=False):
+def read_csv_time_duration_config_file(conf_filename, conf_folderpath, get_index_from_description_func_ptr=get_scrapy_class_index_from_description):
     # import pdb; pdb.set_trace()
     csv_time_duration_dict = {}
     try:
@@ -677,24 +677,26 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, return_as
             # scrapy_class_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             if param_list_len != 3:
                 raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
-            scrapy_class_index = get_scrapy_class_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+            index = (get_index_from_description_func_ptr)(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(param_list[1])
             time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(param_list[2])
-            csv_time_duration_dict[scrapy_class_index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
+            csv_time_duration_dict[index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
     except ValueError as e:
         csv_time_duration_dict = None
     return csv_time_duration_dict
 
 
-def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict):
+def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict, description_array=CMN_DEF.SCRAPY_CLASS_DESCRIPTION):
     # import pdb; pdb.set_trace()
     conf_line_list = []
-    source_type_start_index, source_type_end_index = get_scrapy_class_index_range()
-    for scrapy_class_index in range(source_type_start_index, source_type_end_index):
-        time_duration_tuple = csv_time_duration_dict.get(scrapy_class_index, None)
-        if time_duration_tuple is None:
-            continue
-        csv_time_duration_entry_unicode = u"%s %s %s" % (CMN_DEF.SCRAPY_CLASS_DESCRIPTION[scrapy_class_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
+    # source_type_start_index, source_type_end_index = get_scrapy_class_index_range()
+    # for scrapy_class_index in range(source_type_start_index, source_type_end_index):
+    for index in sorted(csv_time_duration_dict.keys()):
+        # time_duration_tuple = csv_time_duration_dict.get(scrapy_class_index, None)
+        # if time_duration_tuple is None:
+        #     continue
+        time_duration_tuple = csv_time_duration_dict[index]
+        csv_time_duration_entry_unicode = u"%s %s %s" % ((description_array)[index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
         conf_line_list.append(csv_time_duration_entry_unicode.encode(CMN_DEF.UNICODE_ENCODING_IN_FILE) + "\n")
     write_config_file_lines_ex(conf_line_list, conf_filename, "wb", conf_folderpath)
 
@@ -1195,7 +1197,7 @@ def merge_stock_csv(src_folderpath, dst_folderpath, company_dict, method_index_l
 #     shutil.rmtree(finance_parent_folderpath, ignore_errors=True)
 
 
-def assemble_finance_data_folder(finance_parent_folderpath, company_group_number=None, company_number=None):
+def get_finance_data_folder(finance_parent_folderpath, company_group_number=None, company_number=None):
 # company_group_number:
 # None: Ignore
 # -1 : Market
@@ -1213,7 +1215,7 @@ def assemble_finance_data_folder(finance_parent_folderpath, company_group_number
 
 
 def check_finance_data_folder_exist(finance_parent_folderpath, company_group_number=None, company_number=None):
-    folderpath = assemble_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
+    folderpath = get_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
     return check_file_exist(folderpath)
 
 
@@ -1264,7 +1266,7 @@ def delete_finance_data_folder(finance_parent_folderpath, company_group_number=N
 # None: Ignore
 # -1 : Market
 # >0 : Stock
-    folderpath = assemble_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
+    folderpath = get_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
     exist = check_file_exist(folderpath)
     if exist:
         shutil.rmtree(folderpath, ignore_errors=True)
@@ -1278,3 +1280,39 @@ def delete_finance_stock_data_folders(finance_parent_folderpath, company_group_c
 # Delete finance stock folder
             stock_folderpath = folderpath + "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number)
             shutil.rmtree(stock_folderpath, ignore_errors=True)
+
+
+def get_dataset_market_folderpath():
+    return "%s/%s" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN_DEF.CSV_MARKET_FOLDERNAME)
+
+
+def get_dataset_stock_folderpath(company_number, company_group_number):
+    company_group_number = int(company_group_number)
+    return "%s/%s%02d/%s" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_number, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+
+
+def get_dataset_xxx_folderpath(company_number=None, company_group_number=None):
+    folderpath = None
+    if company_number is not None:
+        folderpath = get_dataset_market_folderpath()
+    else:
+        folderpath = get_dataset_stock_folderpath(company_number, company_group_number)
+    return folderpath
+
+
+def get_dataset_market_csv_filepath(method_index):
+    return "%s/%s/%s.csv" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN_DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+
+
+def get_dataset_stock_csv_filepath(method_index, company_number, company_group_number):
+    company_group_number = int(company_group_number)
+    return "%s/%s%02d/%s/%s.csv" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_number, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+
+
+def get_dataset_xxx_csv_filepath(method_index, company_number=None, company_group_number=None):
+    csv_filepath = None
+    if company_number is not None:
+        csv_filepath = get_dataset_market_csv_filepath(method_index)
+    else:
+        csv_filepath = get_dataset_stock_csv_filepath(method_index, company_number, company_group_number)
+    return csv_filepath

@@ -12,6 +12,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 import common_definition as CMN_DEF
+import GUIWebScrapyBase as ScrapyBase
 # import libs.common as CMN
 # g_logger = CMN.LOG.get_logger()
 
@@ -57,7 +58,7 @@ class GoodInfoWebScrapyMeta(type):
 		return type.__new__(mcs, name, bases, attrs)
 
 
-class GoodInfoWebScrapy(object):
+class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
 	__metaclass__ = GoodInfoWebScrapyMeta
 
@@ -107,7 +108,9 @@ class GoodInfoWebScrapy(object):
 	def __init__(self):
 		# self.url = url
 		self.webdriver = None
+		self.csv_time_duration = None
 		self.company_number = None
+		self.company_group_number = None
 		# self.is_annual = True
 
 
@@ -145,12 +148,30 @@ class GoodInfoWebScrapy(object):
 
 
 	@property
+	def CSVTimeDuration(self):
+		return self.csv_time_duration
+
+	@CSVTimeDuration.setter
+	def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
+		self.csv_time_duration = csv_time_duration
+
+
+	@property
 	def CompanyNumber(self):
 		return self.company_number
 
 	@CompanyNumber.setter
 	def CompanyNumber(self, company_number):
 		self.company_number = company_number
+
+
+	@property
+	def CompanyGroupNumber(self):
+		return self.company_group_number
+
+	@CompanyGroupNumber.setter
+	def CompanyGroupNumber(self, company_group_number):
+		self.company_group_number = company_group_number
 
 
 if __name__ == '__main__':

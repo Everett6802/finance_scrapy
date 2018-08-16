@@ -662,3 +662,301 @@ class FinanceTimerThread(threading.Thread):
         while not self.exit_event.isSet( ):
             self.func_ptr(*self.func_args, **self.func_kwargs)
             self.exit_event.wait(self.interval)
+
+
+#############################################################################################
+
+class CSVTimeRangeUpdate(object):
+        
+    CSV_APPEND_NONE = 0 # No new web data to append
+    CSV_APPEND_BEFORE = 1 #  new web data will be appended in front of the old csv data
+    CSV_APPEND_AFTER = 2 #  new web data will be appended in back of the old csv data
+        # CSV_APPEND_BOTH = 3 #  new web data will be appended in front and back(both) of the old csv data
+
+    @classmethod
+    def get_extended_csv_time_duration(cls, csv_old_time_duration_tuple, time_duration_start, time_duration_end):
+        # import pdb; pdb.set_trace()
+# Adjust the time duration, ignore the data which already exist in the finance data folder
+# I assume that the time duration between the csv data and new data should be consecutive
+# Two cases which the original time range can be extended successfully: 
+# (1) The new time range overlaps the original one
+# (2) The new time range fully covers the original one
+        overlap_case = CMN_FUNC.get_time_range_overlap_case(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end)
+        new_csv_extension_time_duration = None
+        web2csv_time_duration_update_before = None
+        web2csv_time_duration_update_after = None
+        if overlap_case == CMN_DEF.TIME_OVERLAP_COVERED:
+# # All csv data already exists, no need to update the new data
+#             g_logger.debug("The time duration[%s:%s] of the CSV data[%s] already exist ......" % (time_duration_start, time_duration_end, CMN_DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX]))
+#             new_csv_extension_time_duration = None
+#             return None
+            return (new_csv_extension_time_duration, None,)
+        elif overlap_case == CMN_DEF.TIME_OVERLAP_BEFORE:
+# The new time range is extended before the start side of the original time range
+            web2csv_time_duration_update_before = cls()
+            web2csv_time_duration_update_before.OldCSVStart = csv_old_time_duration_tuple.time_duration_start
+            web2csv_time_duration_update_before.OldCSVEnd = csv_old_time_duration_tuple.time_duration_end
+            web2csv_time_duration_update_before.NewWebStart = time_duration_start
+            web2csv_time_duration_update_before.NewWebEnd = web2csv_time_duration_update_before.OldCSVStart - 1
+            web2csv_time_duration_update_before.AppendDirection = cls.CSV_APPEND_BEFORE
+            # g_logger.debug("Extend the time duration before the original CSV data[%s %s:%s]: %s:%s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], web2csv_time_duration_update_before.OldCSVStart, web2csv_time_duration_update_before.OldCSVEnd, web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_before.NewWebEnd))
+            new_csv_extension_time_duration = TimeDurationTuple(web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_before.OldCSVEnd)
+            return (new_csv_extension_time_duration, (web2csv_time_duration_update_before,),)
+        elif overlap_case == CMN_DEF.TIME_OVERLAP_AFTER:
+# The new time range is extended after the end side of the original time range
+            web2csv_time_duration_update_after = cls()
+            web2csv_time_duration_update_after.OldCSVStart = csv_old_time_duration_tuple.time_duration_start
+            web2csv_time_duration_update_after.OldCSVEnd = csv_old_time_duration_tuple.time_duration_end
+            web2csv_time_duration_update_after.NewWebStart = web2csv_time_duration_update_after.OldCSVEnd + 1
+            web2csv_time_duration_update_after.NewWebEnd = time_duration_end
+            web2csv_time_duration_update_after.AppendDirection = cls.CSV_APPEND_AFTER
+            # g_logger.debug("Extend the time duration after the original CSV data[%s %s:%s]: %s:%s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], web2csv_time_duration_update_after.OldCSVStart, web2csv_time_duration_update_after.OldCSVEnd, web2csv_time_duration_update_after.NewWebStart, web2csv_time_duration_update_after.NewWebEnd))
+            new_csv_extension_time_duration = TimeDurationTuple(web2csv_time_duration_update_after.OldCSVStart, web2csv_time_duration_update_after.NewWebEnd)
+            return (new_csv_extension_time_duration, (web2csv_time_duration_update_after,),)
+        elif overlap_case == CMN_DEF.TIME_OVERLAP_COVER:
+# The new time range covers the original time range and extended before/after the start/end side of the original time range
+            web2csv_time_duration_update_before = cls()
+            web2csv_time_duration_update_before.OldCSVStart = csv_old_time_duration_tuple.time_duration_start
+            web2csv_time_duration_update_before.OldCSVEnd = csv_old_time_duration_tuple.time_duration_end
+            web2csv_time_duration_update_before.NewWebStart = time_duration_start
+            web2csv_time_duration_update_before.NewWebEnd = web2csv_time_duration_update_before.OldCSVStart - 1
+            web2csv_time_duration_update_before.AppendDirection = cls.CSV_APPEND_BEFORE
+            # g_logger.debug("Extend the time duration before the original CSV data[%s %s:%s]: %s:%s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], web2csv_time_duration_update_before.OldCSVStart, web2csv_time_duration_update_before.OldCSVEnd, web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_before.NewWebEnd))
+            web2csv_time_duration_update_after = cls()
+            web2csv_time_duration_update_after.OldCSVStart = csv_old_time_duration_tuple.time_duration_start
+            web2csv_time_duration_update_after.OldCSVEnd = csv_old_time_duration_tuple.time_duration_end
+            web2csv_time_duration_update_after.NewWebStart = web2csv_time_duration_update_after.OldCSVEnd + 1
+            web2csv_time_duration_update_after.NewWebEnd = time_duration_end
+            web2csv_time_duration_update_after.AppendDirection = cls.CSV_APPEND_AFTER
+            # g_logger.debug("Extend the time duration after the original CSV data[%s %s:%s]: %s:%s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[self.SCRAPY_CLASS_INDEX], web2csv_time_duration_update_after.OldCSVStart, web2csv_time_duration_update_after.OldCSVEnd, web2csv_time_duration_update_after.NewWebStart, web2csv_time_duration_update_after.NewWebEnd))
+            new_csv_extension_time_duration = TimeDurationTuple(web2csv_time_duration_update_before.NewWebStart, web2csv_time_duration_update_after.NewWebEnd)
+            return (new_csv_extension_time_duration, (web2csv_time_duration_update_before, web2csv_time_duration_update_after,),)
+# If the time range of new data contain all the time range of csv data, the system is not desiged to update two time range interval
+        else:
+            raise CMN.EXCEPTION.WebScrapyUnDefiedCaseException("The system does NOT support this type[2] of the range update; CSV data[%s:%s], new data[%s:%s]" % (csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+
+
+    def __init__(self):
+        self.append_direction = self.CSV_APPEND_NONE
+        self.old_csv_start = None
+        self.old_csv_end = None
+        self.new_web_start = None
+        self.new_web_end = None
+        # self.new_csv_start = None
+        # self.new_csv_end = None
+        self.description = None
+
+
+    def __str__(self):
+        if self.description is None:
+            self.description = ""
+            if self.old_csv_start is not None:
+                self.description += "OCS: %s; " % self.old_csv_start
+            if self.old_csv_end is not None:
+                self.description += "OCE: %s; " % self.old_csv_end
+            if self.new_web_start is not None:
+                self.description += "NWS: %s; " % self.new_web_start
+            if self.new_web_end is not None:
+                self.description += "NWE: %s; " % self.new_web_end
+            # if self.new_csv_start is not None:
+            #     self.description += "NCS: %s; " % self.new_csv_start
+            # if self.new_csv_end is not None:
+            #     self.description += "NCE: %s; " % self.new_csv_end
+        return self.description
+
+
+    def __repr__(self):
+        return self.__str__()
+
+    @property
+    def NeedUpdate(self):
+        return (True if (self.append_direction != self.CSV_APPEND_NONE) else False)
+
+    @property
+    def AppendDirection(self):
+        return self.append_direction
+    @AppendDirection.setter
+    def AppendDirection(self, append_direction):
+        self.append_direction = append_direction
+
+    @property
+    def OldCSVStart(self):
+        return self.old_csv_start
+    @OldCSVStart.setter
+    def OldCSVStart(self, old_csv_start):
+        self.old_csv_start = old_csv_start
+
+    @property
+    def OldCSVEnd(self):
+        return self.old_csv_end
+    @OldCSVEnd.setter
+    def OldCSVEnd(self, old_csv_end):
+        self.old_csv_end = old_csv_end
+
+    @property
+    def NewWebStart(self):
+        return self.new_web_start
+    @NewWebStart.setter
+    def NewWebStart(self, new_web_start):
+        self.new_web_start = new_web_start
+
+    @property
+    def NewWebEnd(self):
+        return self.new_web_end
+    @NewWebEnd.setter
+    def NewWebEnd(self, new_web_end):
+        self.new_web_end = new_web_end
+
+    # @property
+    # def NewCSVStart(self):
+    #     return self.new_csv_start
+    # @NewCSVStart.setter
+    # def NewCSVStart(self, new_csv_start):
+    #     self.new_csv_start = new_csv_start
+
+    # @property
+    # def NewCSVEnd(self):
+    #     return self.new_csv_end
+    # @NewCSVEnd.setter
+    # def NewCSVEnd(self, new_csv_end):
+    #     self.new_csv_end = new_csv_end
+
+
+    def backup_old_csv_if_necessary(self, csv_filepath, ignore_old_csv_exist=False):
+        backup_old_csv = False
+        if self.append_direction == self.CSV_APPEND_BEFORE: #BASE.BASE.ScrapyBase.CSVTimeRangeUpdate.CSV_APPEND_BEFORE:
+            old_csv_filepath = csv_filepath + ".old"
+            if CMN_FUNC.check_file_exist(old_csv_filepath):
+                if not ignore_old_csv_exist:
+                    raise ValueError("The CSV file[%s] already exists !!!" % old_csv_filepath)
+            else:
+                # g_logger.debug("Need add the new data in front of the old CSV data, rename the file: %s" % (csv_filepath + ".old"))
+                CMN_FUNC.rename_file_if_exist(csv_filepath, csv_filepath + ".old") 
+                backup_old_csv = True
+        return backup_old_csv
+
+
+    def append_old_csv_if_necessary(self, csv_filepath):
+        if self.append_direction == self.CSV_APPEND_BEFORE: #BASE.BASE.ScrapyBase.CSVTimeRangeUpdate.CSV_APPEND_BEFORE:
+            # g_logger.debug("Append the old CSV data to the file: %s" % csv_filepath)
+            CMN_FUNC.append_data_into_file(csv_filepath + ".old", csv_filepath)
+            CMN_FUNC.remove_file_if_exist(csv_filepath + ".old") 
+
+
+class CSVFileNoScrapyRecord(object):
+
+    # STATUS_RECORD_TIME_RANGE_NOT_OVERLAP = 0
+    # STATUS_RECORD_CSV_FILE_ALREADY_EXIST = 1
+    # STATUS_RECORD_WEB_DATA_NOT_FOUND = 2
+    # RECORD_TYPE_INDEX_LIST = [
+    #     STATUS_RECORD_TIME_RANGE_NOT_OVERLAP,
+    #     STATUS_RECORD_CSV_FILE_ALREADY_EXIST,
+    #     STATUS_RECORD_WEB_DATA_NOT_FOUND
+    # ]
+    RECORD_TYPE_INDEX = 0
+    RECORD_TYPE_DESCRIPTION_INDEX = 1
+    RECORD_TYPE_ENTRY_LIST = [
+        ["TimeRangeNotOverlap", "The search time range does NOT overlap the one in the URL time range lookup table",],
+        ["CSVFileAlreadyExist", "The CSV files of the time range has already existed in the local folder",],
+        ["WebDataNotFound", "The web data of the URL is NOT found",],
+    ]
+    RECORD_TYPE_SIZE = len(RECORD_TYPE_ENTRY_LIST)
+    TIME_RANGE_NOT_OVERLAP_RECORD_INDEX = 0
+    CSV_FILE_ALREADY_EXIST_RECORD_INDEX = 1
+    WEB_DATA_NOT_FOUND_RECORD_INDEX = 2
+
+    RECORD_TYPE_LIST = [entry[RECORD_TYPE_INDEX] for entry in RECORD_TYPE_ENTRY_LIST]
+    RECORD_TYPE_DESCRIPTION_LIST = [entry[RECORD_TYPE_DESCRIPTION_INDEX] for entry in RECORD_TYPE_ENTRY_LIST]
+
+    @classmethod
+    def create_register_status_instance(cls):
+        # import pdb; pdb.set_trace()
+        csv_file_no_scrapy_record = cls()
+        for index in range(cls.RECORD_TYPE_SIZE):
+            csv_file_no_scrapy_record.__register_record_type(
+                cls.RECORD_TYPE_LIST[index], 
+                cls.RECORD_TYPE_DESCRIPTION_LIST[index]
+            )
+        return csv_file_no_scrapy_record
+
+
+    def __init__(self):
+        self.record_type_dict = {}
+        self.record_type_description_dict = {}
+        self.web_data_not_found_time_start = None
+        self.web_data_not_found_time_end = None
+
+
+    def __register_record_type(self, record_type_name, record_type_description):
+        # import pdb; pdb.set_trace()
+        if self.record_type_dict.has_key(record_type_name):
+            g_logger.debug("The type[%s] has already exist" % record_type_name)
+            return
+        self.record_type_dict[record_type_name] = []
+        self.record_type_description_dict[record_type_name] = record_type_description
+
+
+    def __add_record(self, record_type_name, *args):
+        if not self.record_type_dict.has_key(record_type_name):
+            raise ValueError("Unknown Check Status Type: %s" % record_type_name)
+        self.record_type_dict[record_type_name].append(args)
+
+
+    def add_time_range_not_overlap_record(self, *args):
+# Market
+# args[0]: source type index
+# Stock
+# args[0]: source type index
+# args[1]: company code number
+        self.__add_record("TimeRangeNotOverlap", *args)
+
+
+    def add_csv_file_already_exist_record(self, *args):
+# Market
+# args[0]: source type index
+# Stock
+# args[0]: source type index
+# args[1]: company code number
+        self.__add_record("CSVFileAlreadyExist", *args)
+
+
+    def add_web_data_not_found_record(self, *args):
+# Market
+# args[0]: time slice. None for a must to flush data into list
+# args[1]: source type index
+# Stock
+# args[0]: time slice. None for a must to flush data into list
+# args[1]: source type index
+# args[2]: company code number
+        need_flush = False
+        if args[0] is None:
+            if self.web_data_not_found_time_start is not None:
+                need_flush = True
+        else:
+            if self.web_data_not_found_time_start is None:
+                self.web_data_not_found_time_start = self.web_data_not_found_time_end = args[0]
+            else:
+                if self.web_data_not_found_time_end.check_continous_time_duration(args[0]):
+                    self.web_data_not_found_time_end = args[0]
+                else:
+                    need_flush = True
+# Keep track of the time range in which the web data is empty
+        if need_flush:
+# Market
+# args_new[0]: time slice. None for a must to flush data into list
+# args_new[1]: source type index
+# args_new[2]: empty time start
+# args_new[3]: empty time end
+# Stock
+# args_new[0]: time slice. None for a must to flush data into list
+# args_new[1]: source type index
+# args_new[2]: company code number
+# args_new[2]: empty time start
+# args_new[3]: empty time end
+                # import pdb; pdb.set_trace()
+                # args_new = copy.deepcopy(args)
+            args_new = [arg for arg in args]
+            args_new.append(self.web_data_not_found_time_start)
+            args_new.append(self.web_data_not_found_time_end)
+            self.web_data_not_found_time_start = self.web_data_not_found_time_end = None
+            self.__add_record("WebDataNotFound", *args_new)
