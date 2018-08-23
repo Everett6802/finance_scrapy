@@ -108,7 +108,7 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
 	def __init__(self):
 		# self.url = url
 		self.webdriver = None
-		self.csv_time_duration = None
+		# self.csv_time_duration = None
 		self.company_number = None
 		self.company_group_number = None
 		# self.is_annual = True
@@ -147,13 +147,13 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
 		return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **kwargs)
 
 
-	@property
-	def CSVTimeDuration(self):
-		return self.csv_time_duration
+	# @property
+	# def CSVTimeDuration(self):
+	# 	return self.csv_time_duration
 
-	@CSVTimeDuration.setter
-	def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
-		self.csv_time_duration = csv_time_duration
+	# @CSVTimeDuration.setter
+	# def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
+	# 	self.csv_time_duration = csv_time_duration
 
 
 	@property

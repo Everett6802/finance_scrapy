@@ -81,39 +81,59 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
 
     def _adjust_time_range_from_csv(self, *args):
         # import pdb; pdb.set_trace()
-        def check_old_csv_time_duration_exist(scrapy_class_index, company_code_number, csv_time_duration_table):
-            if csv_time_duration_table is None:
-                return False 
-            company_csv_time_duration_table = csv_time_duration_table.get(company_code_number, None)
-            if company_csv_time_duration_table is None:
-                return False
-            if company_csv_time_duration_table.get(scrapy_class_index, None) is None:
-                return False
-            return True
+#         def check_old_csv_time_duration_exist(scrapy_class_index, company_code_number, csv_time_duration_table):
+#             if csv_time_duration_table is None:
+#                 return False 
+#             company_csv_time_duration_table = csv_time_duration_table.get(company_code_number, None)
+#             if company_csv_time_duration_table is None:
+#                 return False
+#             if company_csv_time_duration_table.get(scrapy_class_index, None) is None:
+#                 return False
+#             return True
+#         assert len(args) == 2, "The argument length should be 2, NOT %d" % len(args)
+#         time_duration_after_lookup_time = args[0]
+#         company_code_number = args[1]
+# # Determine the CSV/Web time duration
+#         web2csv_time_duration_update_tuple = None
+#         if not check_old_csv_time_duration_exist(self.SCRAPY_CLASS_INDEX, company_code_number, self.xcfg["csv_time_duration_table"]):
+#             web2csv_time_duration_update = self._get_init_web2csv_time_duration_update_cfg(
+#                 time_duration_after_lookup_time.time_duration_start, 
+#                 time_duration_after_lookup_time.time_duration_end
+#             )
+#             web2csv_time_duration_update_tuple = (web2csv_time_duration_update,)
+#         else:
+#             # web2csv_time_duration_update_tuple = self._get_extended_web2csv_time_duration_update_cfg(
+#             #     self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX], 
+#             #     time_duration_after_lookup_time.time_duration_start, 
+#             #     time_duration_after_lookup_time.time_duration_end
+#             # )
+#             self.new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
+#                 time_duration_after_lookup_time.time_duration_start, 
+#                 time_duration_after_lookup_time.time_duration_end,
+#                 self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX]
+#             )
+#             # if web2csv_time_duration_update_before is not None or web2csv_time_duration_update_after is not None:
+#             #     web2csv_time_duration_update_tuple = (web2csv_time_duration_update_before, web2csv_time_duration_update_after)
+
+        def get_old_csv_time_duration_if_exist(scrapy_class_index, company_code_number, csv_time_duration_table):
+            if csv_time_duration_table is not None:
+                company_csv_time_duration_table = csv_time_duration_table.get(company_code_number, None)
+                if company_csv_time_duration_table is not None:
+                    if company_csv_time_duration_table.get(scrapy_class_index, None) is not None:
+                        return company_csv_time_duration_table[scrapy_class_index]
+            return None
         assert len(args) == 2, "The argument length should be 2, NOT %d" % len(args)
         time_duration_after_lookup_time = args[0]
         company_code_number = args[1]
-# Determine the CSV/Web time duration
-        web2csv_time_duration_update_tuple = None
-        if not check_old_csv_time_duration_exist(self.SCRAPY_CLASS_INDEX, company_code_number, self.xcfg["csv_time_duration_table"]):
-            web2csv_time_duration_update = self._get_init_web2csv_time_duration_update_cfg(
-                time_duration_after_lookup_time.time_duration_start, 
-                time_duration_after_lookup_time.time_duration_end
-            )
-            web2csv_time_duration_update_tuple = (web2csv_time_duration_update,)
-        else:
-            # web2csv_time_duration_update_tuple = self._get_extended_web2csv_time_duration_update_cfg(
-            #     self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX], 
-            #     time_duration_after_lookup_time.time_duration_start, 
-            #     time_duration_after_lookup_time.time_duration_end
-            # )
-            self.new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_extended_csv_time_duration(
-                self.xcfg["csv_time_duration_table"][company_code_number][self.SCRAPY_CLASS_INDEX], 
-                time_duration_after_lookup_time.time_duration_start, 
-                time_duration_after_lookup_time.time_duration_end
-            )
-            # if web2csv_time_duration_update_before is not None or web2csv_time_duration_update_after is not None:
-            #     web2csv_time_duration_update_tuple = (web2csv_time_duration_update_before, web2csv_time_duration_update_after)
+
+        csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(self.SCRAPY_CLASS_INDEX, company_code_number, self.xcfg["csv_time_duration_table"])
+
+        self.new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
+            time_duration_after_lookup_time.time_duration_start, 
+            time_duration_after_lookup_time.time_duration_end,
+            csv_old_time_duration_tuple
+        )
+
         if web2csv_time_duration_update_tuple is not None:
             self.new_csv_time_duration_dict[company_code_number] = self.new_csv_extension_time_duration
         return web2csv_time_duration_update_tuple

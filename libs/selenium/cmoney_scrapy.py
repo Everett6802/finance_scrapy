@@ -232,6 +232,9 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
 	__CMONEY_ULR_PREFIX = "https://www.cmoney.tw/finance/"
 
+	__MARKET_SCRAPY_CFG = {
+	}
+
 	__STOCK_SCRAPY_CFG = {
 		"dividend": { # 股利政策
 			"url_format": __CMONEY_ULR_PREFIX + "f00027.aspx?s=%s",
@@ -292,15 +295,32 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 			"table_xpath": "//*[@id=\"MainContent\"]/ul/li[6]/article/div/div/div/table",
 			"table_time_unit_list": ["&o=4", "&o=3",],
 			"table_time_unit_description_list": [u"季合併財務比率", u"年合併財務比率",],
+			"table_time_order_reserved": True,
 		},
 	}
 
 	__MARKET_URL = {}
 
+	__MARKET_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+	__MARKET_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+	__MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+
 	__STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
 	__STOCK_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
 	__STOCK_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
 	__STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+
+	__TABLE_XPATH = {}
+	__TABLE_XPATH.update(__MARKET_TABLE_XPATH)
+	__TABLE_XPATH.update(__STOCK_TABLE_XPATH)
+
+	__TIME_UNIT_LIST = {}
+	__TIME_UNIT_LIST.update(__MARKET_TIME_UNIT_LIST)
+	__TIME_UNIT_LIST.update(__STOCK_TIME_UNIT_LIST)
+
+	__TIME_UNIT_DESCRIPTION_LIST = {}
+	__TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
+	__TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
 
 	__FUNC_PTR = {
 # market start
@@ -321,6 +341,20 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
 
 	@classmethod
+	def _transform_time_str2obj(cls, time_unit, time_str):
+        time_obj = None
+        if time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+            year_str = time_str[0:4]
+            month_str = time_str[4:]
+            time_obj = CMN.CLS.FinanceMonth.from_string("%s-%s" % (year_str, month_str))
+        elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+            time_obj = CMN.CLS.FinanceQuarter.from_string(time_str)
+        else:
+            raise ValueError("Unsupport time unit[%d] for transform" % scrapy_data_time_unit)
+        return time_obj
+
+
+	@classmethod
 	def get_scrapy_method_list(cls):
 		return cls.__FUNC_PTR.keys()
 
@@ -331,14 +365,14 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
 
 	@classmethod
-	def print_scrapy_stock_method_time_unit_description(cls, scrapy_method):
-		print ", ".join(cls.__STOCK_TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
+	def print_scrapy_method_time_unit_description(cls, scrapy_method):
+		print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
 	def __init__(self):
 		# self.url = url
 		self.webdriver = None
-		self.csv_time_duration = None
+		# self.csv_time_duration = None
 		self.company_number = None
 		self.company_group_number = None
 		self.is_annual = True
@@ -373,25 +407,24 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 		else:
 			raise ValueError("Unknown scrapy method: %s" % scrapy_method)
 		self.webdriver.get(url)
-		kwargs['table_xpath'] = self.__STOCK_TABLE_XPATH[scrapy_method]
-		return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **kwargs)
+		kwargs['table_xpath'] = self.__TABLE_XPATH[scrapy_method]
+		data_list, data_name_list = (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **kwargs)
+		return data_list.reverse(), data_name_list
 
 
-
-    def scrape_web_to_csv(self, scrapy_method,  *args, **kwargs):
-        csv_data_list, _ = self.scrape_web(scrapy_method, *args, **kwargs)
-        csv_filepath = 
-        g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
-        CMN.FUNC.write_csv_file_data(csv_data_list, csv_filepath)
+    def scrape_web_to_csv(self, scrapy_method_index, *args, **kwargs):
+    	scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
+    	csv_data_list, _ = self.scrape_web(scrapy_method, *args, **kwargs)
+    	self._write_scrapy_data_to_csv(csv_data_list, scrapy_method_index, self.company_number, self.company_group_number)
 
 
-	@property
-	def CSVTimeDuration(self):
-		return self.csv_time_duration
+	# @property
+	# def CSVTimeDuration(self):
+	# 	return self.csv_time_duration
 
-	@CSVTimeDuration.setter
-	def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
-		self.csv_time_duration = csv_time_duration
+	# @CSVTimeDuration.setter
+	# def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
+	# 	self.csv_time_duration = csv_time_duration
 
 
 	@property

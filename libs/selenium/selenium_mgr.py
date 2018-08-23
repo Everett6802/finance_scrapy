@@ -94,21 +94,21 @@ class SeleniumMgr(object):
 			if CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
 				for company_group_number, company_number_list in  self.company_group_set.items():
 					for company_number in company_number_list:
-# Find the old CSV time duration
-						csv_time_duration_folderpath = CMN.FUNC.get_dataset_stock_folderpath(company_number, company_group_number)
-						csv_time_duration = CMN_FUNC.read_csv_time_duration_config_file(CMN_FUNC.CSV_DATA_TIME_DURATION_FILENAME, conf_folderpath)
-# Update the config of the scrapy object 		
-						web_scrapy_object.CSVTimeDuration = csv_time_duration
+# # Find the old CSV time duration
+# 						csv_time_duration_folderpath = CMN.FUNC.get_dataset_stock_folderpath(company_number, company_group_number)
+# 						csv_time_duration = CMN_FUNC.read_csv_time_duration_config_file(CMN_FUNC.CSV_DATA_TIME_DURATION_FILENAME, conf_folderpath)
+# # Update the config of the scrapy object 		
+# 						web_scrapy_object.CSVTimeDuration = csv_time_duration
 						web_scrapy_object.CompanyNumber = company_number
 						web_scrapy_object.CompanyGroupNumber = company_group_number
 		
-						csv_data_list, _ = web_scrapy_object.scrape_web(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]['scrapy_class_method'], *args, **kwargs)
-						g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
-# Write the data into CSV 
-						filepath = CMN.FUNC.get_dataset_stock_csv_filepath(scrapy_method_index, company_number, company_group_number)
-	        			CMN.FUNC.write_csv_file_data(csv_data_list, csv_filepath)
-# Update the time duration
-						CMN_FUNC.write_csv_time_duration_config_file(CMN_FUNC.CSV_DATA_TIME_DURATION_FILENAME, conf_folderpath, csv_time_duration)
+						web_scrapy_object.scrape_web_to_csv(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]['scrapy_class_method'], *args, **kwargs)
+# 						g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
+# # Write the data into CSV 
+# 						filepath = CMN.FUNC.get_dataset_stock_csv_filepath(scrapy_method_index, company_number, company_group_number)
+# 	        			CMN.FUNC.write_csv_file_data(csv_data_list, csv_filepath)
+# # Update the time duration
+# 						CMN_FUNC.write_csv_time_duration_config_file(CMN_FUNC.CSV_DATA_TIME_DURATION_FILENAME, conf_folderpath, csv_time_duration)
 			else:
 				raise ValueError("Unknown scrapy method index: %d" % scrapy_method_index)
 

@@ -538,12 +538,13 @@ class ScrapyBase(object):
     def _get_init_web2csv_time_duration_update_cfg(self, time_duration_start, time_duration_end):
         # import pdb; pdb.set_trace()
 # If it's time first time to write the data from web to CSV ......
-        web2csv_time_duration_update = CMN.CLS.CSVTimeRangeUpdate()
-        web2csv_time_duration_update.NewCSVStart = web2csv_time_duration_update.NewWebStart = time_duration_start
-        web2csv_time_duration_update.NewCSVEnd = web2csv_time_duration_update.NewWebEnd = time_duration_end
-        web2csv_time_duration_update.AppendDirection = CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_AFTER
-        self.new_csv_extension_time_duration = CMN.CLS.TimeDurationTuple(web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd)
-        return web2csv_time_duration_update
+        # web2csv_time_duration_update = CMN.CLS.CSVTimeRangeUpdate()
+        # web2csv_time_duration_update.NewCSVStart = web2csv_time_duration_update.NewWebStart = time_duration_start
+        # web2csv_time_duration_update.NewCSVEnd = web2csv_time_duration_update.NewWebEnd = time_duration_end
+        # web2csv_time_duration_update.AppendDirection = CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_AFTER
+        # self.new_csv_extension_time_duration = CMN.CLS.TimeDurationTuple(web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd)
+        self.new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_init_csv_time_duration(time_duration_start, time_duration_end)
+        return web2csv_time_duration_update_tuple[0]
 
 # #deprecated
 # #     def _get_extended_web2csv_time_duration_update_cfg(self, csv_old_time_duration_tuple, time_duration_start, time_duration_end):
