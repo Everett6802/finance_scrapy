@@ -68,7 +68,8 @@ class ScrapyConfigurer(object):
     @property
     def Method(self):
         if not hasattr(self, "method"):
-            self.method = [int(method_index_str) for method_index_str in self.get_config("Common", "method").split(",")]
+            self.method = CMN.FUNC.parse_method_str_to_list(self.get_config("Common", "method"))
+            # self.method = [int(method_index_str) for method_index_str in self.get_config("Common", "method").split(",")]
         return self.method
 
 

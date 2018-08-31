@@ -1051,6 +1051,21 @@ def get_data_not_whole_month_list(date_duration_start, date_duration_end):
     return data_not_whole_month_list
 
 
+def parse_method_str_to_list(method_str):
+    method_index_str_list = method_str.split(",")
+    # import pdb; pdb.set_trace()
+    method_index_list = []
+    for method_index_str in method_index_str_list:
+        mobj = re.match("([\d]+)-([\d]+)", method_index_str)
+        if mobj is not None:
+# The method index range
+            method_index_list += range(int(mobj.group(1)), int(mobj.group(2)))
+        else:
+# The method index
+            method_index_list.append(int(method_index_str))
+    return method_index_list
+
+
 def parse_time_duration_range_str_to_object(time_duration_range_list_str):
     time_duration_range_list = time_duration_range_list_str.split(",")
     time_duration_range_list_len = len(time_duration_range_list)

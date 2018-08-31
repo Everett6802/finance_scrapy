@@ -12,7 +12,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 import common_definition as CMN_DEF
-import GUIWebScrapyBase as ScrapyBase
+import gui_scrapy_base as ScrapyBase
 # import libs.common as CMN
 # g_logger = CMN.LOG.get_logger()
 

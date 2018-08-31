@@ -78,7 +78,7 @@ def show_usage_and_exit():
         print ""
         print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
         print "--update_company_stock_price\nDescription: Update the stock price of specific companies\nCaution: This arugment is equal to the argument combination as below: --force_switch_finance_mode 1 --method 9 --time_until_today --dataset_finance_folderpath --reserve_old --company xxxx\n"
-        print "--update_company_stock_price_from_file\nDescription: Update the stock price of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --force_switch_finance_mode 1 --method 9 --time_until_today --dataset_finance_folderpath --reserve_old\n"
+        print "--update_company_stock_price_from_file\nDescription: Update the stock price of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --force_switch_finance_mode 1 --method 9 --time_until_today --dataset_finance_folderpath --reserve_old --config_from_file\n"
     print "============================================================="
     sys.exit(0)
 
@@ -404,40 +404,41 @@ def parse_param(early_parse=False):
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
-# Adjust the parameters setting...
-        update_company_stock_price_company_list = None
-        if param_cfg["update_company_stock_price_from_file"] and param_cfg["update_company_stock_price"] is not None:
-            show_warn("The 'update_company_stock_price' argument won't take effect since 'update_company_stock_price_from_file' is set")
-            param_cfg["update_company_stock_price"] = None
-        if param_cfg["update_company_stock_price_from_file"]:
-            update_company_stock_price_company_list = BASE.SC.ScrapyConfigurer.Instance().Company
-        elif param_cfg["update_company_stock_price"] is not None:
-            update_company_stock_price_company_list = param_cfg["update_company_stock_price"]
 
-        if update_company_stock_price_company_list is not None:
-            if param_cfg["config_from_file"]:
-                show_warn("The 'config_from_file' argument won't take effect since 'update_company_stock_price' is set")
-                param_cfg["config_from_file"] = False
-            if early_parse:
-                if param_cfg["force_switch_finance_mode"] is not None:
-                    show_warn("The 'force_switch_finance_mode' argument won't take effect since 'update_company_stock_price' is set")
-                param_cfg["force_switch_finance_mode"] = 1
-            else:
-                if param_cfg["method"] is not None:
-                    show_warn("The 'method' argument won't take effect since 'update_company_stock_price' is set")
-                param_cfg["method"] = "9"
-                if param_cfg["time_duration_type"] is not None:
-                    show_warn("The 'time_duration_type' argument won't take effect since 'update_company_stock_price' is set")
-                param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST
-                if not param_cfg["dataset_finance_folderpath"]:
-                    show_warn("dataset_finance_folderpath' argument won't take effect since 'update_company_stock_price' is set")
+# Adjust the parameters setting...
+    update_company_stock_price_company_list = None
+    if param_cfg["update_company_stock_price_from_file"] and param_cfg["update_company_stock_price"] is not None:
+        show_warn("The 'update_company_stock_price' argument won't take effect since 'update_company_stock_price_from_file' is set")
+        param_cfg["update_company_stock_price"] = None
+    if param_cfg["update_company_stock_price_from_file"]:
+        update_company_stock_price_company_list = BASE.SC.ScrapyConfigurer.Instance().Company
+    elif param_cfg["update_company_stock_price"] is not None:
+        update_company_stock_price_company_list = param_cfg["update_company_stock_price"]
+
+    if update_company_stock_price_company_list is not None:
+        if param_cfg["config_from_file"]:
+            show_warn("The 'config_from_file' argument won't take effect since 'update_company_stock_price' is set")
+            param_cfg["config_from_file"] = False
+        if early_parse:
+            if param_cfg["force_switch_finance_mode"] is not None:
+                show_warn("The 'force_switch_finance_mode' argument won't take effect since 'update_company_stock_price' is set")
+            param_cfg["force_switch_finance_mode"] = 1
+        else:
+            if param_cfg["method"] is not None:
+                show_warn("The 'method' argument won't take effect since 'update_company_stock_price' is set")
+            param_cfg["method"] = "%d" % CMN.DEF.SCRAPY_MEMTHOD_DAILY_STOCK_PRICE_AND_VOLUME_INDEX
+            if param_cfg["time_duration_type"] is not None:
+                show_warn("The 'time_duration_type' argument won't take effect since 'update_company_stock_price' is set")
+            param_cfg["time_duration_type"] = CMN.DEF.DATA_TIME_DURATION_UNTIL_LAST
+            if not param_cfg["dataset_finance_folderpath"]:
+                show_warn("dataset_finance_folderpath' argument should be TRUE since 'update_company_stock_price' is set")
                 param_cfg["dataset_finance_folderpath"] = True
-                if not param_cfg["reserve_old"]:
-                    show_warn("reserve_old' argument won't take effect since 'update_company_stock_price' is set")
+            if not param_cfg["reserve_old"]:
+                show_warn("reserve_old' argument should be TRUE since 'update_company_stock_price' is set")
                 param_cfg["reserve_old"] = True
-                if not param_cfg["company"]:
-                    show_warn("company' argument won't take effect since 'update_company_stock_price' is set")
-                param_cfg["company"] = update_company_stock_price_company_list # param_cfg["update_company_stock_price"]
+            if not param_cfg["company"]:
+                show_warn("company' argument won't take effect since 'update_company_stock_price' is set")
+            param_cfg["company"] = update_company_stock_price_company_list # param_cfg["update_company_stock_price"]
 
 
 def check_param():    
@@ -529,17 +530,18 @@ def setup_param():
 # Set method
         method_index_list = None
         if param_cfg["method"] is not None:
-            method_index_str_list = param_cfg["method"].split(",")
-            # import pdb; pdb.set_trace()
-            method_index_list = []
-            for method_index_str in method_index_str_list:
-                mobj = re.match("([\d]+)-([\d]+)", method_index_str)
-                if mobj is not None:
-# The method index range
-                    method_index_list += range(int(mobj.group(1)), int(mobj.group(2)))
-                else:
-# The method index
-                    method_index_list.append(int(method_index_str))
+#             method_index_str_list = param_cfg["method"].split(",")
+#             # import pdb; pdb.set_trace()
+#             method_index_list = []
+#             for method_index_str in method_index_str_list:
+#                 mobj = re.match("([\d]+)-([\d]+)", method_index_str)
+#                 if mobj is not None:
+# # The method index range
+#                     method_index_list += range(int(mobj.group(1)), int(mobj.group(2)))
+#                 else:
+# # The method index
+#                     method_index_list.append(int(method_index_str))
+            method_index_list = CMN.FUNC.parse_method_str_to_list(param_cfg["method"])
 # Set time range
         time_range_start = None
         time_range_end = None
@@ -625,11 +627,15 @@ def get_manager(update_cfg):
     # assert g_configurer is None, "g_configurer should NOT be None"
     mgr_obj = None
     if GV.IS_FINANCE_MARKET_MODE:
-        from libs.market import market_mgr as MGR
-        mgr_obj = MGR.MarketMgr(**update_cfg)
+        # from libs.market import market_mgr as MGR
+        # mgr_obj = MGR.MarketMgr(**update_cfg)
+        from libs import market as MKT
+        mgr_obj = MKT.MGR.MarketMgr(**update_cfg)
     elif GV.IS_FINANCE_STOCK_MODE:
-        from libs.stock import stock_mgr as MGR
-        mgr_obj = MGR.StockMgr(**update_cfg)
+        # from libs.stock import stock_mgr as MGR
+        # mgr_obj = MGR.StockMgr(**update_cfg)
+        from libs import stock as STK
+        mgr_obj = STK.MGR.StockMgr(**update_cfg)
     else:
         raise ValueError("Unknown finance mode !!!")
     return mgr_obj
@@ -687,7 +693,6 @@ def do_clone():
     subprocess.call(["cp", "-r", g_mgr.FinanceRootFolderPath, clone_finance_folderpath])
 
 
-
 if __name__ == "__main__":
 # Parse the parameters and apply to manager class
     init_param()
@@ -706,12 +711,11 @@ if __name__ == "__main__":
         show_usage_and_exit()
     # import pdb; pdb.set_trace()
 # Initialize the manager class
-    g_mgr = get_manager(
-        {
-            "multi_thread_amount": param_cfg["multi_thread"],
-            "show_progress": param_cfg["show_progress"],
-        }
-    )
+    update_cfg = {
+        "multi_thread_amount": param_cfg["multi_thread"],
+        "show_progress": param_cfg["show_progress"],   
+    }
+    g_mgr = get_manager(update_cfg)
 # RUN the argument that will return after the execution is done
     if param_cfg["check_url"]:
         check_url_and_exit()

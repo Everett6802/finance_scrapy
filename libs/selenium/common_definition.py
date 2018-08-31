@@ -1,6 +1,8 @@
 #! /usr/bin/python
 # -*- coding: utf8 -*-
 
+import libs.common as CMN
+
 CMONEY_TABLE0_DIVIDEND_MAX_DATA_COUNT = 8
 CMONEY_TABLE1_MAX_DATA_COUNT = 8
 CMONEY_TABLE_DEF_DATA_COUNT = 1
@@ -32,12 +34,15 @@ SCRAPY_CLASS_CONSTANT_CFG = [
 
 SCRAPY_METHOD_DESCRIPTION = [cfg["description"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
 
-SCRAPY_METHOD_LEN = len(SCRAPY_MODULE_DESCRIPTION)
+SCRAPY_METHOD_LEN = len(SCRAPY_METHOD_DESCRIPTION)
 
 SCRAPY_MODULE_NAME_MAPPING = [cfg["module_name"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
 
 SCRAPY_CLASS_NAME_MAPPING = [cfg["class_name"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
 
+SCRAPY_CLASS_METHOD = [cfg["scrapy_class_method"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
+
+SCRAPY_MEMTHOD_REVENUE_INDEX = SCRAPY_CLASS_METHOD.index("revenue")
 # __scrapy_class_market_index_list__ = [index for index, cfg in enumerate(SCRAPY_CLASS_CONSTANT_CFG) if cfg['scrapy_type'] == 'market']
 # # semi-open interval
 # SCRAPY_MARKET_METHOD_START = min(__scrapy_class_market_index_list__)

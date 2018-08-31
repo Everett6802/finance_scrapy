@@ -5,8 +5,8 @@ import common_definition as CMN_DEF
 
 
 def get_selenium_web_scrapy_class(scrapy_method_index):
-	if scrapy_method_index < 0 or scrapy_method_index >= CMN_DEF.SCRAPY_METHOD_LEN:
-    	raise ValueError("scrapy_method_index[%d] is Out-Of-Range [0, %d)" % (scrapy_method_index, CMN_DEF.SCRAPY_METHOD_LEN))
+    if scrapy_method_index < 0 or scrapy_method_index >= CMN_DEF.SCRAPY_METHOD_LEN:
+        raise ValueError("scrapy_method_index[%d] is Out-Of-Range [0, %d)" % (scrapy_method_index, CMN_DEF.SCRAPY_METHOD_LEN))
     # import pdb; pdb.set_trace()
     module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER
     module_name = CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_method_index]

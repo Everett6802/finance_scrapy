@@ -14,7 +14,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 
 import common_definition as CMN_DEF
-import GUIWebScrapyBase as ScrapyBase
+import gui_scrapy_base as ScrapyBase
 
 
 PRINT_SCRAPY = True
