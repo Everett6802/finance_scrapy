@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 import libs.common as CMN
 import common_definition as CMN_DEF
+g_logger = CMN.LOG.get_logger()
 
 
 def get_selenium_web_scrapy_class(scrapy_method_index):

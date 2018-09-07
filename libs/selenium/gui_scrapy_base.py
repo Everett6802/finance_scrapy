@@ -20,10 +20,12 @@ class GUIWebScrapyBase(object):
                     return csv_time_duration_table[scrapy_method_index]
             return None
 
+        assert csv_data_list is not None, "csv_data_list should NOT be None"
+
         csv_time_duration_folderpath = CMN.FUNC.get_dataset_xxx_folderpath(company_number, company_group_number)
-        csv_time_duration_table = CMN_FUNC.read_csv_time_duration_config_file(CMN_FUNC.CSV_DATA_TIME_DURATION_FILENAME, conf_folderpath)
-     
-        scrapy_data_time_unit = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index][scrapy_data_time_unit]
+        csv_time_duration_table = CMN_FUNC.read_csv_time_duration_config_file(CMN_DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
+
+        scrapy_data_time_unit = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_data_time_unit"]
         time_duration_start = cls._transform_time_str2obj(scrapy_data_time_unit, csv_data_list[0][0])
         time_duration_end = cls._transform_time_str2obj(scrapy_data_time_unit, csv_data_list[-1][0])
 
@@ -61,21 +63,39 @@ class GUIWebScrapyBase(object):
 # Append the old CSV data after the new web data if necessary
             web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 # Update the time duration
-        CMN_FUNC.write_csv_time_duration_config_file(CMN_FUNC.CSV_DATA_TIME_DURATION_FILENAME, conf_folderpath, new_csv_extension_time_duration)
+        CMN_FUNC.write_csv_time_duration_config_file(CMN_DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath, new_csv_extension_time_duration)
 
 
     @abstractmethod
-    def scrape_web(self, scrapy_method, *args, **kwargs):
+    def scrape_web(self, *args, **kwargs):
         raise NotImplementedError
 
 
     @abstractmethod
-    def scrape_web_to_csv(self, scrapy_method, *args, **kwargs):
+    def scrape_web_to_csv(self, *args, **kwargs):
         raise NotImplementedError
 
 
     @abstractmethod
     def _transform_time_str2obj(cls, time_unit, time_str):
+        raise NotImplementedError
+
+
+    @property
+    def ScrapyMethod(self):
+        raise NotImplementedError
+
+    @ScrapyMethod.setter
+    def ScrapyMethod(self, value):
+        raise NotImplementedError
+
+
+    @property
+    def ScrapyMethodIndex(self):
+        raise NotImplementedError
+
+    @ScrapyMethodIndex.setter
+    def ScrapyMethodIndex(self, value):
         raise NotImplementedError
 
 

@@ -243,5 +243,5 @@ if __name__ == "__main__":
 # Setup the parameters for the manager
     setup_param()
 
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     do_scrapy()

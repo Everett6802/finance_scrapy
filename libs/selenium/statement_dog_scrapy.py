@@ -218,11 +218,11 @@ class StatementDogWebScrapy(ScrapyBase.GUIWebScrapyBase):
 		return False
 
 
-	def scrape_web(self, scrapy_method, *args, **kwargs):
+	def scrape_web(self, *args, **kwargs):
 		if self.company_number is None:
 			raise ValueError("Unknown company number !!!")
-		if self.__FUNC_PTR.get(scrapy_method, None) is None:
-			raise ValueError("The scrapy method[%s] is NOT defined" % scrapy_method)
+		if self.__FUNC_PTR.get(self.scrapy_method, None) is None:
+			raise ValueError("The scrapy method[%s] is NOT defined" % self.scrapy_method)
 
 		# print self.webdriver.title
 # Switch to certain a company
@@ -241,7 +241,7 @@ class StatementDogWebScrapy(ScrapyBase.GUIWebScrapyBase):
 			element_stockid.send_keys(Keys.RETURN)
 			self.company_number_changed = False
 		self.webdriver.implicitly_wait(5) # seconds
-		return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **kwargs)
+		return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
 
 
 	# @property
@@ -280,7 +280,8 @@ if __name__ == '__main__':
 		statement_dog.CompanyNumber = "2367"
 		# import pdb; pdb.set_trace()
 		for scrapy_method in StatementDogWebScrapy.get_scrapy_method_list():
-			statement_dog.scrape(scrapy_method)
+			statement_dog.ScrapyMethod = scrapy_method
+			statement_dog.scrape()
 			print "\n"
 		# statement_dog.scrape("cashflow statement")
 		print "Done"

@@ -11,10 +11,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
+import libs.common as CMN
 import common_definition as CMN_DEF
+import common_function as CMN_FUNC
 import gui_scrapy_base as ScrapyBase
-# import libs.common as CMN
-# g_logger = CMN.LOG.get_logger()
+g_logger = CMN.LOG.get_logger()
 
 
 PRINT_SCRAPY = True
@@ -156,10 +157,10 @@ def __parse_data_from_table(driver, table_element_parse_func, *args, **kwargs):
 
 def __print_table_scrapy_result(data_list, data_name_list):
     # import pdb; pdb.set_trace()
-    data_time_list_len = len(data_time_list)
+    data_list_len = len(data_list)
     print "  ".join(data_name_list)
-    for index in range(data_time_list_len):
-        print "%s: %s" % (data_time_list[index], "  ".join(data_list[index]))
+    for index in range(data_list_len):
+        print "%s: %s" % (data_list[index][0], "  ".join(data_list[index]))
 
 
 def _scrape_dividend_(driver, *args, **kwargs):
@@ -338,6 +339,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         "solvency": _scrape_solvency_,
 # stock end
     }
+    __METHOD_NAME_LIST = __FUNC_PTR.keys()
 
 
     @classmethod
@@ -356,12 +358,13 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
     @classmethod
     def get_scrapy_method_list(cls):
-        return cls.__FUNC_PTR.keys()
+        # return cls.__FUNC_PTR.keys()
+        return cls.__METHOD_NAME_LIST
 
 
     @classmethod
     def print_scrapy_method(cls):
-        print ", ".join(cls.get_scrapy_method_list())
+        print ", ".join(cls.__METHOD_NAME_LIST)
 
 
     @classmethod
@@ -376,6 +379,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         self.company_number = None
         self.company_group_number = None
         self.is_annual = True
+        self.method_list = None
 
 
     def __enter__(self):
@@ -389,32 +393,32 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         return False
 
 
-    def scrape_web(self, scrapy_method, *args, **kwargs):
+    def scrape_web(self, *args, **kwargs):
         url = None
         # import pdb; pdb.set_trace()
-        if self.__MARKET_URL.get(scrapy_method, None) is not None:
-            url = self.__MARKET_URL[scrapy_method]
-        elif self.__STOCK_URL_FORMAT.get(scrapy_method, None) is not None:
-            url_format = self.__STOCK_URL_FORMAT[scrapy_method]
+        if self.__MARKET_URL.get(self.scrapy_method, None) is not None:
+            url = self.__MARKET_URL[self.scrapy_method]
+        elif self.__STOCK_URL_FORMAT.get(self.scrapy_method, None) is not None:
+            url_format = self.__STOCK_URL_FORMAT[self.scrapy_method]
 # stock_time_unit
             stock_time_unit = None
             if kwargs.get("stock_time_unit", None) is not None:
                 stock_time_unit = kwargs["stock_time_unit"]
             if stock_time_unit is None:
                 stock_time_unit = CMN_DEF.CMONEY_STOCK_TABLE_DEF_TIME_UNIT
-            url_format += self.__STOCK_TIME_UNIT_LIST[scrapy_method][stock_time_unit]
+            url_format += self.__STOCK_TIME_UNIT_LIST[self.scrapy_method][stock_time_unit]
             url = url_format % self.company_number
         else:
-            raise ValueError("Unknown scrapy method: %s" % scrapy_method)
+            raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
         self.webdriver.get(url)
-        kwargs['table_xpath'] = self.__TABLE_XPATH[scrapy_method]
-        return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **kwargs)
+        kwargs['table_xpath'] = self.__TABLE_XPATH[self.scrapy_method]
+        return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
 
 
-    def scrape_web_to_csv(self, scrapy_method_index, *args, **kwargs):
-        scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
-        csv_data_list, _ = self.scrape_web(scrapy_method, *args, **kwargs)
-        self._write_scrapy_data_to_csv(csv_data_list, scrapy_method_index, self.company_number, self.company_group_number)
+    def scrape_web_to_csv(self, *args, **kwargs):
+        # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
+        csv_data_list, _ = self.scrape_web(*args, **kwargs)
+        self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.company_number, self.company_group_number)
 
 
     # @property
@@ -424,6 +428,37 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
     # @CSVTimeDuration.setter
     # def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
     # 	self.csv_time_duration = csv_time_duration
+
+
+    @property
+    def ScrapyMethod(self):
+        return self.scrapy_method
+
+    @ScrapyMethod.setter
+    def ScrapyMethod(self, value):
+        try:
+            self.method_list.index(value)
+        except ValueError:
+            errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
+            g_logger.error(errmsg)
+            raise ValueError(errmsg)
+        self.scrapy_method = value
+        if self.scrapy_method_index is not None:
+            g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
+            self.scrapy_method_index = None
+        raise NotImplementedError
+
+
+    @property
+    def ScrapyMethodIndex(self):
+        return self.scrapy_method_index
+
+    @ScrapyMethodIndex.setter
+    def ScrapyMethodIndex(self, value):
+        if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+            raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
+        self.scrapy_method_index = value
+        self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
 
 
     @property
@@ -450,7 +485,8 @@ if __name__ == '__main__':
         kwargs = {}
         kwargs["table_data_count"] = 2
         for scrapy_method in CMoneyWebScrapy.get_scrapy_method_list():
-            cmoney.scrape(scrapy_method, **kwargs)
+            cmoney.ScrapyMethod = scrapy_method
+            cmoney.scrape(**kwargs)
             print "\n"
 		# cmoney.scrape("dividend", **kwargs)
 		# import pdb; pdb.set_trace()

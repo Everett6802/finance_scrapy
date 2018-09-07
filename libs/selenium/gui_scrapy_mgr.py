@@ -4,6 +4,8 @@
 import libs.common as CMN
 from libs.common.common_variable import GlobalVar as GV
 import libs.base as BASE
+import common_definition as CMN_DEF
+import common_function as CMN_FUNC
 import gui_scrapy_configurer as Configurer
 import cmoney_scrapy as CMS
 import statement_dog_scrapy as SDS
@@ -21,6 +23,7 @@ class GUIScrapyMgr(object):
         self.xcfg.update(cfg)
 
         self.configurer = None
+        self.company_profile = None
         self.method_index_list = None
         self.company_group_set = None
         self.scrapy_obj_args = []
@@ -29,8 +32,14 @@ class GUIScrapyMgr(object):
 
     def __get_configurer(self):
         if self.configurer is None:
-            self.configurer = Configurer.GUIScrapyConfigurer.Instance()
+            self.configurer = BASE.SC.ScrapyConfigurer.Instance()
         return self.configurer
+
+
+    def __get_company_profile(self):
+        if self.company_profile is None:
+            self.company_profile = BASE.CP.CompanyProfile.Instance()
+        return self.company_profile
 
 
     def __get_finance_root_folderpath(self, finance_root_folderpath=None):
@@ -43,9 +52,18 @@ class GUIScrapyMgr(object):
         return folderpath
 
 
-    def _remove_old_finance_folder(self, finance_root_folderpath=None):
-        CMN.FUNC.delete_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
-        CMN.FUNC.delete_finance_stock_data_folders(self._get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
+    def __create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
+        # self._create_finance_root_folder_if_not_exist(finance_root_folderpath)
+        # folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        # g_logger.debug("Try to create new folder: %s" % folderpath)
+        # CMN.FUNC.create_folder_if_not_exist(folderpath)
+        CMN.FUNC.create_finance_data_folder(self.__get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
+        CMN.FUNC.create_finance_stock_data_folders(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
+
+
+    def __remove_old_finance_folder(self, finance_root_folderpath=None):
+        CMN.FUNC.delete_finance_data_folder(self.__get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
+        CMN.FUNC.delete_finance_stock_data_folders(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
 
 
     def set_config_from_file(self):
@@ -113,20 +131,23 @@ class GUIScrapyMgr(object):
 
     def do_scrapy(self):
         if not self.xcfg["reserve_old_finance_folder"]:
-            self._remove_old_finance_folder()
-        self._create_finance_folder_if_not_exist()
+            self.__remove_old_finance_folder()
+        self.__create_finance_folder_if_not_exist()
 
+        # import pdb; pdb.set_trace()
         for method_index in self.method_index_list:
-            web_scrapy_class = CMN.FUNC.get_selenium_web_scrapy_class(method_index)
+            web_scrapy_class = CMN_FUNC.get_selenium_web_scrapy_class(method_index)
             with web_scrapy_class() as web_scrapy_object:
+                web_scrapy_object.ScrapyMethodIndex = method_index
                 if CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
                     for company_group_number, company_number_list in  self.company_group_set.items():
                         for company_number in company_number_list:
 # Update the config of the scrapy object
                             web_scrapy_object.CompanyNumber = company_number
                             web_scrapy_object.CompanyGroupNumber = company_group_number
-# Scrape the web		
-                            web_scrapy_object.scrape_web_to_csv(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]['scrapy_class_method'], *self.scrapy_obj_args, **self.scrapy_obj_kwargs)
+# Scrape the web
+                            # import pdb; pdb.set_trace()
+                            web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
     # 						g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
                 else:
-                    raise ValueError("Unknown scrapy method index: %d" % scrapy_method_index)
+                    raise ValueError("Unknown scrapy method index: %d" % method_index)

@@ -94,6 +94,10 @@ def get_full_stack_traceback():
     return errmsg
 
 
+def get_instance_class_name(instance):
+    return instance.__class__.__name__
+
+
 def import_web_scrapy_module(module_folder, module_name):
     # import pdb; pdb.set_trace()
     module_path = "%s/%s" % (GV.PROJECT_LIB_FOLDERPATH, module_folder)
@@ -1293,7 +1297,7 @@ def delete_finance_stock_data_folders(finance_parent_folderpath, company_group_c
     if check_file_exist(folderpath):
         for index in range(company_group_count):
 # Delete finance stock folder
-            stock_folderpath = folderpath + "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number)
+            stock_folderpath = folderpath + "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, index)
             shutil.rmtree(stock_folderpath, ignore_errors=True)
 
 
