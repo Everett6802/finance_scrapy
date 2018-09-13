@@ -178,6 +178,7 @@ class FinanceDate(FinanceTimeBase):
         self.date_str = None
         self.datetime_cfg = None
         try:
+            format_unsupport = False
             if len(args) == 1:
                 time_cfg = None
                 if isinstance(args[0], str):
@@ -192,19 +193,23 @@ class FinanceDate(FinanceTimeBase):
                     self.month = args[0].month
                     self.day = args[0].day
                 else:
-                    raise
+                    format_unsupport = True
             elif len(args) == 3:
                 for index in range(3):
                     if type(args[index]) is not int:
-                        raise
+                        format_unsupport = True
                 self.setup_year_value(args[0])
                 # self.year = args[0]
                 self.month = args[1]
                 self.day = args[2]
             else:
-                raise
-        except Exception:
-            raise ValueError("Unknown argument in FormatDate format: %s" % args)
+                format_unsupport = True
+            if format_unsupport:
+                raise ValueError("Unsupport argument format: %s" % [type(data) for data in args])
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            raise Exception("Exception occurs in FinanceDate, due to: %s" % str(e))
 # Check value range
         FinanceDate.check_value_range(self.year, self.month, self.day)
 
@@ -305,6 +310,7 @@ class FinanceMonth(FinanceTimeBase):
         self.month = None # range: 1 - 12
         self.month_str = None
         try:
+            format_unsupport = False
             if len(args) == 1:
                 time_cfg = None
                 if isinstance(args[0], str):
@@ -317,18 +323,22 @@ class FinanceMonth(FinanceTimeBase):
                     # self.year = args[0].year
                     self.month = args[0].month
                 else:
-                    raise
+                    format_unsupport = True
             elif len(args) == 2:
                 for index in range(2):
                     if type(args[index]) is not int:
-                        raise
+                        format_unsupport = True
                 self.setup_year_value(args[0])
                 # self.year = args[0]
                 self.month = args[1]
             else:
-                raise
-        except Exception:
-            raise ValueError("Unknown argument in FormatMonth format: %s" % args)
+                format_unsupport = True
+            if format_unsupport:
+                raise ValueError("Unsupport argument format: %s" % [type(data) for data in args])
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            raise Exception("Exception occurs in FinanceMonth, due to: %s" % str(e))
 # Check value range
         FinanceMonth.check_value_range(self.year, self.month)
 
@@ -471,6 +481,7 @@ class FinanceQuarter(FinanceTimeBase):
         self.quarter_str = None
         # import pdb; pdb.set_trace()
         try:
+            format_unsupport = False
             if len(args) == 1:
                 if isinstance(args[0], str):
                     mobj = CMN_FUNC.check_quarter_str_format(args[0])
@@ -482,17 +493,21 @@ class FinanceQuarter(FinanceTimeBase):
                     # self.year = args[0].year
                     self.quarter = (int)(math.ceil(args[0].month / 3.0))
                 else:
-                    raise
+                    format_unsupport = True
             elif len(args) == 2:
                 for index in range(2):
                     if type(args[index]) is not int:
-                        raise
+                        format_unsupport = True
                 self.year = args[0]
                 self.quarter = args[1]
             else:
-                raise
-        except Exception:
-            raise ValueError("Unknown argument in FormatQuarter format: %s" % args)
+                format_unsupport = True
+            if format_unsupport:
+                raise ValueError("Unsupport argument format: %s" % [type(data) for data in args])
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            raise Exception("Exception occurs in FinanceQuarter, due to: %s" % str(e))
 # Check value Range
         FinanceQuarter.check_value_range(self.year, self.quarter)
 
@@ -563,21 +578,26 @@ class FinanceTimeRange(object):
         self.time_range_str = None
         # import pdb; pdb.set_trace()
         try:
+            format_unsupport = False
             if len(args) == 1:
                 if isinstance(args[0], str):
                     (self.time_start, self.time_end) = CMN_FUNC.parse_time_duration_range_str_to_object(args[0])
                 else:
-                    raise
+                    format_unsupport = True
             elif len(args) == 2:
                 for index in range(2):
                     if not isinstance(args[index], FinanceTimeBase):
-                        raise
+                        format_unsupport = True
                 self.time_start = args[0]
                 self.time_end = args[1]
             else:
-                raise
-        except Exception:
-            raise ValueError("Unknown argument in FormatQuarter format: %s" % args)
+                format_unsupport = True
+            if format_unsupport:
+                raise ValueError("Unsupport argument format: %s" % [type(data) for data in args])
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            raise Exception("Exception occurs in FinanceTimeRange, due to: %s" % str(e))
 
 
     def is_greater_than_time_start(self, finance_time):

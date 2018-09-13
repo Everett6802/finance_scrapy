@@ -12,6 +12,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 import libs.common as CMN
+# from libs.common.common_variable import GlobalVar as GV
 import common_definition as CMN_DEF
 import common_function as CMN_FUNC
 import gui_scrapy_base as ScrapyBase
@@ -151,8 +152,10 @@ def __parse_data_from_table(driver, table_element_parse_func, *args, **kwargs):
     assert table_data_count >= 1, "The table_data_count[%d] should be greater than 1" % table_data_count
 
     (data_list, data_name_list) = table_element_parse_func(table_element, table_data_count)
+# Re-Order the data time: from old to new
+    data_list.reverse()
     if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_name_list)
-    return (data_list.reverse(), data_name_list)
+    return (data_list, data_name_list)
 
 
 def __print_table_scrapy_result(data_list, data_name_list):
@@ -345,12 +348,14 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
     @classmethod
     def _transform_time_str2obj(cls, time_unit, time_str):
         time_obj = None
+        # import pdb; pdb.set_trace()
         if time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
-            year_str = time_str[0:4]
-            month_str = time_str[4:]
-            time_obj = CMN.CLS.FinanceMonth.from_string("%s-%s" % (year_str, month_str))
+            # year_str = time_str[0:4]
+            # month_str = time_str[4:]
+            month_time_str = "%s-%s" % (time_str[0:4], time_str[4:])
+            time_obj = CMN.CLS.FinanceMonth(month_time_str)
         elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
-            time_obj = CMN.CLS.FinanceQuarter.from_string(time_str)
+            time_obj = CMN.CLS.FinanceQuarter(time_str)
         else:
             raise ValueError("Unsupport time unit[%d] for transform" % scrapy_data_time_unit)
         return time_obj
@@ -372,7 +377,11 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
-    def __init__(self):
+    def __init__(self, **cfg):
+# For the variables which are NOT changed during scraping
+        self.xcfg = {
+            "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
+        }
         # self.url = url
         self.webdriver = None
         # self.csv_time_duration = None
@@ -418,7 +427,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
     def scrape_web_to_csv(self, *args, **kwargs):
         # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
         csv_data_list, _ = self.scrape_web(*args, **kwargs)
-        self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.company_number, self.company_group_number)
+        self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], self.company_number, self.company_group_number)
 
 
     # @property

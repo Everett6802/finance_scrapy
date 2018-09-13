@@ -94,6 +94,104 @@ def get_full_stack_traceback():
     return errmsg
 
 
+def get_cur_module_name(module):
+    return os.path.basename(os.path.realpath(module)).split('.')[0]
+
+
+def check_success(ret):
+    return True if ret == CMN_DEF.RET_SUCCESS else False
+
+
+def check_failure(ret):
+    return True if ret > CMN_DEF.RET_FAILURE_BASE else False
+
+
+def check_file_exist(filepath):
+    check_exist = True
+    try:
+        os.stat(filepath)
+    except OSError as exception:
+        if exception.errno != errno.ENOENT:
+            print "%s: %s" % (errno.errorcode[exception.errno], os.strerror(exception.errno))
+            raise
+        check_exist = False
+    return check_exist
+
+
+def check_config_file_exist(conf_filename, conf_folderpath=None):
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+    return check_file_exist(conf_filepath)
+
+
+def create_folder(folderpath):
+    # os.mkdir(folderpath)
+    os.makedirs(folderpath)
+
+
+def create_folder_if_not_exist(folderpath):
+    need_create = not check_file_exist(folderpath)
+    if need_create:
+        create_folder(folderpath)
+    return need_create
+
+
+def rename_file(old_filepath, new_filepath):
+    os.rename(old_filepath, new_filepath)
+
+
+def rename_file_if_exist(old_filepath, new_filepath):
+    can_rename = check_file_exist(old_filepath)
+    if can_rename:
+        rename_file(old_filepath, new_filepath)
+    return can_rename
+
+
+def remove_file(filepath):
+    os.remove(filepath)
+
+
+def remove_file_if_exist(filepath):
+    can_remove = check_file_exist(filepath)
+    if can_remove:
+        remove_file(filepath)
+    return can_remove
+
+
+def remove_config_file_if_exist(conf_filename, conf_folderpath=None):
+    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
+    return remove_file_if_exist(conf_filepath)
+
+
+def remove_folder(folderpath):
+    shutil.rmtree(folderpath)
+
+
+def remove_folder_if_exist(folderpath):
+    can_remove = check_file_exist(folderpath)
+    if can_remove:
+        remove_folder(folderpath)
+    return can_remove
+
+
+def copy_file(src_filepath, dst_filepath):
+    shutil.copy2(src_filepath, dst_filepath)
+
+
+def copy_file_if_exist(src_filepath, dst_filepath):
+    can_copy = check_file_exist(src_filepath)
+    if can_copy:
+        copy_file(src_filepath, dst_filepath)
+    return can_copy
+
+
+def append_data_into_file(src_filepath, dst_filepath):
+    if not check_file_exist(src_filepath):
+        raise ValueError("The file[%s] does NOT exist" % src_filepath)
+    with open(src_filepath, 'r') as src_fp, open(dst_filepath, 'a+') as dst_fp:
+        for line in src_fp:
+            dst_fp.write(line)
+
+
 def get_instance_class_name(instance):
     return instance.__class__.__name__
 
@@ -555,8 +653,14 @@ def unicode_read_config_file_lines(conf_filename, conf_folderpath=None, conf_uni
     return unicode_read_config_file_lines_ex(conf_filename, 'rb', conf_folderpath, conf_unicode_encode)
 
 
-def write_csv_file_data(data_list, filepath, file_write_attribute='a+'):
+def write_csv_file_data(data_list, filepath, file_write_attribute='a+', autogen_parent_folder=True):
     # import pdb; pdb.set_trace()
+    if autogen_parent_folder:
+# Create the path folder if Not exist
+        filepath_parent1 = os.path.dirname(filepath)
+        filepath_parent2 = os.path.dirname(filepath_parent1)
+        create_folder_if_not_exist(filepath_parent2)
+        create_folder_if_not_exist(filepath_parent1)
     try:
         with open(filepath, file_write_attribute) as fp:
             fp_writer = csv.writer(fp, delimiter=',')
@@ -756,104 +860,6 @@ def get_month_last_day(year, month):
 #         datetime_duration_list[-1]['end'] = datetime_duration_end
 
 #     return datetime_duration_list
-
-
-def get_cur_module_name(module):
-    return os.path.basename(os.path.realpath(module)).split('.')[0]
-
-
-def check_success(ret):
-    return True if ret == CMN_DEF.RET_SUCCESS else False
-
-
-def check_failure(ret):
-    return True if ret > CMN_DEF.RET_FAILURE_BASE else False
-
-
-def check_file_exist(filepath):
-    check_exist = True
-    try:
-        os.stat(filepath)
-    except OSError as exception:
-        if exception.errno != errno.ENOENT:
-            print "%s: %s" % (errno.errorcode[exception.errno], os.strerror(exception.errno))
-            raise
-        check_exist = False
-    return check_exist
-
-
-def check_config_file_exist(conf_filename, conf_folderpath=None):
-    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
-    return check_file_exist(conf_filepath)
-
-
-def create_folder(folderpath):
-    # os.mkdir(folderpath)
-    os.makedirs(folderpath)
-
-
-def create_folder_if_not_exist(folderpath):
-    need_create = not check_file_exist(folderpath)
-    if need_create:
-        create_folder(folderpath)
-    return need_create
-
-
-def rename_file(old_filepath, new_filepath):
-    os.rename(old_filepath, new_filepath)
-
-
-def rename_file_if_exist(old_filepath, new_filepath):
-    can_rename = check_file_exist(old_filepath)
-    if can_rename:
-        rename_file(old_filepath, new_filepath)
-    return can_rename
-
-
-def remove_file(filepath):
-    os.remove(filepath)
-
-
-def remove_file_if_exist(filepath):
-    can_remove = check_file_exist(filepath)
-    if can_remove:
-        remove_file(filepath)
-    return can_remove
-
-
-def remove_config_file_if_exist(conf_filename, conf_folderpath=None):
-    conf_filepath = get_config_filepath(conf_filename, conf_folderpath)
-    return remove_file_if_exist(conf_filepath)
-
-
-def remove_folder(folderpath):
-    shutil.rmtree(folderpath)
-
-
-def remove_folder_if_exist(folderpath):
-    can_remove = check_file_exist(folderpath)
-    if can_remove:
-        remove_folder(folderpath)
-    return can_remove
-
-
-def copy_file(src_filepath, dst_filepath):
-    shutil.copy2(src_filepath, dst_filepath)
-
-
-def copy_file_if_exist(src_filepath, dst_filepath):
-    can_copy = check_file_exist(src_filepath)
-    if can_copy:
-        copy_file(src_filepath, dst_filepath)
-    return can_copy
-
-
-def append_data_into_file(src_filepath, dst_filepath):
-    if not check_file_exist(src_filepath):
-        raise ValueError("The file[%s] does NOT exist" % src_filepath)
-    with open(src_filepath, 'r') as src_fp, open(dst_filepath, 'a+') as dst_fp:
-        for line in src_fp:
-            dst_fp.write(line)
 
 
 def remove_comma_in_string(original_string):
@@ -1216,7 +1222,7 @@ def merge_stock_csv(src_folderpath, dst_folderpath, company_dict, method_index_l
 #     shutil.rmtree(finance_parent_folderpath, ignore_errors=True)
 
 
-def get_finance_data_folder(finance_parent_folderpath, company_group_number=None, company_number=None):
+def get_finance_data_folderpath(finance_parent_folderpath, company_group_number=None, company_number=None):
 # company_group_number:
 # None: Ignore
 # -1 : Market
@@ -1227,14 +1233,46 @@ def get_finance_data_folder(finance_parent_folderpath, company_group_number=None
         if company_group_number == -1:
             folderpath += "/%s" % CMN_DEF.CSV_MARKET_FOLDERNAME
         else:
-            folderpath += "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number)
+            company_group_number = int(company_group_number)
+            folderpath += "/%s%02d" % (CMN_DEF.CSV_STOCK_FOLDERNAME, int(company_group_number))
             if company_number is not None:
                 folderpath += "/%s" % company_number    
     return folderpath
 
 
+def get_finance_data_csv_filepath(method_index, finance_parent_folderpath, company_group_number=None, company_number=None):
+    folderpath = get_finance_data_folderpath(finance_parent_folderpath, company_group_number, company_number)
+#     if company_group_number is None:
+# # Market mode
+#         if company_number is not None:
+#             raise ValueError("company_group_number and company_number should be both None")
+#         if not (CMN_DEF.CRAPY_MARKET_METHOD_START <= method_index < CMN_DEF.CRAPY_MARKET_METHOD_END):
+#             raise ValueError("The method index is NOT in the Market index range: [%d: %d)" % (CMN_DEF.CRAPY_MARKET_METHOD_START, CMN_DEF.CRAPY_MARKET_METHOD_END))
+#     else:
+# # Stock mode
+#         if company_number is None:
+#             raise ValueError("company_group_number and company_number should be both NOT None")
+#         if not (CMN_DEF.CRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.CRAPY_STOCK_METHOD_END):
+#             raise ValueError("The method index is NOT in the Stock index range: [%d: %d)" % (CMN_DEF.CRAPY_STOCK_METHOD_START, CMN_DEF.CRAPY_STOCK_METHOD_END))
+    if (CMN_DEF.SCRAPY_MARKET_METHOD_START <= method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END):
+# Market mode
+        if company_group_number is not None:
+            raise ValueError("company_group_number should be None")
+        if company_number is not None:
+            raise ValueError("company_number should be None")
+    elif (CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END):
+# Stock mode
+        if company_group_number is None:
+            raise ValueError("company_group_number should NOT be None")
+        if company_number is None:
+            raise ValueError("company_number should NOT be None")
+    else:
+        raise ValueError("Incorrect method index: %d" % method_index)
+    return "%s/%s.csv" % (folderpath, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+
+
 def check_finance_data_folder_exist(finance_parent_folderpath, company_group_number=None, company_number=None):
-    folderpath = get_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
+    folderpath = get_finance_data_folderpath(finance_parent_folderpath, company_group_number, company_number)
     return check_file_exist(folderpath)
 
 
@@ -1285,7 +1323,7 @@ def delete_finance_data_folder(finance_parent_folderpath, company_group_number=N
 # None: Ignore
 # -1 : Market
 # >0 : Stock
-    folderpath = get_finance_data_folder(finance_parent_folderpath, company_group_number, company_number)
+    folderpath = get_finance_data_folderpath(finance_parent_folderpath, company_group_number, company_number)
     exist = check_file_exist(folderpath)
     if exist:
         shutil.rmtree(folderpath, ignore_errors=True)
@@ -1301,37 +1339,45 @@ def delete_finance_stock_data_folders(finance_parent_folderpath, company_group_c
             shutil.rmtree(stock_folderpath, ignore_errors=True)
 
 
-def get_dataset_market_folderpath():
-    return "%s/%s" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN_DEF.CSV_MARKET_FOLDERNAME)
+# def get_dataset_market_folderpath(finance_parent_folderpath=None):
+#     if finance_parent_folderpath is None:
+#         finance_parent_folderpath = GV.FINANCE_DATASET_DATA_FOLDERPATH
+#     return "%s/%s" % (finance_parent_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME)
 
 
-def get_dataset_stock_folderpath(company_number, company_group_number):
-    company_group_number = int(company_group_number)
-    return "%s/%s%02d/%s" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_number, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+# def get_dataset_stock_folderpath(company_number, company_group_number, finance_parent_folderpath=None):
+#     if finance_parent_folderpath is None:
+#         finance_parent_folderpath = GV.FINANCE_DATASET_DATA_FOLDERPATH
+#     company_group_number = int(company_group_number)
+#     return "%s/%s%02d/%s" % (finance_parent_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_number) #, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
 
 
-def get_dataset_xxx_folderpath(company_number=None, company_group_number=None):
-    folderpath = None
-    if company_number is not None:
-        folderpath = get_dataset_market_folderpath()
-    else:
-        folderpath = get_dataset_stock_folderpath(company_number, company_group_number)
-    return folderpath
+# def get_dataset_xxx_folderpath(company_number=None, company_group_number=None, finance_parent_folderpath=None):
+#     folderpath = None
+#     if company_number is None:
+#         folderpath = get_dataset_market_folderpath(finance_parent_folderpath)
+#     else:
+#         folderpath = get_dataset_stock_folderpath(company_number, company_group_number, finance_parent_folderpath)
+#     return folderpath
 
 
-def get_dataset_market_csv_filepath(method_index):
-    return "%s/%s/%s.csv" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN_DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+# def get_dataset_market_csv_filepath(method_index, finance_parent_folderpath=None):
+#     if finance_parent_folderpath is None:
+#         finance_parent_folderpath = GV.FINANCE_DATASET_DATA_FOLDERPATH
+#     return "%s/%s/%s.csv" % (finance_parent_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
 
 
-def get_dataset_stock_csv_filepath(method_index, company_number, company_group_number):
-    company_group_number = int(company_group_number)
-    return "%s/%s%02d/%s/%s.csv" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_number, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+# def get_dataset_stock_csv_filepath(method_index, company_number, company_group_number, finance_parent_folderpath=None):
+#     if finance_parent_folderpath is None:
+#         finance_parent_folderpath = GV.FINANCE_DATASET_DATA_FOLDERPATH
+#     company_group_number = int(company_group_number)
+#     return "%s/%s%02d/%s/%s.csv" % (finance_parent_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_number, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
 
 
-def get_dataset_xxx_csv_filepath(method_index, company_number=None, company_group_number=None):
-    csv_filepath = None
-    if company_number is not None:
-        csv_filepath = get_dataset_market_csv_filepath(method_index)
-    else:
-        csv_filepath = get_dataset_stock_csv_filepath(method_index, company_number, company_group_number)
-    return csv_filepath
+# def get_dataset_xxx_csv_filepath(method_index, company_number=None, company_group_number=None, finance_parent_folderpath=None):
+#     csv_filepath = None
+#     if company_number is None:
+#         csv_filepath = get_dataset_market_csv_filepath(method_index, finance_parent_folderpath)
+#     else:
+#         csv_filepath = get_dataset_stock_csv_filepath(method_index, company_number, company_group_number, finance_parent_folderpath)
+#     return csv_filepath

@@ -217,13 +217,16 @@ def do_scrapy():
     show_info("* Scrape the data from the website......")
     g_mgr.do_scrapy()
     show_info("* Scrape the data from the website...... DONE!!!")
-    if g_mgr.NoScrapyCSVFound:
-        show_warn("No Web Data while scraping:")
-        g_mgr.show_no_scrapy()
+    # if g_mgr.NoScrapyCSVFound:
+    #     show_warn("No Web Data while scraping:")
+    #     g_mgr.show_no_scrapy()
 
 
 if __name__ == "__main__":
+    # date_obj = CMN.CLS.FinanceDate("2018-08-18")
     # import pdb; pdb.set_trace()
+    # month_obj = CMN.CLS.FinanceMonth("2018-08")
+
 # Parse the parameters and apply to manager class
     init_param()
     parse_param()

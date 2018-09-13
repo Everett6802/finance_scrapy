@@ -32,6 +32,37 @@ def get_method_index_from_description(method_description, ignore_exception=False
     return method_index
 
 
+def get_finance_data_csv_filepath(method_index, finance_parent_folderpath, company_group_number=None, company_number=None):
+    folderpath = CMN.FUNC.get_finance_data_folderpath(finance_parent_folderpath, company_group_number, company_number)
+#     if company_group_number is None:
+# # Market mode
+#         if company_number is not None:
+#             raise ValueError("company_group_number and company_number should be both None")
+#         if not (CMN_DEF.CRAPY_MARKET_METHOD_START <= method_index < CMN_DEF.CRAPY_MARKET_METHOD_END):
+#             raise ValueError("The method index is NOT in the Market index range: [%d: %d)" % (CMN_DEF.CRAPY_MARKET_METHOD_START, CMN_DEF.CRAPY_MARKET_METHOD_END))
+#     else:
+# # Stock mode
+#         if company_number is None:
+#             raise ValueError("company_group_number and company_number should be both NOT None")
+#         if not (CMN_DEF.CRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.CRAPY_STOCK_METHOD_END):
+#             raise ValueError("The method index is NOT in the Stock index range: [%d: %d)" % (CMN_DEF.CRAPY_STOCK_METHOD_START, CMN_DEF.CRAPY_STOCK_METHOD_END))
+    if (CMN_DEF.SCRAPY_MARKET_METHOD_START <= method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END):
+# Market mode
+        if company_group_number is not None:
+            raise ValueError("company_group_number should be None")
+        if company_number is not None:
+            raise ValueError("company_number should be None")
+    elif (CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END):
+# Stock mode
+        if company_group_number is None:
+            raise ValueError("company_group_number should NOT be None")
+        if company_number is None:
+            raise ValueError("company_number should NOT be None")
+    else:
+        raise ValueError("Incorrect method index: %d" % method_index)
+    return "%s/%s.csv" % (folderpath, CMN_DEF.SCRAPY_CLASS_METHOD[method_index])
+
+
 def read_csv_time_duration_config_file(conf_filename, conf_folderpath):
     return CMN.FUNC.read_csv_time_duration_config_file(conf_filename, conf_folderpath, get_index_from_description_func_ptr=get_method_index_from_description)
 

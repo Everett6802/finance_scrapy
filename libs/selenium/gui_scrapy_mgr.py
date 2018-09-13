@@ -137,7 +137,10 @@ class GUIScrapyMgr(object):
         # import pdb; pdb.set_trace()
         for method_index in self.method_index_list:
             web_scrapy_class = CMN_FUNC.get_selenium_web_scrapy_class(method_index)
-            with web_scrapy_class() as web_scrapy_object:
+            web_scrapy_cfg = {
+                'finance_root_folderpath': self.xcfg['finance_root_folderpath'],
+            }
+            with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                 web_scrapy_object.ScrapyMethodIndex = method_index
                 if CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
                     for company_group_number, company_number_list in  self.company_group_set.items():

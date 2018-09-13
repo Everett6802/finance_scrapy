@@ -38,6 +38,9 @@ SCRAPY_METHOD_LEN = len(SCRAPY_METHOD_DESCRIPTION)
 
 SCRAPY_MODULE_NAME_MAPPING = [cfg["module_name"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
 
+SCRAPY_MODULE_NAME_BY_METHOD_MAPPING = [cfg['module_name'] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
+SCRAPY_MODULE_NAME_BY_METHOD_MAPPING_LEN = len(SCRAPY_MODULE_NAME_BY_METHOD_MAPPING)
+
 SCRAPY_CLASS_NAME_MAPPING = [cfg["class_name"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
 
 SCRAPY_CLASS_METHOD = [cfg["scrapy_class_method"] for cfg in SCRAPY_CLASS_CONSTANT_CFG]
@@ -50,5 +53,8 @@ SCRAPY_MEMTHOD_REVENUE_INDEX = SCRAPY_CLASS_METHOD.index("revenue")
 
 __scrapy_class_stock_index_list__ = [index for index, cfg in enumerate(SCRAPY_CLASS_CONSTANT_CFG) if cfg['scrapy_type'] == 'stock']
 # semi-open interval
+SCRAPY_MARKET_METHOD_START = -1
+SCRAPY_MARKET_METHOD_END = -1
+
 SCRAPY_STOCK_METHOD_START = min(__scrapy_class_stock_index_list__)
 SCRAPY_STOCK_METHOD_END = max(__scrapy_class_stock_index_list__) + 1
