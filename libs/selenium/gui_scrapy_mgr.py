@@ -19,6 +19,7 @@ class GUIScrapyMgr(object):
             "reserve_old_finance_folder": False,
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
+            "max_data_count": None
         }
         self.xcfg.update(cfg)
 
@@ -139,6 +140,7 @@ class GUIScrapyMgr(object):
             web_scrapy_class = CMN_FUNC.get_selenium_web_scrapy_class(method_index)
             web_scrapy_cfg = {
                 'finance_root_folderpath': self.xcfg['finance_root_folderpath'],
+                "max_data_count": self.xcfg['max_data_count'],
             }
             with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                 web_scrapy_object.ScrapyMethodIndex = method_index

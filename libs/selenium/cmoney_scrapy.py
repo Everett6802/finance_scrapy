@@ -18,11 +18,10 @@ import common_function as CMN_FUNC
 import gui_scrapy_base as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
+PRINT_SCRAPY = False
 
-PRINT_SCRAPY = True
 
-
-def __parse_data_from_table0_element(table_element, table_data_count=CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT):
+def __parse_data_from_table0_element(table_element, max_data_count=None):
 # Parse the data in the table
     tr_elements = table_element.find_elements_by_tag_name("tr")
 # Parse the data name
@@ -36,10 +35,10 @@ def __parse_data_from_table0_element(table_element, table_data_count=CMN_DEF.CMO
 # 	data_list = []
 # 	tr_elements_len = len(tr_elements)
 # # Restrict to the max data
-# 	if table_data_count > tr_elements_len:
+# 	if max_data_count > tr_elements_len:
 # 		# g_logger.warn("There are just %d data !!!" % tr_elements_len)
-# 		table_data_count = tr_elements_len
-# 	table_column_end_index = table_data_count + 1
+# 		max_data_count = tr_elements_len
+# 	table_column_end_index = max_data_count + 1
 # 	for tr_element in tr_elements[1:table_column_end_index]:
 # 		td_elements = tr_element.find_elements_by_tag_name("td")
 # 		data_time_list.append(td_elements[0].text)
@@ -52,11 +51,14 @@ def __parse_data_from_table0_element(table_element, table_data_count=CMN_DEF.CMO
     data_list = []
     tr_elements_len = len(tr_elements)
 # Restrict to the max data
-    if table_data_count > tr_elements_len:
-        # g_logger.warn("There are just %d data !!!" % tr_elements_len)
-        table_data_count = tr_elements_len
-    table_column_end_index = table_data_count + 1
-    for index, tr_element in enumerate(tr_elements[1:table_column_end_index]):
+    # if max_data_count > tr_elements_len:
+    #     # g_logger.warn("There are just %d data !!!" % tr_elements_len)
+    #     max_data_count = tr_elements_len
+    # table_column_end_index = max_data_count + 1
+    if max_data_count is not None:
+        max_data_count = min(max_data_count, tr_elements_len)
+    sub_tr_elements = tr_elements[1:(max_data_count + 1)] if max_data_count is not None else tr_elements[1:]
+    for index, tr_element in enumerate(sub_tr_elements):
         td_elements = tr_element.find_elements_by_tag_name("td")
         data_element_list = [td_elements[0].text,]
         for td_element in td_elements[1:]:
@@ -66,7 +68,7 @@ def __parse_data_from_table0_element(table_element, table_data_count=CMN_DEF.CMO
     return (data_list, data_name_list)
 
 
-def __parse_data_from_table1_element(table_element, table_data_count=CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT):
+def __parse_data_from_table1_element(table_element, max_data_count=None):
     # import pdb; pdb.set_trace()
     tr_elements = table_element.find_elements_by_tag_name("tr")
     data_name_list = None
@@ -79,12 +81,12 @@ def __parse_data_from_table1_element(table_element, table_data_count=CMN_DEF.CMO
 # 		row_list = tr_element.text.split(' ')
 # 		row_list_len = len(row_list)
 # # Restrict to the max data
-# 		if table_data_count > row_list_len:
+# 		if max_data_count > row_list_len:
 # 			# g_logger.warn("There are just %d data !!!" % row_list_len)
-# 			table_data_count = row_list_len
+# 			max_data_count = row_list_len
 
 # 		if data_time_list is None:
-# 			table_column_end_index = table_data_count + 1
+# 			table_column_end_index = max_data_count + 1
 # 			data_time_list = []
 # 			data_time_list.extend(row_list[1:table_column_end_index])
 # 			data_name_list = []
@@ -104,21 +106,27 @@ def __parse_data_from_table1_element(table_element, table_data_count=CMN_DEF.CMO
         row_list = tr_element.text.split(' ')
         row_list_len = len(row_list)
 # Restrict to the max data
-        if table_data_count > row_list_len:
-            # g_logger.warn("There are just %d data !!!" % row_list_len)
-            table_data_count = row_list_len
+        # if max_data_count > row_list_len:
+        #     # g_logger.warn("There are just %d data !!!" % row_list_len)
+        #     max_data_count = row_list_len
+        if max_data_count is not None:
+            max_data_count = min(max_data_count, tr_elements_len)
 
         if data_list is None:
-            table_column_end_index = table_data_count + 1
-            # data_time_list = []
-            # data_time_list.extend(row_list[1:table_column_end_index])
-            data_list = [[data_time,] for data_time in row_list[1:table_column_end_index]]
+            if max_data_count is not None:
+                table_column_end_index = max_data_count + 1
+            # # data_time_list = []
+            # # data_time_list.extend(row_list[1:table_column_end_index])
+            # data_list = [[data_time,] for data_time in row_list[1:table_column_end_index]]
+            sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else tr_elements[1:]
+            data_list = [[data_time,] for data_time in sub_row_list]
 # CAUTION: Can't write in this way
             # data_list = [[],] * data_time_list_len
             data_name_list = []
         else:
             data_name_list.append(row_list[0])
-            for index, data in enumerate(row_list[1:table_column_end_index]):
+            sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else tr_elements[1:]
+            for index, data in enumerate(sub_row_list):
                 data_list[index].append(data)
 
     return (data_list, data_name_list)
@@ -136,22 +144,22 @@ def __parse_data_from_table(driver, table_element_parse_func, *args, **kwargs):
     # table_element = driver.find_element_by_xpath(table_xpath)
 # Argument setting
     # import pdb; pdb.set_trace()
-# table_data_count
-    table_data_count = None
-    args_len = len(args)
-    if args_len >= 1:
-        table_data_count = args[0]
-    if kwargs.get("table_data_count", None) is not None:
-        if table_data_count is not None:
-            assert table_data_count == kwargs["table_data_count"], "Duplicate table_data_count arguments"
-            pass
-        else:
-            table_data_count = kwargs["table_data_count"]
-    if table_data_count is None:
-        table_data_count = CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT
-    assert table_data_count >= 1, "The table_data_count[%d] should be greater than 1" % table_data_count
+# max_data_count
+    max_data_count = None
+    # args_len = len(args)
+    # if args_len >= 1:
+    #     max_data_count = args[0]
+    if kwargs.get("max_data_count", None) is not None:
+        # if max_data_count is not None:
+        #     assert max_data_count == kwargs["max_data_count"], "Duplicate max_data_count arguments"
+        #     pass
+        # else:
+        max_data_count = kwargs["max_data_count"]
+    # if max_data_count is None:
+    #     max_data_count = CMN_DEF.CMONEY_TABLE_DEF_DATA_COUNT
+    # assert max_data_count >= 1, "The max_data_count[%d] should be greater than 1" % max_data_count
 
-    (data_list, data_name_list) = table_element_parse_func(table_element, table_data_count)
+    (data_list, data_name_list) = table_element_parse_func(table_element, max_data_count)
 # Re-Order the data time: from old to new
     data_list.reverse()
     if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_name_list)
@@ -381,7 +389,9 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 # For the variables which are NOT changed during scraping
         self.xcfg = {
             "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
+            "max_data_count": None,
         }
+        self.xcfg.update(cfg)
         # self.url = url
         self.webdriver = None
         # self.csv_time_duration = None
@@ -421,12 +431,15 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
             raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
         self.webdriver.get(url)
         kwargs['table_xpath'] = self.__TABLE_XPATH[self.scrapy_method]
+        kwargs['max_data_count'] = self.xcfg['max_data_count']
+        # import pdb; pdb.set_trace()
         return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
 
 
     def scrape_web_to_csv(self, *args, **kwargs):
         # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
         csv_data_list, _ = self.scrape_web(*args, **kwargs)
+        # import pdb; pdb.set_trace()
         self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], self.company_number, self.company_group_number)
 
 
@@ -492,7 +505,7 @@ if __name__ == '__main__':
     with CMoneyWebScrapy() as cmoney:
         cmoney.CompanyNumber = "2367"
         kwargs = {}
-        kwargs["table_data_count"] = 2
+        kwargs["max_data_count"] = 2
         for scrapy_method in CMoneyWebScrapy.get_scrapy_method_list():
             cmoney.ScrapyMethod = scrapy_method
             cmoney.scrape(**kwargs)

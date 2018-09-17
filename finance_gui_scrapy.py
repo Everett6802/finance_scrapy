@@ -36,6 +36,7 @@ def show_usage_and_exit():
     print "  Format3: Company group number (ex. [Gg]12)"
     print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
     print ""
+    print "--max_data_count\nDescription: Only scrape the latest N data\n"
     print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
 # Combination argument
     print "--update_company_revenue\nDescription: Update the revenue of specific companies\nCaution: This arugment is equal to the argument combination as below: --method 0 --dataset_finance_folderpath --reserve_old --company xxxx\n"
@@ -76,6 +77,7 @@ def init_param():
     param_cfg["config_from_file"] = False
     param_cfg["method"] = None
     param_cfg["company"] = None
+    param_cfg["max_data_count"] = None
     param_cfg["enable_company_not_found_exception"] = False
     param_cfg["update_company_revenue"] = None
     param_cfg["update_company_revenue_from_file"] = False
@@ -112,6 +114,9 @@ def parse_param():
             index_offset = 2
         elif re.match("(-c|--company)", sys.argv[index]):
             param_cfg["company"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--max_data_count", sys.argv[index]):
+            param_cfg["max_data_count"] = int(sys.argv[index + 1])
             index_offset = 2
         elif re.match("--enable_company_not_found_exception", sys.argv[index]):
             param_cfg["enable_company_not_found_exception"] = True
@@ -233,7 +238,10 @@ if __name__ == "__main__":
     update_global_variable()
 
     update_cfg = {
-
+        "reserve_old_finance_folder": param_cfg["reserve_old"],
+        "dry_run_only": param_cfg["dry_run"],
+        # "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
+        "max_data_count": param_cfg["max_data_count"],
     }
     g_mgr = SL.MGR.GUIScrapyMgr(**update_cfg)
 

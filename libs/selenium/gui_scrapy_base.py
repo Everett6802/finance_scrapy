@@ -38,8 +38,16 @@ class GUIWebScrapyBase(object):
             time_duration_end,
             csv_old_time_duration_tuple
         )
-
         # import pdb; pdb.set_trace()
+        if  web2csv_time_duration_update_tuple is None:
+            msg = None
+            if company_number is not None:
+                msg = u"The data[%s:%s] is Update-to-Date" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number)
+            else:
+                msg = u"The data[%s] is Update-to-Date" % CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index]
+            g_logger.debug(msg)
+            return
+
         csv_filepath = CMN_FUNC.get_finance_data_csv_filepath(scrapy_method_index, finance_parent_folderpath, company_group_number, company_number)
 # Scrape the web data from each time duration
         for web2csv_time_duration_update in web2csv_time_duration_update_tuple: 
@@ -54,7 +62,8 @@ class GUIWebScrapyBase(object):
                         break
                     sub_csv_data_list.append(csv_data)
             elif web2csv_time_duration_update.AppendDirection == CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_AFTER:
-                for csv_data in reversed(csv_data_list):
+                # for csv_data in reversed(csv_data_list):
+                for csv_data in csv_data_list:
                     time_duration = cls._transform_time_str2obj(scrapy_data_time_unit, str(csv_data[0]))
                     if time_duration < web2csv_time_duration_update.NewWebStart:
                         continue
