@@ -362,8 +362,8 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         if time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
             # year_str = time_str[0:4]
             # month_str = time_str[4:]
-            month_time_str = "%s-%s" % (time_str[0:4], time_str[4:])
-            time_obj = CMN.CLS.FinanceMonth(month_time_str)
+            # month_time_str = "%s-%s" % (time_str[0:4], time_str[4:])
+            time_obj = CMN.CLS.FinanceMonth(time_str)
         elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
             time_obj = CMN.CLS.FinanceQuarter(time_str)
         else:
@@ -441,7 +441,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
     def scrape_web_to_csv(self, *args, **kwargs):
         # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
         csv_data_list, _ = self.scrape_web(*args, **kwargs)
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], self.company_number, self.company_group_number)
 
 

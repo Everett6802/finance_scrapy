@@ -6,7 +6,7 @@ from libs.common.common_variable import GlobalVar as GV
 import libs.base as BASE
 import common_definition as CMN_DEF
 import common_function as CMN_FUNC
-import gui_scrapy_configurer as Configurer
+# import gui_scrapy_configurer as Configurer
 import cmoney_scrapy as CMS
 import statement_dog_scrapy as SDS
 g_logger = CMN.LOG.get_logger()
