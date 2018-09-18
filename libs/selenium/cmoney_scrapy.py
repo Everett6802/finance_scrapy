@@ -58,9 +58,11 @@ def __parse_data_from_table0_element(table_element, max_data_count=None):
     if max_data_count is not None:
         max_data_count = min(max_data_count, tr_elements_len)
     sub_tr_elements = tr_elements[1:(max_data_count + 1)] if max_data_count is not None else tr_elements[1:]
+    # import pdb; pdb.set_trace()
     for index, tr_element in enumerate(sub_tr_elements):
         td_elements = tr_element.find_elements_by_tag_name("td")
-        data_element_list = [td_elements[0].text,]
+        time_str = "%s-%s" % (td_elements[0].text[0:4], td_elements[0].text[4:])
+        data_element_list = [time_str,]
         for td_element in td_elements[1:]:
             data_element_list.append(td_element.text)
         data_list.append(data_element_list)
@@ -439,7 +441,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
     def scrape_web_to_csv(self, *args, **kwargs):
         # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
         csv_data_list, _ = self.scrape_web(*args, **kwargs)
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], self.company_number, self.company_group_number)
 
 
