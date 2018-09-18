@@ -27,7 +27,7 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
     #     if finance_root_folderpath is None:
     #         finance_root_folderpath = CMN.DEF.CSV_ROOT_FOLDERPATH
     # 	# return "%s/%s" % (finance_root_folderpath, CMN.DEF.CSV_MARKET_FOLDERNAME)
-    #     return CMN.FUNC.get_finance_data_folder(finance_root_folderpath, -1)
+    #     return CMN.FUNC.get_finance_data_folderpath(finance_root_folderpath, -1)
 
 
     # def _get_configurer(self):
@@ -60,7 +60,7 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
 
     def __parse_csv_time_duration_cfg(self, finance_root_folderpath=None):
         # csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
-        csv_data_folderpath = CMN.FUNC.get_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
+        csv_data_folderpath = CMN.FUNC.get_finance_data_folderpath(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
         g_logger.debug("Try to parse CSV time range config in the folder: %s ......" % csv_data_folderpath)
         csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_data_folderpath)
         if csv_time_duration_dict is None:
@@ -89,7 +89,7 @@ class MarketMgr(BASE.MGR_BASE.MgrBase):
     def __write_new_csv_time_duration_to_cfg(self, finance_root_folderpath=None, source_type_csv_time_duration=None):
         # import pdb; pdb.set_trace()
         # csv_data_folderpath = self.__get_finance_folderpath(finance_root_folderpath)
-        csv_data_folderpath = CMN.FUNC.get_finance_data_folder(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
+        csv_data_folderpath = CMN.FUNC.get_finance_data_folderpath(self._get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
         if source_type_csv_time_duration is None:
             source_type_csv_time_duration = self.source_type_csv_time_duration
         # g_logger.debug("Try to write CSV time range config in the folder: %s ......" % csv_data_folderpath)
