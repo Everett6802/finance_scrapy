@@ -168,23 +168,26 @@ class LogRotate(Thread):
     def debug(self, *args):
         log_string = self.__format_log_string(self.LOG_LEVEL_DESCRITION_DEBUG, *args)
         with self.lock:
-            self.logger.debug(self.__format_log_string(self.LOG_LEVEL_DESCRITION_DEBUG, *args))
+            self.logger.debug(log_string)
             # self.logger.debug(log_string)
 
 
     def info(self, *args):
+        log_string = self.__format_log_string(self.LOG_LEVEL_DESCRITION_INFO, *args)
         with self.lock:
-            self.logger.debug(self.__format_log_string(self.LOG_LEVEL_DESCRITION_INFO, *args))
+            self.logger.info(log_string)
             # self.logger.info(*args)
 
 
     def warn(self, *args):
+        log_string = self.__format_log_string(self.LOG_LEVEL_DESCRITION_WARN, *args)
         with self.lock:
-            self.logger.debug(self.__format_log_string(self.LOG_LEVEL_DESCRITION_WARN, *args))
+            self.logger.warn(log_string)
             # self.logger.warn(*args)
 
 
     def error(self, *args):
+        log_string = self.__format_log_string(self.LOG_LEVEL_DESCRITION_ERROR, *args)
         with self.lock:
-            self.logger.debug(self.__format_log_string(self.LOG_LEVEL_DESCRITION_ERROR, *args))
+            self.logger.error(log_string)
             # self.logger.error(*args)

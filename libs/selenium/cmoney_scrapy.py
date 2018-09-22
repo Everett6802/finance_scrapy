@@ -390,6 +390,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
     def __init__(self, **cfg):
 # For the variables which are NOT changed during scraping
         self.xcfg = {
+            "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
             "max_data_count": None,
         }
@@ -438,11 +439,9 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
 
 
-    def scrape_web_to_csv(self, *args, **kwargs):
-        # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
-        csv_data_list, _ = self.scrape_web(*args, **kwargs)
-        # import pdb; pdb.set_trace()
-        self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], self.company_number, self.company_group_number)
+    def update_csv_field(self):
+        _, csv_data_field_list = self.scrape_web()
+        self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
 
 
     # @property

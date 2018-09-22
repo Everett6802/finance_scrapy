@@ -32,6 +32,15 @@ def get_method_index_from_description(method_description, ignore_exception=False
     return method_index
 
 
+def is_stock_scrapy_method(method_index):
+    if CMN_DEF.SCRAPY_MARKET_METHOD_START <= method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END:
+        return False
+    elif CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
+        return True
+    else:
+        raise ValueError("The method index is Out of range [%d, %d)" % (method_index, CMN_DEF.SCRAPY_METHOD_START, CMN_DEF.SCRAPY_METHOD_END))
+
+
 def get_finance_data_csv_filepath(method_index, finance_parent_folderpath, company_group_number=None, company_number=None):
     folderpath = CMN.FUNC.get_finance_data_folderpath(finance_parent_folderpath, company_group_number, company_number)
 #     if company_group_number is None:

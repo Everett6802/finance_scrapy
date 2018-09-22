@@ -18,11 +18,14 @@ param_cfg = {}
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "-h | --help\nDescription: The usage\nCaution: Ignore other parameters when set\n"
+    print "--no_scrapy\nDescription: Don't scrape Web data\n"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web\n"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s\n" % CMN.DEF.CSV_ROOT_FOLDERPATH
     print "--dataset_finance_folderpath\nDescription: Set the finance root folder to the dataset folder\n"
     print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s\n" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
+    print "--update_csv_field\nDescription: Update the CSV file description\n"
+    print "--method\nDescription: The list of the methods\nDefault: All finance methods\nCaution: Only take effect when config_from_file is NOT set"
     print "Scrapy Method:"
     for method_index in range(SL.DEF.SCRAPY_METHOD_LEN):
         print "  %d: %s" % (method_index, SL.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
@@ -70,11 +73,13 @@ def show_error_and_exit(errmsg):
 def init_param():
     param_cfg["silent"] = False
     param_cfg["help"] = False
+    param_cfg["no_scrapy"] = False
     param_cfg["reserve_old"] = False
     param_cfg["dry_run"] = False
     param_cfg["dataset_finance_folderpath"] = False
     param_cfg["finance_folderpath"] = None
     param_cfg["config_from_file"] = False
+    param_cfg["update_csv_field"] = False
     param_cfg["method"] = None
     param_cfg["company"] = None
     param_cfg["max_data_count"] = None
@@ -94,6 +99,9 @@ def parse_param():
         if re.match("(-h|--help)", sys.argv[index]):
             param_cfg["help"] = True
             index_offset = 1
+        elif re.match("--no_scrapy", sys.argv[index]):
+            param_cfg["no_scrapy"] = True
+            index_offset = 1
         elif re.match("--reserve_old", sys.argv[index]):
             param_cfg["reserve_old"] = True
             index_offset = 1
@@ -108,6 +116,9 @@ def parse_param():
             index_offset = 2
         elif re.match("--config_from_file", sys.argv[index]):
             param_cfg["config_from_file"] = True
+            index_offset = 1
+        elif re.match("--update_csv_field", sys.argv[index]):
+            param_cfg["update_csv_field"] = True
             index_offset = 1
         elif re.match("--method", sys.argv[index]):
             param_cfg["method"] = sys.argv[index + 1]
@@ -227,6 +238,13 @@ def do_scrapy():
     #     g_mgr.show_no_scrapy()
 
 
+# @record_exe_time("UPDATE_CSV_FIELD")
+# def do_csv_field_update():
+#     show_info("* Update the CSV field from the website......")
+#     g_mgr.update_csv_field()
+#     show_info("* Update the CSV field from the website...... DONE!!!")
+
+
 if __name__ == "__main__":
     # date_obj = CMN.CLS.FinanceDate("2018-08-18")
     # import pdb; pdb.set_trace()
@@ -239,7 +257,7 @@ if __name__ == "__main__":
 
     update_cfg = {
         "reserve_old_finance_folder": param_cfg["reserve_old"],
-        "dry_run_only": param_cfg["dry_run"],
+        # "dry_run_only": param_cfg["dry_run"],
         # "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
         "max_data_count": param_cfg["max_data_count"],
     }
@@ -255,4 +273,8 @@ if __name__ == "__main__":
     setup_param()
 
     # import pdb; pdb.set_trace()
-    do_scrapy()
+    if param_cfg["update_csv_field"]:
+        g_mgr.update_csv_field()
+# Try to scrap the web data
+    if not param_cfg["no_scrapy"]:
+        do_scrapy()

@@ -54,17 +54,19 @@ class GUIScrapyMgr(object):
 
 
     def __create_finance_folder_if_not_exist(self, finance_root_folderpath=None):
-        # self._create_finance_root_folder_if_not_exist(finance_root_folderpath)
-        # folderpath = self.__get_finance_folderpath(finance_root_folderpath)
-        # g_logger.debug("Try to create new folder: %s" % folderpath)
-        # CMN.FUNC.create_folder_if_not_exist(folderpath)
-        CMN.FUNC.create_finance_data_folder(self.__get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
-        CMN.FUNC.create_finance_stock_data_folders(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
+        # # self._create_finance_root_folder_if_not_exist(finance_root_folderpath)
+        # # folderpath = self.__get_finance_folderpath(finance_root_folderpath)
+        # # g_logger.debug("Try to create new folder: %s" % folderpath)
+        # # CMN.FUNC.create_folder_if_not_exist(folderpath)
+        # CMN.FUNC.create_finance_data_folder(self.__get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
+        # CMN.FUNC.create_finance_stock_data_folders(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
+        CMN.FUNC.create_finance_file_system(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
 
 
     def __remove_old_finance_folder(self, finance_root_folderpath=None):
-        CMN.FUNC.delete_finance_data_folder(self.__get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
-        CMN.FUNC.delete_finance_stock_data_folders(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
+        # CMN.FUNC.delete_finance_data_folder(self.__get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
+        # CMN.FUNC.delete_finance_stock_data_folders(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
+        CMN.FUNC.remove_finance_file_system(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize, need_field_description=True)
 
 
     def set_config_from_file(self):
@@ -131,6 +133,7 @@ class GUIScrapyMgr(object):
 
 
     def do_scrapy(self):
+        # import pdb; pdb.set_trace()
         if not self.xcfg["reserve_old_finance_folder"]:
             self.__remove_old_finance_folder()
         self.__create_finance_folder_if_not_exist()
@@ -139,6 +142,7 @@ class GUIScrapyMgr(object):
         for method_index in self.method_index_list:
             web_scrapy_class = CMN_FUNC.get_selenium_web_scrapy_class(method_index)
             web_scrapy_cfg = {
+                "dry_run_only": self.xcfg["dry_run_only"],
                 'finance_root_folderpath': self.xcfg['finance_root_folderpath'],
                 "max_data_count": self.xcfg['max_data_count'],
             }
@@ -156,3 +160,24 @@ class GUIScrapyMgr(object):
     # 						g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
                 else:
                     raise ValueError("Unknown scrapy method index: %d" % method_index)
+
+
+    def update_csv_field(self):
+        if not self.xcfg["reserve_old_finance_folder"]:
+            self.__remove_old_finance_folder()
+        self.__create_finance_folder_if_not_exist()
+
+        # import pdb; pdb.set_trace()
+        for method_index in self.method_index_list:
+            web_scrapy_class = CMN_FUNC.get_selenium_web_scrapy_class(method_index)
+            web_scrapy_cfg = {
+                'finance_root_folderpath': self.xcfg['finance_root_folderpath'],
+            }
+            with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
+                web_scrapy_object.ScrapyMethodIndex = method_index
+                if CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
+                    web_scrapy_object.CompanyNumber = '2330'
+                    web_scrapy_object.CompanyGroupNumber = 9
+                else:
+                    raise ValueError("Unknown scrapy method index: %d" % method_index)
+                web_scrapy_object.update_csv_field()

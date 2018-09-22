@@ -58,3 +58,6 @@ SCRAPY_MARKET_METHOD_END = -1
 
 SCRAPY_STOCK_METHOD_START = min(__scrapy_class_stock_index_list__)
 SCRAPY_STOCK_METHOD_END = max(__scrapy_class_stock_index_list__) + 1
+
+SCRAPY_METHOD_START = 0
+SCRAPY_METHOD_END = len(SCRAPY_CLASS_CONSTANT_CFG)

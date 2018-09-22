@@ -13,7 +13,7 @@ g_logger = CMN.LOG.get_logger()
 class GUIWebScrapyBase(object):
 
     @classmethod
-    def _write_scrapy_data_to_csv(cls, csv_data_list, scrapy_method_index, finance_parent_folderpath=None, company_number=None, company_group_number=None):
+    def _write_scrapy_data_to_csv(cls, csv_data_list, scrapy_method_index, finance_parent_folderpath, company_number=None, company_group_number=None, dry_run_only=False):
         def get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict):
             if csv_time_duration_dict is not None:
                 if csv_time_duration_dict.get(scrapy_method_index, None) is not None:
@@ -47,10 +47,23 @@ class GUIWebScrapyBase(object):
                 msg = u"The data[%s] is Update-to-Date" % CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index]
             g_logger.debug(msg)
             return
-
+# Find the file path for writing data into csv
         csv_filepath = CMN_FUNC.get_finance_data_csv_filepath(scrapy_method_index, finance_parent_folderpath, company_group_number, company_number)
+
 # Scrape the web data from each time duration
         for web2csv_time_duration_update in web2csv_time_duration_update_tuple: 
+
+            scrapy_msg = None
+            if company_number is not None:
+                scrapy_msg = u"[%s:%s] %s:%s => %s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
+            else:
+                scrapy_msg = "[%s] %s:%s => %s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
+            g_logger.info(scrapy_msg)
+# Check if only dry-run
+            if dry_run_only:
+                print scrapy_msg
+                continue
+
 # If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
             web2csv_time_duration_update.backup_old_csv_if_necessary(csv_filepath)
             # sub_csv_data_list = cls._filter_scrapy_data(csv_data_list, web2csv_time_duration_update)
@@ -75,11 +88,29 @@ class GUIWebScrapyBase(object):
             CMN.FUNC.write_csv_file_data(sub_csv_data_list, csv_filepath)
 # Append the old CSV data after the new web data if necessary
             web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
+
+        if dry_run_only:
+            return
+
 # Update the time duration
         if csv_time_duration_dict is None:
             csv_time_duration_dict = {}
         csv_time_duration_dict[scrapy_method_index] = new_csv_extension_time_duration
         CMN_FUNC.write_csv_time_duration_config_file(CMN_DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath, csv_time_duration_dict)
+
+
+    @classmethod
+    def _write_scrapy_field_data_to_config(cls, csv_data_field_list, scrapy_method_index, finance_parent_folderpath):
+        conf_folderpath = "%s/%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
+        conf_filename = "%s.conf" % CMN_DEF.SCRAPY_CLASS_METHOD[scrapy_method_index]
+        CMN.FUNC.unicode_write_config_file_lines(csv_data_field_list, conf_filename, conf_folderpath)
+
+
+    def scrape_web_to_csv(self, *args, **kwargs):
+        # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
+        csv_data_list, _ = self.scrape_web(*args, **kwargs)
+        # import pdb; pdb.set_trace()
+        self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], self.company_number, self.company_group_number, dry_run_only=self.xcfg['dry_run_only'])
 
 
     @abstractmethod
@@ -88,7 +119,7 @@ class GUIWebScrapyBase(object):
 
 
     @abstractmethod
-    def scrape_web_to_csv(self, *args, **kwargs):
+    def update_csv_field(self):
         raise NotImplementedError
 
 

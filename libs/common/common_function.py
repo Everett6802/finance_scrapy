@@ -726,10 +726,8 @@ def unicode_write_config_file_lines_ex(conf_line_list, conf_filename, conf_file_
         raise ValueError(errmsg)
 
 
-def unicode_write_config_file_lines(conf_line_list, conf_filename, conf_folderpath=None, conf_unicode_encode=None):
-    if conf_unicode_encode is None:
-        conf_unicode_encode = CMN_DEF.UNICODE_ENCODING_IN_FILE
-    return unicode_write_config_file_lines_ex(conf_line_list, conf_filename, 'wb', conf_folderpath, conf_unicode_encode)
+def unicode_write_config_file_lines(conf_line_list, conf_filename, conf_folderpath=None):
+    return unicode_write_config_file_lines_ex(conf_line_list, conf_filename, 'wb', conf_folderpath)
 
 
 # def read_source_type_time_duration_config_file(conf_filename, time_duration_type):
@@ -1192,34 +1190,34 @@ def merge_stock_csv(src_folderpath, dst_folderpath, company_dict, method_index_l
         merge_multi_csv(src_csv_filepath_config_list, dst_csv_filepath, time_range)
 
 
-# def get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count):
-#     yield "%s/%s" % (finance_parent_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME)
-#     for i in range(company_group_count):
-#         yield "%s/%s%02d" % (finance_parent_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, i)
+def get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count, need_field_description=True):
+    yield "%s/%s" % (finance_parent_folderpath, CMN_DEF.CSV_MARKET_FOLDERNAME)
+    for i in range(company_group_count):
+        yield "%s/%s%02d" % (finance_parent_folderpath, CMN_DEF.CSV_STOCK_FOLDERNAME, i)
+    yield "%s/%s" % (finance_parent_folderpath, CMN_DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
 
 
-# def create_finance_file_system(finance_parent_folderpath, company_group_count, reserve_old=True):
-# # Create parent folder of finance data
-#     need_create = create_folder_if_not_exist(parent_folderpath)
-# # Check if the folder already exist
-#     if not need_create:
-#         if reserve_old:
-#             g_logger.info("The old finance file system[%s] has already existed" % parent_folderpath)
-#             return
-#         else:
-#             g_logger.warn("Remove the old finance file system: %s" % parent_folderpath)
-#             remove_finance_file_system(finance_parent_folderpath, company_group_count)        
-#             create_folder(parent_folderpath)
-# # Create each suub folder 
-#     for filepath in get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count):
-#         create_folder(folderpath)
+def create_finance_file_system(finance_parent_folderpath, company_group_count, reserve_old=True, need_field_description=True):
+# Create parent folder of finance data
+    need_create = create_folder_if_not_exist(finance_parent_folderpath)
+# Check if the folder already exist
+    if not need_create:
+        if reserve_old:
+            g_logger.info("The old finance file system[%s] has already existed" % finance_parent_folderpath)
+            return
+        else:
+            g_logger.warn("Remove the old finance file system: %s" % finance_parent_folderpath)
+            remove_finance_file_system(finance_parent_folderpath, company_group_count)        
+            create_folder(parent_folderpath)
+# Create each suub folder 
+    for filepath in get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count, need_field_description):
+        create_folder(folderpath)
 
 
-
-# def remove_finance_file_system(finance_parent_folderpath, company_group_count):
-#     for folderpath in get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count):
-#         shutil.rmtree(folderpath, ignore_errors=True)
-#     shutil.rmtree(finance_parent_folderpath, ignore_errors=True)
+def remove_finance_file_system(finance_parent_folderpath, company_group_count, need_field_description=True):
+    for folderpath in get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count, need_field_description):
+        shutil.rmtree(folderpath, ignore_errors=True)
+    shutil.rmtree(finance_parent_folderpath, ignore_errors=True)
 
 
 def get_finance_data_folderpath(finance_parent_folderpath, company_group_number=None, company_number=None):

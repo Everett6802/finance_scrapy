@@ -22,7 +22,7 @@ def show_usage():
     print "--renew\nDescription: Acquire all latest company profiles and then their data start time from the web"
     print "--renew_company_start_time\nDescription: Acquire some latest company data start time from the web"
     print "--lookup_company\nDescription: Lookup some company info by company code number"
-    print "--lookup_company_group\nDescription: Lookup some company group name/number by company code number"
+    # print "--lookup_company_group\nDescription: Lookup some company group name/number by company code number"
     print "  Format1: Company code number (ex. 2347)"
     print "  Format2: Company code number range (ex. 2100-2200)"
     print "  Format3: Company group number (ex. [Gg]12)"

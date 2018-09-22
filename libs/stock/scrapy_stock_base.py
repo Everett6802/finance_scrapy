@@ -221,14 +221,16 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
                 CMN.FUNC.create_folder_if_not_exist(csv_company_folderpath)
 # Find the file path for writing data into csv
                 csv_filepath = self.assemble_csv_filepath(self.SCRAPY_CLASS_INDEX, company_code_number, company_group_number)
-                scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], self.new_csv_extension_time_duration.time_duration_start, self.new_csv_extension_time_duration.time_duration_end, csv_filepath)
-                g_logger.debug(scrapy_msg)
-# Check if only dry-run
-                if self.xcfg["dry_run_only"]:
-                    print scrapy_msg
-                    continue
 # Scrape the web data from each time duration
                 for web2csv_time_duration_update in web2csv_time_duration_update_tuple: 
+
+                    scrapy_msg = "[%s:%s] %s %s:%s => %s" % (CMN.DEF.SCRAPY_CLASS_DESCRIPTION[self.SCRAPY_CLASS_INDEX], company_code_number, CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
+                    g_logger.debug(scrapy_msg)
+# Check if only dry-run
+                    if self.xcfg["dry_run_only"]:
+                        print scrapy_msg
+                        continue
+
 # Adjust the config if necessary
                     self._adjust_config_before_scrapy(web2csv_time_duration_update)
 # If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
@@ -282,7 +284,11 @@ class ScrapyStockBase(BASE.BASE.ScrapyBase):
                     web2csv_time_duration_update.append_old_csv_if_necessary(csv_filepath)
 # Increase the progress count
                 self.progress_count += 1
+
 # Parse csv file status
+        if self.xcfg['dry_run_only']:
+            return
+
         self._parse_csv_file_status_to_string_list()
 
 
