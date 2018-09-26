@@ -2,6 +2,8 @@
 # -*- coding: utf8 -*-
 
 import time
+# Install selenium in Anaconda
+# conda install -c conda-forge selenium
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 # available since 2.4.0

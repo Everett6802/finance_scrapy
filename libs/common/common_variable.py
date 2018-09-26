@@ -144,6 +144,7 @@ class GlobalVar(object):
         def FINANCE_DATASET_DATA_FOLDERPATH(cls):
             # import pdb; pdb.set_trace()
             if cls._FINANCE_DATASET_DATA_FOLDERPATH is None:
+                # cls._FINANCE_DATASET_DATA_FOLDERPATH = "%s/%s/%s" % (cls.FINANCE_DATASET_FOLDERPATH, CMN_DEF.DATA_FOLDERNAME, CMN_DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
                 cls._FINANCE_DATASET_DATA_FOLDERPATH = "%s/%s" % (cls.FINANCE_DATASET_FOLDERPATH, CMN_DEF.DATA_FOLDERNAME)
             return cls._FINANCE_DATASET_DATA_FOLDERPATH
 
