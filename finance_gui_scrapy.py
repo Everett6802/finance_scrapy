@@ -252,6 +252,7 @@ if __name__ == "__main__":
     # import pdb; pdb.set_trace()
     # month_obj = CMN.CLS.FinanceMonth("2018-08")
     df, _ = DS.LD.load_stock_price_history("2458")
+    import pdb; pdb.set_trace()
     sys.exit(0)
 
 # Parse the parameters and apply to manager class
