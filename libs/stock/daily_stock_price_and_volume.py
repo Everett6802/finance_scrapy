@@ -412,7 +412,7 @@ class OTCDailyStockPriceAndVolume(DailyStockPriceAndVolumeBase):
 # "日期",
 # "成交股數",
 # "成交金額",
-# "開盤價",
+"開盤價",
 # "最高價",
 # "最低價",
 # "收盤價",

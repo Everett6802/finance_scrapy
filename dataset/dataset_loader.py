@@ -113,11 +113,13 @@ def load_stock_hybrid(method_index_list, company_code_number, field_index_dict=N
 	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number)
 
 
-def load_stock_price_history(company_number, overwrite_stock_price_list=None):
+def load_stock_price_history(company_number, overwrite_stock_price_list=None, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DAY):
 # overwrite_stock_price_list
 # Format: Date O:OpenPrice H:HighPrice L:LowPrice C:ClosePrice; Ex. 180613 O:98.6 H: 100.5 L: 97.9 C 99.9
     df, column_description_list = load_stock_hybrid([9,], company_number)
-    df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'change', '0908': 'volume'}, inplace=True)
+    # df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'change', '0908': 'volume'}, inplace=True)
+    df.rename(columns={'0901': 'volume', '0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'change',}, inplace=True)
+# "成交股數", "開盤價", "最高價", "最低價", "收盤價", "漲跌價差",
     # import pdb; pdb.set_trace()
     if overwrite_stock_price_list is not None:
 		new_entry_list = []
@@ -159,5 +161,54 @@ def load_stock_price_history(company_number, overwrite_stock_price_list=None):
 			data_list.extend(new_entry_list)
 			df = pd.concat(data_list)
 			df.sort_index(ascending=True)
+
+    def day_to_new_timeunit(df, groupby_func_ptr):
+        df_group_new_timeunit = df.groupby(df.index.map(groupby_func_ptr))
+        # import pdb; pdb.set_trace()
+        from dataset.common_class import StockPrice as PRICE
+        df_entry_new_timeunit_list = []
+        # import pdb; pdb.set_trace()
+        for df_time, df_data in df_group_new_timeunit:
+            first_date = df_data.index[0]
+            open_price = df_data.ix[0]['open']
+            close_price = df_data.ix[-1]['close']
+            high_price = 0.0
+            low_price = 100000.0
+            volume = 0
+            data_0902 = 0
+            data_0908 = 0
+            change = 0.0
+            for index, row in df_data.iterrows():
+                if row['high'] > high_price:
+                    high_price = row['high']
+                if row['low'] < low_price:
+                    low_price = row['low']
+                volume += row['volume']
+                data_0902 += row['0902']
+                data_0908 += row['0908']
+            print "%s O:%s H:%s L:%s C:%s V:%d" % (first_date, PRICE(open_price), PRICE(high_price), PRICE(low_price), PRICE(close_price), int(volume/1000))
+# Entry in new time unit
+            data_list = [volume, data_0902, open_price, high_price, low_price, close_price, change, data_0908,]
+            data_row = {element[0]: element[1] for element in zip(df.columns.tolist(), data_list)}
+            entry = pd.DataFrame(data_row, index=[first_date,], columns=df.columns.tolist())
+            df_entry_new_timeunit_list.append(entry)
+        # import pdb; pdb.set_trace()
+        df_new_timeunit = pd.concat(df_entry_new_timeunit_list)
+        df_new_timeunit.sort_index(ascending=True)
+        df_new_timeunit.index.name = 'date'
+        close_diff = df_new_timeunit['close'].diff()
+        close_diff.ix[0] = 0.0
+        df_new_timeunit['change'] = close_diff
+        return df_new_timeunit
+
+    TIMEUNIT_GROUPBY_FUNC_PTR = {
+        CMN.DEF.DATA_TIME_UNIT_WEEK: lambda t: t.year * 100 + t.weekofyear,
+        CMN.DEF.DATA_TIME_UNIT_MONTH: lambda t: t.year * 100 + t.month,
+        CMN.DEF.DATA_TIME_UNIT_QUARTER: lambda t: t.year * 10 + (t.month - 1) / 3,
+        CMN.DEF.DATA_TIME_UNIT_YEAR: lambda t: t.year,
+    }
+# Chnage the time unit
+    if data_time_unit != CMN.DEF.DATA_TIME_UNIT_DAY:
+    	df = day_to_new_timeunit(df, TIMEUNIT_GROUPBY_FUNC_PTR[data_time_unit])
 
     return df, column_description_list

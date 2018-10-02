@@ -245,15 +245,10 @@ def do_scrapy():
 #     show_info("* Update the CSV field from the website...... DONE!!!")
 
 
-import dataset as DS
-
 if __name__ == "__main__":
-    # date_obj = CMN.CLS.FinanceDate("2018-08-18")
+    # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
     # import pdb; pdb.set_trace()
-    # month_obj = CMN.CLS.FinanceMonth("2018-08")
-    df, _ = DS.LD.load_stock_price_history("2458")
-    import pdb; pdb.set_trace()
-    sys.exit(0)
+    # sys.exit(0)
 
 # Parse the parameters and apply to manager class
     init_param()
