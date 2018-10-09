@@ -21,6 +21,16 @@ def get_selenium_web_scrapy_class(scrapy_method_index):
     return web_scrapy_class
 
 
+def check_scrapy_method_index_in_range(scrapy_method_index, is_stock_method=None):
+    if is_stock_method is None:
+        return True if (CMN_DEF.SCRAPY_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_METHOD_END) else False
+    else:
+        if not is_stock_method:
+            return True if (CMN_DEF.SCRAPY_MARKET_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END) else False
+        else:
+            return True if (CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END) else False
+
+
 def get_method_index_from_description(method_description, ignore_exception=False):
     method_index = -1
     try:

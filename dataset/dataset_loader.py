@@ -7,6 +7,7 @@ import pandas as pd
 import libs.common as CMN
 from libs.common.common_variable import GlobalVar as GV
 import libs.base as BASE
+import libs.selenium as SL
 import common_definition as DS_CMN_DEF
 import common_variable as DS_CMN_VAR
 import common_function as DS_CMN_FUNC
@@ -15,26 +16,30 @@ import common_function as DS_CMN_FUNC
 g_profile_lookup = BASE.CP.CompanyProfile.Instance()
 
 
-def load_raw(method_index, company_code_number=None, field_index_list=None, company_group_number=None):
+def load_raw(method_index, company_code_number=None, field_index_list=None, company_group_number=None, is_selenium=False):
 	'''
 	CAUTION: 
 	The start field index must be 1
 	since the 0 column in the dataset must be date
 	'''
 
+	conf_filename = None
+	url_time_unit = None
 # Check method index
-	if company_code_number is None:
-# Market mode
-		CMN.FUNC.check_scrapy_method_index_in_range(method_index, CMN.DEF.FINANCE_MODE_MARKET)
+	if is_selenium:
+		SL.FUNC.check_scrapy_method_index_in_range(method_index, (company_code_number is not None))
+		conf_filename = SL.DEF.SCRAPY_CLASS_METHOD[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
+		url_time_unit = SL.DEF.SCRAPY_METHOD_URL_TIME_UNIT[method_index]
 	else:
-# Stock mode
-		CMN.FUNC.check_scrapy_method_index_in_range(method_index, CMN.DEF.FINANCE_MODE_STOCK)
+		CMN.FUNC.check_scrapy_method_index_in_range(method_index, (CMN.DEF.FINANCE_MODE_MARKET if (company_code_number is None) else CMN.DEF.FINANCE_MODE_STOCK))
+		conf_filename = CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
+		url_time_unit = CMN.DEF.SCRAPY_METHOD_URL_TIME_UNIT[method_index]
+	if company_code_number is not None:
 		if company_group_number is None:
 			profile_lookup = BASE.CP.CompanyProfile.Instance()
 			company_group_number = profile_lookup.lookup_company_group_number(company_code_number)
-# Read the column description list
-	conf_filename = CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index] + DS_CMN_DEF.DATASET_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
 # Define the column name
+# Read the column description list
 	# import pdb; pdb.set_trace()
 	field_description_folder = "%s/%s" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
 	column_description_list = CMN.FUNC.unicode_read_config_file_lines(conf_filename, field_description_folder)
@@ -55,21 +60,26 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 			column_index_list.append(index)
 	# import pdb; pdb.set_trace()
 # Read the data in dataset
-	filepath = CMN.FUNC.get_finance_data_csv_filepath(method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, company_group_number, company_code_number)
-	# if company_code_number is None:
-	# 	# filepath = "%s/%s/%s.csv" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN.DEF.CSV_MARKET_FOLDERNAME, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
-	# 	filepath = CMN.FUNC.get_dataset_market_csv_filepath(method_index)
-	# else:
-	# 	# company_group_number = int(company_group_number)
-	# 	# filepath = "%s/%s%02d/%s/%s.csv" % (GV.FINANCE_DATASET_DATA_FOLDERPATH, CMN.DEF.CSV_STOCK_FOLDERNAME, company_group_number, company_code_number, CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
-	# 	filepath = CMN.FUNC.get_dataset_stock_csv_filepath(method_index, company_code_number, company_group_number)
-	# # print DS_CMN_VAR.DatasetVar.DATASET_FOLDER_PATH
+	filepath = None
+	if is_selenium:
+		filepath = SL.FUNC.get_finance_data_csv_filepath(method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, company_group_number, company_code_number)
+	else:
+		filepath = CMN.FUNC.get_finance_data_csv_filepath(method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, company_group_number, company_code_number)
 	df = None
 	# import pdb; pdb.set_trace()
+# Set the parameters for reading data from CSV
 	kwargs = {
 		"names": column_name_list, 
 		"parse_dates": [DS_CMN_DEF.DATESET_DATE_COLUMN_INDEX,]
 	}
+	if url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
+		if url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+			# kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_month2date_str(x), '%Y-%m-%d')
+			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_month2date_str(x), '%Y-%m-%d')
+		elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_quarter2date_str(x), '%Y-%m-%d')
+		else:
+			raise RuntimeError("Unsupport URL time unit: %d" % url_time_unit)
 	if field_index_list is not None:
 		kwargs["usecols"] = column_index_list
 	df = pd.read_csv(filepath, **kwargs)
@@ -78,7 +88,7 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 	return df, column_description_list
 
 
-def load_hybrid(method_index_list, company_code_number=None, field_index_dict=None, company_group_number=None):
+def load_hybrid(method_index_list, company_code_number=None, field_index_dict=None, company_group_number=None, is_selenium=False):
 	'''
 	# field_index_dict: The field index list in each method
 	# Format: 
@@ -90,12 +100,27 @@ def load_hybrid(method_index_list, company_code_number=None, field_index_dict=No
 	Caution: If the method_index is NOT in the method_index_list, 
 	         the field_index_list of this method is useless
 	'''
+	if type(method_index_list) is not list:
+		if type(method_index_list) is int:
+			method_index_list = [method_index_list,]
+		else:
+			raise ValueError("Unsupport data type of method_index_list: %s" % type(method_index_list))
+
+# Check the time units of the methods are identical
+	SCRAPY_METHOD_URL_TIME_UNIT = SL.DEF.SCRAPY_METHOD_URL_TIME_UNIT if is_selenium else CMN.DEF.SCRAPY_METHOD_URL_TIME_UNIT
+	url_time_unit = [SCRAPY_METHOD_URL_TIME_UNIT[method_index] for method_index in method_index_list]
+	if len(filter(lambda time_unit: time_unit != url_time_unit[0], url_time_unit)) != 0:
+		raise ValueError("The time unit[%s] are NOT identical" % url_time_unit)
+
 	df = None
 	column_description_list = []
+	url_time_unit = None
 	# import pdb; pdb.set_trace()
 	for method_index in method_index_list:
+		if url_time_unit is None:
+			url_time_unit
 		field_index_list = (field_index_dict.get(method_index, None) if (field_index_dict is not None) else None)
-		df_new, column_description_list_new = load_raw(method_index, company_code_number, field_index_list, company_group_number)
+		df_new, column_description_list_new = load_raw(method_index, company_code_number, field_index_list, company_group_number, is_selenium)
 		if df is None:
 			df = df_new
 			column_description_list.extend(column_description_list_new)
@@ -113,13 +138,29 @@ def load_stock_hybrid(method_index_list, company_code_number, field_index_dict=N
 	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number)
 
 
+def load_selenium_market_hybrid(method_index_list, field_index_dict=None):
+	return load_hybrid(method_index_list, field_index_dict=field_index_dict, is_selenium=True)
+
+
+def load_selenium_stock_hybrid(method_index_list, company_code_number, field_index_dict=None, company_group_number=None):
+	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number, is_selenium=True)
+
+
 def load_stock_price_history(company_number, overwrite_stock_price_list=None, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DAY):
 # overwrite_stock_price_list
 # Format: Date O:OpenPrice H:HighPrice L:LowPrice C:ClosePrice; Ex. 180613 O:98.6 H: 100.5 L: 97.9 C 99.9
-    df, column_description_list = load_stock_hybrid([9,], company_number)
+    df, column_description_list = load_stock_hybrid(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX, company_number)
     # df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'change', '0908': 'volume'}, inplace=True)
-    df.rename(columns={'0901': 'volume', '0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'change',}, inplace=True)
-# "成交股數", "開盤價", "最高價", "最低價", "收盤價", "漲跌價差",
+# "成交張數", "開盤價", "最高價", "最低價", "收盤價", "漲跌價差",
+    new_columns={
+    	('%02d01' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'volume', 
+    	('%02d03' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'open', 
+    	('%02d04' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'high', 
+    	('%02d05' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'low', 
+    	('%02d06' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'close', 
+    	('%02d07' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'change',
+    }
+    df.rename(columns=new_columns, inplace=True)
     # import pdb; pdb.set_trace()
     if overwrite_stock_price_list is not None:
 		new_entry_list = []
@@ -151,7 +192,7 @@ def load_stock_price_history(company_number, overwrite_stock_price_list=None, da
 				elif price_entry_split[0] == DS_CMN_DEF.SR_PRICE_TYPE_CLOSE:
 					entry['close'] = float(price_entry_split[1])
 				elif price_entry_split[0] == DS_CMN_DEF.SR_VOLUME:
-					entry['volume'] = int(price_entry_split[1])
+					entry['volume'] = int(price_entry_split[1]/1000)
 				else:
 					raise ValueError("Unkown mark type: %s" % price_entry_split[0])
 		# import pdb; pdb.set_trace()
@@ -210,5 +251,17 @@ def load_stock_price_history(company_number, overwrite_stock_price_list=None, da
 # Chnage the time unit
     if data_time_unit != CMN.DEF.DATA_TIME_UNIT_DAY:
     	df = day_to_new_timeunit(df, TIMEUNIT_GROUPBY_FUNC_PTR[data_time_unit])
+
+    return df, column_description_list
+
+
+def load_revenue_history(company_number):
+    df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX, company_number)
+# "單月營收", "單月年增率",
+    new_columns={
+    	('%02d01' % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX): 'monthly revenue', 
+    	('%02d03' % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX): 'monthly YOY growth', 
+    }
+    df.rename(columns=new_columns, inplace=True)
 
     return df, column_description_list

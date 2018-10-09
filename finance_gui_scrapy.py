@@ -179,6 +179,10 @@ def check_param():
         if param_cfg["company"] is not None:
             param_cfg["company"] = None
             show_warn("The 'company' argument is ignored since 'config_from_file' is set")
+    else:
+        if param_cfg["method"] is None:
+            # import pdb; pdb.set_trace()
+            param_cfg["method"] = ",".join(map(str, range(SL.DEF.SCRAPY_METHOD_END)))
 
     if param_cfg["dataset_finance_folderpath"]:
         if param_cfg["finance_folderpath"] is not None:
@@ -245,8 +249,12 @@ def do_scrapy():
 #     show_info("* Update the CSV field from the website...... DONE!!!")
 
 
+import dataset as DS
+
 if __name__ == "__main__":
-    # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
+    # # # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
+    # df, _ = DS.LD.load_revenue_history("2458")
+    # # df, _ = DS.LD.load_stock_price_history("2458")
     # import pdb; pdb.set_trace()
     # sys.exit(0)
 

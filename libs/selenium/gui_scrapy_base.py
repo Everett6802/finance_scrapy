@@ -26,10 +26,10 @@ class GUIWebScrapyBase(object):
         csv_time_duration_folderpath = CMN.FUNC.get_finance_data_folderpath(finance_parent_folderpath, company_group_number, company_number)
         csv_time_duration_dict = CMN_FUNC.read_csv_time_duration_config_file(CMN_DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
 
-        scrapy_data_time_unit = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_data_time_unit"]
+        url_time_unit = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["url_time_unit"]
 # Caution: Need transfrom the time string from unicode to string
-        time_duration_start = cls._transform_time_str2obj(scrapy_data_time_unit, str(csv_data_list[0][0]))
-        time_duration_end = cls._transform_time_str2obj(scrapy_data_time_unit, str(csv_data_list[-1][0]))
+        time_duration_start = cls._transform_time_str2obj(url_time_unit, str(csv_data_list[0][0]))
+        time_duration_end = cls._transform_time_str2obj(url_time_unit, str(csv_data_list[-1][0]))
 
         csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
 
@@ -70,14 +70,14 @@ class GUIWebScrapyBase(object):
             sub_csv_data_list = []
             if web2csv_time_duration_update.AppendDirection == CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_BEFORE:
                 for csv_data in csv_data_list:
-                    time_duration = cls._transform_time_str2obj(scrapy_data_time_unit, str(csv_data[0]))
+                    time_duration = cls._transform_time_str2obj(url_time_unit, str(csv_data[0]))
                     if time_duration > web2csv_time_duration_update.NewWebEnd:
                         break
                     sub_csv_data_list.append(csv_data)
             elif web2csv_time_duration_update.AppendDirection == CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_AFTER:
                 # for csv_data in reversed(csv_data_list):
                 for csv_data in csv_data_list:
-                    time_duration = cls._transform_time_str2obj(scrapy_data_time_unit, str(csv_data[0]))
+                    time_duration = cls._transform_time_str2obj(url_time_unit, str(csv_data[0]))
                     if time_duration < web2csv_time_duration_update.NewWebStart:
                         continue
                     sub_csv_data_list.append(csv_data)
@@ -102,7 +102,7 @@ class GUIWebScrapyBase(object):
     @classmethod
     def _write_scrapy_field_data_to_config(cls, csv_data_field_list, scrapy_method_index, finance_parent_folderpath):
         conf_folderpath = "%s/%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
-        conf_filename = "%s.conf" % CMN_DEF.SCRAPY_CLASS_METHOD[scrapy_method_index]
+        conf_filename = ("%s" % CMN_DEF.SCRAPY_CLASS_METHOD[scrapy_method_index]) + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
         CMN.FUNC.unicode_write_config_file_lines(csv_data_field_list, conf_filename, conf_folderpath)
 
 

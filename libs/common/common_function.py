@@ -266,12 +266,12 @@ def check_scrapy_class_index_in_range(scrapy_class_index, finance_mode=None):
     raise RuntimeError("Unknown finance mode")
 
 
-def check_statement_scrapy_class_index_in_range(scrapy_class_index):
-    if GV.IS_FINANCE_MARKET_MODE:
-        return False
-    elif GV.IS_FINANCE_STOCK_MODE:
-        return True if CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_END else False
-    raise RuntimeError("Unknown finance mode")
+# def check_statement_scrapy_class_index_in_range(scrapy_class_index):
+#     if GV.IS_FINANCE_MARKET_MODE:
+#         return False
+#     elif GV.IS_FINANCE_STOCK_MODE:
+#         return True if CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_END else False
+#     raise RuntimeError("Unknown finance mode")
 
 
 def get_scrapy_class_index_range():
@@ -300,10 +300,10 @@ def get_scrapy_method_index_range(finance_mode=None):
     raise RuntimeError("Unknown finance mode")
 
 
-def get_statement_scrapy_method_index_range():
-    if GV.IS_FINANCE_STOCK_MODE:
-        return (CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_START, CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_END)
-    raise RuntimeError("Unknown finance mode")
+# def get_statement_scrapy_method_index_range():
+#     if GV.IS_FINANCE_STOCK_MODE:
+#         return (CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_START, CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_END)
+#     raise RuntimeError("Unknown finance mode")
 
 
 def check_scrapy_method_index_in_range(scrapy_method_index, finance_mode=None):
@@ -316,12 +316,12 @@ def check_scrapy_method_index_in_range(scrapy_method_index, finance_mode=None):
     raise RuntimeError("Unknown finance mode")
 
 
-def check_statement_scrapy_method_index_in_range(scrapy_method_index):
-    if GV.IS_FINANCE_MARKET_MODE:
-        return False
-    elif GV.IS_FINANCE_STOCK_MODE:
-        return True if CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_END else False
-    raise RuntimeError("Unknown finance mode")
+# def check_statement_scrapy_method_index_in_range(scrapy_method_index):
+#     if GV.IS_FINANCE_MARKET_MODE:
+#         return False
+#     elif GV.IS_FINANCE_STOCK_MODE:
+#         return True if CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_END else False
+#     raise RuntimeError("Unknown finance mode")
 
 
 def get_scrapy_class_index_from_description(scrapy_class_description, ignore_exception=False):
@@ -499,6 +499,17 @@ def transform_quarter_str(year_value, quarter_value):
 
 def transform_time_str(hour_value, minute_value, second_value):
     return "%02d:%02d:%02d" % (hour_value, minute_value, second_value)
+
+
+def transform_month2date_str(month_string):
+    check_month_str_format(month_string)
+    return month_string + "-01"
+
+
+def transform_quarter2date_str(quarter_string):
+    check_quarter_str_format(quarter_string)
+    quarter_value = int(quarter_string[5])
+    return quarter_string[0:4] + "-%02d-01" % ((quarter_value - 1) * 3 + 1)
 
 
 def generate_cur_timestamp_str():
@@ -1210,7 +1221,7 @@ def create_finance_file_system(finance_parent_folderpath, company_group_count, r
             remove_finance_file_system(finance_parent_folderpath, company_group_count)        
             create_folder(parent_folderpath)
 # Create each suub folder 
-    for filepath in get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count, need_field_description):
+    for folderpath in get_finance_file_system_folderpath_generator(finance_parent_folderpath, company_group_count, need_field_description):
         create_folder(folderpath)
 
 

@@ -26,7 +26,7 @@ def __parse_data_from_table0_element(table_element, max_data_count=None):
     tr_elements = table_element.find_elements_by_tag_name("tr")
 # Parse the data name
     th_elements = tr_elements[0].find_elements_by_tag_name("th")
-    data_name_list = []
+    data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
     for th_element in th_elements[1:]:
         data_name_list.append(th_element.text)
 # Parse the data time and data
@@ -66,7 +66,7 @@ def __parse_data_from_table0_element(table_element, max_data_count=None):
         for td_element in td_elements[1:]:
             data_element_list.append(td_element.text)
         data_list.append(data_element_list)
-
+    # import pdb; pdb.set_trace()
     return (data_list, data_name_list)
 
 
@@ -124,13 +124,13 @@ def __parse_data_from_table1_element(table_element, max_data_count=None):
             data_list = [[data_time,] for data_time in sub_row_list]
 # CAUTION: Can't write in this way
             # data_list = [[],] * data_time_list_len
+            raise RuntimeError("Need to check if the date column is in the list")
             data_name_list = []
         else:
             data_name_list.append(row_list[0])
             sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else tr_elements[1:]
             for index, data in enumerate(sub_row_list):
                 data_list[index].append(data)
-
     return (data_list, data_name_list)
 
 
@@ -367,7 +367,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
             time_obj = CMN.CLS.FinanceQuarter(time_str)
         else:
-            raise ValueError("Unsupport time unit[%d] for transform" % scrapy_data_time_unit)
+            raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
         return time_obj
 
 
