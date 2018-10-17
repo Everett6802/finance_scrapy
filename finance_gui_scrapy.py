@@ -13,6 +13,9 @@ from libs import selenium as SL
 g_mgr = None
 g_logger = CMN.LOG.get_logger()
 param_cfg = {}
+combination_param_cfg = {}
+
+update_dataset_errmsg = None
 
 
 def show_usage_and_exit():
@@ -42,8 +45,11 @@ def show_usage_and_exit():
     print "--max_data_count\nDescription: Only scrape the latest N data\n"
     print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
 # Combination argument
-    print "--update_company_revenue\nDescription: Update the revenue of specific companies\nCaution: This arugment is equal to the argument combination as below: --method 0 --dataset_finance_folderpath --reserve_old --company xxxx\n"
-    print "--update_company_revenue_from_file\nDescription: Update the revenue of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method 0 --dataset_finance_folderpath --reserve_old --config_from_file\n"
+    print "Combination argument:\n Caution: Exclusive. Only the first combination argument takes effect. Some related arguments may be overwriten"
+    print "--update_company_revenue\nDescription: Update the revenue of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
+    print "--update_company_revenue_from_file\nDescription: Update the revenue of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
+    print "--update_company_profitability\nDescription: Update the profitability of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    print "--update_company_profitability_from_file\nDescription: Update the profitability of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
     sys.exit(0)
 
 
@@ -84,9 +90,11 @@ def init_param():
     param_cfg["company"] = None
     param_cfg["max_data_count"] = None
     param_cfg["enable_company_not_found_exception"] = False
-    param_cfg["update_company_revenue"] = None
-    param_cfg["update_company_revenue_from_file"] = False
-
+# combination arguments
+    combination_param_cfg["update_dataset_method"] = None
+    combination_param_cfg["update_dataset_config_from_file"] = False
+    combination_param_cfg["update_dataset_company_list"] = None
+    combination_param_cfg['update_company_multiple_dataset'] = False
 
 def parse_param():
     argc = len(sys.argv)
@@ -133,56 +141,80 @@ def parse_param():
             param_cfg["enable_company_not_found_exception"] = True
             index_offset = 1
         elif re.match("--update_company_revenue_from_file", sys.argv[index]):
-            param_cfg["update_company_revenue_from_file"] = True
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX)
+                combination_param_cfg['update_dataset_config_from_file'] = True
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_revenue_from_file"] = True
             index_offset = 1
         elif re.match("--update_company_revenue", sys.argv[index]):
-            param_cfg["update_company_revenue"] = sys.argv[index + 1]
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX)
+                combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_revenue"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--update_company_profitability_from_file", sys.argv[index]):
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX)
+                combination_param_cfg['update_dataset_config_from_file'] = True
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_profitability_from_file"] = True
+            index_offset = 1
+        elif re.match("--update_company_profitability", sys.argv[index]):
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX)
+                combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_profitability"] = sys.argv[index + 1]
             index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
 
-# Adjust the parameters setting...
-    update_company_revenue_company_list = None
-    if param_cfg["update_company_revenue_from_file"] and param_cfg["update_company_revenue"] is not None:
-        show_warn("The 'update_company_revenue' argument won't take effect since 'update_company_revenue_from_file' is set")
-        param_cfg["update_company_revenue"] = None
-    if param_cfg["update_company_revenue_from_file"]:
-        update_company_revenue_company_list = SL.CONF.GUIScrapyConfigurer.Instance().Company
-    elif param_cfg["update_company_revenue"] is not None:
-        update_company_revenue_company_list = param_cfg["update_company_revenue"]
 
-    if update_company_revenue_company_list is not None:
+def check_param():
+# Adjust the parameters setting for combination arguments
+    if combination_param_cfg["update_dataset_method"] is not None:
+        if combination_param_cfg["update_dataset_config_from_file"]:
+            method_index = int(combination_param_cfg["update_dataset_method"])
+            if SL.FUNC.is_stock_scrapy_method(method_index):
+                combination_param_cfg["update_dataset_company_list"] = SL.CONF.GUIScrapyConfigurer.Instance().Company
+
         if param_cfg["config_from_file"]:
             show_warn("The 'config_from_file' argument won't take effect since 'update_company_revenue' is set")
-            param_cfg["config_from_file"] = False
-
+        param_cfg["config_from_file"] = combination_param_cfg["update_dataset_config_from_file"]
         if param_cfg["method"] is not None:
             show_warn("The 'method' argument won't take effect since 'update_company_revenue' is set")
-        param_cfg["method"] = "%d" % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
+        param_cfg["method"] = combination_param_cfg["update_dataset_method"]
         if not param_cfg["dataset_finance_folderpath"]:
             show_warn("dataset_finance_folderpath' argument should be TRUE since 'update_company_revenue' is set")
-            param_cfg["dataset_finance_folderpath"] = True
+        param_cfg["dataset_finance_folderpath"] = True
         if not param_cfg["reserve_old"]:
             show_warn("reserve_old' argument should be TRUE since 'update_company_revenue' is set")
-            param_cfg["reserve_old"] = True
-        if not param_cfg["company"]:
-            show_warn("company' argument won't take effect since 'update_company_revenue' is set")
-        param_cfg["company"] = update_company_revenue_company_list # param_cfg["update_company_revenue"]
-
-
-def check_param():    
-    if param_cfg["config_from_file"]:
-        if param_cfg["method"] is not None:
-            param_cfg["method"] = None
-            show_warn("The 'method' argument is ignored since 'config_from_file' is set")
+        param_cfg["reserve_old"] = True
         if param_cfg["company"] is not None:
-            param_cfg["company"] = None
-            show_warn("The 'company' argument is ignored since 'config_from_file' is set")
+            show_warn("company' argument won't take effect since 'update_company_revenue' is set")
+        param_cfg["company"] = combination_param_cfg["update_dataset_company_list"]
+# Show error message to nofity the user
+        if combination_param_cfg["update_company_multiple_dataset"]:
+            show_warn("Only the first argument of updating dataset takes effect")
     else:
-        if param_cfg["method"] is None:
-            # import pdb; pdb.set_trace()
-            param_cfg["method"] = ",".join(map(str, range(SL.DEF.SCRAPY_METHOD_END)))
+        if param_cfg["config_from_file"]:
+            if param_cfg["method"] is not None:
+                param_cfg["method"] = None
+                show_warn("The 'method' argument is ignored since 'config_from_file' is set")
+            if param_cfg["company"] is not None:
+                param_cfg["company"] = None
+                show_warn("The 'company' argument is ignored since 'config_from_file' is set")
+        else:
+            if param_cfg["method"] is None:
+                # import pdb; pdb.set_trace()
+                param_cfg["method"] = ",".join(map(str, range(SL.DEF.SCRAPY_METHOD_END)))
 
     if param_cfg["dataset_finance_folderpath"]:
         if param_cfg["finance_folderpath"] is not None:
@@ -198,7 +230,7 @@ def setup_param():
         method_index_list = None
         if param_cfg["method"] is not None:
             method_index_list = CMN.FUNC.parse_method_str_to_list(param_cfg["method"])
-            g_mgr.set_method(method_index_list)
+        g_mgr.set_method(method_index_list)
 # Set Company
         if param_cfg["company"] is not None:
             g_mgr.set_company(param_cfg["company"])
@@ -273,6 +305,7 @@ if __name__ == "__main__":
 
     if param_cfg["help"]:
         show_usage_and_exit()
+    # import pdb; pdb.set_trace()
 # Check the parameters for the manager
     check_param()
 # # Update the dataset global variables

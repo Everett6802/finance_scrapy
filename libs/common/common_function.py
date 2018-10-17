@@ -512,6 +512,12 @@ def transform_quarter2date_str(quarter_string):
     return quarter_string[0:4] + "-%02d-01" % ((quarter_value - 1) * 3 + 1)
 
 
+def transform_year2date_str(year_string):
+    if re.match('20[\d]{2}', year_string) is None:
+        raise ValueError("The string[%s] is NOT year format" % year_string)
+    return year_string + "-01-01"
+
+
 def generate_cur_timestamp_str():
     datetime_cur = datetime.today()
     date_str = transform_date_str(datetime_cur.year, datetime_cur.month, datetime_cur.day)

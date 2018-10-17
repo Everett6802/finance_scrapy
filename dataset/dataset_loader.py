@@ -78,6 +78,8 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_month2date_str(x), '%Y-%m-%d')
 		elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
 			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_quarter2date_str(x), '%Y-%m-%d')
+		elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
+			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_year2date_str(x), '%Y-%m-%d')
 		else:
 			raise RuntimeError("Unsupport URL time unit: %d" % url_time_unit)
 	if field_index_list is not None:
@@ -261,6 +263,23 @@ def load_revenue_history(company_number):
     new_columns={
     	('%02d01' % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX): 'monthly revenue', 
     	('%02d03' % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX): 'monthly YOY growth', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+
+    return df, column_description_list
+
+
+def load_profitability_history(company_number):
+    df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX, company_number)
+# "毛利率", "營業利益率", '稅後純益率', "股東權益報酬率", '每股淨值', '每股稅後盈餘'
+    new_columns={
+        ('%02d01' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'gross profit margin', 
+        ('%02d02' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'operating profit margin', 
+        # ('%02d03' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'net profit margin', 
+        ('%02d04' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'net profit margin', 
+        ('%02d05' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'return on equity', 
+        ('%02d08' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'net asset value of each share', 
+        ('%02d09' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'earnings per share', 
     }
     df.rename(columns=new_columns, inplace=True)
 

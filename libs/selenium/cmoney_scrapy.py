@@ -103,6 +103,7 @@ def __parse_data_from_table1_element(table_element, max_data_count=None):
 # 				data_list[index].append(data)
 
 # 	return (data_list, data_time_list, data_name_list)
+    # import pdb; pdb.set_trace()
     for tr_element in tr_elements:
         # print tr_element.text
         row_list = tr_element.text.split(' ')
@@ -120,17 +121,18 @@ def __parse_data_from_table1_element(table_element, max_data_count=None):
             # # data_time_list = []
             # # data_time_list.extend(row_list[1:table_column_end_index])
             # data_list = [[data_time,] for data_time in row_list[1:table_column_end_index]]
-            sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else tr_elements[1:]
+            sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else row_list[1:]
             data_list = [[data_time,] for data_time in sub_row_list]
 # CAUTION: Can't write in this way
             # data_list = [[],] * data_time_list_len
-            raise RuntimeError("Need to check if the date column is in the list")
-            data_name_list = []
+            # raise RuntimeError("Need to check if the date column is in the list")
+            data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
         else:
             data_name_list.append(row_list[0])
-            sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else tr_elements[1:]
+            sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else row_list[1:]
             for index, data in enumerate(sub_row_list):
                 data_list[index].append(data)
+    # import pdb; pdb.set_trace()
     return (data_list, data_name_list)
 
 
