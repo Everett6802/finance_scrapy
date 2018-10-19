@@ -59,9 +59,22 @@ def __parse_data_from_table0_element(table_element, max_data_count=None):
         max_data_count = min(max_data_count, tr_elements_len)
     sub_tr_elements = tr_elements[1:(max_data_count + 1)] if max_data_count is not None else tr_elements[1:]
     # import pdb; pdb.set_trace()
+    is_year_time_str = None
+    time_str = None
     for index, tr_element in enumerate(sub_tr_elements):
         td_elements = tr_element.find_elements_by_tag_name("td")
-        time_str = "%s-%s" % (td_elements[0].text[0:4], td_elements[0].text[4:])
+        if is_year_time_str is None:
+            time_str_len = len(td_elements[0].text)
+            if time_str_len == 4:
+                is_year_time_str = True
+            elif time_str_len == 6:
+                is_year_time_str = False
+            else:
+                raise ValueError("UnSupport time string format: %s" % td_elements[0].text)
+        if is_year_time_str:
+            time_str = "%s" % td_elements[0].text
+        else:
+            time_str = "%s-%s" % (td_elements[0].text[0:4], td_elements[0].text[4:])
         data_element_list = [time_str,]
         for td_element in td_elements[1:]:
             data_element_list.append(td_element.text)
@@ -258,7 +271,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
             "table_time_unit_list": ["&o=1",], # Uselesss, only for compatibility
             "table_time_unit_description_list": [u"Dummy",], # Uselesss, only for compatibility
         },
-        "revenue": {
+        "revenue": { # 營收盈餘
             "url_format": __CMONEY_ULR_PREFIX + "f00029.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[4]/article/div/div/div/table",
             "table_time_unit_list": ["&o=1", "&o=2",],
@@ -276,7 +289,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
             "table_time_unit_list": ["&o=5", "&o=4", "&o=6",],
             "table_time_unit_description_list": [u"季合併損益表(單季)", u"年合併損益表",],
         },
-        "cashflow statement": {
+        "cashflow statement": { # 現金流量表
             "url_format": __CMONEY_ULR_PREFIX + "f00042.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div[2]/div/table",
             "table_time_unit_list": ["&o=5", "&o=4", "&o=6",],
@@ -368,6 +381,8 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
             time_obj = CMN.CLS.FinanceMonth(time_str)
         elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
             time_obj = CMN.CLS.FinanceQuarter(time_str)
+        elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
+            time_obj = CMN.CLS.FinanceYear(time_str)
         else:
             raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
         return time_obj

@@ -37,6 +37,22 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "scrapy_type": "stock", # for defining the method index
         "url_time_unit": CMN.DEF.DATA_TIME_UNIT_QUARTER,
     },
+    {# 現金流量表
+        "description": u'現金流量表',
+        "module_name": "cmoney_scrapy",
+        "class_name": "CMoneyWebScrapy",
+        "scrapy_class_method": "cashflow statement",
+        "scrapy_type": "stock", # for defining the method index
+        "url_time_unit": CMN.DEF.DATA_TIME_UNIT_QUARTER,
+    },
+    {# 股利政策
+        "description": u'股利政策',
+        "module_name": "cmoney_scrapy",
+        "class_name": "CMoneyWebScrapy",
+        "scrapy_class_method": "dividend",
+        "scrapy_type": "stock", # for defining the method index
+        "url_time_unit": CMN.DEF.DATA_TIME_UNIT_YEAR,
+    },
 # Stock End
 ]
 
@@ -57,6 +73,9 @@ SCRAPY_CLASS_METHOD = [cfg["scrapy_class_method"] for cfg in SCRAPY_CLASS_CONSTA
 
 SCRAPY_MEMTHOD_REVENUE_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'營收盈餘')
 SCRAPY_MEMTHOD_PROFITABILITY_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'獲利能力')
+SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'現金流量表')
+SCRAPY_MEMTHOD_DIVIDEND_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'股利政策')
+
 
 # __scrapy_class_market_index_list__ = [index for index, cfg in enumerate(SCRAPY_CLASS_CONSTANT_CFG) if cfg['scrapy_type'] == 'market']
 # # semi-open interval

@@ -302,6 +302,7 @@ class FinanceMonth(FinanceTimeBase):
             finance_date = date_args[0]
         else:
             finance_date = FinanceDate(*date_args)
+
         return cls(finance_date.year, finance_date.month)
 
 
@@ -568,6 +569,86 @@ class FinanceQuarter(FinanceTimeBase):
 
     def get_value_tuple(self):
         return (self.year, self.quarter)
+
+
+class FinanceYear(FinanceTimeBase):
+
+    @classmethod
+    def get_finance_year_from_date(cls, *date_args):
+        """ Find the finance year due to the specific finance date"""
+        
+        finance_date = None
+        if isinstance(date_args[0], FinanceDate):
+            finance_date = date_args[0]
+        else:
+            raise ValueError("UnSupport input argument: %s" % date_args)
+        return cls(finance_date.year)
+
+
+    def __init__(self, *args):
+        super(FinanceYear, self).__init__()
+        self.year = None # range: 2000 - 2099
+        self.year_str = None
+        # import pdb; pdb.set_trace()
+        try:
+            format_unsupport = False
+            if len(args) == 1:
+                time_cfg = None
+                if isinstance(args[0], str):
+                    mobj = CMN_FUNC.check_year_str_format(args[0])
+                    self.setup_year_value(mobj.group(0))
+                elif isinstance(args[0], datetime) or isinstance(args[0], FinanceMonth):
+                    self.setup_year_value(args[0].year)
+                else:
+                    format_unsupport = True
+            else:
+                format_unsupport = True
+            if format_unsupport:
+                raise ValueError("Unsupport argument format: %s" % [type(data) for data in args])
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            raise Exception("Exception occurs in FinanceYear, due to: %s" % str(e))
+# Check value range
+        CMN_FUNC.check_year_range(self.year)
+
+
+    @staticmethod
+    def get_time_unit_type():
+        return CMN_DEF.DATA_TIME_UNIT_YEAR
+
+
+    @classmethod
+    def from_string(cls, time_string):
+        return cls(time_string)
+
+
+    def __add__(self, year_delta):
+        if not isinstance(year_delta, int):
+            raise TypeError('The type[%s] of the delta argument is NOT int' % type(year_delta))
+        new_year = self.year + year_delta
+        return FinanceYear(year)
+
+
+    def __sub__(self, year_delta):
+        if not isinstance(year_delta, int):
+            raise TypeError('The type[%s] of the delta argument is NOT int' % type(year_delta))
+        new_year = self.year - year_delta
+        return FinanceYear(year)
+
+
+    def to_string(self):
+        if self.year_str is None:
+            self.year_str = "%d" % self.year
+        return self.year_str
+
+
+    def get_value(self):
+        return self.year
+
+
+    def get_value_tuple(self):
+        return (self.year,)
 
 
 class FinanceTimeRange(object):

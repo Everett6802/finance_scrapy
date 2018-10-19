@@ -485,6 +485,26 @@ def is_quarter_str_format(quarter_string):
     return check_result
 
 
+def check_year_str_format(year_string):
+    mobj = re.match("[\d]{2,4}", year_string)
+    if mobj is None:
+        raise ValueError("The string[%s] is NOT year format" % year_string)
+    year_string_len = len(year_string)
+    # if quarter_string_len < MIN_QUARTER_STRING_LENGTH or quarter_string_len > MAX_QUARTER_STRING_LENGTH:
+    if not (CMN_DEF.MIN_YEAR_STRING_LENGTH <= year_string_len <= CMN_DEF.MAX_YEAR_STRING_LENGTH):
+        raise ValueError("The year stirng[%s] length is NOT in the range [%d, %d]" % (year_string_len, CMN_DEF.MIN_YEAR_STRING_LENGTH, CMN_DEF.MAX_YEAR_STRING_LENGTH))
+    return mobj
+
+
+def is_year_str_format(year_string):
+    check_result = True
+    try:
+        check_year_str_format(year_string)
+    except ValueError:
+        check_result = False
+    return check_result
+
+
 def transform_date_str(year_value, month_value, day_value):
     return "%d-%02d-%02d" % (year_value, month_value, day_value)
 

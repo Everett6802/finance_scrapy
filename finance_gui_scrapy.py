@@ -50,6 +50,8 @@ def show_usage_and_exit():
     print "--update_company_revenue_from_file\nDescription: Update the revenue of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
     print "--update_company_profitability\nDescription: Update the profitability of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
     print "--update_company_profitability_from_file\nDescription: Update the profitability of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    print "--update_company_cashflow_statement\nDescription: Update the cashflow statement of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    print "--update_company_cashflow_statement_from_file\nDescription: Update the cashflow statement of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
     sys.exit(0)
 
 
@@ -172,6 +174,38 @@ def parse_param():
                 combination_param_cfg['update_company_multiple_dataset'] = True
             # param_cfg["update_company_profitability"] = sys.argv[index + 1]
             index_offset = 2
+        elif re.match("--update_company_cashflow_statement_from_file", sys.argv[index]):
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX)
+                combination_param_cfg['update_dataset_config_from_file'] = True
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_profitability_from_file"] = True
+            index_offset = 1
+        elif re.match("--update_company_cashflow_statement", sys.argv[index]):
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX)
+                combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_profitability"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--update_company_dividend_from_file", sys.argv[index]):
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX)
+                combination_param_cfg['update_dataset_config_from_file'] = True
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_profitability_from_file"] = True
+            index_offset = 1
+        elif re.match("--update_company_dividend", sys.argv[index]):
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX)
+                combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_profitability"] = sys.argv[index + 1]
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -186,19 +220,19 @@ def check_param():
                 combination_param_cfg["update_dataset_company_list"] = SL.CONF.GUIScrapyConfigurer.Instance().Company
 
         if param_cfg["config_from_file"]:
-            show_warn("The 'config_from_file' argument won't take effect since 'update_company_revenue' is set")
+            show_warn("The 'config_from_file' argument won't take effect since 'combination argument' is set")
         param_cfg["config_from_file"] = combination_param_cfg["update_dataset_config_from_file"]
         if param_cfg["method"] is not None:
-            show_warn("The 'method' argument won't take effect since 'update_company_revenue' is set")
+            show_warn("The 'method' argument won't take effect since 'combination argument' is set")
         param_cfg["method"] = combination_param_cfg["update_dataset_method"]
         if not param_cfg["dataset_finance_folderpath"]:
-            show_warn("dataset_finance_folderpath' argument should be TRUE since 'update_company_revenue' is set")
+            show_warn("dataset_finance_folderpath' argument should be TRUE since 'combination argument' is set")
         param_cfg["dataset_finance_folderpath"] = True
         if not param_cfg["reserve_old"]:
-            show_warn("reserve_old' argument should be TRUE since 'update_company_revenue' is set")
+            show_warn("reserve_old' argument should be TRUE since 'combination argument' is set")
         param_cfg["reserve_old"] = True
         if param_cfg["company"] is not None:
-            show_warn("company' argument won't take effect since 'update_company_revenue' is set")
+            show_warn("company' argument won't take effect since 'combination argument' is set")
         param_cfg["company"] = combination_param_cfg["update_dataset_company_list"]
 # Show error message to nofity the user
         if combination_param_cfg["update_company_multiple_dataset"]:
