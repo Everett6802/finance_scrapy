@@ -141,6 +141,11 @@ class GUIScrapyMgr(object):
         # import pdb; pdb.set_trace()
         for method_index in self.method_index_list:
             web_scrapy_class = CMN_FUNC.get_selenium_web_scrapy_class(method_index)
+# Check the field description file exist
+            if not web_scrapy_class.check_scrapy_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):
+                g_logger.info(u"The CSV field config of %s does NOT exist, update it in %s......" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[method_index], self.xcfg['finance_root_folderpath']))
+                self.update_csv_field(method_index)
+
             web_scrapy_cfg = {
                 "dry_run_only": self.xcfg["dry_run_only"],
                 'finance_root_folderpath': self.xcfg['finance_root_folderpath'],
@@ -162,13 +167,17 @@ class GUIScrapyMgr(object):
                     raise ValueError("Unknown scrapy method index: %d" % method_index)
 
 
-    def update_csv_field(self):
-        if not self.xcfg["reserve_old_finance_folder"]:
-            self.__remove_old_finance_folder()
-        self.__create_finance_folder_if_not_exist()
-
+    def update_csv_field(self, method_index_list=None):
+        # if not self.xcfg["reserve_old_finance_folder"]:
+        #     self.__remove_old_finance_folder()
+        # self.__create_finance_folder_if_not_exist()
         # import pdb; pdb.set_trace()
-        for method_index in self.method_index_list:
+        if method_index_list is not None:
+            if type(method_index_list) is int:
+                method_index_list = [method_index_list,]
+        else:
+            method_index_list = self.method_index_list
+        for method_index in method_index_list:
             web_scrapy_class = CMN_FUNC.get_selenium_web_scrapy_class(method_index)
             web_scrapy_cfg = {
                 'finance_root_folderpath': self.xcfg['finance_root_folderpath'],

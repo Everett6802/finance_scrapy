@@ -284,3 +284,30 @@ def load_profitability_history(company_number):
     df.rename(columns=new_columns, inplace=True)
 
     return df, column_description_list
+
+
+# def load_cashflow_statement_history(company_number):
+    df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX, company_number)
+# "營業活動現金流量", "投資活動現金流量", '理財活動現金流量', "自由現金流量'
+    new_columns={
+        # ('%02d01' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'gross profit margin', 
+        ('%02d02' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'cash flow from operating activities', 
+        ('%02d03' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'cash flow from investing activities', 
+        ('%02d04' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'cash flow from financing activities', 
+        ('%02d07' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'free cash flow', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+
+    return df, column_description_list
+
+
+def load_dividend_history(company_number):
+    df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX, company_number)
+# "現金股利", "股票股利合計'
+    new_columns={
+        ('%02d01' % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX): 'cash dividend', 
+        ('%02d04' % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX): 'stock dividend', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+
+    return df, column_description_list

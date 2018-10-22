@@ -91,12 +91,18 @@ class GUIWebScrapyBase(object):
 
         if dry_run_only:
             return
-
+        # import pdb; pdb.set_trace()
 # Update the time duration
         if csv_time_duration_dict is None:
             csv_time_duration_dict = {}
         csv_time_duration_dict[scrapy_method_index] = new_csv_extension_time_duration
         CMN_FUNC.write_csv_time_duration_config_file(CMN_DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath, csv_time_duration_dict)
+
+
+    @classmethod
+    def check_scrapy_field_description_exist(cls, scrapy_method_index, finance_parent_folderpath):
+        conf_filepath = "%s/%s/%s%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME, CMN_DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX)
+        return CMN.FUNC.check_file_exist(conf_filepath)
 
 
     @classmethod

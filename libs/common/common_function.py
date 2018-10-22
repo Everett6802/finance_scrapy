@@ -811,9 +811,14 @@ def get_finance_mode():
 
 def read_csv_time_duration_config_file(conf_filename, conf_folderpath, get_index_from_description_func_ptr=get_scrapy_class_index_from_description):
     # import pdb; pdb.set_trace()
-    csv_time_duration_dict = {}
+    csv_time_duration_dict = None
+    conf_line_list = None
     try:
         conf_line_list = read_config_file_lines(conf_filename, conf_folderpath)
+    except ValueError as e:
+        pass
+    else:
+        csv_time_duration_dict = {}
         for line in conf_line_list:
             param_list = line.split(' ')
             param_list_len = len(param_list)
@@ -824,8 +829,6 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, get_index
             time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(param_list[1])
             time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(param_list[2])
             csv_time_duration_dict[index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
-    except ValueError as e:
-        csv_time_duration_dict = None
     return csv_time_duration_dict
 
 
@@ -1038,6 +1041,7 @@ def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_t
 def get_time_range_overlap_case(new_finance_time_start, new_finance_time_end, orig_finance_time_start, orig_finance_time_end):
     assert new_finance_time_start <= new_finance_time_end, "The new start time[%s] should be smaller than the end time[%s]" % (new_finance_time_start.to_string(), new_finance_time_end.to_string())
     assert orig_finance_time_start <= orig_finance_time_end, "The original start time[%s] should be smaller than the end time[%s]" % (orig_finance_time_start.to_string(), orig_finance_time_end.to_string())
+    # import pdb ; pdb.set_trace()
     if new_finance_time_end < orig_finance_time_start or new_finance_time_start > orig_finance_time_end:
         return CMN_DEF.TIME_OVERLAP_NONE
     else:

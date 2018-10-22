@@ -21,14 +21,14 @@ update_dataset_errmsg = None
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "-h | --help\nDescription: The usage\nCaution: Ignore other parameters when set\n"
+    print "--update_csv_field\nDescription: Update the CSV file description\n"
     print "--no_scrapy\nDescription: Don't scrape Web data\n"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web\n"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s\n" % CMN.DEF.CSV_ROOT_FOLDERPATH
     print "--dataset_finance_folderpath\nDescription: Set the finance root folder to the dataset folder\n"
     print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s\n" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
-    print "--update_csv_field\nDescription: Update the CSV file description\n"
-    print "--method\nDescription: The list of the methods\nDefault: All finance methods\nCaution: Only take effect when config_from_file is NOT set"
+    print "-m | --method\nDescription: The list of the methods\nDefault: All finance methods\nCaution: Only take effect when config_from_file is NOT set"
     print "Scrapy Method:"
     for method_index in range(SL.DEF.SCRAPY_METHOD_LEN):
         print "  %d: %s" % (method_index, SL.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
@@ -52,6 +52,8 @@ def show_usage_and_exit():
     print "--update_company_profitability_from_file\nDescription: Update the profitability of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
     print "--update_company_cashflow_statement\nDescription: Update the cashflow statement of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
     print "--update_company_cashflow_statement_from_file\nDescription: Update the cashflow statement of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    print "--update_company_dividend\nDescription: Update the dividend of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    print "--update_company_dividend_from_file\nDescription: Update the dividend of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
     sys.exit(0)
 
 
@@ -97,6 +99,7 @@ def init_param():
     combination_param_cfg["update_dataset_config_from_file"] = False
     combination_param_cfg["update_dataset_company_list"] = None
     combination_param_cfg['update_company_multiple_dataset'] = False
+
 
 def parse_param():
     argc = len(sys.argv)
@@ -212,6 +215,11 @@ def parse_param():
 
 
 def check_param():
+    if param_cfg['help']:
+        show_warn("Show Usage and Exit. Other parameters are ignored")
+    if param_cfg['update_csv_field']:
+        show_warn("Update CSV field description and Exit. Other parameters are ignored")
+
 # Adjust the parameters setting for combination arguments
     if combination_param_cfg["update_dataset_method"] is not None:
         if combination_param_cfg["update_dataset_config_from_file"]:
@@ -283,6 +291,12 @@ def update_global_variable():
     GV.GLOBAL_VARIABLE_UPDATED = True
 
 
+def update_csv_field_and_exit():
+    show_info("*** Update the field descriptions to Dataset: %s ***" % g_mgr.FinanceRootFolderPath)
+    g_mgr.update_csv_field()
+    sys.exit(0)
+
+
 def record_exe_time(action):
     def decorator(func):
         def wrapper(*args, **kwargs):
@@ -315,11 +329,11 @@ def do_scrapy():
 #     show_info("* Update the CSV field from the website...... DONE!!!")
 
 
-import dataset as DS
+# import dataset as DS
 
 if __name__ == "__main__":
     # # # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
-    # df, _ = DS.LD.load_revenue_history("2458")
+    # df, _ = DS.LD.load_cashflow_statement_history("2458")
     # # df, _ = DS.LD.load_stock_price_history("2458")
     # import pdb; pdb.set_trace()
     # sys.exit(0)
@@ -336,20 +350,18 @@ if __name__ == "__main__":
         "max_data_count": param_cfg["max_data_count"],
     }
     g_mgr = SL.MGR.GUIScrapyMgr(**update_cfg)
-
+# Check the parameters for the manager
+    check_param()
     if param_cfg["help"]:
         show_usage_and_exit()
     # import pdb; pdb.set_trace()
-# Check the parameters for the manager
-    check_param()
-# # Update the dataset global variables
-#     update_global_variable()
 # Setup the parameters for the manager
     setup_param()
-
     # import pdb; pdb.set_trace()
     if param_cfg["update_csv_field"]:
-        g_mgr.update_csv_field()
+        update_csv_field_and_exit()
+
+    show_info("*** Update the Dataset: %s ***" % g_mgr.FinanceRootFolderPath)
 # Try to scrap the web data
     if not param_cfg["no_scrapy"]:
         do_scrapy()

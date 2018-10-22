@@ -135,8 +135,11 @@ class FinanceTimeBase(object):
             return FinanceMonth.from_string(time_string)
         elif CMN_FUNC.is_quarter_str_format(time_string):
             return FinanceQuarter.from_string(time_string)
+        elif CMN_FUNC.is_year_str_format(time_string):
+            return FinanceYear.from_string(time_string)
         else:
-            ValueError("Unknown time format: %s" % time_string)
+            # import pdb; pdb.set_trace()
+            raise ValueError("Unknown time format: %s" % time_string)
 
 
     def __str__(self):
