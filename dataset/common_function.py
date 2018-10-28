@@ -733,3 +733,26 @@ def print_key_support_resistance_price(df, key_support_resistance):
 #     resistance_date_index = date2Date(resistance_date)
 #     print "R: %s, %s%s" % PRICE(df.ix[resistance_date_index, 'low'], resistance_date, DS_CMN_DEF.SR_PRICE_TYPE_LOW)
 #     print "\n"
+
+
+def print_312_month_yoy_revenue_growth(df, month_yoy_growth_3, month_yoy_growth_12, month_yoy_growth_diff, sign_change_index, sign_change_positive_index=None, sign_change_negative_index=None):
+    print "\n***** 312 Month YOY Revenue Growth *****"
+    if sign_change_positive_index is not None:
+        positive_index_date = []
+        for positive_index in sign_change_positive_index:
+            positive_index_date.append(str(df.index[positive_index])[:7])
+        print "Golden Cross: %s\n" % (",".join(positive_index_date))
+    if sign_change_negative_index is not None:
+        negative_index_date = []
+        for negative_index in sign_change_negative_index:
+            negative_index_date.append(str(df.index[negative_index])[:7])
+        print "Death Cross: %s\n" % (",".join(negative_index_date))
+    # import pdb; pdb.set_trace()
+    for index in sign_change_index:
+        diff_value = month_yoy_growth_diff[index]
+        cross_str = "Golden Cross" if diff_value > 0 else "Death Cross"
+        date_str = str(df.index[index])[:7]
+        diff_ratio = (diff_value / month_yoy_growth_12[index]) * (100.0 if diff_value > 0 else -100.0)
+        total_str = "%s, %s, 3YOY: %.2f, 12YOY: %.2f, %.2f" % (date_str, cross_str, month_yoy_growth_3[index], month_yoy_growth_12[index], diff_ratio)
+        print total_str + "%"
+    print "*****************************************\n"

@@ -441,11 +441,50 @@ def plot_stock_price_statistics(df, cur_price, price_range_low_percentage=12, pr
     line_cnt = price_statistics_len
     for price, df_data in price_statistics:
         data_str = ",".join([row['date'].strftime("%y%m%d")+row['type'] for index, row in df_data.iterrows()])    
-        ax.text(2, 2* line_cnt, data_str, style='italic',
-            bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
+        ax.text(2, 2 * line_cnt, data_str, style='italic', bbox={'facecolor':'red', 'alpha':0.5, 'pad':1})
         line_cnt -= 1
     ax.axis([0, 10, 0, 2* price_statistics_len + 1])
     # plt.show()
+
+
+def plot_312_month_yoy_revenue_growth(df, title=None, month_yoy_growth_3=None, month_yoy_growth_12=None, sign_change_positive_index=None, sign_change_negative_index=None):
+    # import pdb; pdb.set_trace()
+    if month_yoy_growth_3 is None:
+        month_yoy_growth_3 = df['monthly YOY growth'].rolling(window=3).mean()
+    if month_yoy_growth_12 is None:
+        month_yoy_growth_12 = df['monthly YOY growth'].rolling(window=12).mean()
+    fig, ax = plt.subplots()
+    if title:
+        ax.set_title(title)
+    ax.plot(month_yoy_growth_3.index, month_yoy_growth_3, label='3 Months')
+    ax.plot(month_yoy_growth_12.index, month_yoy_growth_12, label='12 Months')
+    # import pdb; pdb.set_trace()
+    # sign_change = np.nan_to_num(np.diff(np.sign(month_yoy_growth_3 - month_yoy_growth_12)))
+    # sign_change_positive_index = np.argwhere(sign_change > 0).flatten() + 1
+    # sign_change_negative_index = np.argwhere(sign_change < 0).flatten() + 1
+    if sign_change_positive_index is not None:
+        plt.plot(df.index[sign_change_positive_index], month_yoy_growth_3[sign_change_positive_index], 'ro')
+    if sign_change_negative_index is not None:
+        plt.plot(df.index[sign_change_negative_index], month_yoy_growth_3[sign_change_negative_index], 'go')
+# Set the tick on x-axis
+    cur_month = None
+    # x_tick = None
+    x_tick_label = None
+    for index, df_date in enumerate(df.index):
+        if cur_month == df_date.month:
+            continue
+        if x_tick_label is None:
+            # x_tick = [index,]
+            x_tick_label = [df_date.strftime("%y%m"),]        
+        elif df_date.month == 1:
+            # x_tick.append(index)
+            x_tick_label.append(df_date.strftime("%y%m"))
+        else:
+            # x_tick.append(index)
+            x_tick_label.append(df_date.strftime("%m"))
+        cur_month = df_date.month
+    ax.set_xticks(df.index)
+    ax.set_xticklabels(x_tick_label, rotation=90)
 
 
 def save_plot(filepath, data_count=0):

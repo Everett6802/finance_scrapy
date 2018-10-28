@@ -253,7 +253,6 @@ def load_stock_price_history(company_number, overwrite_stock_price_list=None, da
 # Chnage the time unit
     if data_time_unit != CMN.DEF.DATA_TIME_UNIT_DAY:
     	df = day_to_new_timeunit(df, TIMEUNIT_GROUPBY_FUNC_PTR[data_time_unit])
-
     return df, column_description_list
 
 
@@ -265,7 +264,6 @@ def load_revenue_history(company_number):
     	('%02d03' % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX): 'monthly YOY growth', 
     }
     df.rename(columns=new_columns, inplace=True)
-
     return df, column_description_list
 
 
@@ -282,11 +280,10 @@ def load_profitability_history(company_number):
         ('%02d09' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'earnings per share', 
     }
     df.rename(columns=new_columns, inplace=True)
-
     return df, column_description_list
 
 
-# def load_cashflow_statement_history(company_number):
+def load_cashflow_statement_history(company_number):
     df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX, company_number)
 # "營業活動現金流量", "投資活動現金流量", '理財活動現金流量', "自由現金流量'
     new_columns={
@@ -297,7 +294,6 @@ def load_profitability_history(company_number):
         ('%02d07' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'free cash flow', 
     }
     df.rename(columns=new_columns, inplace=True)
-
     return df, column_description_list
 
 
@@ -309,5 +305,4 @@ def load_dividend_history(company_number):
         ('%02d04' % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX): 'stock dividend', 
     }
     df.rename(columns=new_columns, inplace=True)
-
     return df, column_description_list

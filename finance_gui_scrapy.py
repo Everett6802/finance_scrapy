@@ -329,14 +329,14 @@ def do_scrapy():
 #     show_info("* Update the CSV field from the website...... DONE!!!")
 
 
-# import dataset as DS
+import dataset as DS
 
 if __name__ == "__main__":
-    # # # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
-    # df, _ = DS.LD.load_cashflow_statement_history("2458")
-    # # df, _ = DS.LD.load_stock_price_history("2458")
-    # import pdb; pdb.set_trace()
-    # sys.exit(0)
+    # # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
+    df, _ = DS.LD.load_revenue_history("2458")
+    # df, _ = DS.LD.load_stock_price_history("2458")
+    import pdb; pdb.set_trace()
+    sys.exit(0)
 
 # Parse the parameters and apply to manager class
     init_param()

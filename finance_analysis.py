@@ -23,8 +23,9 @@ def show_usage_and_exit():
     print "-c | --company\nDescription: The company to be analyzed"
     print "  Format: Company code number (ex. 2347)"
     print "-a | --analyze\nDescription: Analyze the dataset for the follow purpose:\n"
-    print " 1: Find the support and resistance of a company\n"
-    print " 2: Find the jump gap of a company\n"
+    print " 0: Find the support and resistance of a company\n"
+    print " 1: Find the jump gap of a company\n"
+    print " 2: Find the 3/12 monthly YOY revenue growth of a company\n"
     print "Default: 1\n"
     sys.exit(0)
 
@@ -109,7 +110,11 @@ def update_global_variable():
 
 # def analyze_and_exit(company_number, cur_price=None, show_marked_only=DS.DEF.DEF_SUPPORT_RESISTANCE_SHOW_MARKED_ONLY, group_size_thres=DS.DEF.DEF_SUPPORT_RESISTANCE_GROUP_SIZE_THRES):
 def analyze_and_exit():
-    FUNC_PTR_ARRAY = [DS.AS.find_support_resistance, DS.AS.find_jump_gap,]
+    FUNC_PTR_ARRAY = [
+        DS.AS.find_support_resistance, 
+        DS.AS.find_jump_gap, 
+        DS.AS.find_312_month_yoy_revenue_growth,
+    ]
     kwargs = {"company_number": param_cfg["company"],}
     # import pdb; pdb.set_trace()
     # DS.AS.analyze_stock(company_number, cur_price)
