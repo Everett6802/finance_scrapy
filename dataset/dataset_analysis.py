@@ -125,7 +125,7 @@ def find_support_resistance(company_number, cur_price=None, show_marked_only=DS_
         )
 
     if save_figure:
-        DS_VS.plot_candles(df, title=dataset_visualization_title, volume_bars=True, overlays=[SMA], stock_price_statistics_config=stock_price_statistics_config)
+        DS_VS.plot_support_resistance(df, title=dataset_visualization_title, volume_bars=True, overlays=[SMA], stock_price_statistics_config=stock_price_statistics_config)
         filepath = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_OUTPUT_FOLDER_PATH] + "/%s.png" % company_number
         DS_VS.save_plot(filepath, len(df))
 # Generate the HTML report
@@ -147,7 +147,7 @@ def find_jump_gap(company_number, start_date=None, tick_for_jump_gap=2):
 
     if DV.CAN_VISUALIZE:
         stock_price_statistics_config = {DS_CMN_DEF.SR_CONF_FIELD_JUMP_GAP: jump_gap_list}
-        DS_VS.plot_candles(df, title=company_number, volume_bars=True, stock_price_statistics_config=stock_price_statistics_config)
+        DS_VS.plot_support_resistance(df, title=company_number, volume_bars=True, stock_price_statistics_config=stock_price_statistics_config)
         DS_VS.show_plot()
 
 

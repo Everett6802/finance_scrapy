@@ -16,10 +16,10 @@ from dataset.common_variable import DatasetVar as DV
 g_logger = CMN.LOG.get_logger()
 
 
-"""This cell defineds the plot_candles function"""
+"""This cell defineds the plot_support_resistance function"""
 """https://www.quantopian.com/posts/plot-candlestick-charts-in-research"""
 
-def plot_candles_v1(pricing, title=None, 
+def plot_support_resistance_v1(pricing, title=None, 
                     volume_bars=False, 
                     color_function=None, 
                     technicals=None):
@@ -99,7 +99,7 @@ def plot_candles_v1(pricing, title=None,
     # plt.show()
 
 
-def plot_candles_v2(pricing, title=None,
+def plot_support_resistance_v2(pricing, title=None,
                  volume_bars=False,
                  color_function=None,
                  overlays=None,
@@ -422,7 +422,7 @@ def plot_candles_v2(pricing, title=None,
         if i < len(technicals_titles):
             ax.set_title(technicals_titles[i])
 
-plot_candles = plot_candles_v2
+plot_support_resistance = plot_support_resistance_v2
 
 
 def plot_stock_price_statistics(df, cur_price, price_range_low_percentage=12, price_range_high_percentage=12):
