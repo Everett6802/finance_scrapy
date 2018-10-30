@@ -112,6 +112,34 @@ class GUIWebScrapyBase(object):
         CMN.FUNC.unicode_write_config_file_lines(csv_data_field_list, conf_filename, conf_folderpath)
 
 
+    @classmethod
+    def _set_scrapy_method(cls, obj, value):
+        try:
+            obj.method_list.index(value)
+        except ValueError:
+            errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
+            g_logger.error(errmsg)
+            raise ValueError(errmsg)
+        obj.scrapy_method = value
+        if obj.scrapy_method_index is not None:
+            g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(obj)))
+            obj.scrapy_method_index = None
+        raise NotImplementedError
+
+
+    @classmethod
+    def _set_scrapy_method_index(cls, obj, value):
+        if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+            raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(obj)))
+        obj.scrapy_method_index = value
+        obj.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[obj.scrapy_method_index]['scrapy_class_method']
+
+
+    def update_csv_field(self):
+        _, csv_data_field_list = self.scrape_web()
+        self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
+
+
     def scrape_web_to_csv(self, *args, **kwargs):
         # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
         csv_data_list, _ = self.scrape_web(*args, **kwargs)
@@ -124,9 +152,9 @@ class GUIWebScrapyBase(object):
         raise NotImplementedError
 
 
-    @abstractmethod
-    def update_csv_field(self):
-        raise NotImplementedError
+    # @abstractmethod
+    # def update_csv_field(self):
+    #     raise NotImplementedError
 
 
     @abstractmethod

@@ -53,6 +53,14 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "scrapy_type": "stock", # for defining the method index
         "url_time_unit": CMN.DEF.DATA_TIME_UNIT_YEAR,
     },
+    {# 三大法人買賣超
+        "description": u'三大法人買賣超',
+        "module_name": "goodinfo_scrapy",
+        "class_name": "GoodInfoWebScrapy",
+        "scrapy_class_method": "institutional investor net buy sell",
+        "scrapy_type": "stock", # for defining the method index
+        "url_time_unit": CMN.DEF.DATA_TIME_UNIT_YEAR,
+    },
 # Stock End
 ]
 

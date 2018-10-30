@@ -13,15 +13,15 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
+import libs.common as CMN
 import common_definition as CMN_DEF
 import gui_scrapy_base as ScrapyBase
-# import libs.common as CMN
-# g_logger = CMN.LOG.get_logger()
-
+g_logger = CMN.LOG.get_logger()
 
 PRINT_SCRAPY = True
 
-def _scrape_legal_persion_buy_sell_(driver, *args, **kwargs):
+
+def _scrape_institutional_investor_net_buy_sell_(driver, *args, **kwargs):
 	import pdb; pdb.set_trace()
 	table_element = driver.find_element_by_class_name("solid_1_padding_3_2_tbl")
 	tr_elements = table_element.find_elements_by_tag_name("tr")
@@ -50,7 +50,7 @@ class GoodInfoWebScrapyMeta(type):
 # market start
 # market end
 # stock start
-		"_scrape_legal_persion_buy_sell_": _scrape_legal_persion_buy_sell_,
+		"_scrape_institutional_investor_net_buy_sell_": _scrape_legal_persion_buy_sell_,
 		"_scrape_legal_persion_buy_sell_accumulate_": _scrape_legal_persion_buy_sell_accumulate_,
 # stock end
 	}
@@ -64,47 +64,66 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
 	__metaclass__ = GoodInfoWebScrapyMeta
 
-	__CMONEY_ULR_PREFIX = "https://goodinfo.tw/StockInfo/"
+	__GOODINFO_ULR_PREFIX = "https://goodinfo.tw/StockInfo/"
+
+    __MARKET_SCRAPY_CFG = {
+    }
 
 	__STOCK_SCRAPY_CFG = {
-		"legal_persion_buy_sell": { # 三大法人買賣超
-			"url_format": __CMONEY_ULR_PREFIX + "ShowBuySaleChart.asp?STOCK_ID=%s&CHT_CAT=DATE",
+		"institutional investor net buy sell": { # 三大法人買賣超
+			"url_format": __GOODINFO_ULR_PREFIX + "ShowBuySaleChart.asp?STOCK_ID=%s&CHT_CAT=DATE",
 		},
-		"legal_persion_buy_sell_accumulate": { # 三大法人買賣超累計
-			"url_format": __CMONEY_ULR_PREFIX + "ShowBuySaleChart.asp?STOCK_ID=%s&CHT_CAT=DATE",
+		"institutional investor net buy sell accumulate": { # 三大法人買賣超累計
+			"url_format": __GOODINFO_ULR_PREFIX + "ShowBuySaleChart.asp?STOCK_ID=%s&CHT_CAT=DATE",
 		},
 	}
 
-	__MARKET_URL = {}
+	__MARKET_URL = {key: value["url"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    # __MARKET_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    # __MARKET_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    # __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
 
 	__STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-	# __STOCK_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-	# __STOCK_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-	# __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    # __STOCK_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    # __STOCK_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    # __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+
+    # __TABLE_XPATH = {}
+    # __TABLE_XPATH.update(__MARKET_TABLE_XPATH)
+    # __TABLE_XPATH.update(__STOCK_TABLE_XPATH)
+
+    # __TIME_UNIT_LIST = {}
+    # __TIME_UNIT_LIST.update(__MARKET_TIME_UNIT_LIST)
+    # __TIME_UNIT_LIST.update(__STOCK_TIME_UNIT_LIST)
+
+    # __TIME_UNIT_DESCRIPTION_LIST = {}
+    # __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
+    # __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
 
 	__FUNC_PTR = {
 # market start
 # market end
 # stock start
-		"legal_persion_buy_sell": _scrape_legal_persion_buy_sell_,
+		"institutional investor net buy sell": _scrape_institutional_investor_net_buy_sell_,
 		"legal_persion_buy_sell_accumulate": _scrape_legal_persion_buy_sell_accumulate_,
 # stock end
 	}
+    __METHOD_NAME_LIST = __FUNC_PTR.keys()
 
 
-	@classmethod
-	def get_scrapy_method_list(cls):
-		return cls.__FUNC_PTR.keys()
+    @classmethod
+    def get_scrapy_method_list(cls):
+        return cls.__METHOD_NAME_LIST
 
 
-	@classmethod
-	def print_scrapy_method(cls):
-		print ", ".join(cls.get_scrapy_method_list())
+    @classmethod
+    def print_scrapy_method(cls):
+        print ", ".join(cls.__METHOD_NAME_LIST)
 
 
-	# @classmethod
-	# def print_scrapy_stock_method_time_unit_description(cls, scrapy_method):
-	# 	print ", ".join(cls.__STOCK_TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
+    @classmethod
+    def print_scrapy_method_time_unit_description(cls, scrapy_method):
+        print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
 	def __init__(self):
@@ -127,7 +146,7 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
 		return False
 
 
-	def scrape(self, scrapy_method, *args, **kwargs):
+	def scrape_web(self, *args, **kwargs):
 		url = None
 		# import pdb; pdb.set_trace()
 		if self.__MARKET_URL.get(scrapy_method, None) is not None:
@@ -149,38 +168,77 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
 		return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **kwargs)
 
 
-	# @property
-	# def CSVTimeDuration(self):
-	# 	return self.csv_time_duration
-
-	# @CSVTimeDuration.setter
-	# def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
-	# 	self.csv_time_duration = csv_time_duration
+    # def update_csv_field(self):
+    #     _, csv_data_field_list = self.scrape_web()
+    #     self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
 
 
-	@property
-	def CompanyNumber(self):
-		return self.company_number
+    # @property
+    # def CSVTimeDuration(self):
+    #     return self.csv_time_duration
 
-	@CompanyNumber.setter
-	def CompanyNumber(self, company_number):
-		self.company_number = company_number
+    # @CSVTimeDuration.setter
+    # def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
+    # 	self.csv_time_duration = csv_time_duration
 
 
-	@property
-	def CompanyGroupNumber(self):
-		return self.company_group_number
+    @property
+    def ScrapyMethod(self):
+        return self.scrapy_method
 
-	@CompanyGroupNumber.setter
-	def CompanyGroupNumber(self, company_group_number):
-		self.company_group_number = company_group_number
+    @ScrapyMethod.setter
+    def ScrapyMethod(self, value):
+        # try:
+        #     self.method_list.index(value)
+        # except ValueError:
+        #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
+        #     g_logger.error(errmsg)
+        #     raise ValueError(errmsg)
+        # self.scrapy_method = value
+        # if self.scrapy_method_index is not None:
+        #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
+        #     self.scrapy_method_index = None
+        # raise NotImplementedError
+        super(GoodInfoWebScrapy, self)._set_scrapy_method(self, value)
+
+
+    @property
+    def ScrapyMethodIndex(self):
+        return self.scrapy_method_index
+
+    @ScrapyMethodIndex.setter
+    def ScrapyMethodIndex(self, value):
+        # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+        #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
+        # self.scrapy_method_index = value
+        # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
+        super(GoodInfoWebScrapy, self)._set_scrapy_method_index(self, value)
+
+
+    @property
+    def CompanyNumber(self):
+        return self.company_number
+
+    @CompanyNumber.setter
+    def CompanyNumber(self, company_number):
+        self.company_number = company_number
+
+
+    @property
+    def CompanyGroupNumber(self):
+        return self.company_group_number
+
+    @CompanyGroupNumber.setter
+    def CompanyGroupNumber(self, company_group_number):
+        self.company_group_number = company_group_number
+
 
 
 if __name__ == '__main__':
 	with GoodInfoWebScrapy() as goodinfo:
 		goodinfo.CompanyNumber = "6274"
 		kwargs = {}
-		goodinfo.scrape("legal_persion_buy_sell", **kwargs)
+		goodinfo.scrape("institutional investor net buy sell", **kwargs)
 		# kwargs["table_data_count"] = 2
 		# for scrapy_method in GoodInfoWebScrapy.get_scrapy_method_list():
 		# 	goodinfo.scrape(scrapy_method, **kwargs)

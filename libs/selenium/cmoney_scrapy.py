@@ -328,8 +328,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         },
     }
 
-    __MARKET_URL = {}
-
+    __MARKET_URL = {key: value["url"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
     __MARKET_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
     __MARKET_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
     __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
@@ -456,9 +455,9 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
 
 
-    def update_csv_field(self):
-        _, csv_data_field_list = self.scrape_web()
-        self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
+    # def update_csv_field(self):
+    #     _, csv_data_field_list = self.scrape_web()
+    #     self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
 
 
     # @property
@@ -476,17 +475,18 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
     @ScrapyMethod.setter
     def ScrapyMethod(self, value):
-        try:
-            self.method_list.index(value)
-        except ValueError:
-            errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
-            g_logger.error(errmsg)
-            raise ValueError(errmsg)
-        self.scrapy_method = value
-        if self.scrapy_method_index is not None:
-            g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
-            self.scrapy_method_index = None
-        raise NotImplementedError
+        # try:
+        #     self.method_list.index(value)
+        # except ValueError:
+        #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
+        #     g_logger.error(errmsg)
+        #     raise ValueError(errmsg)
+        # self.scrapy_method = value
+        # if self.scrapy_method_index is not None:
+        #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
+        #     self.scrapy_method_index = None
+        # raise NotImplementedError
+        super(CMoneyWebScrapy, self)._set_scrapy_method(self, value)
 
 
     @property
@@ -495,10 +495,12 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
     @ScrapyMethodIndex.setter
     def ScrapyMethodIndex(self, value):
-        if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
-            raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
-        self.scrapy_method_index = value
-        self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
+        # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+        #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
+        # self.scrapy_method_index = value
+        # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
+        super(CMoneyWebScrapy, self)._set_scrapy_method_index(self, value)
+
 
 
     @property
