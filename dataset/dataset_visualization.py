@@ -19,7 +19,60 @@ g_logger = CMN.LOG.get_logger()
 """This cell defineds the plot_support_resistance function"""
 """https://www.quantopian.com/posts/plot-candlestick-charts-in-research"""
 
-def plot_support_resistance_v1(pricing, title=None, 
+def default_candle_stick_color(index, open_price, close_price):
+    if open_price[index] > close_price[index]:
+        return 'g'
+    elif open_price[index] < close_price[index]:
+        return 'r'
+    return 'w'
+
+
+def draw_candle_stick(fig_axis, df, x_axis=None, candle_colors=None, color_function=None):
+    def price_flat(oc):
+        return True if oc['open'] == oc['close'] else False
+    # import pdb; pdb.set_trace()
+    if 'open' not in df.columns:
+        raise ValueError("The open field does NOT exist in column: %s" % df.columns)
+    if 'close' not in df.columns:
+        raise ValueError("The close field does NOT exist in column: %s" % df.columns)
+    if 'low' not in df.columns:
+        raise ValueError("The low field does NOT exist in column: %s" % df.columns)
+    if 'high' not in df.columns:
+        raise ValueError("The high field does NOT exist in column: %s" % df.columns)
+    open_price = df['open']
+    close_price = df['close']
+    low_price = df['low']
+    high_price = df['high']
+
+    oc = pd.concat([open_price, close_price], axis=1)
+    # import pdb; pdb.set_trace()
+    oc_flat_flag = oc.apply(price_flat, axis=1) 
+    oc_flat = oc[oc_flat_flag]
+    oc_min = oc.min(axis=1)
+    oc_max = oc.max(axis=1)
+
+# Set the background color of candle stick
+    fig_axis.patch.set_facecolor('black')
+
+    if x_axis is None:
+        df_len = len(df)
+        x_axis = np.arange(df_len)
+
+    if candle_colors is None:
+        color_function = color_function or default_candle_stick_color
+        candle_colors = [color_function(i, open_price, close_price) for i in x_axis]
+# Draw candle stick
+    candles = fig_axis.bar(x_axis, oc_max-oc_min, bottom=oc_min, color=candle_colors, linewidth=0)
+    # lines = fig_axis.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
+    for index, row in oc_flat.iterrows():
+        loc = df.index.get_loc(index)
+        fig_axis.plot([x_axis[loc], x_axis[loc] + 0.8], [row['open'], row['close']], color='w')
+    lines = fig_axis.vlines(x_axis + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
+
+
+
+def plot_support_resistance_v1(pricing,
+                    title=None, 
                     volume_bars=False, 
                     color_function=None, 
                     technicals=None):
@@ -38,10 +91,10 @@ def plot_support_resistance_v1(pricing, title=None,
     #     g_logger.warn("Can NOT Visualize")
     #     return
 
-    def default_color(index, open_price, close_price, low_price, high_price):
+    def default_candle_stick_color(index, open_price, close_price, low_price, high_price):
         return 'r' if open_price[index] > close_price[index] else 'g'
     
-    color_function = color_function or default_color
+    color_function = color_function or default_candle_stick_color
     technicals = technicals or []
     open_price = pricing['open']
     close_price = pricing['close']
@@ -99,7 +152,8 @@ def plot_support_resistance_v1(pricing, title=None,
     # plt.show()
 
 
-def plot_support_resistance_v2(pricing, title=None,
+def plot_support_resistance_v2(pricing, 
+                 title=None,
                  volume_bars=False,
                  color_function=None,
                  overlays=None,
@@ -120,12 +174,12 @@ def plot_support_resistance_v2(pricing, title=None,
       technicals_titles: A list of titles to display for each technical indicator.
     """
 
-    def default_color(index, open_price, close_price, low, high):
-        if open_price[index] > close_price[index]:
-            return 'g'
-        elif open_price[index] < close_price[index]:
-            return 'r'
-        return 'w'
+    # def default_candle_stick_color(index, open_price, close_price, low, high):
+    #     if open_price[index] > close_price[index]:
+    #         return 'g'
+    #     elif open_price[index] < close_price[index]:
+    #         return 'r'
+    #     return 'w'
 
 # Parse the config if not None
     # start_date = None
@@ -148,7 +202,6 @@ def plot_support_resistance_v2(pricing, title=None,
         over_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_OVER_THRES_DATE_LIST, None)
         under_thres_date_list = stock_price_statistics_config.get(DS_CMN_DEF.SR_CONF_UNDER_THRES_DATE_LIST, None)
 
-    color_function = color_function or default_color
     overlays = overlays or []
     technicals = technicals or []
     technicals_titles = technicals_titles or []
@@ -162,14 +215,14 @@ def plot_support_resistance_v2(pricing, title=None,
     close_price = pricing['close']
     low_price = pricing['low']
     high_price = pricing['high']
-    oc = pd.concat([open_price, close_price], axis=1)
-    # import pdb; pdb.set_trace()
-    def price_flat(oc):
-        return True if oc['open'] == oc['close'] else False
-    oc_flat_flag = oc.apply(price_flat, axis=1) 
-    oc_flat = oc[oc_flat_flag]
-    oc_min = oc.min(axis=1)
-    oc_max = oc.max(axis=1)
+    # oc = pd.concat([open_price, close_price], axis=1)
+    # # import pdb; pdb.set_trace()
+    # def price_flat(oc):
+    #     return True if oc['open'] == oc['close'] else False
+    # oc_flat_flag = oc.apply(price_flat, axis=1) 
+    # oc_flat = oc[oc_flat_flag]
+    # oc_min = oc.min(axis=1)
+    # oc_max = oc.max(axis=1)
 
     # min_low_price = None
     # max_high_price = None
@@ -194,19 +247,21 @@ def plot_support_resistance_v2(pricing, title=None,
         ax1.set_title(title)
     # import pdb; pdb.set_trace()
 # Set the background color of candle stick
-    ax1.patch.set_facecolor('black')
+#     ax1.patch.set_facecolor('black')
 
     pricing_len = len(pricing)
     x = np.arange(pricing_len)
 
-    candle_colors = [color_function(i, open_price, close_price, low_price, high_price) for i in x]
-# Draw candle stick
-    candles = ax1.bar(x, oc_max-oc_min, bottom=oc_min, color=candle_colors, linewidth=0)
-    # lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
-    for index, row in oc_flat.iterrows():
-        loc = pricing.index.get_loc(index)
-        ax1.plot([x[loc], x[loc] + 0.8], [row['open'], row['close']], color='w')
-    lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
+    color_function = color_function or default_candle_stick_color
+    candle_colors = [color_function(i, open_price, close_price) for i in x]
+# # Draw candle stick
+#     candles = ax1.bar(x, oc_max-oc_min, bottom=oc_min, color=candle_colors, linewidth=0)
+#     # lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
+#     for index, row in oc_flat.iterrows():
+#         loc = pricing.index.get_loc(index)
+#         ax1.plot([x[loc], x[loc] + 0.8], [row['open'], row['close']], color='w')
+#     lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
+    draw_candle_stick(ax1, pricing, x, candle_colors)
 # Show the price statistics on the candle stick plot
 # Mark the important candle stick
     if key_support_resistance is not None:

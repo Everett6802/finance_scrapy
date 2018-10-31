@@ -22,10 +22,11 @@ def show_usage_and_exit():
     print "-v | --visualize\nDescription: Visualize the graphes while running script on Jupyter Notebook\n"
     print "-c | --company\nDescription: The company to be analyzed"
     print "  Format: Company code number (ex. 2347)"
-    print "-a | --analyze\nDescription: Analyze the dataset for the follow purpose:\n"
-    print " 0: Find the support and resistance of a company\n"
-    print " 1: Find the jump gap of a company\n"
-    print " 2: Find the 3/12 monthly YOY revenue growth of a company\n"
+    print ""
+    print "-a | --analyze\nDescription: Analyze the dataset for the follow purpose:"
+    print " 0: Find the support and resistance of a company"
+    print " 1: Find the jump gap of a company"
+    print " 2: Find the 3/12 monthly YOY revenue growth of a company"
     print "Default: 1\n"
     sys.exit(0)
 

@@ -72,7 +72,7 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 		"names": column_name_list, 
 		"parse_dates": [DS_CMN_DEF.DATESET_DATE_COLUMN_INDEX,]
 	}
-	if url_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
+	if url_time_unit != CMN.DEF.DATA_TIME_UNIT_DAY:
 		if url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
 			# kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_month2date_str(x), '%Y-%m-%d')
 			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_month2date_str(x), '%Y-%m-%d')
