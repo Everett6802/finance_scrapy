@@ -58,6 +58,7 @@ def init_param():
     param_cfg["silent"] = False
     param_cfg["help"] = False
     param_cfg["visualize"] = False
+    param_cfg["company"] = None
     param_cfg["analyze"] = None
 
 

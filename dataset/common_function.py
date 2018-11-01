@@ -752,7 +752,7 @@ def print_312_month_yoy_revenue_growth(df, month_yoy_growth_3, month_yoy_growth_
         diff_value = month_yoy_growth_diff[index]
         cross_str = "Golden Cross" if diff_value > 0 else "Death Cross"
         date_str = str(df.index[index])[:7]
-        diff_ratio = (diff_value / month_yoy_growth_12[index]) * (100.0 if diff_value > 0 else -100.0)
+        diff_ratio = abs(diff_value / month_yoy_growth_12[index]) * (100.0 if diff_value > 0 else -100.0)
         total_str = "%s, %s, 3YOY: %.2f, 12YOY: %.2f, %.2f" % (date_str, cross_str, month_yoy_growth_3[index], month_yoy_growth_12[index], diff_ratio)
         print total_str + "%"
     print "*****************************************\n"
