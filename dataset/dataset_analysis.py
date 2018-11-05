@@ -169,10 +169,10 @@ def find_jump_gap(company_number, start_date=None, tick_for_jump_gap=2):
 #     print "*********************************************\n"
 
 
-def find_312_month_yoy_revenue_growth(company_number):
-    df, column_description_list = DS_LD.load_revenue_history(company_number)
-    month_yoy_growth_3 = df['monthly YOY growth'].rolling(window=3).mean()
-    month_yoy_growth_12 = df['monthly YOY growth'].rolling(window=12).mean()
+def find_312_month_yoy_revenue_growth(company_number, show_stock_price_dependency=True):
+    df_revenue_growth, _ = DS_LD.load_revenue_history(company_number)
+    month_yoy_growth_3 = df_revenue_growth['monthly YOY growth'].rolling(window=3).mean()
+    month_yoy_growth_12 = df_revenue_growth['monthly YOY growth'].rolling(window=12).mean()
     '''
     First it calculates f - g and the corresponding signs 
     using np.sign. Applying np.diff reveals all the 
@@ -186,8 +186,12 @@ def find_312_month_yoy_revenue_growth(company_number):
     sign_change_index = np.argwhere(sign_change != 0).flatten() + 1
     sign_change_positive_index = np.argwhere(sign_change > 0).flatten() + 1
     sign_change_negative_index = np.argwhere(sign_change < 0).flatten() + 1
-    DS_CMN_FUNC.print_312_month_yoy_revenue_growth(df, month_yoy_growth_3, month_yoy_growth_12, month_yoy_growth_diff, sign_change_index, sign_change_positive_index, sign_change_negative_index)
+    DS_CMN_FUNC.print_312_month_yoy_revenue_growth(df_revenue_growth, month_yoy_growth_3, month_yoy_growth_12, month_yoy_growth_diff, sign_change_index, sign_change_positive_index, sign_change_negative_index)
 
     if DV.CAN_VISUALIZE:
-        DS_VS.plot_312_month_yoy_revenue_growth(df, title=company_number, month_yoy_growth_3=month_yoy_growth_3, month_yoy_growth_12=month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index)
+        if show_stock_price_dependency:
+            df_month_stock_price, _ = DS_LD.load_stock_price_history(company_number, data_time_unit=CMN.DEF.DATA_TIME_UNIT_MONTH)
+            DS_VS.plot_312_month_revenue_growth_and_stock_price_dependency(df_month_stock_price, df_revenue_growth, month_yoy_growth_3=month_yoy_growth_3, month_yoy_growth_12=month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title=company_number)
+        else:
+            DS_VS.plot_312_month_yoy_revenue_growth(df_revenue_growth, month_yoy_growth_3=month_yoy_growth_3, month_yoy_growth_12=month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title=company_number)
         DS_VS.show_plot()

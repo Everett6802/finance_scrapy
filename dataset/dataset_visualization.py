@@ -27,7 +27,42 @@ def default_candle_stick_color(index, open_price, close_price):
     return 'w'
 
 
-def draw_candle_stick(fig_ax, df, x_axis=None, candle_colors=None, color_function=None):
+def generate_x_tick_label(df, df_time_unit, x_axis=None):
+    # import pdb; pdb.set_trace()
+    x_tick = None
+    x_tick_label = None
+    if df_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY:
+        cur_month = None
+        for index, df_date in enumerate(df.index):
+            if cur_month == df_date.month:
+                continue
+            if x_tick_label is None:
+                if x_axis is not None: x_tick = [x_axis[index],]
+                x_tick_label = [df_date.strftime("%y%m%d"),]        
+            elif df_date.month == 1:
+                if x_axis is not None: x_tick.append(x_axis[index])
+                x_tick_label.append(df_date.strftime("%y%m"))
+            else:
+                if x_axis is not None: x_tick.append(x_axis[index])
+                x_tick_label.append(df_date.strftime("%m"))
+            cur_month = df_date.month
+    elif df_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+        for index, df_month in enumerate(df.index):
+            if x_tick_label is None:
+                if x_axis is not None: x_tick = [x_axis[index],]
+                x_tick_label = [df_month.strftime("%y%m"),] 
+            elif df_month.month == 1:
+                if x_axis is not None: x_tick.append(x_axis[index])
+                x_tick_label.append(df_month.strftime("%y%m"))
+            else:
+                if x_axis is not None: x_tick.append(x_axis[index])
+                x_tick_label.append(df_month.strftime("%m"))
+    else:
+        raise ValueError("UnSupport time unit[%d] while drawing candle stick" % df_time_unit)
+    return x_tick, x_tick_label
+
+
+def draw_candle_stick(fig_ax, df, x_axis=None, df_time_unit=CMN.DEF.DATA_TIME_UNIT_DAY, title=None, candle_colors=None, color_function=None, show_xaxis_tick=True):
     def price_flat(oc):
         return True if oc['open'] == oc['close'] else False
     # import pdb; pdb.set_trace()
@@ -51,6 +86,8 @@ def draw_candle_stick(fig_ax, df, x_axis=None, candle_colors=None, color_functio
     oc_min = oc.min(axis=1)
     oc_max = oc.max(axis=1)
 
+    if title is not None:
+        fig_ax.set_title(title)
 # Set the background color of candle stick
     fig_ax.patch.set_facecolor('black')
 
@@ -69,19 +106,32 @@ def draw_candle_stick(fig_ax, df, x_axis=None, candle_colors=None, color_functio
         fig_ax.plot([x_axis[loc], x_axis[loc] + 0.8], [row['open'], row['close']], color='w')
     lines = fig_ax.vlines(x_axis + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
 
+    fig_ax.grid(color='white', linestyle=':', linewidth=0.5)
+    fig_ax.xaxis.grid(True)
+    fig_ax.yaxis.grid(True)
+    fig_ax.xaxis.set_tick_params(which='major', length=3.0, direction='in', top='off')
+# Only mark the xtick of the first day of the month
+    if show_xaxis_tick:
+        x_tick, x_tick_label = generate_x_tick_label(df, df_time_unit, x_axis)
+        plt.xticks(x_tick, x_tick_label, rotation='vertical')
+#     plt.xticks(x, [date.strftime(time_format) for date in pricing.index], rotation='vertical')
 
-def draw_revenue_growth(fig_ax, df, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index=None, sign_change_negative_index=None):
-    # import pdb; pdb.set_trace()
+
+def draw_revenue_growth(fig_ax, df, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index=None, sign_change_negative_index=None, title=None, show_xaxis_tick=True):
+    import pdb; pdb.set_trace()
     fig_ax.plot(month_yoy_growth_3.index, month_yoy_growth_3, label='3 Months')
     fig_ax.plot(month_yoy_growth_12.index, month_yoy_growth_12, label='12 Months')
-    # import pdb; pdb.set_trace()
-    # sign_change = np.nan_to_num(np.diff(np.sign(month_yoy_growth_3 - month_yoy_growth_12)))
-    # sign_change_positive_index = np.argwhere(sign_change > 0).flatten() + 1
-    # sign_change_negative_index = np.argwhere(sign_change < 0).flatten() + 1
     if sign_change_positive_index is not None:
         plt.plot(df.index[sign_change_positive_index], month_yoy_growth_3[sign_change_positive_index], 'ro')
     if sign_change_negative_index is not None:
         plt.plot(df.index[sign_change_negative_index], month_yoy_growth_3[sign_change_negative_index], 'go')
+    if title is not None:
+        fig_ax.set_title(title)
+# Set the tick on x-axis
+    if show_xaxis_tick:
+        _, x_tick_label = generate_x_tick_label(df, CMN.DEF.DATA_TIME_UNIT_MONTH)
+        fig_ax.set_xticks(df.index)
+        fig_ax.set_xticklabels(x_tick_label, rotation=90)
 
 
 def plot_support_resistance_v1(pricing,
@@ -165,24 +215,25 @@ def plot_support_resistance_v1(pricing,
     # plt.show()
 
 
-def plot_support_resistance_v2(pricing, 
-                 title=None,
-                 volume_bars=False,
-                 color_function=None,
-                 overlays=None,
-                 technicals=None,
-                 technicals_titles=None,
-                 stock_price_statistics_config=None):
+def plot_support_resistance_v2(
+        df_pricing, 
+        title=None,
+        volume_bars=False,
+        color_function=None,
+        overlays=None,
+        technicals=None,
+        technicals_titles=None,
+        stock_price_statistics_config=None):
     """ Plots a candlestick chart using quantopian pricing data.
     
     Author: Daniel Treiman
     
     Args:
-      pricing: A pandas dataframe with columns ['open_price', 'close_price', 'high', 'low', 'volume']
+      df_pricing: A pandas dataframe with columns ['open_price', 'close_price', 'high', 'low', 'volume']
       title: An optional title for the chart
       volume_bars: If True, plots volume bars
       color_function: A function which, given a row index and price series, returns a candle color.
-      overlays: A list of additional data series to overlay on top of pricing.  Must be the same length as pricing.
+      overlays: A list of additional data series to overlay on top of df_pricing.  Must be the same length as df_pricing.
       technicals: A list of additional data series to display as subplots.
       technicals_titles: A list of titles to display for each technical indicator.
     """
@@ -214,12 +265,12 @@ def plot_support_resistance_v2(pricing,
     # if start_date is not None:
     #     # import pdb; pdb.set_trace()
     #     start_date_index = DS_CMN_FUNC.date2Date(start_date)
-    #     pricing = pricing[pricing.index >= start_date_index]
+    #     df_pricing = df_pricing[df_pricing.index >= start_date_index]
 
-    open_price = pricing['open']
-    close_price = pricing['close']
-    low_price = pricing['low']
-    high_price = pricing['high']
+    open_price = df_pricing['open']
+    close_price = df_pricing['close']
+    low_price = df_pricing['low']
+    high_price = df_pricing['high']
     # oc = pd.concat([open_price, close_price], axis=1)
     # # import pdb; pdb.set_trace()
     # def price_flat(oc):
@@ -248,25 +299,19 @@ def plot_support_resistance_v2(pricing,
         fig, subplots = plt.subplots(subplot_count, 1, sharex=True, gridspec_kw={'height_ratios': ratios})
         ax1 = subplots[0]
         
-    if title:
-        ax1.set_title(title)
+    # if title:
+    #     ax1.set_title(title)
     # import pdb; pdb.set_trace()
 # Set the background color of candle stick
 #     ax1.patch.set_facecolor('black')
 
-    pricing_len = len(pricing)
-    x = np.arange(pricing_len)
+    df_pricing_len = len(df_pricing)
+    x = np.arange(df_pricing_len)
 
     color_function = color_function or default_candle_stick_color
     candle_colors = [color_function(i, open_price, close_price) for i in x]
-# # Draw candle stick
-#     candles = ax1.bar(x, oc_max-oc_min, bottom=oc_min, color=candle_colors, linewidth=0)
-#     # lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
-#     for index, row in oc_flat.iterrows():
-#         loc = pricing.index.get_loc(index)
-#         ax1.plot([x[loc], x[loc] + 0.8], [row['open'], row['close']], color='w')
-#     lines = ax1.vlines(x + 0.4, low_price, high_price, color=candle_colors, linewidth=1)
-    draw_candle_stick(ax1, pricing, x, candle_colors)
+# Draw candle stick
+    draw_candle_stick(ax1, df_pricing, x_axis=x, df_time_unit=CMN.DEF.DATA_TIME_UNIT_DAY, title=title, candle_colors=candle_colors, color_function=color_function, show_xaxis_tick=True)
 # Show the price statistics on the candle stick plot
 # Mark the important candle stick
     if key_support_resistance is not None:
@@ -279,17 +324,17 @@ def plot_support_resistance_v2(pricing,
             mark_date_index = DS_CMN_FUNC.date2Date(mark_date)
             mark_type = DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_MARK if (len(mark_data) == DS_CMN_DEF.DEF_KEY_SUPPORT_RESISTANCE_LEN) else mark_data[6:]
             try:
-                loc = pricing.index.get_loc(mark_date_index)
+                loc = df_pricing.index.get_loc(mark_date_index)
                 # Create a Rectangle patch
                 rect = patches.Rectangle((x[loc]-0.1, low_price[loc]-0.15), 1, high_price[loc]-low_price[loc]+0.3, linewidth=2, edgecolor='y', facecolor='none')
                 # Add the patch to the Axes
                 ax1.add_patch(rect)
                 # import pdb; pdb.set_trace()
                 if draw_key_support_resistance_date:
-                    row = pricing.iloc[loc]
+                    row = df_pricing.iloc[loc]
                     is_top = True
                     if loc >= 1:
-                        row_prev = pricing.iloc[loc - 1]
+                        row_prev = df_pricing.iloc[loc - 1]
                         if row['high'] > row_prev['high']:
                             is_top = True
                         elif row['low'] < row_prev['low']:
@@ -305,7 +350,7 @@ def plot_support_resistance_v2(pricing,
                     else:
                         y = row['low'] * 0.985
                         verticalalignment = "top"
-                    ax1.text(x[loc], y, pricing.index[loc].strftime("%y%m%d"), color='yellow', horizontalalignment='center', verticalalignment=verticalalignment, fontsize=10)
+                    ax1.text(x[loc], y, df_pricing.index[loc].strftime("%y%m%d"), color='yellow', horizontalalignment='center', verticalalignment=verticalalignment, fontsize=10)
                 # import pdb; pdb.set_trace()
                 if draw_key_support_resistance_price:
                     x_pt = x[-1] + 1
@@ -326,8 +371,8 @@ def plot_support_resistance_v2(pricing,
             mark_date_cur_index = DS_CMN_FUNC.date2Date(mark_date_range[0])
             mark_date_next_index = DS_CMN_FUNC.date2Date(mark_date_range[2])
             try:
-                loc_cur = pricing.index.get_loc(mark_date_cur_index)
-                loc_next = pricing.index.get_loc(mark_date_next_index)
+                loc_cur = df_pricing.index.get_loc(mark_date_cur_index)
+                loc_next = df_pricing.index.get_loc(mark_date_next_index)
                 # Create a Rectangle patch
                 if mark_date_range[1] == DS_CMN_DEF.SR_PRICE_TYPE_HIGH:
                     rect = patches.Rectangle((x[loc_cur]-0.1, high_price[loc_cur]-0.15), 1.8, low_price[loc_next]-high_price[loc_cur]+0.3, linewidth=1.5, edgecolor='Magenta', facecolor='none')
@@ -362,7 +407,7 @@ def plot_support_resistance_v2(pricing,
                 if len(pt) != 7:
                     raise ValueError("Incorrect trend line point format: %s" % pt)
                 pt_date_index = DS_CMN_FUNC.date2Date(pt[:6])
-                loc = pricing.index.get_loc(pt_date_index)
+                loc = df_pricing.index.get_loc(pt_date_index)
                 x_pt.append(x[loc])
                 if pt[6] == DS_CMN_DEF.SR_PRICE_TYPE_HIGH:
                     y_pt.append(high_price.iloc[loc])
@@ -379,55 +424,20 @@ def plot_support_resistance_v2(pricing,
         show_main_key_support_resistance = stock_price_statistics_config[DS_CMN_DEF.SR_CONF_FIELD_SHOW_MAIN_KEY_SUPPORT_RESISTANCE]
         if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
             date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[0])
-            stock_price = pricing.ix[date_index, 'high']
+            stock_price = df_pricing.ix[date_index, 'high']
             ax1.plot([x[0], x[-1] + 1,], [stock_price, stock_price,], color='orange', linewidth=1)
         if show_main_key_support_resistance in [DS_CMN_DEF.SHOW_MAIN_KEY_RESISTANCE_ONLY,DS_CMN_DEF.SHOW_MAIN_KEY_SUPPORT_RESISTANCE_BOTH,]:
             date_index = DS_CMN_FUNC.date2Date(main_key_support_resistance[1])
-            stock_price = pricing.ix[date_index, 'low']
+            stock_price = df_pricing.ix[date_index, 'low']
             ax1.plot([x[0], x[-1] + 1,], [stock_price, stock_price,], color='orange', linewidth=1)
 
-    cur_stock_price = pricing.ix[-1, 'close']
+    cur_stock_price = df_pricing.ix[-1, 'close']
     ax1.plot([x[0], x[-1] + 1,], [cur_stock_price, cur_stock_price,], color='gray', linewidth=1)
-
-    ax1.grid(color='white', linestyle=':', linewidth=0.5)
-    ax1.xaxis.grid(True)
-    ax1.yaxis.grid(True)
-    ax1.xaxis.set_tick_params(which='major', length=3.0, direction='in', top='off')
-    # Assume minute frequency if first two bars are in the same day.
-    frequency = 'minute' if (pricing.index[1] - pricing.index[0]).days == 0 else 'day'
-    time_format = '%Y-%m-%d'
-    if frequency == 'minute':
-        time_format = '%H:%M'
-    # Set X axis tick labels.
-# type(pricing.index): <class 'pandas.tseries.index.DatetimeIndex'>
-# type(pricing.index[0]): <class 'pandas.tslib.Timestamp'>
-# # Only mark the xtick of Monday
-#     [x_tick, x_tick_label] = zip(*[(x[index], date.strftime(time_format)) for index, date in enumerate(pricing.index) if date.weekday() == 0])
-# Only mark the xtick of the first day of the month
-    # import pdb; pdb.set_trace()
-    cur_month = None
-    x_tick = None
-    x_tick_label = None
-    for index, pricing_date in enumerate(pricing.index):
-        if cur_month == pricing_date.month:
-            continue
-        if x_tick is None:
-            x_tick = [x[index],]
-            x_tick_label = [pricing_date.strftime("%y%m%d"),]        
-        elif pricing_date.month == 1:
-            x_tick.append(x[index])
-            x_tick_label.append(pricing_date.strftime("%y%m"))
-        else:
-            x_tick.append(x[index])
-            x_tick_label.append(pricing_date.strftime("%m"))
-        cur_month = pricing_date.month
-    plt.xticks(x_tick, x_tick_label, rotation='vertical')
-#     plt.xticks(x, [date.strftime(time_format) for date in pricing.index], rotation='vertical')
     # import pdb; pdb.set_trace()
     for overlay in overlays:
         start_index = 0
         # if start_date is not None:
-        #     start_index = len(overlay) - pricing_len
+        #     start_index = len(overlay) - df_pricing_len
         ax1.plot(x, overlay[start_index:])
 
 # Keep track of the event date:
@@ -445,7 +455,7 @@ def plot_support_resistance_v2(pricing,
     event_date_loc_x_list = []
     for event_date in event_date_list:
         event_date_index = DS_CMN_FUNC.date2Date(event_date)
-        loc = pricing.index.get_loc(event_date_index)
+        loc = df_pricing.index.get_loc(event_date_index)
         event_date_loc_x_list.append(loc)
     # import pdb; pdb.set_trace()
     if len(event_date_loc_x_list) != 0:
@@ -456,10 +466,10 @@ def plot_support_resistance_v2(pricing,
     #     x1, x2, y1, y2 = ax1.axis()
     #     ax1.axis([x1, x2, y1, y2 + 3])
 
-    # Plot volume bars if needed
+# Plot volume bars if needed
     if volume_bars:
         ax2 = subplots[1]
-        volume = pricing['volume']
+        volume = df_pricing['volume']
         volume_scale = None
         scaled_volume = volume
         if volume.max() > 1000000:
@@ -507,45 +517,40 @@ def plot_stock_price_statistics(df, cur_price, price_range_low_percentage=12, pr
     # plt.show()
 
 
-def plot_312_month_yoy_revenue_growth(df, title=None, month_yoy_growth_3=None, month_yoy_growth_12=None, sign_change_positive_index=None, sign_change_negative_index=None):
+def plot_312_month_yoy_revenue_growth(
+    df, 
+    month_yoy_growth_3, 
+    month_yoy_growth_12, 
+    sign_change_positive_index=None, 
+    sign_change_negative_index=None, 
+    title=None):
     # import pdb; pdb.set_trace()
-    if month_yoy_growth_3 is None:
-        month_yoy_growth_3 = df['monthly YOY growth'].rolling(window=3).mean()
-    if month_yoy_growth_12 is None:
-        month_yoy_growth_12 = df['monthly YOY growth'].rolling(window=12).mean()
     fig, ax = plt.subplots()
-    if title:
-        ax.set_title(title)
-    # ax.plot(month_yoy_growth_3.index, month_yoy_growth_3, label='3 Months')
-    # ax.plot(month_yoy_growth_12.index, month_yoy_growth_12, label='12 Months')
-    # # import pdb; pdb.set_trace()
-    # # sign_change = np.nan_to_num(np.diff(np.sign(month_yoy_growth_3 - month_yoy_growth_12)))
-    # # sign_change_positive_index = np.argwhere(sign_change > 0).flatten() + 1
-    # # sign_change_negative_index = np.argwhere(sign_change < 0).flatten() + 1
-    # if sign_change_positive_index is not None:
-    #     plt.plot(df.index[sign_change_positive_index], month_yoy_growth_3[sign_change_positive_index], 'ro')
-    # if sign_change_negative_index is not None:
-    #     plt.plot(df.index[sign_change_negative_index], month_yoy_growth_3[sign_change_negative_index], 'go')
-    draw_revenue_growth(ax, df, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index, sign_change_negative_index)
-# Set the tick on x-axis
-    cur_month = None
-    # x_tick = None
-    x_tick_label = None
-    for index, df_date in enumerate(df.index):
-        if cur_month == df_date.month:
-            continue
-        if x_tick_label is None:
-            # x_tick = [index,]
-            x_tick_label = [df_date.strftime("%y%m"),]        
-        elif df_date.month == 1:
-            # x_tick.append(index)
-            x_tick_label.append(df_date.strftime("%y%m"))
-        else:
-            # x_tick.append(index)
-            x_tick_label.append(df_date.strftime("%m"))
-        cur_month = df_date.month
-    ax.set_xticks(df.index)
-    ax.set_xticklabels(x_tick_label, rotation=90)
+    draw_revenue_growth(ax, df, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title=title, show_xaxis_tick=True)
+
+
+def plot_312_month_revenue_growth_and_stock_price_dependency(
+    df_month_pricing, 
+    df_revenue_growth,
+    month_yoy_growth_3, 
+    month_yoy_growth_12, 
+    sign_change_positive_index=None, 
+    sign_change_negative_index=None,
+    title=None,
+    color_function=None):
+    # import pdb; pdb.set_trace()
+    subplot_count = 2
+    ratios = np.insert(np.full(subplot_count - 1, 1), 0, 3)
+    fig, subplots = plt.subplots(subplot_count, 1, sharex=True, gridspec_kw={'height_ratios': ratios})
+    ax_candle_stick = subplots[0]
+    ax_revenue_growth = subplots[1]
+    # import pdb; pdb.set_trace()
+# Draw candle stick
+    draw_candle_stick(ax_candle_stick, df_month_pricing, x_axis=np.arange(len(df_month_pricing)), df_time_unit=CMN.DEF.DATA_TIME_UNIT_MONTH, title=title, candle_colors=None, color_function=color_function, show_xaxis_tick=True)
+# Draw revenue growth
+    # draw_revenue_growth(ax_revenue_growth, df_revenue_growth, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title='312 revenue growth', show_xaxis_tick=True)
+    diff_len = len(df_revenue_growth) - len(df_month_pricing)
+    draw_revenue_growth(ax_revenue_growth, df_revenue_growth[diff_len:], month_yoy_growth_3[diff_len:], month_yoy_growth_12[diff_len:], sign_change_positive_index=None, sign_change_negative_index=None, title='312 revenue growth', show_xaxis_tick=False)
 
 
 def save_plot(filepath, data_count=0):
