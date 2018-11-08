@@ -117,21 +117,24 @@ def draw_candle_stick(fig_ax, df, x_axis=None, df_time_unit=CMN.DEF.DATA_TIME_UN
 #     plt.xticks(x, [date.strftime(time_format) for date in pricing.index], rotation='vertical')
 
 
-def draw_revenue_growth(fig_ax, df, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index=None, sign_change_negative_index=None, title=None, show_xaxis_tick=True):
-    import pdb; pdb.set_trace()
-    fig_ax.plot(month_yoy_growth_3.index, month_yoy_growth_3, label='3 Months')
-    fig_ax.plot(month_yoy_growth_12.index, month_yoy_growth_12, label='12 Months')
+def draw_revenue_growth(fig_ax, df, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index=None, sign_change_negative_index=None, x_axis=None, title=None, show_xaxis_tick=True):
+    # import pdb; pdb.set_trace()
+    if x_axis is None:
+        df_len = len(df)
+        x_axis = np.arange(df_len)
+
+    fig_ax.plot(x_axis, month_yoy_growth_3, label='3 Months')
+    fig_ax.plot(x_axis, month_yoy_growth_12, label='12 Months')
     if sign_change_positive_index is not None:
-        plt.plot(df.index[sign_change_positive_index], month_yoy_growth_3[sign_change_positive_index], 'ro')
+        plt.plot(x_axis[sign_change_positive_index], month_yoy_growth_3[sign_change_positive_index], 'ro')
     if sign_change_negative_index is not None:
-        plt.plot(df.index[sign_change_negative_index], month_yoy_growth_3[sign_change_negative_index], 'go')
+        plt.plot(x_axis[sign_change_negative_index], month_yoy_growth_3[sign_change_negative_index], 'go')
     if title is not None:
         fig_ax.set_title(title)
 # Set the tick on x-axis
     if show_xaxis_tick:
-        _, x_tick_label = generate_x_tick_label(df, CMN.DEF.DATA_TIME_UNIT_MONTH)
-        fig_ax.set_xticks(df.index)
-        fig_ax.set_xticklabels(x_tick_label, rotation=90)
+        x_tick, x_tick_label = generate_x_tick_label(df, CMN.DEF.DATA_TIME_UNIT_MONTH, x_axis)
+        plt.xticks(x_tick, x_tick_label, rotation='vertical')
 
 
 def plot_support_resistance_v1(pricing,
@@ -271,20 +274,6 @@ def plot_support_resistance_v2(
     close_price = df_pricing['close']
     low_price = df_pricing['low']
     high_price = df_pricing['high']
-    # oc = pd.concat([open_price, close_price], axis=1)
-    # # import pdb; pdb.set_trace()
-    # def price_flat(oc):
-    #     return True if oc['open'] == oc['close'] else False
-    # oc_flat_flag = oc.apply(price_flat, axis=1) 
-    # oc_flat = oc[oc_flat_flag]
-    # oc_min = oc.min(axis=1)
-    # oc_max = oc.max(axis=1)
-
-    # min_low_price = None
-    # max_high_price = None
-    # if draw_key_support_resistance_date:
-    #     min_low_price = low_price.min()
-    #     max_high_price = high_price.max()
     
     subplot_count = 1
     if volume_bars:
@@ -298,12 +287,6 @@ def plot_support_resistance_v2(
         ratios = np.insert(np.full(subplot_count - 1, 1), 0, 3)
         fig, subplots = plt.subplots(subplot_count, 1, sharex=True, gridspec_kw={'height_ratios': ratios})
         ax1 = subplots[0]
-        
-    # if title:
-    #     ax1.set_title(title)
-    # import pdb; pdb.set_trace()
-# Set the background color of candle stick
-#     ax1.patch.set_facecolor('black')
 
     df_pricing_len = len(df_pricing)
     x = np.arange(df_pricing_len)
@@ -529,7 +512,7 @@ def plot_312_month_yoy_revenue_growth(
     draw_revenue_growth(ax, df, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title=title, show_xaxis_tick=True)
 
 
-def plot_312_month_revenue_growth_and_stock_price_dependency(
+def plot_312_month_revenue_growth_and_stock_price_relation(
     df_month_pricing, 
     df_revenue_growth,
     month_yoy_growth_3, 
@@ -548,9 +531,10 @@ def plot_312_month_revenue_growth_and_stock_price_dependency(
 # Draw candle stick
     draw_candle_stick(ax_candle_stick, df_month_pricing, x_axis=np.arange(len(df_month_pricing)), df_time_unit=CMN.DEF.DATA_TIME_UNIT_MONTH, title=title, candle_colors=None, color_function=color_function, show_xaxis_tick=True)
 # Draw revenue growth
-    # draw_revenue_growth(ax_revenue_growth, df_revenue_growth, month_yoy_growth_3, month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title='312 revenue growth', show_xaxis_tick=True)
     diff_len = len(df_revenue_growth) - len(df_month_pricing)
-    draw_revenue_growth(ax_revenue_growth, df_revenue_growth[diff_len:], month_yoy_growth_3[diff_len:], month_yoy_growth_12[diff_len:], sign_change_positive_index=None, sign_change_negative_index=None, title='312 revenue growth', show_xaxis_tick=False)
+    sign_change_positive_offset_index = filter(lambda x : x >= 0, (sign_change_positive_index - diff_len)) if sign_change_positive_index is not None else None
+    sign_change_negative_offset_index = filter(lambda x : x >= 0, (sign_change_negative_index - diff_len)) if sign_change_negative_index is not None else None
+    draw_revenue_growth(ax_revenue_growth, df_revenue_growth[diff_len:], month_yoy_growth_3[diff_len:], month_yoy_growth_12[diff_len:], sign_change_positive_index=sign_change_positive_offset_index, sign_change_negative_index=sign_change_negative_offset_index, title='312 revenue growth', show_xaxis_tick=False)
 
 
 def save_plot(filepath, data_count=0):
