@@ -7,6 +7,7 @@ CMONEY_TABLE0_DIVIDEND_MAX_DATA_COUNT = 8
 CMONEY_TABLE1_MAX_DATA_COUNT = 8
 # CMONEY_TABLE_DEF_DATA_COUNT = 1
 CMONEY_STOCK_TABLE_DEF_TIME_UNIT = 0
+GOODINFO_STOCK_TABLE_DEF_TIME_UNIT = 0
 
 STATEMENT_DOG_SHEET_INTERVAL_LAST_3_YEARS = 0
 STATEMENT_DOG_SHEET_INTERVAL_LAST_5_YEARS = 1
@@ -59,7 +60,7 @@ SCRAPY_CLASS_CONSTANT_CFG = [
         "class_name": "GoodInfoWebScrapy",
         "scrapy_class_method": "institutional investor net buy sell",
         "scrapy_type": "stock", # for defining the method index
-        "url_time_unit": CMN.DEF.DATA_TIME_UNIT_YEAR,
+        "url_time_unit": CMN.DEF.DATA_TIME_UNIT_DAY,
     },
 # Stock End
 ]
@@ -83,7 +84,7 @@ SCRAPY_MEMTHOD_REVENUE_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'營收盈餘')
 SCRAPY_MEMTHOD_PROFITABILITY_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'獲利能力')
 SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'現金流量表')
 SCRAPY_MEMTHOD_DIVIDEND_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'股利政策')
-
+SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX = SCRAPY_METHOD_DESCRIPTION.index(u'三大法人買賣超')
 
 # __scrapy_class_market_index_list__ = [index for index, cfg in enumerate(SCRAPY_CLASS_CONSTANT_CFG) if cfg['scrapy_type'] == 'market']
 # # semi-open interval

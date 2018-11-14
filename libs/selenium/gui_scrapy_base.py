@@ -28,8 +28,8 @@ class GUIWebScrapyBase(object):
 
         url_time_unit = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["url_time_unit"]
 # Caution: Need transfrom the time string from unicode to string
-        time_duration_start = cls._transform_time_str2obj(url_time_unit, str(csv_data_list[0][0]))
-        time_duration_end = cls._transform_time_str2obj(url_time_unit, str(csv_data_list[-1][0]))
+        time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[0][0]), url_time_unit)
+        time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[-1][0]), url_time_unit)
 
         csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
 
@@ -129,7 +129,7 @@ class GUIWebScrapyBase(object):
 
     @classmethod
     def _set_scrapy_method_index(cls, obj, value):
-        if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+        if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(obj):
             raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(obj)))
         obj.scrapy_method_index = value
         obj.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[obj.scrapy_method_index]['scrapy_class_method']
@@ -157,9 +157,9 @@ class GUIWebScrapyBase(object):
     #     raise NotImplementedError
 
 
-    @abstractmethod
-    def _transform_time_str2obj(cls, time_unit, time_str):
-        raise NotImplementedError
+    # @abstractmethod
+    # def _transform_time_str2obj(cls, time_unit, time_str):
+    #     raise NotImplementedError
 
 
     @property

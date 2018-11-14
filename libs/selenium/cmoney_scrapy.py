@@ -369,22 +369,22 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
 
 
-    @classmethod
-    def _transform_time_str2obj(cls, time_unit, time_str):
-        time_obj = None
-        # import pdb; pdb.set_trace()
-        if time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
-            # year_str = time_str[0:4]
-            # month_str = time_str[4:]
-            # month_time_str = "%s-%s" % (time_str[0:4], time_str[4:])
-            time_obj = CMN.CLS.FinanceMonth(time_str)
-        elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
-            time_obj = CMN.CLS.FinanceQuarter(time_str)
-        elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
-            time_obj = CMN.CLS.FinanceYear(time_str)
-        else:
-            raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
-        return time_obj
+    # @classmethod
+    # def _transform_time_str2obj(cls, time_unit, time_str):
+    #     time_obj = None
+    #     # import pdb; pdb.set_trace()
+    #     if time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+    #         # year_str = time_str[0:4]
+    #         # month_str = time_str[4:]
+    #         # month_time_str = "%s-%s" % (time_str[0:4], time_str[4:])
+    #         time_obj = CMN.CLS.FinanceMonth(time_str)
+    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+    #         time_obj = CMN.CLS.FinanceQuarter(time_str)
+    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
+    #         time_obj = CMN.CLS.FinanceYear(time_str)
+    #     else:
+    #         raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
+    #     return time_obj
 
 
     @classmethod
@@ -486,7 +486,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
         #     self.scrapy_method_index = None
         # raise NotImplementedError
-        super(CMoneyWebScrapy, self)._set_scrapy_method(self, value)
+        self._set_scrapy_method(self, value)
 
 
     @property
@@ -499,8 +499,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
         # self.scrapy_method_index = value
         # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
-        super(CMoneyWebScrapy, self)._set_scrapy_method_index(self, value)
-
+        self._set_scrapy_method_index(self, value)
 
 
     @property

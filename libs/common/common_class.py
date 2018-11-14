@@ -1,7 +1,7 @@
 import re
 import time
 import threading
-from datetime import datetime, timedelta
+from datetime import datetime, date, timedelta
 import math
 import collections
 import common_definition as CMN_DEF
@@ -128,18 +128,56 @@ class FinanceTimeBase(object):
 
 
     @staticmethod
-    def from_time_string(time_string):
-        if CMN_FUNC.is_date_str_format(time_string):
-            return FinanceDate.from_string(time_string)
-        elif CMN_FUNC.is_month_str_format(time_string):
-            return FinanceMonth.from_string(time_string)
-        elif CMN_FUNC.is_quarter_str_format(time_string):
-            return FinanceQuarter.from_string(time_string)
-        elif CMN_FUNC.is_year_str_format(time_string):
-            return FinanceYear.from_string(time_string)
+    def from_time_string(time_string, time_unit=None):
+        time_obj = None
+        # import pdb; pdb.set_trace()
+        if time_unit is None:
+# Detect time unit from the time string format
+            if CMN_FUNC.is_date_str_format(time_string):
+                time_obj = FinanceDate.from_string(time_string)
+            elif CMN_FUNC.is_week_str_format(time_string):
+                time_obj = FinanceWeek.from_string(time_string)
+            elif CMN_FUNC.is_month_str_format(time_string):
+                time_obj = FinanceMonth.from_string(time_string)
+            elif CMN_FUNC.is_quarter_str_format(time_string):
+                time_obj = FinanceQuarter.from_string(time_string)
+            elif CMN_FUNC.is_year_str_format(time_string):
+                time_obj = FinanceYear.from_string(time_string)
+            else:
+                raise ValueError("Unknown time format: %s" % time_string)
         else:
-            # import pdb; pdb.set_trace()
-            raise ValueError("Unknown time format: %s" % time_string)
+            if time_unit == CMN.DEF.DATA_TIME_UNIT_DATE:
+                time_obj = CMN.CLS.FinanceDate(time_str)
+            elif time_unit == CMN.DEF.DATA_TIME_UNIT_WEEK:
+                time_obj = CMN.CLS.FinanceWeek(time_str)
+            elif time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+                time_obj = CMN.CLS.FinanceMonth(time_str)
+            elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+                time_obj = CMN.CLS.FinanceQuarter(time_str)
+            elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
+                time_obj = CMN.CLS.FinanceYear(time_str)
+            else:
+                raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
+        return time_obj
+
+
+    # @staticmethod
+    # def date_str_to_time_obj(date_string, time_unit):
+    #     CMN_FUNC.check_date_str_format(time_string)
+    #     time_obj = None
+    #     # import pdb; pdb.set_trace()
+    #     if time_unit == CMN.DEF.DATA_TIME_UNIT_WEEK:
+    #         time_obj = CMN.CLS.FinanceMonth(time_str)
+    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+    #         time_obj = CMN.CLS.FinanceMonth(time_str)
+    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+    #         time_obj = CMN.CLS.FinanceQuarter(time_str)
+    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
+    #         time_obj = CMN.CLS.FinanceYear(time_str)
+    #     else:
+    #         raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
+    #     return time_obj
+
 
 
     def __str__(self):
@@ -292,6 +330,136 @@ class FinanceDate(FinanceTimeBase):
     @staticmethod
     def is_same_month(finance_date1, finance_date2):
         return (True if FinanceMonth(finance_date1.year, finance_date1.month) == FinanceMonth(finance_date2.year, finance_date2.month) else False)
+
+
+class FinanceWeek(FinanceTimeBase):
+
+    @classmethod
+    def date_to_weekofyear(cls, year, month, day):
+        year, weekofyear, weekday = date(year, month, day).isocalendar()
+        return (year, weekofyear, weekday)
+
+
+    @classmethod
+    def weekofyear_to_date(cls, year, weekofyear, weekday=0):
+# The first day of the week '0': Sunday 
+# The second day of the week '1': Monday
+# ...
+        # import pdb; pdb.set_trace()
+        week_str = CMN_FUNC.transform_week_str(year, weekofyear) + '-%d' % weekday
+        date_obj = datetime.strptime(week_str, "%Yw%W-%w")
+        return (date_obj.year, date_obj.month, date_obj.day)
+
+
+    @classmethod
+    def get_finance_week_from_date(cls, *week_args):
+        """ Find the finance week due to the specific finance date"""
+        
+        year = None
+        month = None
+        day = None
+        if isinstance(week_args[0], FinanceDate):
+            pass
+        elif isinstance(week_args[0], int) and len(week_args) == 3:
+            pass
+        else:
+            raise ValueError("UnSupport input argument: %s" % week_args)
+        return cls(*week_args)
+
+
+    def __init__(self, *args):
+        super(FinanceWeek, self).__init__()
+        self.year = None # range: 2000 - 2099
+        self.weekofyear = None
+        self.weekday = 0
+        self.week_str = None
+        # import pdb; pdb.set_trace()
+        try:
+            format_unsupport = False
+            if len(args) == 1:
+                time_cfg = None
+                if isinstance(args[0], str):
+                    if CMN_FUNC.is_date_str_format(args[0]):
+                        mobj = CMN_FUNC.check_date_str_format(args[0])
+                        self.setup_year_value(mobj.group(1))
+                        month = int(mobj.group(2))
+                        day = int(mobj.group(3))
+                        _, self.weekofyear, self.weekday = self.date_to_weekofyear(self.year, month, day)
+                    elif CMN_FUNC.is_week_str_format(args[0]):
+                        mobj = CMN_FUNC.check_week_str_format(args[0])
+                        self.setup_year_value(mobj.group(1))
+                        self.weekofyear = int(mobj.group(2))                        
+                elif isinstance(args[0], datetime) or isinstance(args[0], FinanceDate):
+                    self.setup_year_value(args[0].year)
+                    _, self.weekofyear, self.weekday = self.date_to_weekofyear(self.year, args[0].month, args[0].day)
+                elif isinstance(args[0], FinanceWeek): 
+                    self.year = args[0].year
+                    self.weekofyear = args[0].weekofyear
+                    self.weekday = args[0].weekday
+                else:
+                    format_unsupport = True
+            elif len(args) == 2:
+                if isinstance(args[0], int):
+                    self.setup_year_value(args[0])
+                    self.weekofyear = args[1]
+                else:
+                    format_unsupport = True
+            elif len(args) == 3:
+                if isinstance(args[0], int):
+                    self.setup_year_value(args[0])
+                    _, self.weekofyear, self.weekday = self.date_to_weekofyear(self.year, args[1], args[2])
+                else:
+                    format_unsupport = True
+            else:
+                format_unsupport = True
+            if format_unsupport:
+                raise ValueError("Unsupport argument format: %s" % [type(data) for data in args])
+        except ValueError as e:
+            raise e
+        except Exception as e:
+            raise Exception("Exception occurs in FinanceYear, due to: %s" % str(e))
+# Check value range
+        CMN_FUNC.check_year_range(self.year)
+
+
+    @staticmethod
+    def get_time_unit_type():
+        return CMN_DEF.DATA_TIME_UNIT_WEEK
+
+
+    @classmethod
+    def from_string(cls, time_string):
+        return cls(time_string)
+
+
+    def __add__(self, week_delta):
+        if not isinstance(week_delta, int):
+            raise TypeError('The type[%s] of the delta argument is NOT int' % type(week_delta))
+        year, month, day = self.weekofyear_to_date(self.year, self.weekofyear, self.weekday)
+        new_datetime = datetime(year, month, day) + timedelta(days = week_delta * 7)
+        return FinanceWeek(new_datetime.year, new_datetime.month, new_datetime.day)
+
+
+    def __sub__(self, week_delta):
+        if not isinstance(week_delta, int):
+            raise TypeError('The type[%s] of the week_delta argument is NOT int' % type(week_delta))
+        year, month, day = self.weekofyear_to_date(self.year, self.weekofyear, self.weekday)
+        new_datetime = datetime(year, month, day) - timedelta(days = week_delta * 7)
+        return FinanceWeek(new_datetime.year, new_datetime.month, new_datetime.day)
+
+
+    def to_string(self):
+        if self.week_str is None:
+            self.week_str = CMN_FUNC.transform_week_str(self.year, self.weekofyear)
+        return self.week_str
+
+
+    def get_value(self):
+        return (self.year << 3 | self.weekofyear)
+
+
+    def get_value_tuple(self):
+        return (self.year, self.weekofyear,)
 
 
 class FinanceMonth(FinanceTimeBase):

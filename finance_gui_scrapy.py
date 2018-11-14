@@ -52,8 +52,10 @@ def show_usage_and_exit():
     print "--update_company_profitability_from_file\nDescription: Update the profitability of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
     print "--update_company_cashflow_statement\nDescription: Update the cashflow statement of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
     print "--update_company_cashflow_statement_from_file\nDescription: Update the cashflow statement of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    print "--update_company_dividend\nDescription: Update the dividend of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    print "--update_company_dividend_from_file\nDescription: Update the dividend of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    print "--update_company_dividend\nDescription: Update the dividend of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX
+    print "--update_company_dividend_from_file\nDescription: Update the dividend of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX
+    print "--update_company_institutional_investor_net_buy_sell\nDescription: Update the institutional investor net buy sell of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX
+    print "--update_company_institutional_investor_net_buy_sell_from_file\nDescription: Update the institutional investor net buy sell of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX
     sys.exit(0)
 
 
@@ -209,6 +211,22 @@ def parse_param():
                 combination_param_cfg['update_company_multiple_dataset'] = True
             # param_cfg["update_company_profitability"] = sys.argv[index + 1]
             index_offset = 2
+        elif re.match("--update_company_institutional_investor_net_buy_sell_from_file", sys.argv[index]):
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX)
+                combination_param_cfg['update_dataset_config_from_file'] = True
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_profitability_from_file"] = True
+            index_offset = 1
+        elif re.match("--update_company_institutional_investor_net_buy_sell", sys.argv[index]):
+            if combination_param_cfg['update_dataset_method'] is None:
+                combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX)
+                combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
+            else:
+                combination_param_cfg['update_company_multiple_dataset'] = True
+            # param_cfg["update_company_profitability"] = sys.argv[index + 1]
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -332,10 +350,17 @@ def do_scrapy():
 import dataset as DS
 
 if __name__ == "__main__":
-    # # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
-    df, _ = DS.LD.load_revenue_history("2458")
-    # df, _ = DS.LD.load_stock_price_history("2458")
+    # # # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
+    # df, _ = DS.LD.load_revenue_history("2458")
+    # # df, _ = DS.LD.load_stock_price_history("2458")
+    week_str = '2018W40'
+    day_str = '2018-11-14'
     import pdb; pdb.set_trace()
+    week_obj = CMN.CLS.FinanceWeek(day_str)
+    print week_obj
+    print (week_obj + 20)
+    print (week_obj - 20)
+
     sys.exit(0)
 
 # Parse the parameters and apply to manager class

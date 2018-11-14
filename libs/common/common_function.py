@@ -437,6 +437,25 @@ def is_date_str_format(date_string):
     return check_result
 
 
+def check_week_str_format(week_string):
+    mobj = re.match("([\d]{2,4})[Ww]([\d]{1,2})", week_string)
+    if mobj is None:
+        raise ValueError("The string[%s] is NOT week format" % week_string)
+    week_string_len = len(week_string)
+    if not (CMN_DEF.MIN_WEEK_STRING_LENGTH <= week_string_len <= CMN_DEF.MAX_WEEK_STRING_LENGTH):
+        raise ValueError("The week stirng[%s] length is NOT in the range [%d, %d]" % (week_string_len, CMN_DEF.MIN_WEEK_STRING_LENGTH, CMN_DEF.MAX_WEEK_STRING_LENGTH))
+    return mobj
+
+
+def is_week_str_format(week_string):
+    check_result = True
+    try:
+        check_week_str_format(week_string)
+    except ValueError:
+        check_result = False
+    return check_result
+
+
 def check_month_str_format(month_string):
     mobj = re.match("([\d]{2,4})-([\d]{2})", month_string)
     if mobj is None:
@@ -507,6 +526,10 @@ def is_year_str_format(year_string):
 
 def transform_date_str(year_value, month_value, day_value):
     return "%d-%02d-%02d" % (year_value, month_value, day_value)
+
+
+def transform_week_str(year_value, weekofyear_value):
+    return "%dw%d" % (year_value, weekofyear_value)
 
 
 def transform_month_str(year_value, month_value):
