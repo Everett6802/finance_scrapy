@@ -146,16 +146,16 @@ class FinanceTimeBase(object):
             else:
                 raise ValueError("Unknown time format: %s" % time_string)
         else:
-            if time_unit == CMN.DEF.DATA_TIME_UNIT_DATE:
-                time_obj = CMN.CLS.FinanceDate(time_str)
-            elif time_unit == CMN.DEF.DATA_TIME_UNIT_WEEK:
-                time_obj = CMN.CLS.FinanceWeek(time_str)
-            elif time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
-                time_obj = CMN.CLS.FinanceMonth(time_str)
-            elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
-                time_obj = CMN.CLS.FinanceQuarter(time_str)
-            elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
-                time_obj = CMN.CLS.FinanceYear(time_str)
+            if time_unit == CMN_DEF.DATA_TIME_UNIT_DAY:
+                time_obj = FinanceDate(time_string)
+            elif time_unit == CMN_DEF.DATA_TIME_UNIT_WEEK:
+                time_obj = FinanceWeek(time_string)
+            elif time_unit == CMN_DEF.DATA_TIME_UNIT_MONTH:
+                time_obj = FinanceMonth(time_string)
+            elif time_unit == CMN_DEF.DATA_TIME_UNIT_QUARTER:
+                time_obj = FinanceQuarter(time_string)
+            elif time_unit == CMN_DEF.DATA_TIME_UNIT_YEAR:
+                time_obj = FinanceYear(time_string)
             else:
                 raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
         return time_obj
@@ -166,13 +166,13 @@ class FinanceTimeBase(object):
     #     CMN_FUNC.check_date_str_format(time_string)
     #     time_obj = None
     #     # import pdb; pdb.set_trace()
-    #     if time_unit == CMN.DEF.DATA_TIME_UNIT_WEEK:
+    #     if time_unit == CMN_DEF.DATA_TIME_UNIT_WEEK:
     #         time_obj = CMN.CLS.FinanceMonth(time_str)
-    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+    #     elif time_unit == CMN_DEF.DATA_TIME_UNIT_MONTH:
     #         time_obj = CMN.CLS.FinanceMonth(time_str)
-    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+    #     elif time_unit == CMN_DEF.DATA_TIME_UNIT_QUARTER:
     #         time_obj = CMN.CLS.FinanceQuarter(time_str)
-    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
+    #     elif time_unit == CMN_DEF.DATA_TIME_UNIT_YEAR:
     #         time_obj = CMN.CLS.FinanceYear(time_str)
     #     else:
     #         raise ValueError("Unsupport time unit[%d] for transform" % time_unit)

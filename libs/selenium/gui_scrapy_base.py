@@ -70,14 +70,14 @@ class GUIWebScrapyBase(object):
             sub_csv_data_list = []
             if web2csv_time_duration_update.AppendDirection == CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_BEFORE:
                 for csv_data in csv_data_list:
-                    time_duration = cls._transform_time_str2obj(url_time_unit, str(csv_data[0]))
+                    time_duration = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data[0]), url_time_unit)
                     if time_duration > web2csv_time_duration_update.NewWebEnd:
                         break
                     sub_csv_data_list.append(csv_data)
             elif web2csv_time_duration_update.AppendDirection == CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_AFTER:
                 # for csv_data in reversed(csv_data_list):
                 for csv_data in csv_data_list:
-                    time_duration = cls._transform_time_str2obj(url_time_unit, str(csv_data[0]))
+                    time_duration = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data[0]), url_time_unit)
                     if time_duration < web2csv_time_duration_update.NewWebStart:
                         continue
                     sub_csv_data_list.append(csv_data)

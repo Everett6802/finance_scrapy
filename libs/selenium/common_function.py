@@ -79,7 +79,7 @@ def get_finance_data_csv_filepath(method_index, finance_parent_folderpath, compa
             raise ValueError("company_number should NOT be None")
     else:
         raise ValueError("Incorrect method index: %d" % method_index)
-    return "%s/%s.csv" % (folderpath, CMN_DEF.SCRAPY_CLASS_METHOD[method_index])
+    return "%s/%s.csv" % (folderpath, CMN_DEF.SCRAPY_CSV_FILENAME[method_index])
 
 
 def read_csv_time_duration_config_file(conf_filename, conf_folderpath):

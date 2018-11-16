@@ -82,6 +82,7 @@ def _scrape_institutional_investor_net_buy_sell_(driver, *args, **kwargs):
             for td_element in td_elements[1:]:
                 data_element_list.append(td_element.text)
             data_list.append(data_element_list)
+    data_list.reverse()
     # import pdb; pdb.set_trace()
     return (data_list, data_name_list)
 

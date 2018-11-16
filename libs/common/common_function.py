@@ -1330,7 +1330,7 @@ def get_finance_data_csv_filepath(method_index, finance_parent_folderpath, compa
             raise ValueError("company_number should NOT be None")
     else:
         raise ValueError("Incorrect method index: %d" % method_index)
-    return "%s/%s.csv" % (folderpath, CMN_DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index])
+    return "%s/%s.csv" % (folderpath, CMN_DEF.SCRAPY_CSV_FILENAME[method_index])
 
 
 def check_finance_data_folder_exist(finance_parent_folderpath, company_group_number=None, company_number=None):
