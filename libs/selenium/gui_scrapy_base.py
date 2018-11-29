@@ -13,6 +13,34 @@ g_logger = CMN.LOG.get_logger()
 class GUIWebScrapyBase(object):
 
     @classmethod
+    def get_scrapy_method_list(cls):
+        # return cls.__METHOD_NAME_LIST
+        method_name_list = None
+        try:
+            method_name_list = cls.__METHOD_NAME_LIST
+        except AttributeError:
+            raise AttributeError("The variable[__METHOD_NAME_LIST] is NOT defined in :%s" % cls.__name__)
+        return method_name_list
+
+
+    @classmethod
+    def print_scrapy_method(cls):
+        # print ", ".join(cls.__METHOD_NAME_LIST)
+        print ", ".join(cls.get_scrapy_method_list())
+
+
+    @classmethod
+    def print_scrapy_method_time_unit_description(cls, scrapy_method):
+        # print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
+        time_unit_description_list = None
+        try:
+            time_unit_description_list = cls.__TIME_UNIT_DESCRIPTION_LIST
+        except AttributeError:
+            raise AttributeError("The variable[__TIME_UNIT_DESCRIPTION_LIST] is NOT defined in :%s" % cls.__name__)
+        print ", ".join(time_unit_description_list[scrapy_method])
+
+
+    @classmethod
     def _write_scrapy_data_to_csv(cls, csv_data_list, scrapy_method_index, finance_parent_folderpath, company_number=None, company_group_number=None, dry_run_only=False):
         def get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict):
             if csv_time_duration_dict is not None:

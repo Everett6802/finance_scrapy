@@ -125,35 +125,37 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
     __STOCK_SCRAPY_CFG = {
         "institutional investor net buy sell": { # 三大法人買賣超
             "url_format": __GOODINFO_ULR_PREFIX + "ShowBuySaleChart.asp?STOCK_ID=%s",
-            "table_time_unit_list": ["&CHT_CAT=DATE", "&CHT_CAT=WEEK", "&CHT_CAT=MONTH",],
+            "table_time_unit_url_list": ["&CHT_CAT=DATE", "&CHT_CAT=WEEK", "&CHT_CAT=MONTH",],
+            "table_time_unit_description_list": [u"日", u"週", u"月",],
         },
         "institutional investor net buy sell accumulate": { # 三大法人買賣超累計
             "url_format": __GOODINFO_ULR_PREFIX + "ShowBuySaleChart.asp?STOCK_ID=%s",
-            "table_time_unit_list": ["&CHT_CAT=DATE", "&CHT_CAT=WEEK", "&CHT_CAT=MONTH",],
+            "table_time_unit_url_list": ["&CHT_CAT=DATE", "&CHT_CAT=WEEK", "&CHT_CAT=MONTH",],
+            "table_time_unit_description_list": [u"日", u"週", u"月",],
         },
     }
 
     __MARKET_URL = {key: value["url"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
     # __MARKET_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    __MARKET_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    # __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    __MARKET_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
 
     __STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
     # __STOCK_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    __STOCK_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    # __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    __STOCK_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
 
     # __TABLE_XPATH = {}
     # __TABLE_XPATH.update(__MARKET_TABLE_XPATH)
     # __TABLE_XPATH.update(__STOCK_TABLE_XPATH)
 
-    __TIME_UNIT_LIST = {}
-    __TIME_UNIT_LIST.update(__MARKET_TIME_UNIT_LIST)
-    __TIME_UNIT_LIST.update(__STOCK_TIME_UNIT_LIST)
+    __TIME_UNIT_URL_LIST = {}
+    __TIME_UNIT_URL_LIST.update(__MARKET_TIME_UNIT_URL_LIST)
+    __TIME_UNIT_URL_LIST.update(__STOCK_TIME_UNIT_URL_LIST)
 
-    # __TIME_UNIT_DESCRIPTION_LIST = {}
-    # __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
-    # __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
+    __TIME_UNIT_DESCRIPTION_LIST = {}
+    __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
+    __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
 
     __FUNC_PTR = {
 # market start
@@ -181,19 +183,19 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
     #     return time_obj
 
 
-    @classmethod
-    def get_scrapy_method_list(cls):
-        return cls.__METHOD_NAME_LIST
+    # @classmethod
+    # def get_scrapy_method_list(cls):
+    #     return cls.__METHOD_NAME_LIST
 
 
-    @classmethod
-    def print_scrapy_method(cls):
-        print ", ".join(cls.__METHOD_NAME_LIST)
+    # @classmethod
+    # def print_scrapy_method(cls):
+    #     print ", ".join(cls.__METHOD_NAME_LIST)
 
 
-    @classmethod
-    def print_scrapy_method_time_unit_description(cls, scrapy_method):
-        print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
+    # @classmethod
+    # def print_scrapy_method_time_unit_description(cls, scrapy_method):
+    #     print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
     def __init__(self, **cfg):
@@ -236,7 +238,7 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
                 stock_time_unit = kwargs["stock_time_unit"]
             if stock_time_unit is None:
                 stock_time_unit = CMN_DEF.GOODINFO_STOCK_TABLE_DEF_TIME_UNIT
-            url_format += self.__STOCK_TIME_UNIT_LIST[self.scrapy_method][stock_time_unit]
+            url_format += self.__STOCK_TIME_UNIT_URL_LIST[self.scrapy_method][stock_time_unit]
             url = url_format % self.company_number
         else:
             raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)

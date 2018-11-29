@@ -268,83 +268,83 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
         "dividend": { # 股利政策
             "url_format": __CMONEY_ULR_PREFIX + "f00027.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div/div/div[2]/table",
-            "table_time_unit_list": ["&o=1",], # Uselesss, only for compatibility
+            "table_time_unit_url_list": ["&o=1",], # Uselesss, only for compatibility
             "table_time_unit_description_list": [u"Dummy",], # Uselesss, only for compatibility
         },
         "revenue": { # 營收盈餘
             "url_format": __CMONEY_ULR_PREFIX + "f00029.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[4]/article/div/div/div/table",
-            "table_time_unit_list": ["&o=1", "&o=2",],
+            "table_time_unit_url_list": ["&o=1", "&o=2",],
             "table_time_unit_description_list": [u"月營收", u"合併月營收",],
         },
         "income statement": {
             "url_format": __CMONEY_ULR_PREFIX + "f00040.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div[2]/div/table",
-            "table_time_unit_list": ["&o=4", "&o=3",],
-            "table_time_unit_description_list": [u"季合併財務比率", u"年合併財務比率",],
+            "table_time_unit_url_list": ["&o=4", "&o=3",],
+            "table_time_unit_description_list": [u"季", u"年",],
         },
         "balance sheet": {
             "url_format": __CMONEY_ULR_PREFIX + "f00041.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div[2]/div/table",
-            "table_time_unit_list": ["&o=5", "&o=4", "&o=6",],
+            "table_time_unit_url_list": ["&o=5", "&o=4", "&o=6",],
             "table_time_unit_description_list": [u"季合併損益表(單季)", u"年合併損益表",],
         },
         "cashflow statement": { # 現金流量表
             "url_format": __CMONEY_ULR_PREFIX + "f00042.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div[2]/div/table",
-            "table_time_unit_list": ["&o=5", "&o=4", "&o=6",],
-            "table_time_unit_description_list": [u"季合併現金流量表(單季)", u"年合併現金流量表", u"季合併現金流量表(累計)",],
+            "table_time_unit_url_list": ["&o=5", "&o=4", "&o=6",],
+            "table_time_unit_description_list": [u"季(單季)", u"年", u"季(累計)",],
         },
         "profitability": { # 獲利能力
             "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[2]/article/div/div/div/table",
-            "table_time_unit_list": ["&o=4", "&o=3",],
-            "table_time_unit_description_list": [u"季合併財務比率", u"年合併財務比率",],
+            "table_time_unit_url_list": ["&o=4", "&o=3",],
+            "table_time_unit_description_list": [u"季", u"年",],
         },
         "business performance": { # 經營績效
             "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[3]/article/div/div/div/table",
-            "table_time_unit_list": ["&o=4", "&o=3",],
-            "table_time_unit_description_list": [u"季合併財務比率", u"年合併財務比率",],
+            "table_time_unit_url_list": ["&o=4", "&o=3",],
+            "table_time_unit_description_list": [u"季", u"年",],
         },
         "management capacity": { # 經營能力
             "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[4]/article/div/div/div/table",
-            "table_time_unit_list": ["&o=4", "&o=3",],
-            "table_time_unit_description_list": [u"季合併財務比率", u"年合併財務比率",],
+            "table_time_unit_url_list": ["&o=4", "&o=3",],
+            "table_time_unit_description_list": [u"季", u"年",],
         },
         "financial structure": { # 財務結構
             "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[5]/article/div/div/div/table",
-            "table_time_unit_list": ["&o=4", "&o=3",],
-            "table_time_unit_description_list": [u"季合併財務比率", u"年合併財務比率",],
+            "table_time_unit_url_list": ["&o=4", "&o=3",],
+            "table_time_unit_description_list": [u"季", u"年",],
         },
         "solvency": { # 償債能力
             "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[6]/article/div/div/div/table",
-            "table_time_unit_list": ["&o=4", "&o=3",],
-            "table_time_unit_description_list": [u"季合併財務比率", u"年合併財務比率",],
+            "table_time_unit_url_list": ["&o=4", "&o=3",],
+            "table_time_unit_description_list": [u"季", u"年",],
             "table_time_order_reserved": True,
         },
     }
 
     __MARKET_URL = {key: value["url"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
     __MARKET_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    __MARKET_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    __MARKET_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
     __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
 
     __STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
     __STOCK_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    __STOCK_TIME_UNIT_LIST = {key: value["table_time_unit_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    __STOCK_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
     __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
 
     __TABLE_XPATH = {}
     __TABLE_XPATH.update(__MARKET_TABLE_XPATH)
     __TABLE_XPATH.update(__STOCK_TABLE_XPATH)
 
-    __TIME_UNIT_LIST = {}
-    __TIME_UNIT_LIST.update(__MARKET_TIME_UNIT_LIST)
-    __TIME_UNIT_LIST.update(__STOCK_TIME_UNIT_LIST)
+    __TIME_UNIT_URL_LIST = {}
+    __TIME_UNIT_URL_LIST.update(__MARKET_TIME_UNIT_URL_LIST)
+    __TIME_UNIT_URL_LIST.update(__STOCK_TIME_UNIT_URL_LIST)
 
     __TIME_UNIT_DESCRIPTION_LIST = {}
     __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
@@ -387,20 +387,20 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
     #     return time_obj
 
 
-    @classmethod
-    def get_scrapy_method_list(cls):
-        # return cls.__FUNC_PTR.keys()
-        return cls.__METHOD_NAME_LIST
+    # @classmethod
+    # def get_scrapy_method_list(cls):
+    #     # return cls.__FUNC_PTR.keys()
+    #     return cls.__METHOD_NAME_LIST
 
 
-    @classmethod
-    def print_scrapy_method(cls):
-        print ", ".join(cls.__METHOD_NAME_LIST)
+    # @classmethod
+    # def print_scrapy_method(cls):
+    #     print ", ".join(cls.__METHOD_NAME_LIST)
 
 
-    @classmethod
-    def print_scrapy_method_time_unit_description(cls, scrapy_method):
-        print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
+    # @classmethod
+    # def print_scrapy_method_time_unit_description(cls, scrapy_method):
+    #     print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
     def __init__(self, **cfg):
@@ -444,7 +444,7 @@ class CMoneyWebScrapy(ScrapyBase.GUIWebScrapyBase):
                 stock_time_unit = kwargs["stock_time_unit"]
             if stock_time_unit is None:
                 stock_time_unit = CMN_DEF.CMONEY_STOCK_TABLE_DEF_TIME_UNIT
-            url_format += self.__STOCK_TIME_UNIT_LIST[self.scrapy_method][stock_time_unit]
+            url_format += self.__STOCK_TIME_UNIT_URL_LIST[self.scrapy_method][stock_time_unit]
             url = url_format % self.company_number
         else:
             raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
