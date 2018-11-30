@@ -33,18 +33,25 @@ def _scrape_tfe_open_interest_(driver, *args, **kwargs):
     tr_elements = table_element.find_elements_by_tag_name("tr")
 # data name
     data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
-    th_elements = tr_elements[1].find_elements_by_tag_name("td")
+    th_elements = tr_elements[1].find_elements_by_tag_name("th")
     for th_element in th_elements[1:]:
         data_name_list.append(th_element.text)
 # data
     data_list = []
     for tr_element in tr_elements[2:]:
         td_elements = tr_element.find_elements_by_tag_name("td")
-        data_element_list = []
-        for td_element in td_elements:
+        mobj = re.match("([\d]{2,3})/([\d]{2})/([\d]{2})", td_elements[0].text)
+        if mobj is None:
+            raise ValueError("Unknown time unit string: %s" % td_elements[0].text)
+        year = int(mobj.group(1)) + CMN.DEF.REPUBLIC_ERA_YEAR_OFFSET
+        time_str = "%d-%s-%s" % (year, mobj.group(2), mobj.group(3))
+        data_element_list = [time_str,]
+        for td_element in td_elements[1:]:
             data_element_list.append(td_element.text)
         data_list.append(data_element_list)
     # import pdb; pdb.set_trace()
+# Re-Order the data time: from old to new
+    data_list.reverse()
     return (data_list, data_name_list)
 
 
@@ -67,12 +74,12 @@ class WEarnWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
     __metaclass__ = WEarnWebScrapyMeta
 
-    __WEARN_ULR_PREFIX = "https://www.wearn.com/"
+    __WEARN_ULR_PREFIX = "https://stock.wearn.com/"
 
     __MARKET_SCRAPY_CFG = {
         "TFE open interest": { # 台指期未平倉(大額近月、法人所有月)
             "url": __WEARN_ULR_PREFIX + "taifexphoto.asp",
-            "table_time_unit_description_list": [u"日",],
+            # "table_time_unit_description_list": [u"日",],
        },
     }
 
@@ -81,13 +88,13 @@ class WEarnWebScrapy(ScrapyBase.GUIWebScrapyBase):
 
     __MARKET_URL = {key: value["url"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
     # __MARKET_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    __MARKET_TIME_UNIT_URL_LIST = {key: value["table_time_unit_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    # __MARKET_TIME_UNIT_URL_LIST = {key: value["table_time_unit_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    # __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
 
     __STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
     # __STOCK_TABLE_XPATH = {key: value["table_xpath"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    __STOCK_TIME_UNIT_URL_LIST = {key: value["table_time_unit_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    # __STOCK_TIME_UNIT_URL_LIST = {key: value["table_time_unit_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    # __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
 
     # __TABLE_XPATH = {}
     # __TABLE_XPATH.update(__MARKET_TABLE_XPATH)
@@ -97,9 +104,9 @@ class WEarnWebScrapy(ScrapyBase.GUIWebScrapyBase):
     # __TIME_UNIT_URL_LIST.update(__MARKET_TIME_UNIT_URL_LIST)
     # __TIME_UNIT_URL_LIST.update(__STOCK_TIME_UNIT_URL_LIST)
 
-    __TIME_UNIT_DESCRIPTION_LIST = {}
-    __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
-    __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
+    # __TIME_UNIT_DESCRIPTION_LIST = {}
+    # __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
+    # __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
 
     __FUNC_PTR = {
 # market start

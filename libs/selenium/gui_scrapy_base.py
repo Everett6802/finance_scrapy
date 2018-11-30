@@ -51,7 +51,7 @@ class GUIWebScrapyBase(object):
         assert csv_data_list is not None, "csv_data_list should NOT be None"
 
         # import pdb; pdb.set_trace()
-        csv_time_duration_folderpath = CMN.FUNC.get_finance_data_folderpath(finance_parent_folderpath, company_group_number, company_number)
+        csv_time_duration_folderpath = CMN_FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
         csv_time_duration_dict = CMN_FUNC.read_csv_time_duration_config_file(CMN_DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
 
         url_time_unit = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["url_time_unit"]
@@ -85,7 +85,7 @@ class GUIWebScrapyBase(object):
             if company_number is not None:
                 scrapy_msg = u"[%s:%s] %s:%s => %s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
             else:
-                scrapy_msg = "[%s] %s:%s => %s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], CMN.DEF.TIME_DURATION_TYPE_DESCRIPTION[self.xcfg["time_duration_type"]], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
+                scrapy_msg = "[%s] %s:%s => %s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
             g_logger.info(scrapy_msg)
 # Check if only dry-run
             if dry_run_only:
@@ -129,14 +129,14 @@ class GUIWebScrapyBase(object):
 
     @classmethod
     def check_scrapy_field_description_exist(cls, scrapy_method_index, finance_parent_folderpath):
-        conf_filepath = "%s/%s/%s%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME, CMN_DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX)
+        conf_filepath = "%s/%s/%s%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME, CMN_DEF.SCRAPY_CSV_FILENAME[scrapy_method_index], CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX)
         return CMN.FUNC.check_file_exist(conf_filepath)
 
 
     @classmethod
     def _write_scrapy_field_data_to_config(cls, csv_data_field_list, scrapy_method_index, finance_parent_folderpath):
         conf_folderpath = "%s/%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
-        conf_filename = ("%s" % CMN_DEF.SCRAPY_CLASS_METHOD[scrapy_method_index]) + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
+        conf_filename = ("%s" % CMN_DEF.SCRAPY_CSV_FILENAME[scrapy_method_index]) + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
         CMN.FUNC.unicode_write_config_file_lines(csv_data_field_list, conf_filename, conf_folderpath)
 
 
@@ -172,7 +172,12 @@ class GUIWebScrapyBase(object):
         # scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
         csv_data_list, _ = self.scrape_web(*args, **kwargs)
         # import pdb; pdb.set_trace()
-        self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], self.company_number, self.company_group_number, dry_run_only=self.xcfg['dry_run_only'])
+        company_number = None
+        company_group_number = None
+        if CMN_FUNC.is_stock_scrapy_method(self.scrapy_method_index):
+            company_number = self.company_number
+            company_group_number = self.company_group_number
+        self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
 
 
     @abstractmethod

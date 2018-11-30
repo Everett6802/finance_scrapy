@@ -158,7 +158,7 @@ def parse_param():
             param_cfg["enable_company_not_found_exception"] = True
             index_offset = 1
         elif re.match("--update", sys.argv[index]):
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             if combination_param_cfg['update_dataset_method'] is not None:
                 combination_param_cfg['update_dataset_enable'] = True
             from_file = True if (re.search("from_file", sys.argv[index]) is not None) else False

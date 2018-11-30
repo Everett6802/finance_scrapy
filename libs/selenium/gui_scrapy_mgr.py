@@ -153,7 +153,9 @@ class GUIScrapyMgr(object):
             }
             with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                 web_scrapy_object.ScrapyMethodIndex = method_index
-                if CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
+                if not CMN_FUNC.is_stock_scrapy_method(method_index):
+                    web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
+                else:
                     for company_group_number, company_number_list in  self.company_group_set.items():
                         for company_number in company_number_list:
 # Update the config of the scrapy object
@@ -163,8 +165,8 @@ class GUIScrapyMgr(object):
                             # import pdb; pdb.set_trace()
                             web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
     # 						g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
-                else:
-                    raise ValueError("Unknown scrapy method index: %d" % method_index)
+                # else:
+                #     raise ValueError("Unknown scrapy method index: %d" % method_index)
 
 
     def update_csv_field(self, method_index_list=None):
@@ -184,9 +186,14 @@ class GUIScrapyMgr(object):
             }
             with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                 web_scrapy_object.ScrapyMethodIndex = method_index
-                if CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
+                # if CMN_DEF.SCRAPY_MARKET_METHOD_START <= method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END:
+                #     pass
+                # elif CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END:
+                #     web_scrapy_object.CompanyNumber = '2330'
+                #     web_scrapy_object.CompanyGroupNumber = 9
+                # else:
+                #     raise ValueError("Unknown scrapy method index: %d" % method_index)
+                if CMN_FUNC.is_stock_scrapy_method(method_index):
                     web_scrapy_object.CompanyNumber = '2330'
-                    web_scrapy_object.CompanyGroupNumber = 9
-                else:
-                    raise ValueError("Unknown scrapy method index: %d" % method_index)
+                    web_scrapy_object.CompanyGroupNumber = 9               
                 web_scrapy_object.update_csv_field()
