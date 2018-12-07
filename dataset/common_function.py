@@ -756,3 +756,26 @@ def print_312_month_yoy_revenue_growth(df, month_yoy_growth_3, month_yoy_growth_
         total_str = "%s, %s, 3YOY: %.2f, 12YOY: %.2f, %.2f" % (date_str, cross_str, month_yoy_growth_3[index], month_yoy_growth_12[index], diff_ratio)
         print total_str + "%"
     print "*****************************************\n"
+
+
+def add_ma(df, ma_start_index=5, ma_end_index=30, avg_func_ptr=None):
+    if avg_func_ptr is None:
+        avg_func_ptr = lambda x: (x['open'] + x['high'] + x['low'] + x['close']) / 4.0
+    df['avg'] = df.apply(avg_func_ptr)
+    for index in range(ma_start_index, ma_end_index + 1):
+        df['ma%d' % index] = get_dataset_sma('avg', index)
+    return df
+
+
+def add_kd(df, fastk_period=9, slowk_period=3, slowd_period=3):
+    df['k'], df['d'] = ta.STOCH(
+        df['high'].values,
+        df['low'].values,
+        df['close'].values,
+        fastk_period=fastk_period,
+        slowk_period=slowk_period,
+        slowk_matype=0,
+        slowd_period=slowd_period,
+        slowd_matype=0
+    )
+    return df

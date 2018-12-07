@@ -195,3 +195,18 @@ def find_312_month_yoy_revenue_growth(company_number, show_relation=False):
         else:
             DS_VS.plot_312_month_yoy_revenue_growth(df_revenue_growth, month_yoy_growth_3=month_yoy_growth_3, month_yoy_growth_12=month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title=company_number)
         DS_VS.show_plot()
+
+
+def find_investment_entry_point(company_number=None, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DAY):
+    df = None
+    if company_number is not None:
+       df, _ = load_stock_price_history(company_number, data_time_unit=data_time_unit)
+    else:
+        raise ValueError("Not Implemented Yet !!!")
+
+    df = add_ma(df)
+    df = add_kd(df)
+
+    if DV.CAN_VISUALIZE:
+        DS_VS.plot_investment_entry_point(df, title=company_number)
+        DS_VS.show_plot()
