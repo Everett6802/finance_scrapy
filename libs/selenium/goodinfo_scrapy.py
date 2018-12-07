@@ -88,7 +88,7 @@ def _scrape_institutional_investor_net_buy_sell_(driver, *args, **kwargs):
 
 
 def _scrape_legal_persion_buy_sell_accumulate_(driver, *args, **kwargs):
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     table_element = driver.find_element_by_class_name("solid_1_padding_3_1_tbl")
     tr_elements = table_element.find_elements_by_tag_name("tr")
     for tr_element in tr_elements[2:]:
@@ -162,7 +162,7 @@ class GoodInfoWebScrapy(ScrapyBase.GUIWebScrapyBase):
 # market end
 # stock start
         "institutional investor net buy sell": _scrape_institutional_investor_net_buy_sell_,
-        "legal_persion_buy_sell_accumulate": _scrape_legal_persion_buy_sell_accumulate_,
+        "institutional investor net buy sell accumulate": _scrape_legal_persion_buy_sell_accumulate_,
 # stock end
     }
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
