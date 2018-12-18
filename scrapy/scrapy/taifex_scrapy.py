@@ -5,9 +5,10 @@ import requests
 import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import libs.common as CMN
+import scrapy.common as CMN
 import common_function as CMN_FUNC
-import market_scrapy_base as MarketScrapyBase
+# import market_scrapy_base as MarketScrapyBase
+import scrapy_base as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
@@ -52,7 +53,7 @@ class TaifexScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class TaifexScrapy(MarketScrapyBase.MarketScrapyBase):
+class TaifexScrapy(ScrapyBase.ScrapyBase):
 
 	__metaclass__ = TaifexScrapyMeta
     __TAIFEX_ULR_PREFIX = "http://www.taifex.com.tw/"
@@ -90,7 +91,7 @@ class TaifexScrapy(MarketScrapyBase.MarketScrapyBase):
 
     __FUNC_PTR = {
 # market start
-        "scrape option put call ratio": _scrape_institutional_investor_net_buy_sell_,
+        "option put call ratio": _scrape_institutional_investor_net_buy_sell_,
 # market end
 # stock start
 # stock end
@@ -186,3 +187,7 @@ class TaifexScrapy(MarketScrapyBase.MarketScrapyBase):
 
 
 if __name__ == '__main__':
+    with TaifexScrapy() as taifex:
+        kwargs = {}
+        import pdb; pdb.set_trace()
+        goodinfo.scrape("option put call ratio", **kwargs)

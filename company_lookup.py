@@ -5,11 +5,11 @@ import os
 import re
 import sys
 import time
-import libs.common as CMN
-from libs.common.common_variable import GlobalVar as GV
-import libs.base.company_profile as CompanyProfile
-import libs.base.company_group_set as CompanyGroupSet
-import libs.stock.stock_url_time_range as URLTimeRange
+import scrapy.common as CMN
+from scrapy.common.common_variable import GlobalVar as GV
+import scrapy.libs.company_profile as CompanyProfile
+import scrapy.libs.company_group_set as CompanyGroupSet
+# import libs.stock.stock_url_time_range as URLTimeRange
 g_logger = CMN.LOG.get_logger()
 
 
@@ -118,8 +118,8 @@ def get_company_profile_instance():
     return CompanyProfile.CompanyProfile.Instance()    
 
 
-def get_url_time_range_instance():
-    return URLTimeRange.StockURLTimeRange.Instance()    
+# def get_url_time_range_instance():
+#     return URLTimeRange.StockURLTimeRange.Instance()    
 
 
 if __name__ == "__main__":
