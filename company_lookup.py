@@ -27,12 +27,14 @@ def show_usage():
     print "  Format2: Company code number range (ex. 2100-2200)"
     print "  Format3: Company group number (ex. [Gg]12)"
     print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
-    print "--show_group_division_test_result\nDescription: Show the test result about how to divide companies into groups\nCaution: Ignore other parameters when set"
-    print "--show_group_division_test_result_detail\nDescription: Show the test result about how to divide companies into groups in detail\nCaution: Ignore other parameters when set"
-    for index, source in enumerate(CompanyProfile.COMPANY_GROUP_METHOD_DESCRIPTION_LIST):
-        print "  %d: %s" % (index, CompanyProfile.COMPANY_GROUP_METHOD_DESCRIPTION_LIST[index])
+    # print "--show_group_division_test_result\nDescription: Show the test result about how to divide companies into groups\nCaution: Ignore other parameters when set"
+    # for index, source in enumerate(CompanyProfile.COMPANY_GROUP_METHOD_DESCRIPTION_LIST):
+    #     print "  %d: %s" % (index, CompanyProfile.COMPANY_GROUP_METHOD_DESCRIPTION_LIST[index])
+    # print " 0: Show default info"
+    # print " 1: Show detailed info"
     print "--show_group_statistics\nDescription: Show the statistics of each group\nCaution: Ignore other parameters except --renew when set"
-    print "--show_group_statistics_detail\nDescription: Show the statistics of each group in detail\nCaution: Ignore other parameters except --renew when set"
+    print " 0: Show default info"
+    print " 1: Show detailed info"
     print "==================================================="
 
 
@@ -83,23 +85,24 @@ def parse_param():
             # param_dict["lookup_company"] = company_code_number_list
             param_dict["lookup_company"] = sys.argv[index + 1]
             index_offset = 2
-        elif sys.argv[index] == "--show_group_division_test_result":
-            group_method_number = int(sys.argv[index + 1])
-            param_dict["show_group_division_test_result"] = True
-            param_dict["group_method_number"] = group_method_number
-            param_dict["show_group_division_test_result_detail"] = True if sys.argv[index] == "--show_group_division_test_result_detail" else False
-            index_offset = 2
+        # elif sys.argv[index] == "--show_group_division_test_result":
+        #     group_method_number = int(sys.argv[index + 1])
+        #     param_dict["show_group_division_test_result"] = True
+        #     param_dict["group_method_number"] = group_method_number
+        #     param_dict["show_group_division_test_result_detail"] = True if sys.argv[index] == "--show_group_division_test_result_detail" else False
+        #     index_offset = 2
         elif sys.argv[index] == "--show_group_statistics":
-            param_dict["show_group_statistics"] = True
-            param_dict["show_group_statistics_detail"] = True if sys.argv[index] == "--show_group_statistics_detail" else False
-            index_offset = 1
+            param_dict["show_group_statistics"] = int(sys.argv[index + 1])
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
     return param_dict
 
 
-def show_group_statistics(show_detail, company_group_size):
+def show_group_statistics(show_detail):
+    company_profile = CompanyProfile.CompanyProfile.Instance()
+    company_group_size = company_profile.CompanyGroupSize
     whole_company_number_in_group_dict = CompanyGroupSet.CompanyGroupSet.get_whole_company_number_in_group_dict()
     # import pdb; pdb.set_trace()
     for company_group_index in range(company_group_size):
@@ -154,13 +157,13 @@ if __name__ == "__main__":
         get_url_time_range_instance().renew_time_range(None, cleanup_old_start_time)
         sys.exit(0)
 
-# Show the test result in different division method
-    if param_dict.get("show_group_division_test_result", None) is not None:
-        company_profile.group_company(param_dict["group_method_number"], param_dict["show_group_division_test_result_detail"])
-        sys.exit(0)
+# # Show the test result in different division method
+#     if param_dict.get("show_group_division_test_result", None) is not None:
+#         company_profile.group_company(param_dict["group_method_number"], param_dict["show_group_division_test_result_detail"])
+#         sys.exit(0)
 # Show the group statistics
     if param_dict.get("show_group_statistics", None) is not None:
-        show_group_statistics(param_dict["show_group_statistics_detail"], company_group_size)
+        show_group_statistics((True if (param_dict["show_group_statistics"] != 0) else False))
         sys.exit(0)
 
     if param_dict.get("lookup_company", None) is not None:
