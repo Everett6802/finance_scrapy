@@ -14,9 +14,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-import scrapy.common as CMN
-import common_definition as CMN_DEF
-import gui_scrapy_base as ScrapyBase
+# import scrapy.common as CMN
+# import scrapy_definition as SC_DEF
+import scrapy_class_base as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 PRINT_SCRAPY = True
@@ -170,7 +170,7 @@ class WEarnWebScrapy(ScrapyBase.GUIWebScrapyBase):
 #             if kwargs.get("stock_time_unit", None) is not None:
 #                 stock_time_unit = kwargs["stock_time_unit"]
 #             if stock_time_unit is None:
-#                 stock_time_unit = CMN_DEF.GOODINFO_STOCK_TABLE_DEF_TIME_UNIT
+#                 stock_time_unit = SC_DEF.GOODINFO_STOCK_TABLE_DEF_TIME_UNIT
 #             url_format += self.__STOCK_TIME_UNIT_URL_LIST[self.scrapy_method][stock_time_unit]
 #             url = url_format % self.company_number
         else:

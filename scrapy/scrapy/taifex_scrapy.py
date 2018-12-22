@@ -5,10 +5,9 @@ import requests
 import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import scrapy.common as CMN
-import common_function as CMN_FUNC
-# import market_scrapy_base as MarketScrapyBase
-import scrapy_base as ScrapyBase
+# import scrapy.common as CMN
+# import scrapy_function as SC_FUNC
+import scrapy_class_base as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
@@ -27,7 +26,7 @@ def _scrape_option_put_call_ratio_(scrapy_cfg, *args, **kwargs):
     def parse_url(url_data):
         pass
 
-    web_data = CMN_FUNC.try_get_web_data(url, parse_url)
+    web_data = SC_FUNC.try_get_web_data(url, parse_url)
 
     data_name_list = []
     data_list = []

@@ -14,9 +14,10 @@ import inspect
 import warnings
 from datetime import datetime, timedelta
 import common_definition as CMN_DEF
-from scrapy.common.common_variable import GlobalVar as GV
+import common_scrapy_definition as CMN_SC_DEF
 import common_class as CMN_CLS
 import common_exception as CMN_EXCEPTION
+from scrapy.common.common_variable import GlobalVar as GV
 import common_logging as LOG
 g_logger = LOG.get_logger()
 
@@ -196,7 +197,7 @@ def get_instance_class_name(instance):
     return instance.__class__.__name__
 
 
-def import_web_scrapy_module(module_folder, module_name):
+def import_scrapy_module(module_folder, module_name):
     # import pdb; pdb.set_trace()
     module_path = "%s/%s" % (GV.PROJECT_LIB_FOLDERPATH, module_folder)
     sys.path.insert(0, module_path)
@@ -217,9 +218,9 @@ def import_web_scrapy_module(module_folder, module_name):
         raise e
 
 
-def get_web_scrapy_class_for_name(module_folder, module_name, class_name):
+def get_scrapy_class_for_name(module_folder, module_name, class_name):
     # import pdb; pdb.set_trace()
-    m = import_web_scrapy_module(module_folder, module_name)
+    m = import_scrapy_module(module_folder, module_name)
     parts = module_name.split('.')
     parts.append(class_name)
     for comp in parts[1:]:
@@ -227,93 +228,102 @@ def get_web_scrapy_class_for_name(module_folder, module_name, class_name):
     return m
 
 
-def get_web_scrapy_class(scrapy_class_index, init_class_variables=True):
+def get_scrapy_class(scrapy_method): #, init_class_variables=True):
     # import pdb; pdb.set_trace()
-    module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER_MAPPING[scrapy_class_index]
-    module_name = CMN_DEF.SCRAPY_MODULE_NAME_MAPPING[scrapy_class_index]
-    class_name = CMN_DEF.SCRAPY_CLASS_NAME_MAPPING[scrapy_class_index]
+    # module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER_MAPPING[scrapy_class_index]
+    module_name = CMN_SC_DEF.SCRAPY_METHOD_MODULE_NAME[scrapy_class_index]
+    class_name = CMN_SC_DEF.SCRAPY_CLASS_NAME_MAPPING[scrapy_class_index]
     g_logger.debug("Try to instantiate %s.%s" % (module_name, class_name))
-# Find the module
-    web_scrapy_class = get_web_scrapy_class_for_name(module_folder, module_name, class_name)
-    if init_class_variables:
-        web_scrapy_class.init_class_common_variables() # Caution: Must be called in the leaf derived class
-        web_scrapy_class.init_class_customized_variables() # Caution: Must be called in the leaf derived class         
-    return web_scrapy_class
+    assert type(module_name) == type(class_name), "The module name type[%s] and class name type[%s] is NOT identical" % (type(module_name), type(class_name))
+# Find the class module
+    scrapy_class = None
+    if type(module_name) == list:
+        module_name_len = len(module_name)
+        assert module_name_len == len(class_name), "The module name length[%d] and class name length[%d] is NOT identical" % (module_name_len, len(class_name))
+        scrapy_class = []
+        for index in range(module_name_len):
+            scrapy_class.append(get_scrapy_class_for_name(CMN_SC_DEF.CMN_SCRAPY_MODULE_FOLDER, module_name[i], class_name[i]))
+    else:
+        scrapy_class = get_scrapy_class_for_name(CMN_SC_DEF.CMN_SCRAPY_MODULE_FOLDER, module_name, class_name)
+    #     if init_class_variables:
+    #         scrapy_class.init_class_common_variables() # Caution: Must be called in the leaf derived class
+    #         scrapy_class.init_class_customized_variables() # Caution: Must be called in the leaf derived class         
+    return scrapy_class
 
 
-def get_web_scrapy_object(web_scrapy_class, **kwargs):
+def get_scrapy_object(scrapy_class, **kwargs):
 # Instantiate the class 
-    web_scrapy_obj = web_scrapy_class(**kwargs)
-    return web_scrapy_obj
+    scrapy_obj = scrapy_class(**kwargs)
+    return scrapy_obj
 
 
-def instantiate_web_scrapy_object(scrapy_class_index, **kwargs):
-    # import pdb; pdb.set_trace()
-# Get the class
-    web_scrapy_class = get_web_scrapy_class(scrapy_class_index)
-# Instantiate the class 
-    web_scrapy_obj = get_web_scrapy_object(web_scrapy_class, **kwargs)
-    return web_scrapy_obj
+# def instantiate_scrapy_object(scrapy_class_index, **kwargs):
+#     # import pdb; pdb.set_trace()
+# # Get the class
+#     scrapy_class = get_scrapy_class(scrapy_class_index)
+# # Instantiate the class 
+#     scrapy_obj = get_scrapy_object(scrapy_class, **kwargs)
+#     return scrapy_obj
 
 
-def check_scrapy_class_index_in_range(scrapy_class_index, finance_mode=None):
-    is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
-    is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
-    if is_finance_market_mode:
-        return True if CMN_DEF.SCRAPY_MARKET_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_MARKET_CLASS_END else False
-    elif is_finance_stock_mode:
-        return True if CMN_DEF.SCRAPY_STOCK_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_END else False
-    raise RuntimeError("Unknown finance mode")
+# def check_scrapy_class_index_in_range(scrapy_class_index, finance_mode=None):
+#     is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
+#     is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
+#     if is_finance_market_mode:
+#         return True if CMN_DEF.SCRAPY_MARKET_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_MARKET_CLASS_END else False
+#     elif is_finance_stock_mode:
+#         return True if CMN_DEF.SCRAPY_STOCK_CLASS_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_END else False
+#     raise RuntimeError("Unknown finance mode")
 
 
-# def check_statement_scrapy_class_index_in_range(scrapy_class_index):
+# # def check_statement_scrapy_class_index_in_range(scrapy_class_index):
+# #     if GV.IS_FINANCE_MARKET_MODE:
+# #         return False
+# #     elif GV.IS_FINANCE_STOCK_MODE:
+# #         return True if CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_END else False
+# #     raise RuntimeError("Unknown finance mode")
+
+
+# def get_scrapy_class_index_range():
 #     if GV.IS_FINANCE_MARKET_MODE:
-#         return False
+#         return (CMN_DEF.SCRAPY_MARKET_CLASS_START, CMN_DEF.SCRAPY_MARKET_CLASS_END)
 #     elif GV.IS_FINANCE_STOCK_MODE:
-#         return True if CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_START <= scrapy_class_index < CMN_DEF.SCRAPY_STOCK_CLASS_STATMENT_END else False
+#         return (CMN_DEF.SCRAPY_STOCK_CLASS_START, CMN_DEF.SCRAPY_STOCK_CLASS_END)
 #     raise RuntimeError("Unknown finance mode")
 
 
-def get_scrapy_class_index_range():
-    if GV.IS_FINANCE_MARKET_MODE:
-        return (CMN_DEF.SCRAPY_MARKET_CLASS_START, CMN_DEF.SCRAPY_MARKET_CLASS_END)
-    elif GV.IS_FINANCE_STOCK_MODE:
-        return (CMN_DEF.SCRAPY_STOCK_CLASS_START, CMN_DEF.SCRAPY_STOCK_CLASS_END)
-    raise RuntimeError("Unknown finance mode")
-
-
-def get_scrapy_class_size():
-    if GV.IS_FINANCE_MARKET_MODE:
-        return CMN_DEF.SCRAPY_MARKET_CLASS_SIZE
-    elif GV.IS_FINANCE_STOCK_MODE:
-        return CMN_DEF.SCRAPY_STOCK_CLASS_SIZE
-    raise RuntimeError("Unknown finance mode")
-
-
-def get_scrapy_method_index_range(finance_mode=None):
-    is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
-    is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
-    if is_finance_market_mode:
-        return (CMN_DEF.SCRAPY_MARKET_METHOD_START, CMN_DEF.SCRAPY_MARKET_METHOD_END)
-    elif is_finance_stock_mode:
-        return (CMN_DEF.SCRAPY_STOCK_METHOD_START, CMN_DEF.SCRAPY_STOCK_METHOD_END)
-    raise RuntimeError("Unknown finance mode")
-
-
-# def get_statement_scrapy_method_index_range():
-#     if GV.IS_FINANCE_STOCK_MODE:
-#         return (CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_START, CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_END)
+# def get_scrapy_class_size():
+#     if GV.IS_FINANCE_MARKET_MODE:
+#         return CMN_DEF.SCRAPY_MARKET_CLASS_SIZE
+#     elif GV.IS_FINANCE_STOCK_MODE:
+#         return CMN_DEF.SCRAPY_STOCK_CLASS_SIZE
 #     raise RuntimeError("Unknown finance mode")
 
 
-def check_scrapy_method_index_in_range(scrapy_method_index, finance_mode=None):
-    is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
-    is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
-    if is_finance_market_mode:
-        return True if CMN_DEF.SCRAPY_MARKET_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END else False
-    elif is_finance_stock_mode:
-        return True if CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END else False
-    raise RuntimeError("Unknown finance mode")
+# def get_scrapy_method_index_range(finance_mode=None):
+#     is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
+#     is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
+#     if is_finance_market_mode:
+#         return (CMN_DEF.SCRAPY_MARKET_METHOD_START, CMN_DEF.SCRAPY_MARKET_METHOD_END)
+#     elif is_finance_stock_mode:
+#         return (CMN_DEF.SCRAPY_STOCK_METHOD_START, CMN_DEF.SCRAPY_STOCK_METHOD_END)
+#     raise RuntimeError("Unknown finance mode")
+
+
+# # def get_statement_scrapy_method_index_range():
+# #     if GV.IS_FINANCE_STOCK_MODE:
+# #         return (CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_START, CMN_DEF.SCRAPY_STOCK_METHOD_STATMENT_END)
+# #     raise RuntimeError("Unknown finance mode")
+
+
+# def check_scrapy_method_index_in_range(scrapy_method_index, finance_mode=None):
+#     is_finance_market_mode = (GV.IS_FINANCE_MARKET_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_MARKET))
+#     is_finance_stock_mode = (GV.IS_FINANCE_STOCK_MODE if (finance_mode is None) else (finance_mode == CMN_DEF.FINANCE_MODE_STOCK))
+#     if is_finance_market_mode:
+#         return True if CMN_DEF.SCRAPY_MARKET_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END else False
+#     elif is_finance_stock_mode:
+#         return True if CMN_DEF.SCRAPY_STOCK_METHOD_START <= scrapy_method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END else False
+#     raise RuntimeError("Unknown finance mode")
 
 
 # def check_statement_scrapy_method_index_in_range(scrapy_method_index):
@@ -324,15 +334,15 @@ def check_scrapy_method_index_in_range(scrapy_method_index, finance_mode=None):
 #     raise RuntimeError("Unknown finance mode")
 
 
-def get_scrapy_class_index_from_description(scrapy_class_description, ignore_exception=False):
-    scrapy_class_index = -1
-    try:
-        scrapy_class_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(scrapy_class_description)
-    except ValueError as e:
-        if not ignore_exception:
-            raise e
-        g_logger.warn("Unknown source class description: %s", scrapy_class_description);
-    return scrapy_class_index
+# def get_scrapy_class_index_from_description(scrapy_class_description, ignore_exception=False):
+#     scrapy_class_index = -1
+#     try:
+#         scrapy_class_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(scrapy_class_description)
+#     except ValueError as e:
+#         if not ignore_exception:
+#             raise e
+#         g_logger.warn("Unknown source class description: %s", scrapy_class_description);
+#     return scrapy_class_index
 
 
 def get_method_index_from_description(method_description, ignore_exception=False):
@@ -346,36 +356,36 @@ def get_method_index_from_description(method_description, ignore_exception=False
     return method_index
 
 
-def get_scrapy_class_index_list_from_method_description(method_description):
-    scrapy_class_index_list = []
-    for scrapy_class_index, class_constant_cfg in enumerate(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG):
-        if re.search(method_description, class_constant_cfg["description"], re.U):
-            scrapy_class_index_list.append(scrapy_class_index)
-    if len(scrapy_class_index_list) == 0:
-        raise ValueError("Unknown method description: %s" % method_description)
-    return scrapy_class_index_list
+# def get_scrapy_class_index_list_from_method_description(method_description):
+#     scrapy_class_index_list = []
+#     for scrapy_class_index, class_constant_cfg in enumerate(CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG):
+#         if re.search(method_description, class_constant_cfg["description"], re.U):
+#             scrapy_class_index_list.append(scrapy_class_index)
+#     if len(scrapy_class_index_list) == 0:
+#         raise ValueError("Unknown method description: %s" % method_description)
+#     return scrapy_class_index_list
 
 
-def get_scrapy_class_index_list_from_method_index(method_index):
-    method_description = CMN_DEF.SCRAPY_METHOD_DESCRIPTION[method_index]
-    return get_scrapy_class_index_list_from_method_description(method_description)
+# def get_scrapy_class_index_list_from_method_index(method_index):
+#     method_description = CMN_DEF.SCRAPY_METHOD_DESCRIPTION[method_index]
+#     return get_scrapy_class_index_list_from_method_description(method_description)
 
 
-def get_scrapy_class_index_range_list():
-    scrapy_class_index_list = []
-    (scrapy_class_start_index, scrapy_class_end_index) = get_scrapy_class_index_range()
-# Semi-open interval
-    for index in range(scrapy_class_start_index, scrapy_class_end_index):
-        scrapy_class_index_list.append(index)
-    return scrapy_class_index_list
+# def get_scrapy_class_index_range_list():
+#     scrapy_class_index_list = []
+#     (scrapy_class_start_index, scrapy_class_end_index) = get_scrapy_class_index_range()
+# # Semi-open interval
+#     for index in range(scrapy_class_start_index, scrapy_class_end_index):
+#         scrapy_class_index_list.append(index)
+#     return scrapy_class_index_list
 
 
-def get_method_index_range_list(finance_mode=None):
-    method_index_list = []
-    (method_start_index, method_end_index) = get_scrapy_method_index_range(finance_mode)
-# Semi-open interval
-    method_index_list += range(method_start_index, method_end_index)
-    return method_index_list
+# def get_method_index_range_list(finance_mode=None):
+#     method_index_list = []
+#     (method_start_index, method_end_index) = get_scrapy_method_index_range(finance_mode)
+# # Semi-open interval
+#     method_index_list += range(method_start_index, method_end_index)
+#     return method_index_list
 
 
 def is_republic_era_year(year_value):
@@ -815,24 +825,24 @@ def unicode_write_config_file_lines(conf_line_list, conf_filename, conf_folderpa
 #     return source_type_time_duration_config_list
 
 
-def get_finance_mode():
-    line_list = read_config_file_lines(CMN_DEF.FINANCE_MODE_SWITCH_CONF_FILENAME)
-    assert len(line_list) > 0, "The line number should NOT be 0"
-    finance_mode = None
-    line = line_list[0]
-    try:
-        finance_mode = int(line)
-    except:
-        raise CMN_EXCEPTION.WebScrapyIncorrectFormatException("Incorrect finance mode format in config: %s" % line)
-    try:
-        if finance_mode not in [CMN_DEF.FINANCE_MODE_MARKET, CMN_DEF.FINANCE_MODE_STOCK,]:
-            raise Exception()
-    except:
-        raise CMN_EXCEPTION.WebScrapyIncorrectFormatException("Incorrect finance mode value in config: %s" % line)
-    return finance_mode
+# def get_finance_mode():
+#     line_list = read_config_file_lines(CMN_DEF.FINANCE_MODE_SWITCH_CONF_FILENAME)
+#     assert len(line_list) > 0, "The line number should NOT be 0"
+#     finance_mode = None
+#     line = line_list[0]
+#     try:
+#         finance_mode = int(line)
+#     except:
+#         raise CMN_EXCEPTION.WebScrapyIncorrectFormatException("Incorrect finance mode format in config: %s" % line)
+#     try:
+#         if finance_mode not in [CMN_DEF.FINANCE_MODE_MARKET, CMN_DEF.FINANCE_MODE_STOCK,]:
+#             raise Exception()
+#     except:
+#         raise CMN_EXCEPTION.WebScrapyIncorrectFormatException("Incorrect finance mode value in config: %s" % line)
+#     return finance_mode
 
 
-def read_csv_time_duration_config_file(conf_filename, conf_folderpath, get_index_from_description_func_ptr=get_scrapy_class_index_from_description):
+def read_csv_time_duration_config_file(conf_filename, conf_folderpath):
     # import pdb; pdb.set_trace()
     csv_time_duration_dict = None
     conf_line_list = None
@@ -848,14 +858,14 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath, get_index
             # scrapy_class_index = CMN_DEF.SCRAPY_CLASS_DESCRIPTION.index(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             if param_list_len != 3:
                 raise ValueError("Incorrect csv time duration setting: %s, list len: %d" % (line, param_list_len))
-            index = (get_index_from_description_func_ptr)(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
+            index = get_method_index_from_description(param_list[0].decode(CMN_DEF.UNICODE_ENCODING_IN_FILE))
             time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(param_list[1])
             time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(param_list[2])
             csv_time_duration_dict[index] = CMN_CLS.TimeDurationTuple(time_range_start, time_range_end)
     return csv_time_duration_dict
 
 
-def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict, description_array=CMN_DEF.SCRAPY_CLASS_DESCRIPTION):
+def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict, description_array=CMN_SC_DEF.SCRAPY_METHOD_DESCRIPTION):
     # import pdb; pdb.set_trace()
     conf_line_list = []
     # source_type_start_index, source_type_end_index = get_scrapy_class_index_range()
@@ -1023,35 +1033,35 @@ def assemble_stock_csv_filepath_by_method_index(finance_root_folderpath, scrapy_
     return csv_filepath
 
 
-# SCRAPY_WAIT_TIMEOUT = 8
-def request_from_url_and_check_return(url, timeout=None):
-    if timeout is None:
-        timeout = CMN_DEF.SCRAPY_WAIT_TIMEOUT
-    res = requests.get(url, timeout=timeout)
-    if res.status_code != 200:
-        if res.status_code == 503:
-            raise CMN_EXCEPTION.WebScrapyServerBusyException("Fail to scrape URL[%s] due to Server is busy......")
-        else:
-            errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
-            g_logger.error(errmsg)
-            raise RuntimeError(errmsg)
-    return res
+# # SCRAPY_WAIT_TIMEOUT = 8
+# def request_from_url_and_check_return(url, timeout=None):
+#     if timeout is None:
+#         timeout = CMN_DEF.SCRAPY_WAIT_TIMEOUT
+#     res = requests.get(url, timeout=timeout)
+#     if res.status_code != 200:
+#         if res.status_code == 503:
+#             raise CMN_EXCEPTION.WebScrapyServerBusyException("Fail to scrape URL[%s] due to Server is busy......")
+#         else:
+#             errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
+#             g_logger.error(errmsg)
+#             raise RuntimeError(errmsg)
+#     return res
 
 
-def try_to_request_from_url_and_check_return(url, timeout=None):
-    req = None
-    for index in range(CMN_DEF.SCRAPY_RETRY_TIMES):
-        try:
-            # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
-            req = request_from_url_and_check_return(url, timeout)
-        except requests.exceptions.Timeout as ex:
-            # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
-            time.sleep(randint(3, 9))
-        else:
-            return req            
-    errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.SCRAPY_RETRY_TIMES)
-    g_logger.error(errmsg)
-    raise RuntimeError(errmsg)
+# def try_to_request_from_url_and_check_return(url, timeout=None):
+#     req = None
+#     for index in range(CMN_DEF.SCRAPY_RETRY_TIMES):
+#         try:
+#             # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
+#             req = request_from_url_and_check_return(url, timeout)
+#         except requests.exceptions.Timeout as ex:
+#             # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
+#             time.sleep(randint(3, 9))
+#         else:
+#             return req            
+#     errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.SCRAPY_RETRY_TIMES)
+#     g_logger.error(errmsg)
+#     raise RuntimeError(errmsg)
 
 
 def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_time):

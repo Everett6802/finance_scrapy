@@ -13,11 +13,15 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 
-import common_definition as CMN_DEF
-import gui_scrapy_base as ScrapyBase
+# import scrapy_definition as SC_DEF
+import scrapy_class_base as ScrapyBase
 
-
+STATEMENT_DOG_SHEET_INTERVAL_LAST_3_YEARS = 0
+STATEMENT_DOG_SHEET_INTERVAL_LAST_5_YEARS = 1
+STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS = 2
+STATEMENT_DOG_SHEET_INTERVAL_SELF_DEFINE = 3
 PRINT_SCRAPY = True
+
 
 def __statementdog_menu_title(driver, menu_title_index):
 	elements = driver.find_elements_by_class_name("menu-title")
@@ -56,9 +60,9 @@ def __switch_sheet_interval(driver):
 	element_sheet_interval_options = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/ul")
 # CAUTION: Can' explot 'Select', since the tag of the component is NOT 'Select'
 	# select = Select(element)
-	# select.selectByIndex(CMN_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS);
+	# select.selectByIndex(SC_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS);
 	items = element_sheet_interval_options.find_elements_by_tag_name("li")
-	items[CMN_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS].click()
+	items[SC_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS].click()
 	# for item in items:
 	# 	print item.text
 

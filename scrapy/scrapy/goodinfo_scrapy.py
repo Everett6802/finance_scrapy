@@ -15,10 +15,11 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 import scrapy.common as CMN
-import common_definition as CMN_DEF
+# import common_definition as CMN_DEF
 import gui_scrapy_base as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
+GOODINFO_STOCK_TABLE_DEF_TIME_UNIT = 0
 PRINT_SCRAPY = True
 
 

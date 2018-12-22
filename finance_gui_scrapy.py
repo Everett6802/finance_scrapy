@@ -6,10 +6,11 @@ import re
 import sys
 import time
 import subprocess
-from libs import common as CMN
-from libs.common.common_variable import GlobalVar as GV
+from scrapy import common as CMN
+from scrapy.common.common_variable import GlobalVar as GV
+import scrapy.scrapy_mgr as MGR
 # from libs import base as BASE
-from libs import selenium as SL
+# from libs import selenium as SL
 g_mgr = None
 g_logger = CMN.LOG.get_logger()
 param_cfg = {}
@@ -30,8 +31,8 @@ def show_usage_and_exit():
     print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s\n" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
     print "-m | --method\nDescription: The list of the methods\nDefault: All finance methods\nCaution: Only take effect when config_from_file is NOT set"
     print "Scrapy Method:"
-    for method_index in range(SL.DEF.SCRAPY_METHOD_LEN):
-        print "  %d: %s" % (method_index, SL.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
+    for method_index in range(CMN.SC_DEF.SCRAPY_METHOD_LEN):
+        print "  %d: %s" % (method_index, CMN.SC_DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
     print "  Format 1: Method (ex. 1,3,5)"
     print "  Format 2: Method range (ex. 2-6)"
     print "  Format 3: Method/Method range hybrid (ex. 1,3-4,6)"
@@ -47,25 +48,25 @@ def show_usage_and_exit():
 # Combination argument
     print "Combination argument:\n Caution: Exclusive. Only the first combination argument takes effect. Some related arguments may be overwriten"
     print "*** Market Scrapy Method ***"
-    for index, csv_filename in enumerate(SL.DEF.SCRAPY_CSV_FILENAME[SL.DEF.SCRAPY_MARKET_METHOD_START:SL.DEF.SCRAPY_MARKET_METHOD_END]):
-        scrapy_method_index = index + SL.DEF.SCRAPY_MARKET_METHOD_START
-        print "--update_%s\n--update_method%d\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old\n" % (csv_filename, scrapy_method_index, SL.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
-        print "--update_%s_from_file\n--update_method%d_from_file\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, SL.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
+    for index, csv_filename in enumerate(CMN.DEF.SCRAPY_CSV_FILENAME[CMN.DEF.SCRAPY_MARKET_METHOD_START:CMN.DEF.SCRAPY_MARKET_METHOD_END]):
+        scrapy_method_index = index + CMN.DEF.SCRAPY_MARKET_METHOD_START
+        print "--update_%s\n--update_method%d\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old\n" % (csv_filename, scrapy_method_index, CMN.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
+        print "--update_%s_from_file\n--update_method%d_from_file\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, CMN.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
     print "*** Stock Scrapy Method ***"
-    for index, csv_filename in enumerate(SL.DEF.SCRAPY_CSV_FILENAME[SL.DEF.SCRAPY_STOCK_METHOD_START:SL.DEF.SCRAPY_STOCK_METHOD_END]):
-        scrapy_method_index = index + SL.DEF.SCRAPY_MARKET_METHOD_START
-        print "--update_company_%s\n--update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, SL.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
-        print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, SL.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
-    # print "--update_company_revenue\nDescription: Update the revenue of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
-    # print "--update_company_revenue_from_file\nDescription: Update the revenue of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
-    # print "--update_company_profitability\nDescription: Update the profitability of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    # print "--update_company_profitability_from_file\nDescription: Update the profitability of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    # print "--update_company_cashflow_statement\nDescription: Update the cashflow statement of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    # print "--update_company_cashflow_statement_from_file\nDescription: Update the cashflow statement of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    # print "--update_company_dividend\nDescription: Update the dividend of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX
-    # print "--update_company_dividend_from_file\nDescription: Update the dividend of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX
-    # print "--update_company_institutional_investor_net_buy_sell\nDescription: Update the institutional investor net buy sell of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % SL.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX
-    # print "--update_company_institutional_investor_net_buy_sell_from_file\nDescription: Update the institutional investor net buy sell of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % SL.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX
+    for index, csv_filename in enumerate(CMN.DEF.SCRAPY_CSV_FILENAME[CMN.DEF.SCRAPY_STOCK_METHOD_START:CMN.DEF.SCRAPY_STOCK_METHOD_END]):
+        scrapy_method_index = index + CMN.DEF.SCRAPY_MARKET_METHOD_START
+        print "--update_company_%s\n--update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, CMN.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
+        print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, CMN.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
+    # print "--update_company_revenue\nDescription: Update the revenue of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
+    # print "--update_company_revenue_from_file\nDescription: Update the revenue of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
+    # print "--update_company_profitability\nDescription: Update the profitability of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    # print "--update_company_profitability_from_file\nDescription: Update the profitability of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    # print "--update_company_cashflow_statement\nDescription: Update the cashflow statement of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    # print "--update_company_cashflow_statement_from_file\nDescription: Update the cashflow statement of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
+    # print "--update_company_dividend\nDescription: Update the dividend of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX
+    # print "--update_company_dividend_from_file\nDescription: Update the dividend of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX
+    # print "--update_company_institutional_investor_net_buy_sell\nDescription: Update the institutional investor net buy sell of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX
+    # print "--update_company_institutional_investor_net_buy_sell_from_file\nDescription: Update the institutional investor net buy sell of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX
     sys.exit(0)
 
 
@@ -175,7 +176,7 @@ def parse_param():
                         index_offset = 2
                     if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
                     if not combination_param_cfg['update_dataset_enable']:
-                        if not (SL.DEF.SCRAPY_STOCK_METHOD_START <= int(mobj.group(1)) < SL.DEF.SCRAPY_STOCK_METHOD_END):
+                        if not (CMN.DEF.SCRAPY_STOCK_METHOD_START <= int(mobj.group(1)) < CMN.DEF.SCRAPY_STOCK_METHOD_END):
                             raise ValueError("The method[%s] is NOT stock scrapy method" % mobj.group(1))
                         combination_param_cfg['update_dataset_method'] = mobj.group(1)
                         if index_offset == 2:
@@ -188,7 +189,7 @@ def parse_param():
                         index_offset = 2
                     if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
                     if not combination_param_cfg['update_dataset_enable']:
-                        combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_CSV_FILENAME.index(mobj.group(1)))
+                        combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_CSV_FILENAME.index(mobj.group(1)))
                         if index_offset == 2:
                             combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
             else:
@@ -199,7 +200,7 @@ def parse_param():
                         mobj = re.match("--update_method([\d]{1,})", sys.argv[index])
                     if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
                     if not combination_param_cfg['update_dataset_enable']:
-                        if not (SL.DEF.SCRAPY_MARKET_METHOD_START <= int(mobj.group(1)) < SL.DEF.SCRAPY_MARKET_METHOD_END):
+                        if not (CMN.DEF.SCRAPY_MARKET_METHOD_START <= int(mobj.group(1)) < CMN.DEF.SCRAPY_MARKET_METHOD_END):
                             raise ValueError("The method[%s] is NOT market scrapy method" % mobj.group(1))
                         combination_param_cfg['update_dataset_method'] = mobj.group(1)
                 else:
@@ -209,11 +210,11 @@ def parse_param():
                         mobj = re.match("--update_([\w]+)", sys.argv[index])
                     if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
                     if not combination_param_cfg['update_dataset_enable']:
-                        combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_CSV_FILENAME.index(mobj.group(1)))
+                        combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_CSV_FILENAME.index(mobj.group(1)))
             if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
         # elif re.match("--update_company_revenue_from_file", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX)
         #         combination_param_cfg['update_dataset_config_from_file'] = True
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -221,7 +222,7 @@ def parse_param():
         #     index_offset = 1
         # elif re.match("--update_company_revenue", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX)
         #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -229,7 +230,7 @@ def parse_param():
         #     index_offset = 2
         # elif re.match("--update_company_profitability_from_file", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX)
         #         combination_param_cfg['update_dataset_config_from_file'] = True
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -237,7 +238,7 @@ def parse_param():
         #     index_offset = 1
         # elif re.match("--update_company_profitability", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX)
         #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -245,7 +246,7 @@ def parse_param():
         #     index_offset = 2
         # elif re.match("--update_company_cashflow_statement_from_file", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX)
         #         combination_param_cfg['update_dataset_config_from_file'] = True
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -253,7 +254,7 @@ def parse_param():
         #     index_offset = 1
         # elif re.match("--update_company_cashflow_statement", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX)
         #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -261,7 +262,7 @@ def parse_param():
         #     index_offset = 2
         # elif re.match("--update_company_dividend_from_file", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX)
         #         combination_param_cfg['update_dataset_config_from_file'] = True
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -269,7 +270,7 @@ def parse_param():
         #     index_offset = 1
         # elif re.match("--update_company_dividend", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX)
         #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -277,7 +278,7 @@ def parse_param():
         #     index_offset = 2
         # elif re.match("--update_company_institutional_investor_net_buy_sell_from_file", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX)
         #         combination_param_cfg['update_dataset_config_from_file'] = True
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -285,7 +286,7 @@ def parse_param():
         #     index_offset = 1
         # elif re.match("--update_company_institutional_investor_net_buy_sell", sys.argv[index]):
         #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(SL.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX)
+        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX)
         #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
         #     else:
         #         combination_param_cfg['update_dataset_enable'] = True
@@ -306,8 +307,8 @@ def check_param():
     if combination_param_cfg["update_dataset_method"] is not None:
         if combination_param_cfg["update_dataset_config_from_file"]:
             method_index = int(combination_param_cfg["update_dataset_method"])
-            if SL.FUNC.is_stock_scrapy_method(method_index):
-                combination_param_cfg["update_dataset_company_list"] = SL.CONF.GUIScrapyConfigurer.Instance().Company
+            if CMN.FUNC.is_stock_scrapy_method(method_index):
+                combination_param_cfg["update_dataset_company_list"] = CMN.CONF.GUIScrapyConfigurer.Instance().Company
 
         if param_cfg["config_from_file"]:
             show_warn("The 'config_from_file' argument won't take effect since 'combination argument' is set")
@@ -338,7 +339,7 @@ def check_param():
         else:
             if param_cfg["method"] is None:
                 # import pdb; pdb.set_trace()
-                param_cfg["method"] = ",".join(map(str, range(SL.DEF.SCRAPY_METHOD_END)))
+                param_cfg["method"] = ",".join(map(str, range(CMN.DEF.SCRAPY_METHOD_END)))
 
     if param_cfg["dataset_finance_folderpath"]:
         if param_cfg["finance_folderpath"] is not None:
@@ -438,7 +439,7 @@ if __name__ == "__main__":
         # "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
         "max_data_count": param_cfg["max_data_count"],
     }
-    g_mgr = SL.MGR.GUIScrapyMgr(**update_cfg)
+    g_mgr = MGR.ScrapyMgr(**update_cfg)
 # Check the parameters for the manager
     check_param()
     if param_cfg["help"]:
