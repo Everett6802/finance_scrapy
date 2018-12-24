@@ -31,8 +31,8 @@ def show_usage_and_exit():
     print "--config_from_file\nDescription: The methods, time_duration_range, company from config: %s\n" % CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME
     print "-m | --method\nDescription: The list of the methods\nDefault: All finance methods\nCaution: Only take effect when config_from_file is NOT set"
     print "Scrapy Method:"
-    for method_index in range(CMN.SC_DEF.SCRAPY_METHOD_LEN):
-        print "  %d: %s" % (method_index, CMN.SC_DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
+    for method_index in range(CMN.DEF.SCRAPY_METHOD_LEN):
+        print "  %d: %s" % (method_index, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index])
     print "  Format 1: Method (ex. 1,3,5)"
     print "  Format 2: Method range (ex. 2-6)"
     print "  Format 3: Method/Method range hybrid (ex. 1,3-4,6)"
@@ -47,26 +47,16 @@ def show_usage_and_exit():
     print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
 # Combination argument
     print "Combination argument:\n Caution: Exclusive. Only the first combination argument takes effect. Some related arguments may be overwriten"
-    print "*** Market Scrapy Method ***"
-    for index, csv_filename in enumerate(CMN.DEF.SCRAPY_CSV_FILENAME[CMN.DEF.SCRAPY_MARKET_METHOD_START:CMN.DEF.SCRAPY_MARKET_METHOD_END]):
-        scrapy_method_index = index + CMN.DEF.SCRAPY_MARKET_METHOD_START
-        print "--update_%s\n--update_method%d\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old\n" % (csv_filename, scrapy_method_index, CMN.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
-        print "--update_%s_from_file\n--update_method%d_from_file\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, CMN.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
-    print "*** Stock Scrapy Method ***"
-    for index, csv_filename in enumerate(CMN.DEF.SCRAPY_CSV_FILENAME[CMN.DEF.SCRAPY_STOCK_METHOD_START:CMN.DEF.SCRAPY_STOCK_METHOD_END]):
-        scrapy_method_index = index + CMN.DEF.SCRAPY_MARKET_METHOD_START
-        print "--update_company_%s\n--update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, CMN.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
-        print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, CMN.DEF.SCRAPY_CLASS_METHOD[scrapy_method_index], scrapy_method_index)
-    # print "--update_company_revenue\nDescription: Update the revenue of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
-    # print "--update_company_revenue_from_file\nDescription: Update the revenue of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX
-    # print "--update_company_profitability\nDescription: Update the profitability of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    # print "--update_company_profitability_from_file\nDescription: Update the profitability of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    # print "--update_company_cashflow_statement\nDescription: Update the cashflow statement of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    # print "--update_company_cashflow_statement_from_file\nDescription: Update the cashflow statement of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX
-    # print "--update_company_dividend\nDescription: Update the dividend of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX
-    # print "--update_company_dividend_from_file\nDescription: Update the dividend of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX
-    # print "--update_company_institutional_investor_net_buy_sell\nDescription: Update the institutional investor net buy sell of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % CMN.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX
-    # print "--update_company_institutional_investor_net_buy_sell_from_file\nDescription: Update the institutional investor net buy sell of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % CMN.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX
+    print "*** Scrapy Method ***"
+    for scrapy_method_index, csv_filename in enumerate(CMN.DEF.SCRAPY_CSV_FILENAME):
+        # import pdb; pdb.set_trace()
+        scrapy_method = CMN.DEF.SCRAPY_METHOD_NAME[scrapy_method_index]
+        if not CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method]["need_company_number"]:
+            print "--update_%s\n--update_method%d\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
+            print "--update_%s_from_file\n--update_method%d_from_file\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
+        else:
+            print "--update_company_%s\n--update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
+            print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
     sys.exit(0)
 
 

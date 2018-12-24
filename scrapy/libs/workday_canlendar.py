@@ -14,23 +14,12 @@ g_logger = CMN.LOG.get_logger()
 @CMN.CLS.Singleton
 class WorkdayCanlendar(object):
 
-    # TODAY_WORKDAY_DATA_EXIST_HOUR = 14
-    # TODAY_WORKDAY_DATA_EXIST_MINUTE = 30
-    WORKDAY_CANLENDAR_CONSTANT_CFG = CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[CMN.DEF.SCRAPY_WORKDAY_CANLENDAR_INDEX]
-    URL_FORMAT = WORKDAY_CANLENDAR_CONSTANT_CFG["url_format"]
-    URL_ENCODING = WORKDAY_CANLENDAR_CONSTANT_CFG["url_encoding"]
-    URL_DATA_SELECTOR = WORKDAY_CANLENDAR_CONSTANT_CFG["url_data_selector"]
-    # WORKDAY_CANLENDAR_CLASS_URL_TIME_UNIT = WORKDAY_CANLENDAR_CONSTANT_CFG["url_time_unit"]
-    # WORKDAY_CANLENDAR_CLASS_URL_PARSING_METHOD = WORKDAY_CANLENDAR_CONSTANT_CFG["url_parsing_method"]
-    # WORKDAY_CANLENDAR_CLASS_TIMESLICE_GENERATE_METHOD = WORKDAY_CANLENDAR_CONSTANT_CFG["timeslice_generate_method"]
-    # WORKDAY_CANLENDAR_CLASS_TIMESLICE_TIME_UNIT = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[TIMESLICE_GENERATE_METHOD]
+    # WORKDAY_CANLENDAR_CONSTANT_CFG = CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[CMN.DEF.SCRAPY_WORKDAY_CANLENDAR_INDEX]
+    URL_FORMAT = "http://www.twse.com.tw/exchangeReport/FMTQIK?response=json&date={0}{1:02d}01"
+    URL_ENCODING = CMN.DEF.URL_ENCODING_UTF8
+    URL_DATA_SELECTOR = 'data'
 
     def __init__(self, date_start=None, date_end=None):
-        # self.source_constant_cfg = CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[CMN.DEF.SCRAPY_WORKDAY_CANLENDAR_INDEX]
-        # self.url_format = self.source_constant_cfg["url_format"]
-        # self.encoding = self.source_constant_cfg["url_encoding"]
-        # self.select_flag = self.source_constant_cfg["url_data_selector"]
-###############################################################################################
 # Caution: The types of the following member variabiles are FinanceDate
         self.date_start = CMN.CLS.FinanceDate(CMN.DEF.WORKDAY_CANLENDAR_START_DATE_STR) if date_start is None else date_start 
         self.date_end = CMN.CLS.FinanceDate.get_last_finance_date()
@@ -78,20 +67,6 @@ class WorkdayCanlendar(object):
             self.__write_workday_canlendar_to_file()
 # # Copy the config file to the finance_analyzer/finance_recorder_java project
 #             self.__copy_workday_canlendar_config_file()
-
-
-    # def __copy_workday_canlendar_config_file(self):
-    #     current_path = os.path.dirname(os.path.realpath(__file__))
-    #     [working_folder, project_name, lib_folder] = current_path.rsplit('/', 2)
-    #     dst_folderpath_list = [
-    #         "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_RECORDER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
-    #         "%s/%s/%s" % (working_folder, CMN.DEF.FINANCE_ANALYZER_PROJECT_NAME, CMN.DEF.CONF_FOLDERNAME),
-    #     ]
-    #     src_filepath = "%s/%s/%s/%s" % (working_folder, project_name, CMN.DEF.CONF_FOLDERNAME, CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME)
-    #     for dst_folderpath in dst_folderpath_list:
-    #         if os.path.exists(dst_folderpath):
-    #             g_logger.debug("Copy the file[%s] to %s" % (CMN.DEF.WORKDAY_CANLENDAR_CONF_FILENAME, dst_folderpath))
-    #             shutil.copy2(src_filepath, dst_folderpath)
 
 
     def __update_workday_from_file(self):

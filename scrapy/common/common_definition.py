@@ -177,22 +177,15 @@ SCRAPY_METHOD_TYPE_REQUESTS_MARKET = {"need_selenium": False, "need_company_numb
 SCRAPY_METHOD_CONSTANT_CFG = OrderedDict()
 
 # Market Start
-
-#     {# 臺股指數及成交量
-#         "description": u'臺股指數及成交量',
-#         "module_name": "stock_exchange_and_volume",
-#         "module_folder": "market",
-#         "class_name": "StockExchangeAndVolume",
-#         "url_format": "http://www.twse.com.tw/exchangeReport/FMTQIK?response=json&date={0}{1:02d}01", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
-#         "url_encoding": URL_ENCODING_UTF8,
-#         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
-#         "url_data_selector": 'data',
-#         "timeslice_generate_method": TIMESLICE_GENERATE_BY_MONTH,
-#         "scrapy_need_long_sleep": True,
-#         "is_duplicate_module": False,
-#         # "parse_url_data_obj": CMN_CLS.ParseURLDataByBS4('big5', '.board_trad tr'),
-#     },
+SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME = "taiwan weighted index and volume"
+SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG = {# 臺股指數及成交量
+    "description": u'臺股指數及成交量',
+    "module_name": "twse_scrapy",
+    "class_name": "TwseScrapy",
+    "url_time_unit": DATA_TIME_UNIT_DAY,
+}
+SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_MARKET)
+SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME] = SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG
 
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_NAME = "option put call ratio"
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_CFG = {# 臺指選擇權賣權買權比
@@ -276,6 +269,7 @@ SCRAPY_METHOD_MODULE_NAME = [cfg["module_name"] for cfg in SCRAPY_METHOD_CONSTAN
 SCRAPY_METHOD_CLASS_NAME = [cfg["class_name"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_CSV_FILENAME = [method_name.replace(" ", "_").lower() for method_name in SCRAPY_METHOD_NAME]
 
+SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME)
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_NAME)
 SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TFE_OPEN_INTEREST_NAME)
 SCRAPY_METHOD_REVENUE_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_REVENUE_NAME)
@@ -284,7 +278,7 @@ SCRAPY_METHOD_CASHFLOW_STATEMENT_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_
 SCRAPY_METHOD_DIVIDEND_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_DIVIDEND_NAME)
 SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_NAME)
 
-SCRAPY_WORKDAY_CANLENDAR_INDEX = None
+# SCRAPY_WORKDAY_CANLENDAR_INDEX = SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX
 
 SCRAPY_METHOD_START = 0
 SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)

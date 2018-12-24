@@ -1033,35 +1033,35 @@ def assemble_stock_csv_filepath_by_method_index(finance_root_folderpath, scrapy_
     return csv_filepath
 
 
-# # SCRAPY_WAIT_TIMEOUT = 8
-# def request_from_url_and_check_return(url, timeout=None):
-#     if timeout is None:
-#         timeout = CMN_DEF.SCRAPY_WAIT_TIMEOUT
-#     res = requests.get(url, timeout=timeout)
-#     if res.status_code != 200:
-#         if res.status_code == 503:
-#             raise CMN_EXCEPTION.WebScrapyServerBusyException("Fail to scrape URL[%s] due to Server is busy......")
-#         else:
-#             errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
-#             g_logger.error(errmsg)
-#             raise RuntimeError(errmsg)
-#     return res
+# SCRAPY_WAIT_TIMEOUT = 8
+def request_from_url_and_check_return(url, timeout=None):
+    if timeout is None:
+        timeout = CMN_DEF.SCRAPY_WAIT_TIMEOUT
+    res = requests.get(url, timeout=timeout)
+    if res.status_code != 200:
+        if res.status_code == 503:
+            raise CMN_EXCEPTION.WebScrapyServerBusyException("Fail to scrape URL[%s] due to Server is busy......")
+        else:
+            errmsg = "####### HTTP error: %d #######\nURL: %s" % (res.status_code, url)
+            g_logger.error(errmsg)
+            raise RuntimeError(errmsg)
+    return res
 
 
-# def try_to_request_from_url_and_check_return(url, timeout=None):
-#     req = None
-#     for index in range(CMN_DEF.SCRAPY_RETRY_TIMES):
-#         try:
-#             # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
-#             req = request_from_url_and_check_return(url, timeout)
-#         except requests.exceptions.Timeout as ex:
-#             # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
-#             time.sleep(randint(3, 9))
-#         else:
-#             return req            
-#     errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.SCRAPY_RETRY_TIMES)
-#     g_logger.error(errmsg)
-#     raise RuntimeError(errmsg)
+def try_to_request_from_url_and_check_return(url, timeout=None):
+    req = None
+    for index in range(CMN_DEF.SCRAPY_RETRY_TIMES):
+        try:
+            # g_logger.debug("Retry to scrap web data [%s]......%d" % (url, index))
+            req = request_from_url_and_check_return(url, timeout)
+        except requests.exceptions.Timeout as ex:
+            # g_logger.debug("Retry to scrap web data [%s]......%d, FAIL!!!" % (url, index))
+            time.sleep(randint(3, 9))
+        else:
+            return req            
+    errmsg = "Fail to scrap web data [%s] even retry for %d times !!!!!!" % (url, CMN_DEF.SCRAPY_RETRY_TIMES)
+    g_logger.error(errmsg)
+    raise RuntimeError(errmsg)
 
 
 def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_time):
