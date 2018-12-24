@@ -5,13 +5,11 @@ import re
 # import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-# import scrapy.common as CMN
-# import scrapy_function as SC_FUNC
 import scrapy_class_base as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
-def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
+def _scrape_option_put_call_ratio_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     url = scrapy_cfg['url']
     if kwargs.has_key("month") is not None:
@@ -41,10 +39,10 @@ def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
     return (data_list, data_name_list)
 
 
-class TaifexScrapyMeta(type):
+class TwseScrapyMeta(type):
 
     __ATTRS = {
-        "_scrape_taiwan_weighted_index_and_volume_": _scrape_taiwan_weighted_index_and_volume_,
+        "_scrape_option_put_call_ratio_": _scrape_option_put_call_ratio_,
     }
 
     def __new__(mcs, name, bases, attrs):
@@ -52,14 +50,14 @@ class TaifexScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class TaifexScrapy(ScrapyBase.ScrapyBase):
+class TwseScrapy(ScrapyBase.ScrapyBase):
 
-	__metaclass__ = TaifexScrapyMeta
-    __TAIFEX_ULR_PREFIX = "http://www.taifex.com.tw/"
+	__metaclass__ = TwseScrapyMeta
+    __TWSE_ULR_PREFIX = "http://www.twse.com.tw/"
 
     __MARKET_SCRAPY_CFG = {
-        "scrape taiwan weighted index and volume": { # 臺指選擇權賣權買權比
-            "url": __TAIFEX_ULR_PREFIX + "cht/3/pcRatio"
+        "scrape option put call ratio": { # 臺指選擇權賣權買權比
+            "url": __TWSE_ULR_PREFIX + "cht/3/pcRatio"
             "url_time_range_format" = "?queryStartDate={0}%2F{1:02d}}%2F{2:02d}&queryEndDate={0}%2F{1:02d}%2F{3:02d}",
             "url_encoding": URL_ENCODING_UTF8,
         },
@@ -90,7 +88,7 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
 
     __FUNC_PTR = {
 # market start
-        "taiwan weighted index and volume": _scrape_taiwan_weighted_index_and_volume_,
+        "option put call ratio": _scrape_option_put_call_ratio_,
 # market end
 # stock start
 # stock end
@@ -186,7 +184,7 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
 
 
 if __name__ == '__main__':
-    with TaifexScrapy() as taifex:
+    with TwseScrapy() as taifex:
         kwargs = {}
         import pdb; pdb.set_trace()
-        taifex.scrape("option put call ratio", **kwargs)
+        goodinfo.scrape("option put call ratio", **kwargs)
