@@ -16,7 +16,7 @@ from selenium.webdriver.common.by import By
 
 # import scrapy.common as CMN
 # import scrapy_definition as SC_DEF
-import scrapy_class_base as ScrapyBase
+import scrapy_class_base.ScrapyBase as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 PRINT_SCRAPY = True
@@ -70,7 +70,7 @@ class WEarnWebScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class WEarnWebScrapy(ScrapyBase.GUIWebScrapyBase):
+class WEarnWebScrapy(ScrapyBase):
 
     __metaclass__ = WEarnWebScrapyMeta
 

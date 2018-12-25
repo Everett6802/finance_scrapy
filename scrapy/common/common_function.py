@@ -14,7 +14,6 @@ import inspect
 import warnings
 from datetime import datetime, timedelta
 import common_definition as CMN_DEF
-import common_scrapy_definition as CMN_SC_DEF
 import common_class as CMN_CLS
 import common_exception as CMN_EXCEPTION
 from scrapy.common.common_variable import GlobalVar as GV
@@ -199,7 +198,7 @@ def get_instance_class_name(instance):
 
 def import_scrapy_module(module_folder, module_name):
     # import pdb; pdb.set_trace()
-    module_path = "%s/%s" % (GV.PROJECT_LIB_FOLDERPATH, module_folder)
+    module_path = "%s/%s" % (GV.PROJECT_SCRAPY_FOLDERPATH, module_folder)
     sys.path.insert(0, module_path)
     module_file = '%s/%s.py' % (module_path, module_name)
     assert os.path.exists(module_file), "module file does not exist: %s" % module_file
@@ -227,12 +226,34 @@ def get_scrapy_class_for_name(module_folder, module_name, class_name):
         m = getattr(m, comp)            
     return m
 
+__CAN_USE_SELEIUM__ = None
+def can_use_selenium():
+    try:
+        from selenium import webdriver
+    except ImportError:
+        return False
+    return True
 
-def get_scrapy_class(scrapy_method): #, init_class_variables=True):
+
+def get_scrapy_class(scrapy_method_index): #, init_class_variables=True):
     # import pdb; pdb.set_trace()
     # module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER_MAPPING[scrapy_class_index]
-    module_name = CMN_SC_DEF.SCRAPY_METHOD_MODULE_NAME[scrapy_class_index]
-    class_name = CMN_SC_DEF.SCRAPY_CLASS_NAME_MAPPING[scrapy_class_index]
+    if type(scrapy_method_index) is str:
+        # scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME[scrapy_method]
+        scrapy_method_index = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method_index]
+    else:
+        if scrapy_method_index < 0 or scrapy_method_index >= SC_DEF.SCRAPY_METHOD_LEN:
+            raise ValueError("scrapy_method_index[%d] is Out-Of-Range [0, %d)" % (scrapy_method_index, SC_DEF.SCRAPY_METHOD_LEN))
+    
+    if __CAN_USE_SELEIUM__ is None:
+        __CAN_USE_SELEIUM__ = can_use_selenium()
+    if CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method_index]['need_selenium']:
+        if not __CAN_USE_SELEIUM__:
+            g_logger.error("Selenium is NOT Install !!! Fail to scrape %s" % SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["description"])
+            return None
+
+    module_name = CMN_DEF.SCRAPY_METHOD_MODULE_NAME[scrapy_method_index]
+    class_name = CMN_DEF.SCRAPY_METHOD_CLASS_NAME[scrapy_method_index]
     g_logger.debug("Try to instantiate %s.%s" % (module_name, class_name))
     assert type(module_name) == type(class_name), "The module name type[%s] and class name type[%s] is NOT identical" % (type(module_name), type(class_name))
 # Find the class module
@@ -242,9 +263,9 @@ def get_scrapy_class(scrapy_method): #, init_class_variables=True):
         assert module_name_len == len(class_name), "The module name length[%d] and class name length[%d] is NOT identical" % (module_name_len, len(class_name))
         scrapy_class = []
         for index in range(module_name_len):
-            scrapy_class.append(get_scrapy_class_for_name(CMN_SC_DEF.CMN_SCRAPY_MODULE_FOLDER, module_name[i], class_name[i]))
+            scrapy_class.append(get_scrapy_class_for_name(CMN_DEF.SCRAPY_MODULE_FOLDER, module_name[i], class_name[i]))
     else:
-        scrapy_class = get_scrapy_class_for_name(CMN_SC_DEF.CMN_SCRAPY_MODULE_FOLDER, module_name, class_name)
+        scrapy_class = get_scrapy_class_for_name(CMN_DEF.SCRAPY_MODULE_FOLDER, module_name, class_name)
     #     if init_class_variables:
     #         scrapy_class.init_class_common_variables() # Caution: Must be called in the leaf derived class
     #         scrapy_class.init_class_customized_variables() # Caution: Must be called in the leaf derived class         
@@ -865,7 +886,7 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath):
     return csv_time_duration_dict
 
 
-def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict, description_array=CMN_SC_DEF.SCRAPY_METHOD_DESCRIPTION):
+def write_csv_time_duration_config_file(conf_filename, conf_folderpath, csv_time_duration_dict, description_array=CMN_DEF.SCRAPY_METHOD_DESCRIPTION):
     # import pdb; pdb.set_trace()
     conf_line_list = []
     # source_type_start_index, source_type_end_index = get_scrapy_class_index_range()

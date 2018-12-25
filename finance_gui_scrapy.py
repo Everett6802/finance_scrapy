@@ -8,8 +8,9 @@ import time
 import subprocess
 from scrapy import common as CMN
 from scrapy.common.common_variable import GlobalVar as GV
+from scrapy import libs as LIBS
 import scrapy.scrapy_mgr as MGR
-# from libs import base as BASE
+# from libs import base as LIBS
 # from libs import selenium as SL
 g_mgr = None
 g_logger = CMN.LOG.get_logger()
@@ -22,6 +23,8 @@ update_dataset_errmsg = None
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "-h | --help\nDescription: The usage\nCaution: Ignore other parameters when set\n"
+    print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set\n"
+    print "--show_workday_calendar_range\nDescription: Show the date range of the workday calendar only\nCaution: The canlendar is updated before display. Ignore other parameters when set"
     print "--update_csv_field\nDescription: Update the CSV file description\n"
     print "--no_scrapy\nDescription: Don't scrape Web data\n"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
@@ -83,9 +86,23 @@ def show_error_and_exit(errmsg):
     sys.exit(1)
 
 
+def update_workday_calendar_and_exit():
+    workday_calendar = LIBS.WC.WorkdayCanlendar.Instance()
+    sys.exit(0)
+
+
+def show_workday_calendar_range_and_exit():
+    workday_calendar = LIBS.WC.WorkdayCanlendar.Instance()
+    msg = "The time range of the workday calendar: %s - %s" % (workday_calendar.FirstWorkday, workday_calendar.LastWorkday)
+    show_info(msg)
+    sys.exit(0)
+
+
 def init_param():
     param_cfg["silent"] = False
     param_cfg["help"] = False
+    param_cfg["update_workday_calendar"] = False
+    param_cfg["show_workday_calendar_range"] = False
     param_cfg["no_scrapy"] = False
     param_cfg["reserve_old"] = False
     param_cfg["dry_run"] = False
@@ -114,6 +131,12 @@ def parse_param():
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
         if re.match("(-h|--help)", sys.argv[index]):
             param_cfg["help"] = True
+            index_offset = 1
+        elif re.match("--update_workday_calendar", sys.argv[index]):
+            param_cfg["update_workday_calendar"] = True
+            index_offset = 1
+        elif re.match("--show_workday_calendar_range", sys.argv[index]):
+            param_cfg["show_workday_calendar_range"] = True
             index_offset = 1
         elif re.match("--no_scrapy", sys.argv[index]):
             param_cfg["no_scrapy"] = True
@@ -202,86 +225,6 @@ def parse_param():
                     if not combination_param_cfg['update_dataset_enable']:
                         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_CSV_FILENAME.index(mobj.group(1)))
             if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
-        # elif re.match("--update_company_revenue_from_file", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX)
-        #         combination_param_cfg['update_dataset_config_from_file'] = True
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_revenue_from_file"] = True
-        #     index_offset = 1
-        # elif re.match("--update_company_revenue", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX)
-        #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_revenue"] = sys.argv[index + 1]
-        #     index_offset = 2
-        # elif re.match("--update_company_profitability_from_file", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX)
-        #         combination_param_cfg['update_dataset_config_from_file'] = True
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_profitability_from_file"] = True
-        #     index_offset = 1
-        # elif re.match("--update_company_profitability", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX)
-        #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_profitability"] = sys.argv[index + 1]
-        #     index_offset = 2
-        # elif re.match("--update_company_cashflow_statement_from_file", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX)
-        #         combination_param_cfg['update_dataset_config_from_file'] = True
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_profitability_from_file"] = True
-        #     index_offset = 1
-        # elif re.match("--update_company_cashflow_statement", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX)
-        #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_profitability"] = sys.argv[index + 1]
-        #     index_offset = 2
-        # elif re.match("--update_company_dividend_from_file", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX)
-        #         combination_param_cfg['update_dataset_config_from_file'] = True
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_profitability_from_file"] = True
-        #     index_offset = 1
-        # elif re.match("--update_company_dividend", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX)
-        #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_profitability"] = sys.argv[index + 1]
-        #     index_offset = 2
-        # elif re.match("--update_company_institutional_investor_net_buy_sell_from_file", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX)
-        #         combination_param_cfg['update_dataset_config_from_file'] = True
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_profitability_from_file"] = True
-        #     index_offset = 1
-        # elif re.match("--update_company_institutional_investor_net_buy_sell", sys.argv[index]):
-        #     if combination_param_cfg['update_dataset_method'] is None:
-        #         combination_param_cfg['update_dataset_method'] = str(CMN.DEF.SCRAPY_MEMTHOD_INSTITUTIONAL_INESTOR_NET_BUY_SELL_INDEX)
-        #         combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
-        #     else:
-        #         combination_param_cfg['update_dataset_enable'] = True
-        #     # param_cfg["update_company_profitability"] = sys.argv[index + 1]
-        #     index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -434,6 +377,10 @@ if __name__ == "__main__":
     check_param()
     if param_cfg["help"]:
         show_usage_and_exit()
+    if param_cfg["update_workday_calendar"]:
+        update_workday_calendar_and_exit()
+    if param_cfg["show_workday_calendar_range"]:
+        show_workday_calendar_range_and_exit()
     # import pdb; pdb.set_trace()
 # Setup the parameters for the manager
     setup_param()

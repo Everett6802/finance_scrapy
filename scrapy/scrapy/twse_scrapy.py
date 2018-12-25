@@ -5,7 +5,7 @@ import re
 # import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import scrapy_class_base as ScrapyBase
+import scrapy_class_base.ScrapyBase as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
@@ -24,7 +24,7 @@ def _scrape_option_put_call_ratio_(scrapy_cfg, *args, **kwargs):
     def parse_url(url_data):
         pass
 
-    web_data = SC_FUNC.try_get_web_data(url, parse_url)
+    web_data = ScrapyBase.try_get_web_data(url, parse_url)
 
     data_name_list = []
     data_list = []
@@ -50,7 +50,7 @@ class TwseScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class TwseScrapy(ScrapyBase.ScrapyBase):
+class TwseScrapy(ScrapyBase):
 
 	__metaclass__ = TwseScrapyMeta
     __TWSE_ULR_PREFIX = "http://www.twse.com.tw/"

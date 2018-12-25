@@ -11,7 +11,7 @@ class GlobalVar(object):
     _IS_FINANCE_STOCK_MODE = True
     _ENABLE_COMPANY_NOT_FOUND_EXCEPTION = False 
     _PROJECT_FOLDERPATH = None #CMN_FUNC.get_project_folderpath()
-    _PROJECT_LIB_FOLDERPATH = None
+    _PROJECT_SCRAPY_FOLDERPATH = None
     _PROJECT_CONF_FOLDERPATH = None
     # _CUR_DATASET_SELECTION = None
     _PROJECT_PARENT_FOLDERPATH = None
@@ -21,7 +21,7 @@ class GlobalVar(object):
 
 
     class __metaclass__(type):
-        # __LIB_FOLDERNAME_IN_PROJECT = CMN_DEF.LIB_FOLDERNAME
+        # __SCRAPY_FOLDERNAME_IN_PROJECT = CMN_DEF.SCRAPY_FOLDERNAME
         # __CONF_FOLDERNAME_IN_PROJECT = CMN_DEF.CONF_FOLDERNAME
         # __DATASET_FOLDERNAME_IN_PROJECT = CMN_DEF.DATASET_FOLDERNAME
 
@@ -103,10 +103,10 @@ class GlobalVar(object):
 
 
         @property
-        def PROJECT_LIB_FOLDERPATH(cls):
-            if cls._PROJECT_LIB_FOLDERPATH is None:
-                cls._PROJECT_LIB_FOLDERPATH = "%s/%s" % (cls.PROJECT_FOLDERPATH, CMN_DEF.LIB_FOLDERNAME)
-            return cls._PROJECT_LIB_FOLDERPATH
+        def PROJECT_SCRAPY_FOLDERPATH(cls):
+            if cls._PROJECT_SCRAPY_FOLDERPATH is None:
+                cls._PROJECT_SCRAPY_FOLDERPATH = "%s/%s" % (cls.PROJECT_FOLDERPATH, CMN_DEF.SCRAPY_FOLDERNAME)
+            return cls._PROJECT_SCRAPY_FOLDERPATH
 
 
         @property

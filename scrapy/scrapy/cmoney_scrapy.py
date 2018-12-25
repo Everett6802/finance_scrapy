@@ -15,7 +15,7 @@ import scrapy.common as CMN
 # from libs.common.common_variable import GlobalVar as GV
 # import scrapy_definition as SC_DEF
 # import scrapy_function as SC_FUNC
-import scrapy_class_base as ScrapyBase
+import scrapy_class_base.ScrapyBase as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 CMONEY_TABLE0_DIVIDEND_MAX_DATA_COUNT = 8
@@ -259,7 +259,7 @@ class CMoneyWebScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class CMoneyWebScrapy(ScrapyBase.ScrapyBase):
+class CMoneyWebScrapy(ScrapyBase):
 
     __metaclass__ = CMoneyWebScrapyMeta
 

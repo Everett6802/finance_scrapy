@@ -146,7 +146,7 @@ class ScrapyMgr(object):
 
         # import pdb; pdb.set_trace()
         for method_index in self.method_index_list:
-            web_scrapy_class = SC_FUNC.get_scrapy_class(method_index)
+            web_scrapy_class = CMN.FUNC.get_scrapy_class(method_index)
             if type(web_scrapy_class) is list:
                 raise NotImplementedError
             else:

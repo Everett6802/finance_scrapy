@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 # import scrapy.common as CMN
 # import scrapy_function as SC_FUNC
-import scrapy_class_base as ScrapyBase
+import scrapy_class_base.ScrapyBase as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
@@ -26,7 +26,7 @@ def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
     def parse_url(url_data):
         pass
 
-    web_data = SC_FUNC.try_get_web_data(url, parse_url)
+    web_data = ScrapyBase.try_get_web_data(url, parse_url)
 
     data_name_list = []
     data_list = []
@@ -52,7 +52,7 @@ class TaifexScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class TaifexScrapy(ScrapyBase.ScrapyBase):
+class TaifexScrapy(ScrapyBase):
 
 	__metaclass__ = TaifexScrapyMeta
     __TAIFEX_ULR_PREFIX = "http://www.taifex.com.tw/"

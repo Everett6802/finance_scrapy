@@ -14,7 +14,7 @@ from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 
 # import scrapy_definition as SC_DEF
-import scrapy_class_base as ScrapyBase
+import scrapy_class_base.ScrapyBase as ScrapyBase
 
 STATEMENT_DOG_SHEET_INTERVAL_LAST_3_YEARS = 0
 STATEMENT_DOG_SHEET_INTERVAL_LAST_5_YEARS = 1
@@ -177,7 +177,7 @@ class StatementDogWebScrapyMeta(type):
 		return type.__new__(mcs, name, bases, attrs)
 
 
-class StatementDogWebScrapy(ScrapyBase.GUIWebScrapyBase):
+class StatementDogWebScrapy(ScrapyBase):
 
 	__metaclass__ = StatementDogWebScrapyMeta
 
