@@ -226,29 +226,34 @@ def get_scrapy_class_for_name(module_folder, module_name, class_name):
         m = getattr(m, comp)            
     return m
 
-__CAN_USE_SELEIUM__ = None
-def can_use_selenium():
-    try:
-        from selenium import webdriver
-    except ImportError:
-        return False
-    return True
+# __CAN_USE_SELEIUM__ = None
+# def can_use_selenium():
+#     try:
+#         from selenium import webdriver
+#     except ImportError:
+#         return False
+#     return True
 
 
-def get_scrapy_class(scrapy_method_index): #, init_class_variables=True):
+def get_scrapy_class(scrapy_method): #, init_class_variables=True):
     # import pdb; pdb.set_trace()
     # module_folder = CMN_DEF.SCRAPY_MODULE_FOLDER_MAPPING[scrapy_class_index]
-    if type(scrapy_method_index) is str:
+    scrapy_method_index = None
+    scrapy_method_str = None
+    if type(scrapy_method) is str:
         # scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME[scrapy_method]
-        scrapy_method_index = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method_index]
+        scrapy_method_index = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+        scrapy_method_str = scrapy_method
     else:
-        if scrapy_method_index < 0 or scrapy_method_index >= SC_DEF.SCRAPY_METHOD_LEN:
-            raise ValueError("scrapy_method_index[%d] is Out-Of-Range [0, %d)" % (scrapy_method_index, SC_DEF.SCRAPY_METHOD_LEN))
-    
-    if __CAN_USE_SELEIUM__ is None:
-        __CAN_USE_SELEIUM__ = can_use_selenium()
-    if CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method_index]['need_selenium']:
-        if not __CAN_USE_SELEIUM__:
+        if scrapy_method < 0 or scrapy_method >= CMN_DEF.SCRAPY_METHOD_LEN:
+            raise ValueError("scrapy_method_index[%d] is Out-Of-Range [0, %d)" % (scrapy_method, CMN_DEF.SCRAPY_METHOD_LEN))
+        scrapy_method_index = scrapy_method
+        scrapy_method_str = CMN_DEF.SCRAPY_METHOD_NAME[scrapy_method]
+
+    # if __CAN_USE_SELEIUM__ is None:
+    #     __CAN_USE_SELEIUM__ = can_use_selenium()
+    if CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method_str]['need_selenium']:
+        if not GV.CAN_USE_SELEIUM:
             g_logger.error("Selenium is NOT Install !!! Fail to scrape %s" % SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["description"])
             return None
 
@@ -1315,6 +1320,17 @@ def remove_finance_file_system(finance_parent_folderpath, company_group_count, n
     shutil.rmtree(finance_parent_folderpath, ignore_errors=True)
 
 
+def scrapy_method_need_company_number(scrapy_method):
+    need_company_number = None
+    if type(scrapy_method) is str:
+        need_company_number = CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method]['need_company_number']
+    elif type(scrapy_method) is int:
+        need_company_number = CMN_DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method]['need_company_number']
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return need_company_number
+
+
 def get_finance_data_folderpath(finance_parent_folderpath, company_group_number=None, company_number=None):
 # company_group_number:
 # None: Ignore
@@ -1333,36 +1349,36 @@ def get_finance_data_folderpath(finance_parent_folderpath, company_group_number=
     return folderpath
 
 
-def get_finance_data_csv_folderpath(method_index, finance_parent_folderpath, company_group_number=None):
-    if (CMN_DEF.SCRAPY_MARKET_METHOD_START <= method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END):
+def get_finance_data_csv_folderpath(method_index, finance_parent_folderpath, company_group_number=None, company_number=None):
+    need_company_number = scrapy_method_need_company_number(method_index)
+    if not need_company_number:
 # Market mode
         if company_group_number is not None:
             raise ValueError("company_group_number should be None")
-    elif (CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END):
+    else:
 # Stock mode
         if company_group_number is None:
             raise ValueError("company_group_number should NOT be None")
-    else:
-        raise ValueError("Incorrect method index: %d" % method_index)
     folderpath = get_finance_data_folderpath(finance_parent_folderpath, (-1 if company_group_number is None else company_group_number), company_number)
     return folderpath
 
 
 def get_finance_data_csv_filepath(method_index, finance_parent_folderpath, company_group_number=None, company_number=None):
-    if (CMN_DEF.SCRAPY_MARKET_METHOD_START <= method_index < CMN_DEF.SCRAPY_MARKET_METHOD_END):
+    need_company_number = scrapy_method_need_company_number(method_index)
+    if not need_company_number:
 # Market mode
         if company_group_number is not None:
             raise ValueError("company_group_number should be None")
         if company_number is not None:
             raise ValueError("company_number should be None")
-    elif (CMN_DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN_DEF.SCRAPY_STOCK_METHOD_END):
+    else:
 # Stock mode
         if company_group_number is None:
             raise ValueError("company_group_number should NOT be None")
         if company_number is None:
             raise ValueError("company_number should NOT be None")
-    else:
-        raise ValueError("Incorrect method index: %d" % method_index)
+    # else:
+    #     raise ValueError("Incorrect method index: %d" % method_index)
     folderpath = get_finance_data_folderpath(finance_parent_folderpath, (-1 if company_group_number is None else company_group_number), company_number)
     return "%s/%s.csv" % (folderpath, CMN_DEF.SCRAPY_CSV_FILENAME[method_index])
 

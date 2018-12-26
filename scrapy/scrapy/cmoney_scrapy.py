@@ -13,9 +13,9 @@ from selenium.webdriver.common.by import By
 
 import scrapy.common as CMN
 # from libs.common.common_variable import GlobalVar as GV
-# import scrapy_definition as SC_DEF
+# import scrapy_definition as CMN.DEF
 # import scrapy_function as SC_FUNC
-import scrapy_class_base.ScrapyBase as ScrapyBase
+import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 CMONEY_TABLE0_DIVIDEND_MAX_DATA_COUNT = 8
@@ -177,7 +177,7 @@ def __parse_data_from_table(driver, table_element_parse_func, *args, **kwargs):
         # else:
         max_data_count = kwargs["max_data_count"]
     # if max_data_count is None:
-    #     max_data_count = SC_DEF.CMONEY_TABLE_DEF_DATA_COUNT
+    #     max_data_count = CMN.DEF.CMONEY_TABLE_DEF_DATA_COUNT
     # assert max_data_count >= 1, "The max_data_count[%d] should be greater than 1" % max_data_count
 
     (data_list, data_name_list) = table_element_parse_func(table_element, max_data_count)
@@ -259,7 +259,7 @@ class CMoneyWebScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class CMoneyWebScrapy(ScrapyBase):
+class CMoneyScrapy(ScrapyBase.ScrapyBase):
 
     __metaclass__ = CMoneyWebScrapyMeta
 
@@ -447,7 +447,7 @@ class CMoneyWebScrapy(ScrapyBase):
             if kwargs.get("stock_time_unit", None) is not None:
                 stock_time_unit = kwargs["stock_time_unit"]
             if stock_time_unit is None:
-                stock_time_unit = SC_DEF.CMONEY_STOCK_TABLE_DEF_TIME_UNIT
+                stock_time_unit = CMONEY_STOCK_TABLE_DEF_TIME_UNIT
             url_format += self.__STOCK_TIME_UNIT_URL_LIST[self.scrapy_method][stock_time_unit]
             url = url_format % self.company_number
         else:
@@ -499,10 +499,10 @@ class CMoneyWebScrapy(ScrapyBase):
 
     @ScrapyMethodIndex.setter
     def ScrapyMethodIndex(self, value):
-        # if SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+        # if CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
         #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
         # self.scrapy_method_index = value
-        # self.scrapy_method = SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
+        # self.scrapy_method = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
         self._set_scrapy_method_index(self, value)
 
 

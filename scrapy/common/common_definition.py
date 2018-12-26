@@ -201,7 +201,7 @@ SCRAPY_METHOD_TFE_OPEN_INTEREST_NAME = "TFE open interest"
 SCRAPY_METHOD_TFE_OPEN_INTEREST_CFG = {
     "description": u'台指期未平倉(大額近月、法人所有月)',
     "module_name": "wearn_scrapy",
-    "class_name": "WEarnWebScrapy",
+    "class_name": "WEarnScrapy",
     "url_time_unit": DATA_TIME_UNIT_DAY,
 }
 SCRAPY_METHOD_TFE_OPEN_INTEREST_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_MARKET)
@@ -213,7 +213,7 @@ SCRAPY_METHOD_REVENUE_NAME = "revenue"
 SCRAPY_METHOD_REVENUE_CFG = {# 營收盈餘
     "description": u'營收盈餘',
     "module_name": "cmoney_scrapy",
-    "class_name": "CMoneyWebScrapy",
+    "class_name": "CMoneyScrapy",
     "url_time_unit": DATA_TIME_UNIT_MONTH,
 }
 SCRAPY_METHOD_REVENUE_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
@@ -223,7 +223,7 @@ SCRAPY_METHOD_PROFITABILITY_NAME = "profitability"
 SCRAPY_METHOD_PROFITABILITY_CFG = {# 獲利能力
     "description": u'獲利能力',
     "module_name": "cmoney_scrapy",
-    "class_name": "CMoneyWebScrapy",
+    "class_name": "CMoneyScrapy",
     "url_time_unit": DATA_TIME_UNIT_QUARTER,
 }
 SCRAPY_METHOD_PROFITABILITY_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
@@ -233,7 +233,7 @@ SCRAPY_METHOD_CASHFLOW_STATEMENT_NAME = "cashflow statement"
 SCRAPY_METHOD_CASHFLOW_STATEMENT_CFG = {# 現金流量表
     "description": u'現金流量表',
     "module_name": "cmoney_scrapy",
-    "class_name": "CMoneyWebScrapy",
+    "class_name": "CMoneyScrapy",
     "url_time_unit": DATA_TIME_UNIT_QUARTER,
 }
 SCRAPY_METHOD_CASHFLOW_STATEMENT_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
@@ -243,7 +243,7 @@ SCRAPY_METHOD_DIVIDEND_NAME = "dividend"
 SCRAPY_METHOD_DIVIDEND_CFG = {# 股利政策
     "description": u'股利政策',
     "module_name": "cmoney_scrapy",
-    "class_name": "CMoneyWebScrapy",
+    "class_name": "CMoneyScrapy",
     "url_time_unit": DATA_TIME_UNIT_YEAR,
 }
 SCRAPY_METHOD_DIVIDEND_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
@@ -253,14 +253,25 @@ SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_NAME = "institutional investor
 SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG = {# 三大法人買賣超
     "description": u'三大法人買賣超',
     "module_name": "goodinfo_scrapy",
-    "class_name": "GoodInfoWebScrapy",
+    "class_name": "GoodInfoScrapy",
     "url_time_unit": DATA_TIME_UNIT_DAY,
 }
 SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_NAME] = SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG
+
+SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME = "institutional investor net buy sell"
+SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG = {# 個股日股價及成交量
+    "description": u'個股日股價及成交量',
+    "module_name": ["twse_scrapy", "daily_stock_price_and_volume",],
+    "class_name": ["TwseScrapy", "OTCDailyStockPriceAndVolume",],
+    "url_time_unit": DATA_TIME_UNIT_DAY,
+}
+SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_STOCK)
+SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME] = SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG
 # Stock End
 
 SCRAPY_METHOD_NAME = SCRAPY_METHOD_CONSTANT_CFG.keys()
+SCRAPY_METHOD_INDEX_CONSTANT_CFG = SCRAPY_METHOD_CONSTANT_CFG.values()
 SCRAPY_METHOD_LEN = len(SCRAPY_METHOD_NAME)
 SCRAPY_METHOD_NAME_TO_INDEX = {name: index for index, name in enumerate(SCRAPY_METHOD_NAME)}
 SCRAPY_METHOD_DESCRIPTION = [cfg["description"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
@@ -277,6 +288,7 @@ SCRAPY_METHOD_PROFITABILITY_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_PROFI
 SCRAPY_METHOD_CASHFLOW_STATEMENT_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_CASHFLOW_STATEMENT_NAME)
 SCRAPY_METHOD_DIVIDEND_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_DIVIDEND_NAME)
 SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_NAME)
+SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME)
 
 # SCRAPY_WORKDAY_CANLENDAR_INDEX = SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX
 

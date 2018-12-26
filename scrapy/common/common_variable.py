@@ -18,6 +18,7 @@ class GlobalVar(object):
     _FINANCE_DATASET_FOLDERPATH = None
     _FINANCE_DATASET_CONF_FOLDERPATH = None
     _FINANCE_DATASET_DATA_FOLDERPATH = None
+    _CAN_USE_SELEIUM = None
 
 
     class __metaclass__(type):
@@ -147,6 +148,19 @@ class GlobalVar(object):
                 # cls._FINANCE_DATASET_DATA_FOLDERPATH = "%s/%s/%s" % (cls.FINANCE_DATASET_FOLDERPATH, CMN_DEF.DATA_FOLDERNAME, CMN_DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
                 cls._FINANCE_DATASET_DATA_FOLDERPATH = "%s/%s" % (cls.FINANCE_DATASET_FOLDERPATH, CMN_DEF.DATA_FOLDERNAME)
             return cls._FINANCE_DATASET_DATA_FOLDERPATH
+
+
+        @property
+        def CAN_USE_SELEIUM(cls):
+            if cls._CAN_USE_SELEIUM is None:
+                try:
+                    from selenium import webdriver
+                except ImportError:
+                    cls._CAN_USE_SELEIUM = False
+                else:
+                    cls._CAN_USE_SELEIUM = True
+            return cls._CAN_USE_SELEIUM
+
 
         # @property
         # def CUR_DATASET_SELECTION(cls):

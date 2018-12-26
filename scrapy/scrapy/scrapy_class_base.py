@@ -4,8 +4,8 @@
 from abc import ABCMeta, abstractmethod
 
 import scrapy.common as CMN
-# import scrapy_definition as SC_DEF
-# import scrapy_function as SC_FUNC
+# import scrapy_definition as CMN.DEF
+# import scrapy_function as CMN.FUNC
 # import libs.common as CMN
 g_logger = CMN.LOG.get_logger()
 
@@ -125,10 +125,10 @@ class ScrapyBase(object):
         assert csv_data_list is not None, "csv_data_list should NOT be None"
 
         # import pdb; pdb.set_trace()
-        csv_time_duration_folderpath = SC_FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
-        csv_time_duration_dict = SC_FUNC.read_csv_time_duration_config_file(SC_DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
+        csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
+        csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
 
-        url_time_unit = SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["url_time_unit"]
+        url_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method_index]["url_time_unit"]
 # Caution: Need transfrom the time string from unicode to string
         time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[0][0]), url_time_unit)
         time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[-1][0]), url_time_unit)
@@ -144,22 +144,22 @@ class ScrapyBase(object):
         if  web2csv_time_duration_update_tuple is None:
             msg = None
             if company_number is not None:
-                msg = u"The data[%s:%s] is Update-to-Date" % (SC_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number)
+                msg = u"The data[%s:%s] is Update-to-Date" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number)
             else:
-                msg = u"The data[%s] is Update-to-Date" % SC_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index]
+                msg = u"The data[%s] is Update-to-Date" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index]
             g_logger.debug(msg)
             return
 # Find the file path for writing data into csv
-        csv_filepath = SC_FUNC.get_finance_data_csv_filepath(scrapy_method_index, finance_parent_folderpath, company_group_number, company_number)
+        csv_filepath = CMN.FUNC.get_finance_data_csv_filepath(scrapy_method_index, finance_parent_folderpath, company_group_number, company_number)
 
 # Scrape the web data from each time duration
         for web2csv_time_duration_update in web2csv_time_duration_update_tuple: 
 
             scrapy_msg = None
             if company_number is not None:
-                scrapy_msg = u"[%s:%s] %s:%s => %s" % (SC_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
+                scrapy_msg = u"[%s:%s] %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
             else:
-                scrapy_msg = "[%s] %s:%s => %s" % (SC_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
+                scrapy_msg = "[%s] %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
             g_logger.info(scrapy_msg)
 # Check if only dry-run
             if dry_run_only:
@@ -198,19 +198,19 @@ class ScrapyBase(object):
         if csv_time_duration_dict is None:
             csv_time_duration_dict = {}
         csv_time_duration_dict[scrapy_method_index] = new_csv_extension_time_duration
-        SC_FUNC.write_csv_time_duration_config_file(SC_DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath, csv_time_duration_dict)
+        CMN.FUNC.write_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath, csv_time_duration_dict)
 
 
     @classmethod
     def check_scrapy_field_description_exist(cls, scrapy_method_index, finance_parent_folderpath):
-        conf_filepath = "%s/%s/%s%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME, SC_DEF.SCRAPY_CSV_FILENAME[scrapy_method_index], CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX)
+        conf_filepath = "%s/%s/%s%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME, CMN.DEF.SCRAPY_CSV_FILENAME[scrapy_method_index], CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX)
         return CMN.FUNC.check_file_exist(conf_filepath)
 
 
     @classmethod
     def _write_scrapy_field_data_to_config(cls, csv_data_field_list, scrapy_method_index, finance_parent_folderpath):
         conf_folderpath = "%s/%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
-        conf_filename = ("%s" % SC_DEF.SCRAPY_CSV_FILENAME[scrapy_method_index]) + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
+        conf_filename = ("%s" % CMN.DEF.SCRAPY_CSV_FILENAME[scrapy_method_index]) + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
         CMN.FUNC.unicode_write_config_file_lines(csv_data_field_list, conf_filename, conf_folderpath)
 
 
@@ -231,10 +231,11 @@ class ScrapyBase(object):
 
     @classmethod
     def _set_scrapy_method_index(cls, obj, value):
-        if SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(obj):
+        # import pdb; pdb.set_trace()
+        if CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(obj):
             raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(obj)))
         obj.scrapy_method_index = value
-        obj.scrapy_method = SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[obj.scrapy_method_index]['scrapy_class_method']
+        obj.scrapy_method = CMN.DEF.SCRAPY_METHOD_NAME[obj.scrapy_method_index]
 
 
     def update_csv_field(self):
@@ -243,12 +244,12 @@ class ScrapyBase(object):
 
 
     def scrape_web_to_csv(self, *args, **kwargs):
-        # scrapy_method = SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
+        # scrapy_method = CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
         csv_data_list, _ = self.scrape_web(*args, **kwargs)
         # import pdb; pdb.set_trace()
         company_number = None
         company_group_number = None
-        if SC_FUNC.is_stock_scrapy_method(self.scrapy_method_index):
+        if CMN.FUNC.scrapy_method_need_company_number(self.scrapy_method_index):
             company_number = self.company_number
             company_group_number = self.company_group_number
         self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])

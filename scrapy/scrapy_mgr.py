@@ -154,10 +154,9 @@ class ScrapyMgr(object):
                 if not web_scrapy_class.check_scrapy_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):
                     g_logger.info(u"The CSV field config of %s does NOT exist, update it in %s......" % (SC_DEF.SCRAPY_METHOD_DESCRIPTION[method_index], self.xcfg['finance_root_folderpath']))
                     self.update_csv_field(method_index)
-
                 with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                     web_scrapy_object.ScrapyMethodIndex = method_index
-                    if not SC_FUNC.is_stock_scrapy_method(method_index):
+                    if not CMN.FUNC.scrapy_method_need_company_number(method_index):
                         web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
                     else:
                         for company_group_number, company_number_list in  self.company_group_set.items():
@@ -197,7 +196,8 @@ class ScrapyMgr(object):
                 #     web_scrapy_object.CompanyGroupNumber = 9
                 # else:
                 #     raise ValueError("Unknown scrapy method index: %d" % method_index)
-                if SC_FUNC.is_stock_scrapy_method(method_index):
+                if CMN.FUNC.scrapy_method_need_company_number(method_index):
+                # if SC_FUNC.is_stock_scrapy_method(method_index):
                     web_scrapy_object.CompanyNumber = '2330'
                     web_scrapy_object.CompanyGroupNumber = 9               
                 web_scrapy_object.update_csv_field()
