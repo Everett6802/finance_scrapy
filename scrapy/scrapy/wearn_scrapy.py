@@ -14,9 +14,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
-# import scrapy.common as CMN
-# import scrapy_definition as SC_DEF
-import scrapy_class_base.ScrapyBase as ScrapyBase
+import scrapy.common as CMN
+import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 PRINT_SCRAPY = True
@@ -70,7 +69,7 @@ class WEarnWebScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class WEarnWebScrapy(ScrapyBase):
+class WEarnScrapy(ScrapyBase.ScrapyBase):
 
     __metaclass__ = WEarnWebScrapyMeta
 
@@ -218,7 +217,7 @@ class WEarnWebScrapy(ScrapyBase):
 
 
 if __name__ == '__main__':
-    with WEarnWebScrapy() as goodinfo:
+    with WEarnScrapy() as goodinfo:
         goodinfo.CompanyNumber = "6274"
         kwargs = {}
         goodinfo.scrape("institutional investor net buy sell", **kwargs)

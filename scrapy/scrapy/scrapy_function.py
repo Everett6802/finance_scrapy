@@ -2,7 +2,7 @@
 # -*- coding: utf8 -*-
 
 import scrapy.common as CMN
-import scrapy_definition as SC_DEF
+# import scrapy_definition as SC_DEF
 g_logger = CMN.LOG.get_logger()
 
 

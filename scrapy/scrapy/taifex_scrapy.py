@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 # import scrapy.common as CMN
 # import scrapy_function as SC_FUNC
-import scrapy_class_base.ScrapyBase as ScrapyBase
+import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
@@ -52,7 +52,7 @@ class TaifexScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class TaifexScrapy(ScrapyBase):
+class TaifexScrapy(ScrapyBase.ScrapyBase):
 
 	__metaclass__ = TaifexScrapyMeta
     __TAIFEX_ULR_PREFIX = "http://www.taifex.com.tw/"

@@ -5,7 +5,7 @@ import re
 # import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-import scrapy_class_base.ScrapyBase as ScrapyBase
+import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
@@ -50,7 +50,7 @@ class TwseScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class TwseScrapy(ScrapyBase):
+class TwseScrapy(ScrapyBase.ScrapyBase):
 
 	__metaclass__ = TwseScrapyMeta
     __TWSE_ULR_PREFIX = "http://www.twse.com.tw/"

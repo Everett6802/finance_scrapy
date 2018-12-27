@@ -259,9 +259,9 @@ SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG = {# 三大法人買賣超
 SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_NAME] = SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG
 
-SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME = "institutional investor net buy sell"
-SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG = {# 個股日股價及成交量
-    "description": u'個股日股價及成交量',
+SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME = "stock price and volume"
+SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG = {# 個股股價及成交量
+    "description": u'個股股價及成交量',
     "module_name": ["twse_scrapy", "daily_stock_price_and_volume",],
     "class_name": ["TwseScrapy", "OTCDailyStockPriceAndVolume",],
     "url_time_unit": DATA_TIME_UNIT_DAY,

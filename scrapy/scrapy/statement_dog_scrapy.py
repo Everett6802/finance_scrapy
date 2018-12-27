@@ -13,8 +13,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 
-# import scrapy_definition as SC_DEF
-import scrapy_class_base.ScrapyBase as ScrapyBase
+import scrapy_class_base as ScrapyBase# as ScrapyBase
 
 STATEMENT_DOG_SHEET_INTERVAL_LAST_3_YEARS = 0
 STATEMENT_DOG_SHEET_INTERVAL_LAST_5_YEARS = 1
@@ -62,7 +61,7 @@ def __switch_sheet_interval(driver):
 	# select = Select(element)
 	# select.selectByIndex(SC_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS);
 	items = element_sheet_interval_options.find_elements_by_tag_name("li")
-	items[SC_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS].click()
+	items[STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS].click()
 	# for item in items:
 	# 	print item.text
 
@@ -177,7 +176,7 @@ class StatementDogWebScrapyMeta(type):
 		return type.__new__(mcs, name, bases, attrs)
 
 
-class StatementDogWebScrapy(ScrapyBase):
+class StatementDogScrapy(ScrapyBase.ScrapyBase):
 
 	__metaclass__ = StatementDogWebScrapyMeta
 
@@ -280,7 +279,7 @@ class StatementDogWebScrapy(ScrapyBase):
 
 
 if __name__ == '__main__':
-	with StatementDogWebScrapy() as statement_dog:
+	with StatementDogScrapy() as statement_dog:
 		statement_dog.CompanyNumber = "2367"
 		# import pdb; pdb.set_trace()
 		for scrapy_method in StatementDogWebScrapy.get_scrapy_method_list():

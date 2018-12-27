@@ -15,8 +15,7 @@ from selenium.common.exceptions import NoSuchElementException
 from selenium.webdriver.common.by import By
 
 import scrapy.common as CMN
-# import common_definition as CMN_DEF
-import scrapy_class_base.ScrapyBase as ScrapyBase
+import scrapy_class_base as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 GOODINFO_STOCK_TABLE_DEF_TIME_UNIT = 0
@@ -114,7 +113,7 @@ class GoodInfoWebScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
-class GoodInfoWebScrapy(ScrapyBase):
+class GoodInfoScrapy(ScrapyBase.ScrapyBase):
 
     __metaclass__ = GoodInfoWebScrapyMeta
 
@@ -238,7 +237,7 @@ class GoodInfoWebScrapy(ScrapyBase):
             if kwargs.get("stock_time_unit", None) is not None:
                 stock_time_unit = kwargs["stock_time_unit"]
             if stock_time_unit is None:
-                stock_time_unit = CMN_DEF.GOODINFO_STOCK_TABLE_DEF_TIME_UNIT
+                stock_time_unit = GOODINFO_STOCK_TABLE_DEF_TIME_UNIT
             url_format += self.__STOCK_TIME_UNIT_URL_LIST[self.scrapy_method][stock_time_unit]
             url = url_format % self.company_number
         else:
@@ -315,7 +314,7 @@ class GoodInfoWebScrapy(ScrapyBase):
 
 
 if __name__ == '__main__':
-    with GoodInfoWebScrapy() as goodinfo:
+    with GoodInfoScrapy() as goodinfo:
         goodinfo.CompanyNumber = "6274"
         kwargs = {}
         goodinfo.scrape("institutional investor net buy sell", **kwargs)

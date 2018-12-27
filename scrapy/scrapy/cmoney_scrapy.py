@@ -526,7 +526,7 @@ class CMoneyScrapy(ScrapyBase.ScrapyBase):
 
 if __name__ == '__main__':
     import pdb; pdb.set_trace()
-    with CMoneyWebScrapy() as cmoney:
+    with CMoneyScrapy() as cmoney:
         cmoney.CompanyNumber = "2367"
         kwargs = {}
         kwargs["max_data_count"] = 2

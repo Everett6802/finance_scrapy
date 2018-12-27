@@ -268,7 +268,7 @@ def get_scrapy_class(scrapy_method): #, init_class_variables=True):
         assert module_name_len == len(class_name), "The module name length[%d] and class name length[%d] is NOT identical" % (module_name_len, len(class_name))
         scrapy_class = []
         for index in range(module_name_len):
-            scrapy_class.append(get_scrapy_class_for_name(CMN_DEF.SCRAPY_MODULE_FOLDER, module_name[i], class_name[i]))
+            scrapy_class.append(get_scrapy_class_for_name(CMN_DEF.SCRAPY_MODULE_FOLDER, module_name[index], class_name[index]))
     else:
         scrapy_class = get_scrapy_class_for_name(CMN_DEF.SCRAPY_MODULE_FOLDER, module_name, class_name)
     #     if init_class_variables:

@@ -4,8 +4,8 @@
 import common as CMN
 from common.common_variable import GlobalVar as GV
 import libs as LIBS
-import scrapy.scrapy_definition as SC_DEF
-import scrapy.scrapy_function as SC_FUNC
+# import scrapy.scrapy_definition as CMN.DEF
+# import scrapy.scrapy_function as SC_FUNC
 # import gui_scrapy_configurer as Configurer
 # import cmoney_scrapy as CMS
 # import statement_dog_scrapy as SDS
@@ -152,7 +152,7 @@ class ScrapyMgr(object):
             else:
 # Check the field description file exist
                 if not web_scrapy_class.check_scrapy_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):
-                    g_logger.info(u"The CSV field config of %s does NOT exist, update it in %s......" % (SC_DEF.SCRAPY_METHOD_DESCRIPTION[method_index], self.xcfg['finance_root_folderpath']))
+                    g_logger.info(u"The CSV field config of %s does NOT exist, update it in %s......" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index], self.xcfg['finance_root_folderpath']))
                     self.update_csv_field(method_index)
                 with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                     web_scrapy_object.ScrapyMethodIndex = method_index
@@ -183,15 +183,15 @@ class ScrapyMgr(object):
         else:
             method_index_list = self.method_index_list
         for method_index in method_index_list:
-            web_scrapy_class = SC_FUNC.get_selenium_web_scrapy_class(method_index)
+            web_scrapy_class = CMN.FUNC.get_scrapy_class(method_index)
             web_scrapy_cfg = {
                 'finance_root_folderpath': self.xcfg['finance_root_folderpath'],
             }
             with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                 web_scrapy_object.ScrapyMethodIndex = method_index
-                # if SC_DEF.SCRAPY_MARKET_METHOD_START <= method_index < SC_DEF.SCRAPY_MARKET_METHOD_END:
+                # if CMN.DEF.SCRAPY_MARKET_METHOD_START <= method_index < CMN.DEF.SCRAPY_MARKET_METHOD_END:
                 #     pass
-                # elif SC_DEF.SCRAPY_STOCK_METHOD_START <= method_index < SC_DEF.SCRAPY_STOCK_METHOD_END:
+                # elif CMN.DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN.DEF.SCRAPY_STOCK_METHOD_END:
                 #     web_scrapy_object.CompanyNumber = '2330'
                 #     web_scrapy_object.CompanyGroupNumber = 9
                 # else:

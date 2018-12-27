@@ -189,8 +189,10 @@ def parse_param():
                         index_offset = 2
                     if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
                     if not combination_param_cfg['update_dataset_enable']:
-                        if not (CMN.DEF.SCRAPY_STOCK_METHOD_START <= int(mobj.group(1)) < CMN.DEF.SCRAPY_STOCK_METHOD_END):
-                            raise ValueError("The method[%s] is NOT stock scrapy method" % mobj.group(1))
+                        # import pdb; pdb.set_trace()
+                        if not CMN.FUNC.scrapy_method_need_company_number(int(mobj.group(1))):
+                        # if not (CMN.DEF.SCRAPY_STOCK_METHOD_START <= int(mobj.group(1)) < CMN.DEF.SCRAPY_STOCK_METHOD_END):
+                            raise ValueError("The method[%s:%s] Need Company numberr" % (mobj.group(1), CMN.DEF.SCRAPY_METHOD_NAME[int(mobj.group(1))]))
                         combination_param_cfg['update_dataset_method'] = mobj.group(1)
                         if index_offset == 2:
                             combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
@@ -213,8 +215,9 @@ def parse_param():
                         mobj = re.match("--update_method([\d]{1,})", sys.argv[index])
                     if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
                     if not combination_param_cfg['update_dataset_enable']:
-                        if not (CMN.DEF.SCRAPY_MARKET_METHOD_START <= int(mobj.group(1)) < CMN.DEF.SCRAPY_MARKET_METHOD_END):
-                            raise ValueError("The method[%s] is NOT market scrapy method" % mobj.group(1))
+                        # if not (CMN.DEF.SCRAPY_MARKET_METHOD_START <= int(mobj.group(1)) < CMN.DEF.SCRAPY_MARKET_METHOD_END):
+                        if CMN.FUNC.scrapy_method_need_company_number(int(mobj.group(1))):
+                            raise ValueError("The method[%s] Don't Need Company numberr" % mobj.group(1))
                         combination_param_cfg['update_dataset_method'] = mobj.group(1)
                 else:
                     if from_file:
