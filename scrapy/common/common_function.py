@@ -254,7 +254,7 @@ def get_scrapy_class(scrapy_method): #, init_class_variables=True):
     #     __CAN_USE_SELEIUM__ = can_use_selenium()
     if CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method_str]['need_selenium']:
         if not GV.CAN_USE_SELEIUM:
-            g_logger.error("Selenium is NOT Install !!! Fail to scrape %s" % SC_DEF.SCRAPY_CLASS_CONSTANT_CFG[scrapy_method_index]["description"])
+            g_logger.error("Selenium is NOT Install !!! Fail to scrape %s" % SC_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method_index]["description"])
             return None
 
     module_name = CMN_DEF.SCRAPY_METHOD_MODULE_NAME[scrapy_method_index]
@@ -602,6 +602,11 @@ def generate_cur_timestamp_str():
     date_str = transform_date_str(datetime_cur.year, datetime_cur.month, datetime_cur.day)
     time_str = transform_time_str(datetime_cur.hour, datetime_cur.minute, datetime_cur.second)
     return "%s %s %s" % (CMN_DEF.CONFIG_TIMESTAMP_STRING_PREFIX, date_str, time_str)
+
+
+def generate_today_time_str():
+    datetime_cur = datetime.today()
+    return transform_date_str(datetime_cur.year, datetime_cur.month, datetime_cur.day)
 
 
 # def transform_string2datetime(date_string, need_year_transform=False):
@@ -1097,11 +1102,20 @@ def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_t
         return (True if (finance_time_range_start >= finance_time >= finance_time_range_end) else False)
 
 
-def get_time_range_overlap_case(new_finance_time_start, new_finance_time_end, orig_finance_time_start, orig_finance_time_end):
+def get_time_range_overlap_case(new_finance_time_start, new_finance_time_end, orig_finance_time_start, orig_finance_time_end, finance_time_continuity=True):
     assert new_finance_time_start <= new_finance_time_end, "The new start time[%s] should be smaller than the end time[%s]" % (new_finance_time_start.to_string(), new_finance_time_end.to_string())
     assert orig_finance_time_start <= orig_finance_time_end, "The original start time[%s] should be smaller than the end time[%s]" % (orig_finance_time_start.to_string(), orig_finance_time_end.to_string())
     # import pdb ; pdb.set_trace()
     if new_finance_time_end < orig_finance_time_start or new_finance_time_start > orig_finance_time_end:
+        if finance_time_continuity:
+            if new_finance_time_end < orig_finance_time_start:
+                assert type(new_finance_time_end) == type(orig_finance_time_start), "The time type [new_finance_time_end: %s, orig_finance_time_start: %s] is NOT identical" % (new_finance_time_end, orig_finance_time_start)
+                if new_finance_time_end + 1 == orig_finance_time_start:
+                    return CMN_DEF.TIME_OVERLAP_BEFORE
+            else:
+                assert type(new_finance_time_start) == type(orig_finance_time_end), "The time type [new_finance_time_start: %s, orig_finance_time_end: %s] is NOT identical" % (new_finance_time_start, orig_finance_time_end) 
+                if new_finance_time_start - 1 == orig_finance_time_end:
+                    return CMN_DEF.TIME_OVERLAP_AFTER
         return CMN_DEF.TIME_OVERLAP_NONE
     else:
         new_start_time_in_range = is_time_in_range(orig_finance_time_start, orig_finance_time_end, new_finance_time_start)
@@ -1127,16 +1141,16 @@ def is_time_range_overlap(finance_time1_start, finance_time1_end, finance_time2_
     return (check_overlap1 and check_overlap2)
 
 
-def is_continous_time_duration(time_duration1, time_duration2):
-    assert type(time_duration1) == type(time_duration2), "The time types[%s, %s] are NOT identical" % (type(time_duration1), type(time_duration2))  
-    if time_duration1 == time_duration2:
+def is_continous_finance_time(finance_time1, finance_time2):
+    assert type(finance_time1) == type(finance_time2), "The time types[%s, %s] are NOT identical" % (type(finance_time1), type(finance_time2))  
+    if finance_time1 == finance_time2:
         return True
-    time_duration_start = time_duration1
-    time_duration_end = time_duration2
-    if time_duration1 > time_duration2:
-        time_duration_start = time_duration2
-        time_duration_end = time_duration1            
-    return True if (time_duration_start + 1) == time_duration_end else False
+    finance_time_start = finance_time1
+    finance_time_end = finance_time2
+    if finance_time1 > finance_time2:
+        finance_time_start = finance_time2
+        finance_time_end = finance_time1            
+    return True if (finance_time_start + 1) == finance_time_end else False
 
 
 def get_year_offset_datetime_cfg(datetime_cfg, year_offset):

@@ -8,6 +8,7 @@ import collections
 import common_definition as CMN_DEF
 from scrapy.common.common_variable import GlobalVar as GV
 import common_function as CMN_FUNC
+import common_exception as CMN_EXCEPT
 
 MonthTuple = collections.namedtuple('MonthTuple', ('year', 'month'))
 QuarterTuple = collections.namedtuple('QuarterTuple', ('year', 'quarter'))
@@ -66,6 +67,7 @@ class Singleton:
 
     def __instancecheck__(self, inst):
         return isinstance(inst, self._decorated)
+
 
 #############################################################################################
 
@@ -178,7 +180,6 @@ class FinanceTimeBase(object):
     #     else:
     #         raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
     #     return time_obj
-
 
 
     def __str__(self):
@@ -1021,7 +1022,7 @@ class CSVTimeRangeUpdate(object):
             return (new_csv_extension_time_duration, (web2csv_time_duration_update_before, web2csv_time_duration_update_after,),)
 # If the time range of new data contain all the time range of csv data, the system is not desiged to update two time range interval
         else:
-            raise CMN.EXCEPTION.WebScrapyUnDefiedCaseException("The system does NOT support this type[2] of the range update; CSV data[%s:%s], new data[%s:%s]" % (csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+            raise CMN_EXCEPT.WebScrapyUnDefiedCaseException("The system does NOT support this type[2] of the range update; CSV data[%s:%s], new data[%s:%s]" % (csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
 
 
     @classmethod

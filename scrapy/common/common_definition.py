@@ -77,6 +77,20 @@ TIMESLICE_GENERATE_BY_MONTH = 2
 TIMESLICE_GENERATE_BY_REVENUE = 3
 TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON = 4
 
+DEF_TIME_RANGE_DAY = 30
+DEF_TIME_RANGE_WEEK = 52
+DEF_TIME_RANGE_MONTH = 12
+DEF_TIME_RANGE_QUARTER = 4
+DEF_TIME_RANGE_YEAR = 5
+
+DEF_TIME_RANGE_LIST = [
+    DEF_TIME_RANGE_DAY,
+    DEF_TIME_RANGE_WEEK,
+    DEF_TIME_RANGE_MONTH,
+    DEF_TIME_RANGE_QUARTER,
+    DEF_TIME_RANGE_YEAR,
+]
+
 TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING = {
     TIMESLICE_GENERATE_BY_WORKDAY: DATA_TIME_UNIT_DAY,
     TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER: DATA_TIME_UNIT_WEEK,
@@ -182,7 +196,7 @@ SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG = {# 臺股指數及成交量
     "description": u'臺股指數及成交量',
     "module_name": "twse_scrapy",
     "class_name": "TwseScrapy",
-    "url_time_unit": DATA_TIME_UNIT_DAY,
+    "data_time_unit": DATA_TIME_UNIT_DAY,
 }
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_MARKET)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME] = SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG
@@ -192,7 +206,7 @@ SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_CFG = {# 臺指選擇權賣權買權比
     "description": u'臺指選擇權賣權買權比',
     "module_name": "taifex_scrapy",
     "class_name": "TaifexScrapy",
-    "url_time_unit": DATA_TIME_UNIT_MONTH,
+    "data_time_unit": DATA_TIME_UNIT_DAY,
 }
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_MARKET)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_NAME] = SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_CFG
@@ -202,7 +216,7 @@ SCRAPY_METHOD_TFE_OPEN_INTEREST_CFG = {
     "description": u'台指期未平倉(大額近月、法人所有月)',
     "module_name": "wearn_scrapy",
     "class_name": "WEarnScrapy",
-    "url_time_unit": DATA_TIME_UNIT_DAY,
+    "data_time_unit": DATA_TIME_UNIT_DAY,
 }
 SCRAPY_METHOD_TFE_OPEN_INTEREST_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_MARKET)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_TFE_OPEN_INTEREST_NAME] = SCRAPY_METHOD_TFE_OPEN_INTEREST_CFG
@@ -214,7 +228,7 @@ SCRAPY_METHOD_REVENUE_CFG = {# 營收盈餘
     "description": u'營收盈餘',
     "module_name": "cmoney_scrapy",
     "class_name": "CMoneyScrapy",
-    "url_time_unit": DATA_TIME_UNIT_MONTH,
+    "data_time_unit": DATA_TIME_UNIT_MONTH,
 }
 SCRAPY_METHOD_REVENUE_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_REVENUE_NAME] = SCRAPY_METHOD_REVENUE_CFG
@@ -224,7 +238,7 @@ SCRAPY_METHOD_PROFITABILITY_CFG = {# 獲利能力
     "description": u'獲利能力',
     "module_name": "cmoney_scrapy",
     "class_name": "CMoneyScrapy",
-    "url_time_unit": DATA_TIME_UNIT_QUARTER,
+    "data_time_unit": DATA_TIME_UNIT_QUARTER,
 }
 SCRAPY_METHOD_PROFITABILITY_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_PROFITABILITY_NAME] = SCRAPY_METHOD_PROFITABILITY_CFG
@@ -234,7 +248,7 @@ SCRAPY_METHOD_CASHFLOW_STATEMENT_CFG = {# 現金流量表
     "description": u'現金流量表',
     "module_name": "cmoney_scrapy",
     "class_name": "CMoneyScrapy",
-    "url_time_unit": DATA_TIME_UNIT_QUARTER,
+    "data_time_unit": DATA_TIME_UNIT_QUARTER,
 }
 SCRAPY_METHOD_CASHFLOW_STATEMENT_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_CASHFLOW_STATEMENT_NAME] = SCRAPY_METHOD_CASHFLOW_STATEMENT_CFG
@@ -244,7 +258,7 @@ SCRAPY_METHOD_DIVIDEND_CFG = {# 股利政策
     "description": u'股利政策',
     "module_name": "cmoney_scrapy",
     "class_name": "CMoneyScrapy",
-    "url_time_unit": DATA_TIME_UNIT_YEAR,
+    "data_time_unit": DATA_TIME_UNIT_YEAR,
 }
 SCRAPY_METHOD_DIVIDEND_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_DIVIDEND_NAME] = SCRAPY_METHOD_DIVIDEND_CFG
@@ -254,7 +268,7 @@ SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG = {# 三大法人買賣超
     "description": u'三大法人買賣超',
     "module_name": "goodinfo_scrapy",
     "class_name": "GoodInfoScrapy",
-    "url_time_unit": DATA_TIME_UNIT_DAY,
+    "data_time_unit": DATA_TIME_UNIT_DAY,
 }
 SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG.update(SCRAPY_METHOD_TYPE_SELENIUM_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_NAME] = SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_CFG
@@ -264,7 +278,7 @@ SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG = {# 個股股價及成交量
     "description": u'個股股價及成交量',
     "module_name": ["twse_scrapy", "daily_stock_price_and_volume",],
     "class_name": ["TwseScrapy", "OTCDailyStockPriceAndVolume",],
-    "url_time_unit": DATA_TIME_UNIT_DAY,
+    "data_time_unit": DATA_TIME_UNIT_DAY,
 }
 SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME] = SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG
@@ -275,7 +289,7 @@ SCRAPY_METHOD_INDEX_CONSTANT_CFG = SCRAPY_METHOD_CONSTANT_CFG.values()
 SCRAPY_METHOD_LEN = len(SCRAPY_METHOD_NAME)
 SCRAPY_METHOD_NAME_TO_INDEX = {name: index for index, name in enumerate(SCRAPY_METHOD_NAME)}
 SCRAPY_METHOD_DESCRIPTION = [cfg["description"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
-SCRAPY_METHOD_URL_TIME_UNIT = [cfg['url_time_unit'] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_METHOD_URL_TIME_UNIT = [cfg['data_time_unit'] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_METHOD_MODULE_NAME = [cfg["module_name"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_METHOD_CLASS_NAME = [cfg["class_name"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_CSV_FILENAME = [method_name.replace(" ", "_").lower() for method_name in SCRAPY_METHOD_NAME]
@@ -303,7 +317,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "market",
 #         "class_name": "StockExchangeAndVolume",
 #         "url_format": "http://www.twse.com.tw/exchangeReport/FMTQIK?response=json&date={0}{1:02d}01", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
 #         "url_data_selector": 'data',
@@ -318,7 +332,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "market",
 #         "class_name": "StockTop3LegalPersonsNetBuyOrSell",
 #         "url_format": "http://www.twse.com.tw/fund/BFI82U?response=json&dayDate={0}{1:02d}{2:02d}&type=day", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
 #         "url_data_selector": 'data',
@@ -334,7 +348,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "class_name": "StockMarginTradingAndShortSelling",
 #         # "url_format": "http://app.twse.com.tw/ch/trading/exchange/MI_MARGN/MI_MARGN.php?download=&qdate={0}%2F{1}%2F{2}&selectType=MS",
 #         "url_format": "http://www.twse.com.tw/exchangeReport/MI_MARGN?response=json&date={0}{1:02d}{2:02d}&selectType=MS",
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         # "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #         # "url_data_selector": 'tr',
@@ -351,7 +365,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "market",
 #         "class_name": "FutureAndOptionTop3LegalPersonsOpenInterest",
 #         "url_format": "http://www.taifex.com.tw/chinese/3/7_12_1.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #         "url_data_selector": '.table_c tr',
@@ -366,7 +380,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "market",
 #         "class_name": "FutureOrOptionTop3LegalPersonsOpenInterest",
 #         "url_format": "http://www.taifex.com.tw/chinese/3/7_12_2.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F09%2F04", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #         "url_data_selector": '.table_f tr',
@@ -381,7 +395,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "market",
 #         "class_name": "OptionTop3LegalPersonsBuyAndSellOptionOpenInterest",
 #         "url_format": "http://www.taifex.com.tw/chinese/3/7_12_5.asp?goday=&DATA_DATE_Y=1979&DATA_DATE_M=9&DATA_DATE_D=4&syear={0}&smonth={1}&sday={2}&datestart=1979%2F9%2F4&COMMODITY_ID=TXO", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #         "url_data_selector": '.table_f tr',
@@ -396,7 +410,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "market",
 #         "class_name": "OptionPutCallRatio",
 #         "url_format": "http://www.taifex.com.tw/chinese/3/PCRatio.asp?download=&datestart={0}%2F{1}%2F{2}&dateend={0}%2F{1}%2F{3}", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #         "url_data_selector": '.table_a tr',
@@ -411,7 +425,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "market",
 #         "class_name": "FutureTop10DealersAndLegalPersons",
 #         "url_format": "http://www.taifex.com.tw/chinese/3/7_8.asp?pFlag=&yytemp=1979&mmtemp=9&ddtemp=4&chooseitemtemp=TX+++++&goday=&choose_yy={0}&choose_mm={1}&choose_dd={2}&datestart={0}%2F{1}%2F{2}&choose_item=TX+++++", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #         "url_data_selector": '.table_f tr',
@@ -429,7 +443,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "stock",
 #         "class_name": "DepositoryShareholderDistributionTable",
 #         "url_format": "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}{1:02d}{2:02d}&SqlMethod=StockNo&StockNo={3}&StockName=&sub=%ACd%B8%DF", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_BIG5,
 #         "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #         "url_data_selector": 'table tbody tr',
@@ -445,7 +459,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "stock",
 #         "class_name": "DailyStockPriceAndVolume",
 #         "url_format": "http://www.twse.com.tw/exchangeReport/STOCK_DAY?response=json&date={0}{1:02d}01&stockNo={2}", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
 #         "url_data_selector": 'data',
@@ -462,7 +476,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "stock",
 #         "class_name": "OTCDailyStockPriceAndVolume",
 #         "url_format": "http://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php?l=zh-tw&d={0}/{1:02d}&stkno={2}", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
 #         "url_data_selector": 'aaData',
@@ -479,7 +493,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "stock",
 #         "class_name": "Top3LegalPersonsStockNetBuyOrSellSummary",
 #         "url_format": "http://www.twse.com.tw/fund/T86?response=json&date={0}{1:02d}{2:02d}&selectType=ALL", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
 #         "url_data_selector": 'data',
@@ -496,7 +510,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #         "module_folder": "stock",
 #         "class_name": "OTCTop3LegalPersonsStockNetBuyOrSellSummary",
 #         "url_format": "http://www.tpex.org.tw/web/stock/3insti/daily_trade/3itrade_hedge_result.php?l=zh-tw&se=AL&t=D&d={0}/{1:02d}/{2:02d}", 
-#         "url_time_unit": DATA_TIME_UNIT_DAY,
+#         "data_time_unit": DATA_TIME_UNIT_DAY,
 #         "url_encoding": URL_ENCODING_UTF8,
 #         "url_parsing_method": PARSE_URL_DATA_BY_JSON, 
 #         "url_data_selector": 'aaData',
@@ -513,7 +527,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #     #     "module_folder": "stock",
 #     #     "class_name": "BalanceSheet",
 #     #     "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb03?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
-#     #     "url_time_unit": DATA_TIME_UNIT_QUARTER,
+#     #     "data_time_unit": DATA_TIME_UNIT_QUARTER,
 #     #     "url_encoding": URL_ENCODING_UTF8,
 #     #     "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #     #     "url_data_selector": 'table tr',
@@ -529,7 +543,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #     #     "module_folder": "stock",
 #     #     "class_name": "IncomeStatement",
 #     #     "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb04?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
-#     #     "url_time_unit": DATA_TIME_UNIT_QUARTER,
+#     #     "data_time_unit": DATA_TIME_UNIT_QUARTER,
 #     #     "url_encoding": URL_ENCODING_UTF8,
 #     #     "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #     #     "url_data_selector": 'table tr',
@@ -545,7 +559,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #     #     "module_folder": "stock",
 #     #     "class_name": "CashFlowStatement",
 #     #     "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb05?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
-#     #     "url_time_unit": DATA_TIME_UNIT_QUARTER,
+#     #     "data_time_unit": DATA_TIME_UNIT_QUARTER,
 #     #     "url_encoding": URL_ENCODING_UTF8,
 #     #     "url_parsing_method": PARSE_URL_DATA_BY_BS4, 
 #     #     "url_data_selector": 'table tr',
@@ -562,7 +576,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 #     #     "class_name": "StatementOfChangesInEquity",
 #     #     "url_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=1&firstin=1&off=1&keyword4=&code1=&TYPEK2=&checkbtn=&queryName=co_id&inpuType=co_id&TYPEK=all&isnew=false&co_id={0}&year={1}&season={2}", 
 #     #     "url_special_format": "http://mops.twse.com.tw/mops/web/ajax_t164sb06?encodeURIComponent=1&step=2&firstin=1&id=&key=&TYPEK=sii&co_id={0}&year={1}&season={2}",
-#     #     "url_time_unit": DATA_TIME_UNIT_QUARTER,
+#     #     "data_time_unit": DATA_TIME_UNIT_QUARTER,
 #     #     "url_encoding": URL_ENCODING_UTF8,
 #     #     "url_parsing_method": PARSE_URL_DATA_BY_CUSTOMIZATION, 
 #     #     "url_data_selector": 'table',
@@ -609,7 +623,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 # SCRAPY_STOCK_METHOD_START = SCRAPY_MARKET_METHOD_END
 # SCRAPY_STOCK_METHOD_END = len(SCRAPY_METHOD_DESCRIPTION)
 
-# SCRAPY_METHOD_URL_TIME_UNIT = [cfg['url_time_unit'] for cfg in SCRAPY_CLASS_CONSTANT_CFG if not cfg['is_duplicate_module']]
+# SCRAPY_METHOD_URL_TIME_UNIT = [cfg['data_time_unit'] for cfg in SCRAPY_CLASS_CONSTANT_CFG if not cfg['is_duplicate_module']]
 
 # # SCRAPY_STOCK_METHOD_STATMENT_START = SCRAPY_METHOD_DESCRIPTION.index(u'資產負債表')
 # # SCRAPY_STOCK_METHOD_STATMENT_END = SCRAPY_METHOD_DESCRIPTION.index(u'股東權益變動表') + 1

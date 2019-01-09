@@ -362,7 +362,45 @@ if __name__ == "__main__":
     # print (week_obj + 20)
     # print (week_obj - 20)
 
-    # sys.exit(0)
+    # orig_start = CMN.CLS.FinanceDate("2019-01-03")
+    # orig_end = CMN.CLS.FinanceDate("2019-01-05")
+
+    # new_start = CMN.CLS.FinanceDate("2019-01-01")
+    # new_end = CMN.CLS.FinanceDate("2019-01-03")
+
+    # month_new_start = CMN.CLS.FinanceMonth("2019-06")
+    # month_new_end = CMN.CLS.FinanceMonth("2019-07")
+
+    # print min(new_end, new_start)
+    # # print (new_end + 1) == new_start
+    # # print (month_new_end - 1) == month_new_start
+    # # print (month_new_end > month_new_start)
+    # # print (type(month_new_end) == type(new_start))
+
+    # overlap_case = CMN.FUNC.get_time_range_overlap_case(new_start, new_end, orig_start, orig_end)
+    # print overlap_case
+
+    # # time_range_update = CMN.CLS.CSVTimeRangeUpdate.get_init_csv_time_duration_update(orig_start, orig_end)
+    # csv_old_time_duration_tuple = CMN.CLS.TimeDurationTuple(orig_start, orig_end)
+    # # csv_old_time_duration_tuple.time_duration_start = orig_start
+    # # csv_old_time_duration_tuple.time_duration_end = orig_end
+    # new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
+    #     new_start, 
+    #     new_end,
+    #     csv_old_time_duration_tuple
+    # )
+    # print csv_old_time_duration_tuple.time_duration_start
+    # print csv_old_time_duration_tuple.time_duration_end
+    # print web2csv_time_duration_update_tuple
+
+    time_start = CMN.CLS.FinanceDate("2018-12-03")
+    time_end = CMN.CLS.FinanceDate("2018-12-13")
+
+    time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
+    for index, time_slice in enumerate(time_slice_generator.generate_time_range_slice(time_start, time_end, 5)):
+        print "%d: %s, %s" % (index, time_slice[0], time_slice[1])
+
+    sys.exit(0)
 
 # Parse the parameters and apply to manager class
     init_param()

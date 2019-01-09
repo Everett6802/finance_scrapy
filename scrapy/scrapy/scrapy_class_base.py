@@ -1,9 +1,11 @@
 #! /usr/bin/python
 # -*- coding: utf8 -*-
 
+import copy
 from abc import ABCMeta, abstractmethod
 
 import scrapy.common as CMN
+import scrapy.libs as LIBS
 # import scrapy_definition as CMN.DEF
 # import scrapy_function as CMN.FUNC
 # import libs.common as CMN
@@ -12,26 +14,31 @@ g_logger = CMN.LOG.get_logger()
 
 class ScrapyBase(object):
 
+    _CAN_SET_TIME_RANGE = False
+
     @classmethod
-    def get_web_data(cls, url, parse_url_method_func_ptr, pre_check_web_data_func_ptr=None, post_check_web_data_func_ptr=None):
+    def request_web_data(cls, url, parse_url_method_func_ptr, pre_check_web_data_func_ptr=None, post_check_web_data_func_ptr=None):
         # req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
         req = CMN.FUNC.request_from_url_and_check_return(url)
         if pre_check_web_data_func_ptr is not None: 
             pre_check_web_data_func_ptr(req)
-        web_data = parse_url_method_func_ptr(req, cls.CLASS_CONSTANT_CFG)
-        assert (web_data is not None), "web_data should NOT be None"
+        web_data_name = None
+        web_data = None
+        web_data, web_data_name = parse_url_method_func_ptr(req)
+        # assert (web_data is not None), "web_data should NOT be None"
         if post_check_web_data_func_ptr is not None:
             post_check_web_data_func_ptr(web_data)
-        return web_data
+        return web_data, web_data_name
 
 
     @classmethod
-    def try_get_web_data(cls, url, parse_url_method_func_ptr, ignore_data_not_found_exception=False, pre_check_web_data_func_ptr=None, post_check_web_data_func_ptr=None):
+    def try_request_web_data(cls, url, parse_url_method_func_ptr, ignore_data_not_found_exception=False, pre_check_web_data_func_ptr=None, post_check_web_data_func_ptr=None):
         g_logger.debug("Scrape web data from URL: %s" % url)
+        web_data_name = None
         web_data = None
         try:
 # Grab the data from website and assemble the data to the entry of CSV
-            web_data = cls.get_web_data(url, parse_url_method_func_ptr, pre_check_web_data_func_ptr, post_check_web_data_func_ptr)
+            web_data, web_data_name = cls.request_web_data(url, parse_url_method_func_ptr, pre_check_web_data_func_ptr, post_check_web_data_func_ptr)
         except CMN.EXCEPTION.WebScrapyNotFoundException as e:
             if not ignore_data_not_found_exception:
                 errmsg = None
@@ -43,7 +50,7 @@ class ScrapyBase(object):
                 g_logger.error(errmsg)
                 raise e
         except CMN.EXCEPTION.WebScrapyServerBusyException as e:
-    # Server is busy, let's retry......
+# Server is busy, let's retry......
             RETRY_TIMES = 5
             SLEEP_TIME_BEFORE_RETRY = 15
             scrapy_success = False
@@ -52,8 +59,8 @@ class ScrapyBase(object):
                 g_logger.warn("Server is busy, let's retry...... %d", retry_times)
                 time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
                 try:
-                    web_data = cls.get_web_data(url, parse_url_method_func_ptr, pre_check_web_data_func_ptr, post_check_web_data_func_ptr)
-                    assert (web_data is not None), "web_data should NOT be None"
+                    web_data, web_data_name = cls.request_web_data(url, parse_url_method_func_ptr, pre_check_web_data_func_ptr, post_check_web_data_func_ptr)
+                    # assert (web_data is not None), "web_data should NOT be None"
                     if post_check_web_data_func_ptr is not None:
                         post_check_web_data_func_ptr(web_data)
                 except CMN.EXCEPTION.WebScrapyNotFoundException as e:
@@ -80,10 +87,12 @@ class ScrapyBase(object):
                 g_logger.warn("Exception occurs while scraping URL[%s], due to: %s" % (url, e.message))
             else:
                 g_logger.warn(u"Exception occurs while scraping URL[%s], due to: %s" % (url, e.message))
-# Caution: web_data should NOT be None. Exception occurs while exploiting len(web_data)
-# The len() function can NOT calculate the length of the None object
-            web_data = []
-        return web_data
+# # Caution: web_data should NOT be None. Exception occurs while exploiting len(web_data)
+# # The len() function can NOT calculate the length of the None object
+#             web_data = []
+                web_data = None
+                web_data_name = None
+        return web_data, web_data_name
 
 
     @classmethod
@@ -128,10 +137,10 @@ class ScrapyBase(object):
         csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
         csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
 
-        url_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method_index]["url_time_unit"]
+        data_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method_index]["data_time_unit"]
 # Caution: Need transfrom the time string from unicode to string
-        time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[0][0]), url_time_unit)
-        time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[-1][0]), url_time_unit)
+        time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[0][0]), data_time_unit)
+        time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[-1][0]), data_time_unit)
 
         csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
 
@@ -172,14 +181,14 @@ class ScrapyBase(object):
             sub_csv_data_list = []
             if web2csv_time_duration_update.AppendDirection == CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_BEFORE:
                 for csv_data in csv_data_list:
-                    time_duration = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data[0]), url_time_unit)
+                    time_duration = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data[0]), data_time_unit)
                     if time_duration > web2csv_time_duration_update.NewWebEnd:
                         break
                     sub_csv_data_list.append(csv_data)
             elif web2csv_time_duration_update.AppendDirection == CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_AFTER:
                 # for csv_data in reversed(csv_data_list):
                 for csv_data in csv_data_list:
-                    time_duration = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data[0]), url_time_unit)
+                    time_duration = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data[0]), data_time_unit)
                     if time_duration < web2csv_time_duration_update.NewWebStart:
                         continue
                     sub_csv_data_list.append(csv_data)
@@ -238,6 +247,14 @@ class ScrapyBase(object):
         obj.scrapy_method = CMN.DEF.SCRAPY_METHOD_NAME[obj.scrapy_method_index]
 
 
+    def __enter__(self):
+        return self
+
+
+    def __exit__(self, type, msg, traceback):
+        return False
+
+
     def update_csv_field(self):
         _, csv_data_field_list = self.scrape_web()
         self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
@@ -245,14 +262,65 @@ class ScrapyBase(object):
 
     def scrape_web_to_csv(self, *args, **kwargs):
         # scrapy_method = CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method_index]["scrapy_class_method"]
-        csv_data_list, _ = self.scrape_web(*args, **kwargs)
-        # import pdb; pdb.set_trace()
+        if kwargs.get("parse_data_name", False):
+            g_logger.warn("the 'parse_data_name' will NOT take effect")
+        kwargs["parse_data_name"] = False
+        set_time_range = False
+        if kwargs.has_key("time_range"):
+            if not self._CAN_SET_TIME_RANGE:
+                g_logger.warn("The method[%s] does NOT support time range setting !" % self.ScrapyMethod)
+            else:
+                set_time_range = True
+# Set company number if necessary
         company_number = None
         company_group_number = None
         if CMN.FUNC.scrapy_method_need_company_number(self.scrapy_method_index):
             company_number = self.company_number
             company_group_number = self.company_group_number
-        self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
+# Scrape web data
+        if set_time_range:
+            time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
+            total_csv_data_list = []
+            total_csv_data_list_len = 0
+
+            data_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[self.scrapy_method_index]["data_time_unit"]
+            time_range_cfg = kwargs.has_key("time_range")
+            time_end = time_range_cfg.get("end", None)
+            if time_end is None:
+                time_end = CMN.CLS.FinanceTimeBase.from_time_string(CMN.FUNC.generate_today_time_str(), data_time_unit)
+            time_range = time_range_cfg.get("None", None)
+            if time_range is None:
+                time_range = CMN.DEF.DEF_TIME_RANGE_LIST[data_time_unit]
+            time_start = time_range_cfg.get("start", None)
+            if time_start is None:
+                time_offset = time_range - 1
+                time_start = time_end - time_offset 
+
+            for time_slice in time_slice_generator.generate_time_range_slice(time_start, time_end, time_range)):
+                # print "%s, %s" % (time_slice[0], time_slice[1])
+# New sub time range
+                time_range_cfg = {
+                    "start": time_slice[0],
+                    "end": time_slice[1],
+                }
+# Update the sub time range to the config for scraping data
+                slice_kwargs = copy.deepcopy(kwargs)
+                slice_kwargs["time_range"] = time_range_cfg
+# Scrape data in each sub time range
+                csv_data_list, _ = self.scrape_web(*args, **kwargs)
+                csv_data_list_len = len(csv_data_list)
+                total_csv_data_list.extend(csv_data_list)
+                total_csv_data_list_len += csv_data_list_len
+                if total_csv_data_list_len >= 100:
+                    self._write_scrapy_data_to_csv(total_csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
+                    total_csv_data_list = []
+                    total_csv_data_list_len = 0
+            if total_csv_data_list_len != 0:
+                self._write_scrapy_data_to_csv(total_csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])         
+        else:
+            csv_data_list, _ = self.scrape_web(*args, **kwargs)
+            # import pdb; pdb.set_trace()
+            self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
 
 
     @abstractmethod

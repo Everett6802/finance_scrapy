@@ -1,15 +1,14 @@
 # -*- coding: utf8 -*-
 
 import re
-# import requests
-# import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
+import scrapy.common as CMN
 import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
-def _scrape_option_put_call_ratio_(scrapy_cfg, *args, **kwargs):
+def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     url = scrapy_cfg['url']
     if kwargs.has_key("month") is not None:
@@ -42,7 +41,7 @@ def _scrape_option_put_call_ratio_(scrapy_cfg, *args, **kwargs):
 class TwseScrapyMeta(type):
 
     __ATTRS = {
-        "_scrape_option_put_call_ratio_": _scrape_option_put_call_ratio_,
+        "_scrape_taiwan_weighted_index_and_volume_": _scrape_taiwan_weighted_index_and_volume_,
     }
 
     def __new__(mcs, name, bases, attrs):
@@ -52,14 +51,14 @@ class TwseScrapyMeta(type):
 
 class TwseScrapy(ScrapyBase.ScrapyBase):
 
-	__metaclass__ = TwseScrapyMeta
+    __metaclass__ = TwseScrapyMeta
     __TWSE_ULR_PREFIX = "http://www.twse.com.tw/"
 
     __MARKET_SCRAPY_CFG = {
-        "scrape option put call ratio": { # 臺指選擇權賣權買權比
-            "url": __TWSE_ULR_PREFIX + "cht/3/pcRatio"
-            "url_time_range_format" = "?queryStartDate={0}%2F{1:02d}}%2F{2:02d}&queryEndDate={0}%2F{1:02d}%2F{3:02d}",
-            "url_encoding": URL_ENCODING_UTF8,
+        "taiwan weighted index and volume": { # 臺指選擇權賣權買權比
+            "url": __TWSE_ULR_PREFIX + "cht/3/pcRatio",
+            "url_time_range_format": "?queryStartDate={0}%2F{1:02d}}%2F{2:02d}&queryEndDate={0}%2F{1:02d}%2F{3:02d}",
+            "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
         },
     }
 
@@ -88,7 +87,7 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
 
     __FUNC_PTR = {
 # market start
-        "option put call ratio": _scrape_option_put_call_ratio_,
+        "taiwan weighted index and volume": _scrape_taiwan_weighted_index_and_volume_,
 # market end
 # stock start
 # stock end
@@ -125,12 +124,12 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
 
     def scrape_web(self, *args, **kwargs):
         url = None
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         scrapy_method_name = None
         try:
             scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
         except:
-            raise ValueError("Unknown scrapy method: %d" % self.scrapy_method)
+            raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
         scrapy_cfg = self.__SCRAPY_CFG[scrapy_method_name]
         return (self.__FUNC_PTR[self.scrapy_method])(scrapy_cfg, *args, **kwargs)
 
@@ -187,4 +186,4 @@ if __name__ == '__main__':
     with TwseScrapy() as taifex:
         kwargs = {}
         import pdb; pdb.set_trace()
-        goodinfo.scrape("option put call ratio", **kwargs)
+        taifex.scrape("option put call ratio", **kwargs)

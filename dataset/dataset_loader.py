@@ -24,16 +24,16 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 	'''
 
 	conf_filename = None
-	url_time_unit = None
+	data_time_unit = None
 # Check method index
 	if is_selenium:
 		SL.FUNC.check_scrapy_method_index_in_range(method_index, (company_code_number is not None))
 		conf_filename = SL.DEF.SCRAPY_CLASS_METHOD[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
-		url_time_unit = SL.DEF.SCRAPY_METHOD_URL_TIME_UNIT[method_index]
+		data_time_unit = SL.DEF.SCRAPY_METHOD_URL_TIME_UNIT[method_index]
 	else:
 		CMN.FUNC.check_scrapy_method_index_in_range(method_index, (CMN.DEF.FINANCE_MODE_MARKET if (company_code_number is None) else CMN.DEF.FINANCE_MODE_STOCK))
 		conf_filename = CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
-		url_time_unit = CMN.DEF.SCRAPY_METHOD_URL_TIME_UNIT[method_index]
+		data_time_unit = CMN.DEF.SCRAPY_METHOD_URL_TIME_UNIT[method_index]
 	if company_code_number is not None:
 		if company_group_number is None:
 			profile_lookup = BASE.CP.CompanyProfile.Instance()
@@ -72,16 +72,16 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 		"names": column_name_list, 
 		"parse_dates": [DS_CMN_DEF.DATESET_DATE_COLUMN_INDEX,]
 	}
-	if url_time_unit != CMN.DEF.DATA_TIME_UNIT_DAY:
-		if url_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+	if data_time_unit != CMN.DEF.DATA_TIME_UNIT_DAY:
+		if data_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
 			# kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_month2date_str(x), '%Y-%m-%d')
 			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_month2date_str(x), '%Y-%m-%d')
-		elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
+		elif data_time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
 			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_quarter2date_str(x), '%Y-%m-%d')
-		elif url_time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
+		elif data_time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
 			kwargs["date_parser"] = lambda x: pd.datetime.strptime(CMN.FUNC.transform_year2date_str(x), '%Y-%m-%d')
 		else:
-			raise RuntimeError("Unsupport URL time unit: %d" % url_time_unit)
+			raise RuntimeError("Unsupport URL time unit: %d" % data_time_unit)
 	if field_index_list is not None:
 		kwargs["usecols"] = column_index_list
 	df = pd.read_csv(filepath, **kwargs)
@@ -110,17 +110,17 @@ def load_hybrid(method_index_list, company_code_number=None, field_index_dict=No
 
 # Check the time units of the methods are identical
 	SCRAPY_METHOD_URL_TIME_UNIT = SL.DEF.SCRAPY_METHOD_URL_TIME_UNIT if is_selenium else CMN.DEF.SCRAPY_METHOD_URL_TIME_UNIT
-	url_time_unit = [SCRAPY_METHOD_URL_TIME_UNIT[method_index] for method_index in method_index_list]
-	if len(filter(lambda time_unit: time_unit != url_time_unit[0], url_time_unit)) != 0:
-		raise ValueError("The time unit[%s] are NOT identical" % url_time_unit)
+	data_time_unit = [SCRAPY_METHOD_URL_TIME_UNIT[method_index] for method_index in method_index_list]
+	if len(filter(lambda time_unit: time_unit != data_time_unit[0], data_time_unit)) != 0:
+		raise ValueError("The time unit[%s] are NOT identical" % data_time_unit)
 
 	df = None
 	column_description_list = []
-	url_time_unit = None
+	data_time_unit = None
 	# import pdb; pdb.set_trace()
 	for method_index in method_index_list:
-		if url_time_unit is None:
-			url_time_unit
+		if data_time_unit is None:
+			data_time_unit
 		field_index_list = (field_index_dict.get(method_index, None) if (field_index_dict is not None) else None)
 		df_new, column_description_list_new = load_raw(method_index, company_code_number, field_index_list, company_group_number, is_selenium)
 		if df is None:

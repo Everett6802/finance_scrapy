@@ -354,6 +354,45 @@ class TimeSliceGenerator(object):
         return time_slice_iterable_len
 
 
+    def generate_time_range_slice(self, time_duration_start, time_duration_end, time_range=1):
+# The data type in the list is datetime
+# Define the iterator
+        class TimeSliceIterator(object):
+            def __init__(self, time_duration_start, time_duration_end, time_range):
+                self.time_to_stop = False
+                # import pdb; pdb.set_trace()
+                self.time_duration_cur = time_duration_start
+                self.time_duration_end = time_duration_end
+                self.time_range = time_range
+                self.time_offset = time_range - 1
+                assert self.time_offset >= 0, "the time_offset[%d] can NOT be negative" % self.time_offset
+
+            def __iter__(self):
+                return self
+
+            def next(self):
+                # import pdb; pdb.set_trace()
+                if self.time_to_stop:
+                    raise StopIteration
+# Create the time range of the slice
+                time_slice_start = self.time_duration_cur
+                time_slice_end = min(time_slice_start + self.time_offset, self.time_duration_end)
+                self.time_duration_cur = self.time_duration_cur + self.time_range
+                if self.time_duration_cur > self.time_duration_end:
+                    self.time_to_stop = True
+                # if not self.time_to_stop:
+                    
+                return (time_slice_start, time_slice_end)
+
+        if type(time_duration_start) != type(time_duration_end):
+            raise TypeError("The types of time start[%s] and end[%s] are NOT identical" % (type(time_duration_start) != type(time_duration_end)))
+        if type(time_duration_start) is str:
+           time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start)
+           time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end)
+
+        return TimeSliceIterator(time_duration_start, time_duration_end, time_range)
+
+
 #     def generate_source_time_slice(self, data_source_type, time_start, time_end, **kwargs):
 #         if self.date_today is None:
 #            self.date_today = CMN.CLS.FinanceDate(datetime.today())

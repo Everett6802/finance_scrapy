@@ -1,50 +1,73 @@
 # -*- coding: utf8 -*-
 
 import re
-# import requests
-# import csv
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
-# import scrapy.common as CMN
-# import scrapy_function as SC_FUNC
+import scrapy.common as CMN
 import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
-def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
+def _scrape_option_put_call_ratio_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     url = scrapy_cfg['url']
-    if kwargs.has_key("month") is not None:
-        finance_month = kwargs["month"]
-        year = finance_month.year
-        month = finance_month.month
-        start_date = 1
-        end_date = finance_month.get_last_date_of_month()
-        url_time_range = scrapy_cfg["url_time_range_format"].format(year, month, start_date, end_date)  
+    if kwargs.has_key("time_range"):
+        # finance_month = kwargs["month"]
+        # year = finance_month.year
+        # month = finance_month.month
+        # start_date = 1
+        # end_date = finance_month.get_last_date_of_month()
+        time_range_cfg = finance_month = kwargs["time_range"]
+        time_start = time_range_cfg['start']
+        time_end = time_range_cfg['end']
+        url_time_range = scrapy_cfg["url_time_range_format"].format(time_start.year, time_start.month, time_start.day, time_end.year, time_end.month, time_end.day)  
         url += url_time_range
 
-    def parse_url(url_data):
-        pass
-
-    web_data = ScrapyBase.try_get_web_data(url, parse_url)
-
-    data_name_list = []
-    data_list = []
-    web_data_len = len(web_data)
-    # print "len: %d" % data_len
-    for tr in web_data[web_data_len - 1 : 0 : -1]:
-        td = tr.select('td')
-        entry = [str(td[0].text.replace("/", "-")),]
-        for index in range(1, 7):
-            entry.append(str(td[index].text).replace(',', ''))
-        data_list.append(entry)
+    parse_data_name = kwargs.get("parse_data_name", True)
+    parse_data = kwargs.get("parse_data", True)
+    def parse_url_data(req):
+        # import pdb; pdb.set_trace()
+        soup = BeautifulSoup(req.text)
+        # print (soup.prettify())
+        table_tag = soup.find('table', class_='table_a')
+        if table_tag is None:
+            g_logger.error("Fail to find the table of option put call ratio")
+            return None
+        tr_tags = table_tag.find_all('tr')
+# parse data name
+        data_name_list = None
+        if parse_data_name:
+            data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
+            th_tags = tr_tags[0].find_all("th")
+            for th_tag in th_tags[1:]:
+                data_name_list.append(th_tag.text)
+# parse data
+        data_list = None
+        if parse_data:
+            data_list = []
+            for tr_tag in tr_tags[1:]:
+                # print (tr_tag.text)
+                td_tags = tr_tag.find_all("td")
+                date_element_list = td_tags[0].string.split("/")
+                assert len(date_element_list) == 3, "The length[%d] of date_element_list should be 3" % len(date_element_list)
+                data_element_list = [CMN.DEF.DATE_STRING_FORMAT % (int(date_element_list[0]), int(date_element_list[1]), int(date_element_list[2])),]
+                for td_tag in td_tags[1:]:
+                    # print (td_tag.text)
+                    data_element_list.append(td_tag.string.strip("\r\n\t").replace(',', ''))
+                data_list.append(data_element_list)
+        # import pdb; pdb.set_trace()
+        return (data_list, data_name_list)
+    # import pdb; pdb.set_trace()
+    data_list, data_name_list = ScrapyBase.ScrapyBase.try_request_web_data(url, parse_url_data)
+    if data_list is not None:
+        data_list.reverse()
     return (data_list, data_name_list)
 
 
 class TaifexScrapyMeta(type):
 
     __ATTRS = {
-        "_scrape_taiwan_weighted_index_and_volume_": _scrape_taiwan_weighted_index_and_volume_,
+        "_scrape_option_put_call_ratio_": _scrape_option_put_call_ratio_,
     }
 
     def __new__(mcs, name, bases, attrs):
@@ -54,14 +77,14 @@ class TaifexScrapyMeta(type):
 
 class TaifexScrapy(ScrapyBase.ScrapyBase):
 
-	__metaclass__ = TaifexScrapyMeta
+    __metaclass__ = TaifexScrapyMeta
     __TAIFEX_ULR_PREFIX = "http://www.taifex.com.tw/"
 
     __MARKET_SCRAPY_CFG = {
-        "scrape taiwan weighted index and volume": { # 臺指選擇權賣權買權比
-            "url": __TAIFEX_ULR_PREFIX + "cht/3/pcRatio"
-            "url_time_range_format" = "?queryStartDate={0}%2F{1:02d}}%2F{2:02d}&queryEndDate={0}%2F{1:02d}%2F{3:02d}",
-            "url_encoding": URL_ENCODING_UTF8,
+        "option put call ratio": { # 臺指選擇權賣權買權比
+            "url": __TAIFEX_ULR_PREFIX + "cht/3/pcRatio",
+            "url_time_range_format": "?queryStartDate={0}%2F{1:02d}%2F{2:02d}&queryEndDate={3}%2F{4:02d}%2F{5:02d}",
+            "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
         },
     }
 
@@ -90,7 +113,7 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
 
     __FUNC_PTR = {
 # market start
-        "taiwan weighted index and volume": _scrape_taiwan_weighted_index_and_volume_,
+        "option put call ratio": _scrape_option_put_call_ratio_,
 # market end
 # stock start
 # stock end
@@ -128,13 +151,13 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
     def scrape_web(self, *args, **kwargs):
         url = None
         # import pdb; pdb.set_trace()
-        scrapy_method_name = None
-        try:
-            scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
-        except:
-            raise ValueError("Unknown scrapy method: %d" % self.scrapy_method)
-        scrapy_cfg = self.__SCRAPY_CFG[scrapy_method_name]
-        return (self.__FUNC_PTR[self.scrapy_method])(scrapy_cfg, *args, **kwargs)
+        # scrapy_method_name = None
+        # try:
+        #     scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
+        # except:
+        #     raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
+        # scrapy_cfg = self.__SCRAPY_CFG[scrapy_method_name]
+        return (self.__FUNC_PTR[self.scrapy_method])(self.__SCRAPY_CFG[self.scrapy_method], *args, **kwargs)
 
 
     # def update_csv_field(self):
@@ -188,5 +211,5 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
 if __name__ == '__main__':
     with TaifexScrapy() as taifex:
         kwargs = {}
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         taifex.scrape("option put call ratio", **kwargs)
