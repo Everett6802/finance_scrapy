@@ -21,7 +21,7 @@ thread_lock = threading.Lock()
 class TimeSliceGenerator(object):
 
     REVENUE_DAY = 10
-    COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT = "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}&SqlMethod=StockNo&StockNo={1}&StockName=&sub=%ACd%B8%DF"
+    # COMPANY_FOREIGN_INVESTORS_SHAREHOLDER_URL_FORMAT = "https://www.tdcc.com.tw/smWeb/QryStock.jsp?SCA_DATE={0}&SqlMethod=StockNo&StockNo={1}&StockName=&sub=%ACd%B8%DF"
 
     def __init__(self):
         # self.FINANCIAL_STATEMENT_DATE_LIST = [[3, 31], [5, 15], [8, 14], [11, 14],]
@@ -29,7 +29,7 @@ class TimeSliceGenerator(object):
         self.workday_canlendar = None
         self.generate_time_slice_func_ptr = [
             self.__generate_time_slice_by_workday,
-            self.__generate_time_slice_by_company_foreign_investors_shareholder,
+            # self.__generate_time_slice_by_company_foreign_investors_shareholder,
             self.__generate_time_slice_by_month,
             self.__generate_time_slice_by_revenue,
             self.__generate_time_slice_by_financial_statement_season,
@@ -78,62 +78,62 @@ class TimeSliceGenerator(object):
         return self.workday_canlendar
 
 
-    def __find_company_foreign_investors_shareholder_url_data(self, date_str_for_financial_statement, company_code_number):
-        # import pdb; pdb.set_trace()
-        class_constant_cfg = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SCRAPY_CLASS_INDEX]
-        url = class_constant_cfg["url_format"].format(
-            *(
-                int(date_str_for_financial_statement[0:4]), 
-                int(date_str_for_financial_statement[4:6]), 
-                int(date_str_for_financial_statement[6:8]), 
-                company_code_number
-            )
-        )
-        req = None
-        exception_for_url = None
-        for retry in range(5):
-            try:
-                req = CMN.FUNC.request_from_url_and_check_return(url)
-            # except ConnectionError as e:
-            #     req = None
-            #     g_logger.debug("Connection Reset by peer from URL: %s ......%d" % (url, retry))
-            except Exception as e:
-                req = None
-                exception_for_url = e
-                g_logger.debug("Exception occur, due to: %s ......%d" % (str(e), retry))
-                time.sleep(1)
-            else:
-                break
-        if req is None:
-            g_logger.error("Fail to get depository shareholder time table, due to: %s" % str(exception_for_url))
-            raise ConnectionError
-        req.encoding = class_constant_cfg["url_encoding"]
-        soup = BeautifulSoup(req.text)
-        url_data_selector = class_constant_cfg["url_data_selector"] + ' option'
-        company_foreign_investors_shareholder_url_data = soup.select(url_data_selector)
-        return company_foreign_investors_shareholder_url_data
+    # def __find_company_foreign_investors_shareholder_url_data(self, date_str_for_financial_statement, company_code_number):
+    #     # import pdb; pdb.set_trace()
+    #     class_constant_cfg = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[CMN.DEF.DEPOSITORY_SHAREHOLDER_DISTRIBUTION_TABLE_SCRAPY_CLASS_INDEX]
+    #     url = class_constant_cfg["url_format"].format(
+    #         *(
+    #             int(date_str_for_financial_statement[0:4]), 
+    #             int(date_str_for_financial_statement[4:6]), 
+    #             int(date_str_for_financial_statement[6:8]), 
+    #             company_code_number
+    #         )
+    #     )
+    #     req = None
+    #     exception_for_url = None
+    #     for retry in range(5):
+    #         try:
+    #             req = CMN.FUNC.request_from_url_and_check_return(url)
+    #         # except ConnectionError as e:
+    #         #     req = None
+    #         #     g_logger.debug("Connection Reset by peer from URL: %s ......%d" % (url, retry))
+    #         except Exception as e:
+    #             req = None
+    #             exception_for_url = e
+    #             g_logger.debug("Exception occur, due to: %s ......%d" % (str(e), retry))
+    #             time.sleep(1)
+    #         else:
+    #             break
+    #     if req is None:
+    #         g_logger.error("Fail to get depository shareholder time table, due to: %s" % str(exception_for_url))
+    #         raise ConnectionError
+    #     req.encoding = class_constant_cfg["url_encoding"]
+    #     soup = BeautifulSoup(req.text)
+    #     url_data_selector = class_constant_cfg["url_data_selector"] + ' option'
+    #     company_foreign_investors_shareholder_url_data = soup.select(url_data_selector)
+    #     return company_foreign_investors_shareholder_url_data
 
 
-    def __find_friday_date_str_for_financial_statement(self):
-        def find_friday_date():
-            # import pdb; pdb.set_trace()
-            DATE_OFFSET = 45
-            date_iterator = WorkdayCanlendar.WorkdayNearestIterator(self.__get_workday_calendar().get_last_workday() - DATE_OFFSET, None)
-            for date_cur in date_iterator:
-                if date_cur.to_datetime().isoweekday() == 5:
-                    # import pdb; pdb.set_trace()
-                    g_logger.debug("The workday[%s] is Friday" % date_cur)
-                    return date_cur
-            raise ValueError("Fail to find a certain Friday for the past %d days from the date[%s]" % (DATE_OFFSET, self.date_today)) 
+    # def __find_friday_date_str_for_financial_statement(self):
+    #     def find_friday_date():
+    #         # import pdb; pdb.set_trace()
+    #         DATE_OFFSET = 45
+    #         date_iterator = WorkdayCanlendar.WorkdayNearestIterator(self.__get_workday_calendar().get_last_workday() - DATE_OFFSET, None)
+    #         for date_cur in date_iterator:
+    #             if date_cur.to_datetime().isoweekday() == 5:
+    #                 # import pdb; pdb.set_trace()
+    #                 g_logger.debug("The workday[%s] is Friday" % date_cur)
+    #                 return date_cur
+    #         raise ValueError("Fail to find a certain Friday for the past %d days from the date[%s]" % (DATE_OFFSET, self.date_today)) 
 
-        date_friday = find_friday_date()
-        a_friday_date_str_for_financial_statement = "%04d%02d%02d" % (date_friday.year, date_friday.month, date_friday.day)
-        g_logger.debug("A friday date string for financial statement season: %s" % a_friday_date_str_for_financial_statement)
-        COMPANY_CODE_NUMBER_FOR_FRIDAY_DATE = 2330
-        company_foreign_investors_shareholder_url_data = self.__find_company_foreign_investors_shareholder_url_data(a_friday_date_str_for_financial_statement, COMPANY_CODE_NUMBER_FOR_FRIDAY_DATE)
-        assert (len(company_foreign_investors_shareholder_url_data) != 0), "The company foreign investors shareholder date list should NOT be 0"
-        self.last_friday_date_str_for_financial_statement = str(company_foreign_investors_shareholder_url_data[0].text)
-        g_logger.debug("The last friday date string for financial statement season: %s" % self.last_friday_date_str_for_financial_statement)
+    #     date_friday = find_friday_date()
+    #     a_friday_date_str_for_financial_statement = "%04d%02d%02d" % (date_friday.year, date_friday.month, date_friday.day)
+    #     g_logger.debug("A friday date string for financial statement season: %s" % a_friday_date_str_for_financial_statement)
+    #     COMPANY_CODE_NUMBER_FOR_FRIDAY_DATE = 2330
+    #     company_foreign_investors_shareholder_url_data = self.__find_company_foreign_investors_shareholder_url_data(a_friday_date_str_for_financial_statement, COMPANY_CODE_NUMBER_FOR_FRIDAY_DATE)
+    #     assert (len(company_foreign_investors_shareholder_url_data) != 0), "The company foreign investors shareholder date list should NOT be 0"
+    #     self.last_friday_date_str_for_financial_statement = str(company_foreign_investors_shareholder_url_data[0].text)
+    #     g_logger.debug("The last friday date string for financial statement season: %s" % self.last_friday_date_str_for_financial_statement)
 
 
     def get_last_friday_date_str_for_financial_statement(self):
@@ -142,18 +142,18 @@ class TimeSliceGenerator(object):
         return self.last_friday_date_str_for_financial_statement
 
 
-    def __get_company_foreign_investors_shareholder_date_list(self, company_code_number):
-        if self.last_friday_date_str_for_financial_statement is None:
-            self.__find_friday_date_str_for_financial_statement()
-        g_data = self.__find_company_foreign_investors_shareholder_url_data(self.last_friday_date_str_for_financial_statement, company_code_number)
-        company_foreign_investors_shareholder_date_list = []
-        for index in range(len(g_data) - 1, -1, -1):
-            time_str = g_data[index].text
-            year = int(time_str[0:4])
-            month = int(time_str[4:6])
-            day = int(time_str[6:8])
-            company_foreign_investors_shareholder_date_list.append(CMN.CLS.FinanceDate(year, month, day))
-        return company_foreign_investors_shareholder_date_list
+    # def __get_company_foreign_investors_shareholder_date_list(self, company_code_number):
+    #     if self.last_friday_date_str_for_financial_statement is None:
+    #         self.__find_friday_date_str_for_financial_statement()
+    #     g_data = self.__find_company_foreign_investors_shareholder_url_data(self.last_friday_date_str_for_financial_statement, company_code_number)
+    #     company_foreign_investors_shareholder_date_list = []
+    #     for index in range(len(g_data) - 1, -1, -1):
+    #         time_str = g_data[index].text
+    #         year = int(time_str[0:4])
+    #         month = int(time_str[4:6])
+    #         day = int(time_str[6:8])
+    #         company_foreign_investors_shareholder_date_list.append(CMN.CLS.FinanceDate(year, month, day))
+    #     return company_foreign_investors_shareholder_date_list
 
 
     def __generate_time_slice_by_workday(self, date_start, date_end, **kwargs):
@@ -174,64 +174,64 @@ class TimeSliceGenerator(object):
         return WorkdayCanlendar.WorkdayNearestIterator(date_start, date_end)
 
 
-    def __generate_time_slice_by_company_foreign_investors_shareholder(self, date_start, date_end, **kwargs):
-# The data type in the list is datetime
-        # if time_slice_cfg is None:
-        #     raise ValueError("The config should NOT be NULL")
-        # import pdb; pdb.set_trace()
-        company_code_number = kwargs.pop("company_code_number", None)
-        if company_code_number is None:
-            raise ValueError("Fail to find the 'company_code_number' in the config") 
-        company_foreign_investors_shareholder_date_list = self.__get_company_foreign_investors_shareholder_date_list(company_code_number)
-        if company_foreign_investors_shareholder_date_list is None:
-            raise ValueError("Fail to find the company[%s] foreign investors sharehold date list" % company_code_number)
-# Check time range
-        if date_end < company_foreign_investors_shareholder_date_list[0]:
-            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("The end day [%s] is earlier than the first one[%s]" % (date_end, company_foreign_investors_shareholder_date_list[0]))
-        if date_start > company_foreign_investors_shareholder_date_list[-1]:
-            raise CMN.EXCEPTION.WebScrapyIncorrectValueException("The start day [%s] is later than the last one[%s]" % (date_start, company_foreign_investors_shareholder_date_list[-1]))
+#     def __generate_time_slice_by_company_foreign_investors_shareholder(self, date_start, date_end, **kwargs):
+# # The data type in the list is datetime
+#         # if time_slice_cfg is None:
+#         #     raise ValueError("The config should NOT be NULL")
+#         # import pdb; pdb.set_trace()
+#         company_code_number = kwargs.pop("company_code_number", None)
+#         if company_code_number is None:
+#             raise ValueError("Fail to find the 'company_code_number' in the config") 
+#         company_foreign_investors_shareholder_date_list = self.__get_company_foreign_investors_shareholder_date_list(company_code_number)
+#         if company_foreign_investors_shareholder_date_list is None:
+#             raise ValueError("Fail to find the company[%s] foreign investors sharehold date list" % company_code_number)
+# # Check time range
+#         if date_end < company_foreign_investors_shareholder_date_list[0]:
+#             raise CMN.EXCEPTION.WebScrapyIncorrectValueException("The end day [%s] is earlier than the first one[%s]" % (date_end, company_foreign_investors_shareholder_date_list[0]))
+#         if date_start > company_foreign_investors_shareholder_date_list[-1]:
+#             raise CMN.EXCEPTION.WebScrapyIncorrectValueException("The start day [%s] is later than the last one[%s]" % (date_start, company_foreign_investors_shareholder_date_list[-1]))
 
-        if date_start < company_foreign_investors_shareholder_date_list[0]:
-            g_logger.warn("The start day [%s] is earlier than the first one[%s]" % (date_start, company_foreign_investors_shareholder_date_list[0]))
-            date_start = company_foreign_investors_shareholder_date_list[0]
-        if date_end > company_foreign_investors_shareholder_date_list[-1]:
-            g_logger.warn("The end day [%s] is later than the last one[%s]" % (date_end, company_foreign_investors_shareholder_date_list[-1]))
-            date_end = company_foreign_investors_shareholder_date_list[-1]
+#         if date_start < company_foreign_investors_shareholder_date_list[0]:
+#             g_logger.warn("The start day [%s] is earlier than the first one[%s]" % (date_start, company_foreign_investors_shareholder_date_list[0]))
+#             date_start = company_foreign_investors_shareholder_date_list[0]
+#         if date_end > company_foreign_investors_shareholder_date_list[-1]:
+#             g_logger.warn("The end day [%s] is later than the last one[%s]" % (date_end, company_foreign_investors_shareholder_date_list[-1]))
+#             date_end = company_foreign_investors_shareholder_date_list[-1]
 
-# Define the iterator
-        class TimeSliceIterator(object):
-            def __init__(self, date_start, date_end, date_list):
-                self.time_to_stop = False
-                # import pdb; pdb.set_trace()
-                self.start_index = next((index for index, date_cur in enumerate(date_list) if date_cur >= date_start), -1)
-                if self.start_index == -1:
-                    raise ValueError("Fail to find the start index of the start date: %s" % date_start)
-                self.end_index = next((index for index, date_cur in reversed(list(enumerate(date_list))) if date_cur <= date_end), -1)
-                if self.end_index == -1:
-                    raise ValueError("Fail to find the end index of the end date: %s" % date_end)
-                self.cur_index = self.start_index
-                self.date_list = date_list
+# # Define the iterator
+#         class TimeSliceIterator(object):
+#             def __init__(self, date_start, date_end, date_list):
+#                 self.time_to_stop = False
+#                 # import pdb; pdb.set_trace()
+#                 self.start_index = next((index for index, date_cur in enumerate(date_list) if date_cur >= date_start), -1)
+#                 if self.start_index == -1:
+#                     raise ValueError("Fail to find the start index of the start date: %s" % date_start)
+#                 self.end_index = next((index for index, date_cur in reversed(list(enumerate(date_list))) if date_cur <= date_end), -1)
+#                 if self.end_index == -1:
+#                     raise ValueError("Fail to find the end index of the end date: %s" % date_end)
+#                 self.cur_index = self.start_index
+#                 self.date_list = date_list
 
-            def __iter__(self):
-                return self
+#             def __iter__(self):
+#                 return self
 
-            def next(self):
-                # import pdb; pdb.set_trace()
-                if self.time_to_stop:
-                    raise StopIteration
-                cur_index = self.cur_index
-                if self.cur_index == self.end_index:
-                    self.time_to_stop = True
-                if not self.time_to_stop:
-                    self.cur_index += 1
-                return self.date_list[cur_index]
-# Check time type
-        if not isinstance(date_start, CMN.CLS.FinanceDate):
-            raise TypeError("The type of date_start should be FinanceDate, NOT %s" % type(date_start))
-        if not isinstance(date_end, CMN.CLS.FinanceDate):
-            raise TypeError("The type of date_end should be FinanceDate, NOT %s" % type(date_end))
+#             def next(self):
+#                 # import pdb; pdb.set_trace()
+#                 if self.time_to_stop:
+#                     raise StopIteration
+#                 cur_index = self.cur_index
+#                 if self.cur_index == self.end_index:
+#                     self.time_to_stop = True
+#                 if not self.time_to_stop:
+#                     self.cur_index += 1
+#                 return self.date_list[cur_index]
+# # Check time type
+#         if not isinstance(date_start, CMN.CLS.FinanceDate):
+#             raise TypeError("The type of date_start should be FinanceDate, NOT %s" % type(date_start))
+#         if not isinstance(date_end, CMN.CLS.FinanceDate):
+#             raise TypeError("The type of date_end should be FinanceDate, NOT %s" % type(date_end))
 
-        return TimeSliceIterator(date_start, date_end, company_foreign_investors_shareholder_date_list)
+#         return TimeSliceIterator(date_start, date_end, company_foreign_investors_shareholder_date_list)
 
 
     def __generate_time_slice_by_month(self, month_start, month_end, **kwargs):
@@ -337,34 +337,34 @@ class TimeSliceGenerator(object):
 
 
 # Need Thread-safe
-    def generate_time_slice(self, time_slice_type, time_duration_start, time_duration_end, **kwargs):
+    def generate_time_slice(self, time_slice_type, time_start, time_end, **kwargs):
         thread_lock.acquire()
-        self.__check_time_range(time_duration_start, time_duration_end)
+        self.__check_time_range(time_start, time_end)
         self.__init_today_time_cfg()
-        ret = (self.generate_time_slice_func_ptr[time_slice_type])(time_duration_start, time_duration_end, **kwargs)
+        ret = (self.generate_time_slice_func_ptr[time_slice_type])(time_start, time_end, **kwargs)
         thread_lock.release()
         return ret
 
 
-    def get_time_slice_len(self, time_slice_type, time_duration_start, time_duration_end, **kwargs):
-        timeslice_iterable = self.generate_time_slice(time_slice_type, time_duration_start, time_duration_end, **kwargs)
+    def get_time_slice_len(self, time_slice_type, time_start, time_end, **kwargs):
+        timeslice_iterable = self.generate_time_slice(time_slice_type, time_start, time_end, **kwargs)
         time_slice_iterable_len = 0
         for timeslice in timeslice_iterable:
             time_slice_iterable_len += 1
         return time_slice_iterable_len
 
 
-    def generate_time_range_slice(self, time_duration_start, time_duration_end, time_range=1):
+    def generate_time_range_slice(self, time_start, time_end, time_slice_size=1):
 # The data type in the list is datetime
 # Define the iterator
         class TimeSliceIterator(object):
-            def __init__(self, time_duration_start, time_duration_end, time_range):
+            def __init__(self, time_start, time_end, time_slice_size):
                 self.time_to_stop = False
                 # import pdb; pdb.set_trace()
-                self.time_duration_cur = time_duration_start
-                self.time_duration_end = time_duration_end
-                self.time_range = time_range
-                self.time_offset = time_range - 1
+                self.time_cur = time_start
+                self.time_end = time_end
+                self.time_slice_size = time_slice_size
+                self.time_offset = time_slice_size - 1
                 assert self.time_offset >= 0, "the time_offset[%d] can NOT be negative" % self.time_offset
 
             def __iter__(self):
@@ -375,22 +375,22 @@ class TimeSliceGenerator(object):
                 if self.time_to_stop:
                     raise StopIteration
 # Create the time range of the slice
-                time_slice_start = self.time_duration_cur
-                time_slice_end = min(time_slice_start + self.time_offset, self.time_duration_end)
-                self.time_duration_cur = self.time_duration_cur + self.time_range
-                if self.time_duration_cur > self.time_duration_end:
+                time_slice_start = self.time_cur
+                time_slice_end = min(time_slice_start + self.time_offset, self.time_end)
+                self.time_cur = self.time_cur + self.time_slice_size
+                if self.time_cur > self.time_end:
                     self.time_to_stop = True
                 # if not self.time_to_stop:
                     
                 return (time_slice_start, time_slice_end)
 
-        if type(time_duration_start) != type(time_duration_end):
-            raise TypeError("The types of time start[%s] and end[%s] are NOT identical" % (type(time_duration_start) != type(time_duration_end)))
-        if type(time_duration_start) is str:
-           time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start)
-           time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end)
+        if type(time_start) != type(time_end):
+            raise TypeError("The types of time start[%s] and end[%s] are NOT identical" % (type(time_start) != type(time_end)))
+        if type(time_start) is str:
+           time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start)
+           time_end = CMN.CLS.FinanceTimeBase.from_time_string(time_end)
 
-        return TimeSliceIterator(time_duration_start, time_duration_end, time_range)
+        return TimeSliceIterator(time_start, time_end, time_slice_size)
 
 
 #     def generate_source_time_slice(self, data_source_type, time_start, time_end, **kwargs):

@@ -73,30 +73,30 @@ class ScrapyConfigurer(object):
         return self.method
 
 
-    @property
-    def TimeType(self):
-        if not hasattr(self, "time_type"):
-            self.time_type = int(self.get_config("Common", "time_type"))
-        return self.time_type
+    # @property
+    # def TimeType(self):
+    #     if not hasattr(self, "time_type"):
+    #         self.time_type = int(self.get_config("Common", "time_type"))
+    #     return self.time_type
 
 
     @property
-    def TimeDurationRange(self):
-        if not hasattr(self, "time_duration_range"):
-            assert self.TimeType == CMN.DEF.DATA_TIME_DURATION_RANGE, "The time_duration_range should be %d, not %d" % (CMN_DEF.DATA_TIME_DURATION_RANGE, self.TimeType)
-            time_duration_range_list_str = self.get_config("Common", "time_duration_range")
-#             time_duration_range_list = time_duration_range_list_str.split(",")
-#             time_duration_range_list_len = len(time_duration_range_list)
+    def TimeRange(self):
+        if not hasattr(self, "time_range"):
+            # assert self.TimeType == CMN.DEF.DATA_TIME_DURATION_RANGE, "The time_range should be %d, not %d" % (CMN_DEF.DATA_TIME_DURATION_RANGE, self.TimeType)
+            time_range_str = self.get_config("Common", "time_range")
+#             time_range_list = time_range_list_str.split(",")
+#             time_range_list_len = len(time_range_list)
 #             time_range_start = time_range_end = None
-#             if time_duration_range_list_len == 2:
-#                 if not time_duration_range_list_str.startswith(","):
+#             if time_range_list_len == 2:
+#                 if not time_range_list_str.startswith(","):
 # # For time range
-#                     time_range_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
-#                 time_range_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_range_list[1])
-#             elif time_duration_range_list_len == 1:
-#                 time_range_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
-            self.time_duration_range = CMN.FUNC.parse_time_duration_range_str_to_object(time_duration_range_list_str)
-        return self.time_duration_range
+#                     time_range_start = CMN.CLS.FinanceTimeBase.from_time_string(time_range_list[0])
+#                 time_range_end = CMN.CLS.FinanceTimeBase.from_time_string(time_range_list[1])
+#             elif time_range_list_len == 1:
+#                 time_range_start = CMN.CLS.FinanceTimeBase.from_time_string(time_range_list[0])
+            self.time_range = CMN.FUNC.parse_time_range_str_to_object(time_range_str)
+        return self.time_range
 
 
     @property
@@ -117,10 +117,10 @@ class ScrapyConfigurer(object):
     # @property
     # def MethodTimeDurationRange(self):
     #     # import pdb; pdb.set_trace()
-    #     if not hasattr(self, "method_time_duration_range"):
-    #         self.method_time_duration_range = {}
-    #         method_description_time_duration_range_dict = self.get_config("MethodTimeDurationRange")
-    #         for method_description, time_duration_range_list_str in method_description_time_duration_range_dict.items():
+    #     if not hasattr(self, "method_time_range"):
+    #         self.method_time_range = {}
+    #         method_description_time_range_dict = self.get_config("MethodTimeDurationRange")
+    #         for method_description, time_range_list_str in method_description_time_range_dict.items():
     #             method_index = CMN.FUNC.get_method_index_from_description(method_description.decode(CMN.DEF.URL_ENCODING_UTF8))
-    #             self.method_time_duration_range[method_index] = CMN.FUNC.parse_time_duration_range_str_to_object(time_duration_range_list_str)
-    #     return self.method_time_duration_range
+    #             self.method_time_range[method_index] = CMN.FUNC.parse_time_range_str_to_object(time_range_list_str)
+    #     return self.method_time_range

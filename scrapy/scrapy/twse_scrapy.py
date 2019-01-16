@@ -55,7 +55,7 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
     __TWSE_ULR_PREFIX = "http://www.twse.com.tw/"
 
     __MARKET_SCRAPY_CFG = {
-        "taiwan weighted index and volume": { # 臺指選擇權賣權買權比
+        "taiwan weighted index and volume": { # 臺股指數及成交量
             "url": __TWSE_ULR_PREFIX + "cht/3/pcRatio",
             "url_time_range_format": "?queryStartDate={0}%2F{1:02d}}%2F{2:02d}&queryEndDate={0}%2F{1:02d}%2F{3:02d}",
             "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
@@ -124,7 +124,7 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
 
     def scrape_web(self, *args, **kwargs):
         url = None
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         scrapy_method_name = None
         try:
             scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
@@ -148,38 +148,37 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
     # 	self.csv_time_duration = csv_time_duration
 
 
-    @property
-    def ScrapyMethod(self):
-        return self.scrapy_method
+    # @property
+    # def ScrapyMethod(self):
+    #     return self.scrapy_method
 
-    @ScrapyMethod.setter
-    def ScrapyMethod(self, value):
-        # try:
-        #     self.method_list.index(value)
-        # except ValueError:
-        #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
-        #     g_logger.error(errmsg)
-        #     raise ValueError(errmsg)
-        # self.scrapy_method = value
-        # if self.scrapy_method_index is not None:
-        #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
-        #     self.scrapy_method_index = None
-        # raise NotImplementedError
-        self._set_scrapy_method(self, value)
+    # @ScrapyMethod.setter
+    # def ScrapyMethod(self, value):
+    #     # try:
+    #     #     self.method_list.index(value)
+    #     # except ValueError:
+    #     #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
+    #     #     g_logger.error(errmsg)
+    #     #     raise ValueError(errmsg)
+    #     # self.scrapy_method = value
+    #     # if self.scrapy_method_index is not None:
+    #     #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
+    #     #     self.scrapy_method_index = None
+    #     # raise NotImplementedError
+    #     self._set_scrapy_method(self, value)
 
 
-    @property
-    def ScrapyMethodIndex(self):
-        return self.scrapy_method_index
+    # @property
+    # def ScrapyMethodIndex(self):
+    #     return self.scrapy_method_index
 
-    @ScrapyMethodIndex.setter
-    def ScrapyMethodIndex(self, value):
-        # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
-        #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
-        # self.scrapy_method_index = value
-        # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
-        self._set_scrapy_method_index(self, value)
-
+    # @ScrapyMethodIndex.setter
+    # def ScrapyMethodIndex(self, value):
+    #     # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+    #     #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
+    #     # self.scrapy_method_index = value
+    #     # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
+    #     self._set_scrapy_method_index(self, value)
 
 
 if __name__ == '__main__':

@@ -204,8 +204,8 @@ class StatementDogScrapy(ScrapyBase.ScrapyBase):
 	def __init__(self):
 		self.webdriver = None
 		# self.csv_time_duration = None
-		self.company_number = None
-		self.company_group_number = None
+		# self.company_number = None
+		# self.company_group_number = None
 		self.company_number_changed = True
 
 
@@ -256,26 +256,26 @@ class StatementDogScrapy(ScrapyBase.ScrapyBase):
 	# 	self.csv_time_duration = csv_time_duration
 
 
-	@property
-	def CompanyNumber(self):
-		if self.company_number is None:
-			raise ValueError("self.company_number is NOT set")
-		return self.company_number
+	# @property
+	# def CompanyNumber(self):
+	# 	if self.company_number is None:
+	# 		raise ValueError("self.company_number is NOT set")
+	# 	return self.company_number
 
 	@CompanyNumber.setter
 	def CompanyNumber(self, company_number):
 		if self.company_number != company_number:
 			self.company_number_changed = True
-			self.company_number = company_number
+		super(StatementDogScrapy, self).CompanyNumber = company_number
 
 
-	@property
-	def CompanyGroupNumber(self):
-		return self.company_group_number
+	# @property
+	# def CompanyGroupNumber(self):
+	# 	return self.company_group_number
 
-	@CompanyGroupNumber.setter
-	def CompanyGroupNumber(self, company_group_number):
-		self.company_group_number = company_group_number
+	# @CompanyGroupNumber.setter
+	# def CompanyGroupNumber(self, company_group_number):
+	# 	self.company_group_number = company_group_number
 
 
 if __name__ == '__main__':

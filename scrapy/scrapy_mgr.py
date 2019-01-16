@@ -27,6 +27,7 @@ class ScrapyMgr(object):
         self.company_profile = None
         self.method_index_list = None
         self.company_group_set = None
+        self.time_cfg = None
         self.scrapy_obj_args = []
         self.scrapy_obj_kwargs = {}
 
@@ -69,15 +70,16 @@ class ScrapyMgr(object):
         CMN.FUNC.remove_finance_file_system(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize, need_field_description=True)
 
 
-    def set_config_from_file(self):
-        method_index_list = self.__get_configurer().Method
-        self.set_method(method_index_list)
-        company_word_list_string = self.__get_configurer().Company
-        self.set_company(company_word_list_string)
 
-
-    def set_method(self, method_index_list):
-        self.method_index_list = method_index_list
+    def set_method(self, method_index_list_string=None, method_index_list=None):
+        if method_index_list is not None:
+            self.method_index_list = method_index_list
+        else:
+            if method_index_list_string is not None:
+                self.method_index_list = CMN.FUNC.parse_method_str_to_list(method_index_list_string)
+            else:
+                # method_index_list_string = ",".join(map(str, range(CMN.DEF.SCRAPY_METHOD_END)))
+                self.method_index_list = range(CMN.DEF.SCRAPY_METHOD_END)
 
 
     def set_company(self, company_word_list_string=None):
@@ -86,6 +88,32 @@ class ScrapyMgr(object):
             # self.__transform_company_word_list_to_group_set(company_word_list)
         else:
             self.company_group_set = LIBS.CGS.CompanyGroupSet.get_whole_company_group_set()
+
+
+    def set_time(self, time_range_string=None):
+        if time_range_string is None:
+            time_range_string = ",%s," % CMN.FUNC.generate_today_time_str()
+        time_range_split = time_range_string.split(",")
+        self.time_cfg = {
+            "start": time_range_split[0] if len(time_range_split[0]) != 0 else None,
+            "end": time_range_split[1] if len(time_range_split[1]) != 0 else None,
+            "slice_size": int(time_range_split[2]) if len(time_range_split[2]) != 0 else None,
+        }
+
+
+    def set_scrapy_config_from_file(self):
+        method_index_list = self.__get_configurer().Method
+        self.set_method(method_index_list=method_index_list)
+        company_word_list_string = self.__get_configurer().Company
+        self.set_company(company_word_list_string)
+        time_range_string = self.__get_configurer().TimeRange
+        self.set_time(time_range_string)
+
+
+    def set_scrapy_config(self, method_index_list_string=None, company_word_list_string=None, time_range_string=None):
+        self.set_method(method_index_list_string)
+        self.set_company(company_word_list_string)
+        self.set_time(time_range_string)
 
 
     def set_finance_root_folderpath(self, csv_root_folderpath=None, update_dataset=False):
@@ -144,7 +172,7 @@ class ScrapyMgr(object):
             "max_data_count": self.xcfg['max_data_count'],
         }
 
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         for method_index in self.method_index_list:
             web_scrapy_class = CMN.FUNC.get_scrapy_class(method_index)
             if type(web_scrapy_class) is list:
@@ -154,17 +182,20 @@ class ScrapyMgr(object):
                 if not web_scrapy_class.check_scrapy_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):
                     g_logger.info(u"The CSV field config of %s does NOT exist, update it in %s......" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index], self.xcfg['finance_root_folderpath']))
                     self.update_csv_field(method_index)
+# Scrape the web data
                 with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                     web_scrapy_object.ScrapyMethodIndex = method_index
                     if not CMN.FUNC.scrapy_method_need_company_number(method_index):
+# Market
                         web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
                     else:
+# Stock
                         for company_group_number, company_number_list in  self.company_group_set.items():
                             for company_number in company_number_list:
-    # Update the config of the scrapy object
+# Update the config of the scrapy object
                                 web_scrapy_object.CompanyNumber = company_number
                                 web_scrapy_object.CompanyGroupNumber = company_group_number
-    # Scrape the web
+# Scrape the web
                                 # import pdb; pdb.set_trace()
                                 web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
         # 						g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))

@@ -936,7 +936,7 @@ class FinanceTimerThread(threading.Thread):
 
 
     def run(self):
-        while not self.exit_event.isSet( ):
+        while not self.exit_event.isSet():
             self.func_ptr(*self.func_args, **self.func_kwargs)
             self.exit_event.wait(self.interval)
 

@@ -124,14 +124,12 @@ class ScrapyBase(object):
 
 
     @classmethod
-    def _write_scrapy_data_to_csv(cls, csv_data_list, scrapy_method_index, finance_parent_folderpath, company_number=None, company_group_number=None, dry_run_only=False):
+    def find_scrapy_new_time_range_from_csv(cls, time_duration_start_str, time_duration_end_str, scrapy_method_index, finance_parent_folderpath, company_number=None, company_group_number=None):
         def get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict):
             if csv_time_duration_dict is not None:
                 if csv_time_duration_dict.get(scrapy_method_index, None) is not None:
                     return csv_time_duration_dict[scrapy_method_index]
             return None
-
-        assert csv_data_list is not None, "csv_data_list should NOT be None"
 
         # import pdb; pdb.set_trace()
         csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
@@ -139,8 +137,8 @@ class ScrapyBase(object):
 
         data_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method_index]["data_time_unit"]
 # Caution: Need transfrom the time string from unicode to string
-        time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[0][0]), data_time_unit)
-        time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[-1][0]), data_time_unit)
+        time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start_str, data_time_unit)
+        time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end_str, data_time_unit)
 
         csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
 
@@ -149,7 +147,37 @@ class ScrapyBase(object):
             time_duration_end,
             csv_old_time_duration_tuple
         )
+        return new_csv_extension_time_duration, web2csv_time_duration_update_tuple
+
+
+    @classmethod
+    def _write_scrapy_data_to_csv(cls, csv_data_list, scrapy_method_index, finance_parent_folderpath, company_number=None, company_group_number=None, dry_run_only=False):
+        def get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict):
+            if csv_time_duration_dict is not None:
+                if csv_time_duration_dict.get(scrapy_method_index, None) is not None:
+                    return csv_time_duration_dict[scrapy_method_index]
+            return None
+
+        assert csv_data_list is not None, "csv_data_list should NOT be None"
+#         # import pdb; pdb.set_trace()
+#         csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
+#         csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
+
+#         data_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method_index]["data_time_unit"]
+# # Caution: Need transfrom the time string from unicode to string
+#         time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[0][0]), data_time_unit)
+#         time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[-1][0]), data_time_unit)
+
+#         csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
+
+#         new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
+#             time_duration_start, 
+#             time_duration_end,
+#             csv_old_time_duration_tuple
+#         )
         # import pdb; pdb.set_trace()
+        new_csv_extension_time_duration, web2csv_time_duration_update_tuple = cls.find_scrapy_new_time_range_from_csv(str(csv_data_list[0][0]), str(csv_data_list[-1][0]), scrapy_method_index, finance_parent_folderpath, company_number, company_group_number)
+
         if  web2csv_time_duration_update_tuple is None:
             msg = None
             if company_number is not None:
@@ -162,8 +190,7 @@ class ScrapyBase(object):
         csv_filepath = CMN.FUNC.get_finance_data_csv_filepath(scrapy_method_index, finance_parent_folderpath, company_group_number, company_number)
 
 # Scrape the web data from each time duration
-        for web2csv_time_duration_update in web2csv_time_duration_update_tuple: 
-
+        for web2csv_time_duration_update in web2csv_time_duration_update_tuple:
             scrapy_msg = None
             if company_number is not None:
                 scrapy_msg = u"[%s:%s] %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
@@ -174,7 +201,6 @@ class ScrapyBase(object):
             if dry_run_only:
                 print scrapy_msg
                 continue
-
 # If it's required to add the new web data in front of the old CSV data, a file is created to backup the old CSV data
             web2csv_time_duration_update.backup_old_csv_if_necessary(csv_filepath)
             # sub_csv_data_list = cls._filter_scrapy_data(csv_data_list, web2csv_time_duration_update)
@@ -223,28 +249,28 @@ class ScrapyBase(object):
         CMN.FUNC.unicode_write_config_file_lines(csv_data_field_list, conf_filename, conf_folderpath)
 
 
-    @classmethod
-    def _set_scrapy_method(cls, obj, value):
-        try:
-            obj.method_list.index(value)
-        except ValueError:
-            errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
-            g_logger.error(errmsg)
-            raise ValueError(errmsg)
-        obj.scrapy_method = value
-        if obj.scrapy_method_index is not None:
-            g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(obj)))
-            obj.scrapy_method_index = None
-        raise NotImplementedError
+    # @classmethod
+    # def _set_scrapy_method(cls, obj, value):
+    #     try:
+    #         obj.method_list.index(value)
+    #     except ValueError:
+    #         errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
+    #         g_logger.error(errmsg)
+    #         raise ValueError(errmsg)
+    #     obj.scrapy_method = value
+    #     if obj.scrapy_method_index is not None:
+    #         g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(obj)))
+    #         obj.scrapy_method_index = None
+    #     raise NotImplementedError
 
 
-    @classmethod
-    def _set_scrapy_method_index(cls, obj, value):
-        # import pdb; pdb.set_trace()
-        if CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(obj):
-            raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(obj)))
-        obj.scrapy_method_index = value
-        obj.scrapy_method = CMN.DEF.SCRAPY_METHOD_NAME[obj.scrapy_method_index]
+    # @classmethod
+    # def _set_scrapy_method_index(cls, obj, value):
+    #     # import pdb; pdb.set_trace()
+    #     if CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(obj):
+    #         raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(obj)))
+    #     obj.scrapy_method_index = value
+    #     obj.scrapy_method = CMN.DEF.SCRAPY_METHOD_NAME[obj.scrapy_method_index]
 
 
     def __enter__(self):
@@ -253,6 +279,14 @@ class ScrapyBase(object):
 
     def __exit__(self, type, msg, traceback):
         return False
+
+
+    def __init__(self):
+        self.scrapy_method = None
+        self.scrapy_method_index = None
+        self.company_number = None
+        self.company_group_number = None
+        self.time_cfg = None
 
 
     def update_csv_field(self):
@@ -283,20 +317,11 @@ class ScrapyBase(object):
             total_csv_data_list = []
             total_csv_data_list_len = 0
 
-            data_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[self.scrapy_method_index]["data_time_unit"]
             time_range_cfg = kwargs.has_key("time_range")
-            time_end = time_range_cfg.get("end", None)
-            if time_end is None:
-                time_end = CMN.CLS.FinanceTimeBase.from_time_string(CMN.FUNC.generate_today_time_str(), data_time_unit)
-            time_range = time_range_cfg.get("None", None)
-            if time_range is None:
-                time_range = CMN.DEF.DEF_TIME_RANGE_LIST[data_time_unit]
             time_start = time_range_cfg.get("start", None)
-            if time_start is None:
-                time_offset = time_range - 1
-                time_start = time_end - time_offset 
-
-            for time_slice in time_slice_generator.generate_time_range_slice(time_start, time_end, time_range)):
+            time_end = time_range_cfg.get("end", None)
+            time_slice_size = time_range_cfg.get("slice_size", None)
+            for time_range_slice in time_slice_generator.generate_time_range_slice(time_start, time_end, time_slice_size):
                 # print "%s, %s" % (time_slice[0], time_slice[1])
 # New sub time range
                 time_range_cfg = {
@@ -333,42 +358,65 @@ class ScrapyBase(object):
     #     raise NotImplementedError
 
 
-    # @abstractmethod
-    # def _transform_time_str2obj(cls, time_unit, time_str):
-    #     raise NotImplementedError
-
-
     @property
     def ScrapyMethod(self):
-        raise NotImplementedError
+        return self.scrapy_method
 
     @ScrapyMethod.setter
-    def ScrapyMethod(self, value):
-        raise NotImplementedError
+    def ScrapyMethod(self, scrapy_method):
+        scrapy_method_index = None
+        try:
+            scrapy_method_index = CMN.DEF.SCRAPY_METHOD_NAME.index(scrapy_method)
+        except ValueError:
+            errmsg = "The method[%s] is NOT support in %s" % (scrapy_method, CMN.FUNC.get_instance_class_name(self))
+            g_logger.error(errmsg)
+            raise ValueError(errmsg)
+        self.scrapy_method = scrapy_method
+        self.scrapy_method_index = scrapy_method_index
 
 
     @property
     def ScrapyMethodIndex(self):
-        raise NotImplementedError
+        return self.scrapy_method_index
 
     @ScrapyMethodIndex.setter
-    def ScrapyMethodIndex(self, value):
-        raise NotImplementedError
+    def ScrapyMethodIndex(self, scrapy_method_index):
+        # import pdb; pdb.set_trace()
+        obj_class_name = CMN.FUNC.get_instance_class_name(self)
+        class_name = CMN.DEF.SCRAPY_METHOD_CLASS_NAME[scrapy_method_index]
+        incorrect_class_name = False
+        if type(class_name) is list:
+            incorrect_class_name = (obj_class_name not in class_name)
+        else:
+            incorrect_class_name = (obj_class_name == class_name)
+        if incorrect_class_name:
+            raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (scrapy_method_index, CMN.FUNC.get_instance_class_name(self)))
+        self.scrapy_method_index = scrapy_method_index
+        self.scrapy_method = CMN.DEF.SCRAPY_METHOD_NAME[self.scrapy_method_index]
 
 
     @property
     def CompanyNumber(self):
-        raise NotImplementedError
+        return self.company_number
 
     @CompanyNumber.setter
-    def CompanyNumber(self, value):
-        raise NotImplementedError
+    def CompanyNumber(self, company_number):
+        self.company_number = company_number
 
 
     @property
     def CompanyGroupNumber(self):
-        raise NotImplementedError
+        return self.company_group_number
 
     @CompanyGroupNumber.setter
-    def CompanyGroupNumber(self, value):
-        raise NotImplementedError
+    def CompanyGroupNumber(self, company_group_number):
+        self.company_group_number = company_group_number
+
+
+    @property
+    def TimeCfg(self):
+        return self.time_cfg
+
+    @TimeCfg.setter
+    def TimeCfg(self, time_cfg):
+        self.time_cfg = time_cfg

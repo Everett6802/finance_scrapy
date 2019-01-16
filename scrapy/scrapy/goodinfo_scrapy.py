@@ -209,8 +209,8 @@ class GoodInfoScrapy(ScrapyBase.ScrapyBase):
         # self.url = url
         self.webdriver = None
         # self.csv_time_duration = None
-        self.company_number = None
-        self.company_group_number = None
+        # self.company_number = None
+        # self.company_group_number = None
         # self.is_annual = True
 
 
@@ -261,56 +261,55 @@ class GoodInfoScrapy(ScrapyBase.ScrapyBase):
     # 	self.csv_time_duration = csv_time_duration
 
 
-    @property
-    def ScrapyMethod(self):
-        return self.scrapy_method
+    # @property
+    # def ScrapyMethod(self):
+    #     return self.scrapy_method
 
-    @ScrapyMethod.setter
-    def ScrapyMethod(self, value):
-        # try:
-        #     self.method_list.index(value)
-        # except ValueError:
-        #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
-        #     g_logger.error(errmsg)
-        #     raise ValueError(errmsg)
-        # self.scrapy_method = value
-        # if self.scrapy_method_index is not None:
-        #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
-        #     self.scrapy_method_index = None
-        # raise NotImplementedError
-        self._set_scrapy_method(self, value)
-
-
-    @property
-    def ScrapyMethodIndex(self):
-        return self.scrapy_method_index
-
-    @ScrapyMethodIndex.setter
-    def ScrapyMethodIndex(self, value):
-        # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
-        #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
-        # self.scrapy_method_index = value
-        # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
-        self._set_scrapy_method_index(self, value)
+    # @ScrapyMethod.setter
+    # def ScrapyMethod(self, value):
+    #     # try:
+    #     #     self.method_list.index(value)
+    #     # except ValueError:
+    #     #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
+    #     #     g_logger.error(errmsg)
+    #     #     raise ValueError(errmsg)
+    #     # self.scrapy_method = value
+    #     # if self.scrapy_method_index is not None:
+    #     #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
+    #     #     self.scrapy_method_index = None
+    #     # raise NotImplementedError
+    #     self._set_scrapy_method(self, value)
 
 
-    @property
-    def CompanyNumber(self):
-        return self.company_number
+    # @property
+    # def ScrapyMethodIndex(self):
+    #     return self.scrapy_method_index
 
-    @CompanyNumber.setter
-    def CompanyNumber(self, company_number):
-        self.company_number = company_number
+    # @ScrapyMethodIndex.setter
+    # def ScrapyMethodIndex(self, value):
+    #     # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+    #     #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
+    #     # self.scrapy_method_index = value
+    #     # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
+    #     self._set_scrapy_method_index(self, value)
 
 
-    @property
-    def CompanyGroupNumber(self):
-        return self.company_group_number
+    # @property
+    # def CompanyNumber(self):
+    #     return self.company_number
 
-    @CompanyGroupNumber.setter
-    def CompanyGroupNumber(self, company_group_number):
-        self.company_group_number = company_group_number
+    # @CompanyNumber.setter
+    # def CompanyNumber(self, company_number):
+    #     self.company_number = company_number
 
+
+    # @property
+    # def CompanyGroupNumber(self):
+    #     return self.company_group_number
+
+    # @CompanyGroupNumber.setter
+    # def CompanyGroupNumber(self, company_group_number):
+    #     self.company_group_number = company_group_number
 
 
 if __name__ == '__main__':

@@ -174,38 +174,46 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
     # 	self.csv_time_duration = csv_time_duration
 
 
-    @property
-    def ScrapyMethod(self):
-        return self.scrapy_method
+    # @property
+    # def ScrapyMethod(self):
+    #     return self.scrapy_method
 
-    @ScrapyMethod.setter
-    def ScrapyMethod(self, value):
-        # try:
-        #     self.method_list.index(value)
-        # except ValueError:
-        #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
-        #     g_logger.error(errmsg)
-        #     raise ValueError(errmsg)
-        # self.scrapy_method = value
-        # if self.scrapy_method_index is not None:
-        #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
-        #     self.scrapy_method_index = None
-        # raise NotImplementedError
-        self._set_scrapy_method(self, value)
+    # @ScrapyMethod.setter
+    # def ScrapyMethod(self, value):
+    #     # try:
+    #     #     self.method_list.index(value)
+    #     # except ValueError:
+    #     #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
+    #     #     g_logger.error(errmsg)
+    #     #     raise ValueError(errmsg)
+    #     # self.scrapy_method = value
+    #     # if self.scrapy_method_index is not None:
+    #     #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
+    #     #     self.scrapy_method_index = None
+    #     # raise NotImplementedError
+    #     self._set_scrapy_method(self, value)
 
 
-    @property
-    def ScrapyMethodIndex(self):
-        return self.scrapy_method_index
+    # @property
+    # def ScrapyMethodIndex(self):
+    #     return self.scrapy_method_index
 
-    @ScrapyMethodIndex.setter
-    def ScrapyMethodIndex(self, value):
-        # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
-        #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
-        # self.scrapy_method_index = value
-        # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
-        self._set_scrapy_method_index(self, value)
+    # @ScrapyMethodIndex.setter
+    # def ScrapyMethodIndex(self, value):
+    #     # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
+    #     #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
+    #     # self.scrapy_method_index = value
+    #     # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
+    #     self._set_scrapy_method_index(self, value)
 
+
+    # @property
+    # def TimeCfg(self):
+    #     return self.time_cfg
+
+    # @TimeCfg.setter
+    # def TimeCfg(self, value):
+    #     self.time_cfg = value
 
 
 if __name__ == '__main__':

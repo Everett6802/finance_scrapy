@@ -179,40 +179,40 @@ class WEarnScrapy(ScrapyBase.ScrapyBase):
         return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
 
 
-    @property
-    def ScrapyMethod(self):
-        return self.scrapy_method
+    # @property
+    # def ScrapyMethod(self):
+    #     return self.scrapy_method
 
-    @ScrapyMethod.setter
-    def ScrapyMethod(self, value):
-        self._set_scrapy_method(self, value)
-
-
-    @property
-    def ScrapyMethodIndex(self):
-        return self.scrapy_method_index
-
-    @ScrapyMethodIndex.setter
-    def ScrapyMethodIndex(self, value):
-        self._set_scrapy_method_index(self, value)
+    # @ScrapyMethod.setter
+    # def ScrapyMethod(self, value):
+    #     self._set_scrapy_method(self, value)
 
 
-    @property
-    def CompanyNumber(self):
-        return self.company_number
+    # @property
+    # def ScrapyMethodIndex(self):
+    #     return self.scrapy_method_index
 
-    @CompanyNumber.setter
-    def CompanyNumber(self, company_number):
-        self.company_number = company_number
+    # @ScrapyMethodIndex.setter
+    # def ScrapyMethodIndex(self, value):
+    #     self._set_scrapy_method_index(self, value)
 
 
-    @property
-    def CompanyGroupNumber(self):
-        return self.company_group_number
+    # @property
+    # def CompanyNumber(self):
+    #     return self.company_number
 
-    @CompanyGroupNumber.setter
-    def CompanyGroupNumber(self, company_group_number):
-        self.company_group_number = company_group_number
+    # @CompanyNumber.setter
+    # def CompanyNumber(self, company_number):
+    #     self.company_number = company_number
+
+
+    # @property
+    # def CompanyGroupNumber(self):
+    #     return self.company_group_number
+
+    # @CompanyGroupNumber.setter
+    # def CompanyGroupNumber(self, company_group_number):
+    #     self.company_group_number = company_group_number
 
 
 

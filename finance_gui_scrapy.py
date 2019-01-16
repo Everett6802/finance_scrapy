@@ -46,6 +46,10 @@ def show_usage_and_exit():
     print "  Format3: Company group number (ex. [Gg]12)"
     print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
     print ""
+    print "-t | --time\nDescription: The time range\nCaution: Some Scrapy Methods can't set time range\nOnly take effect when config_from_file is NOT set"
+    print "  Format: start_time, end_time, time_slice"
+    print "--time_until_last\nDescription: The time range until last day"
+    print ""
     print "--max_data_count\nDescription: Only scrape the latest N data\n"
     print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
 # Combination argument
@@ -54,12 +58,14 @@ def show_usage_and_exit():
     for scrapy_method_index, csv_filename in enumerate(CMN.DEF.SCRAPY_CSV_FILENAME):
         # import pdb; pdb.set_trace()
         scrapy_method = CMN.DEF.SCRAPY_METHOD_NAME[scrapy_method_index]
-        if not CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method]["need_company_number"]:
-            print "--update_%s\n--update_method%d\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
-            print "--update_%s_from_file\n--update_method%d_from_file\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
+        scrarpy_method_costant_cfg = CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method]
+        can_set_time_range = scrarpy_method_costant_cfg["can_set_time_range"]
+        if not scrarpy_method_costant_cfg["need_company_number"]:
+            print "--update_%s\n--update_method%d\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath %s --reserve_old\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, ("--time_until_last" if can_set_time_range else ""))
+            # print "--update_%s_from_file\n--update_method%d_from_file\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
         else:
-            print "--update_company_%s\n--update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
-            print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
+            print "--update_company_%s\n--update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath %s --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, ("--time_until_last" if can_set_time_range else ""))
+            # print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --dataset_finance_folderpath --reserve_old --config_from_file\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index)
     sys.exit(0)
 
 
@@ -112,12 +118,15 @@ def init_param():
     param_cfg["update_csv_field"] = False
     param_cfg["method"] = None
     param_cfg["company"] = None
+    param_cfg["time_until_last"] = False
+    param_cfg["time"] = None
     param_cfg["max_data_count"] = None
     param_cfg["enable_company_not_found_exception"] = False
 # combination arguments
     combination_param_cfg["update_dataset_method"] = None
     combination_param_cfg["update_dataset_config_from_file"] = False
     combination_param_cfg["update_dataset_company_list"] = None
+    combination_param_cfg["update_dataset_time"] = None
     combination_param_cfg['update_dataset_enable'] = False
 
 
@@ -164,6 +173,12 @@ def parse_param():
             index_offset = 2
         elif re.match("(-c|--company)", sys.argv[index]):
             param_cfg["company"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--time_until_last", sys.argv[index]):
+            param_cfg["time_until_last"] = True
+            index_offset = 1
+        elif re.match("(-t|--time)", sys.argv[index]):
+            param_cfg["time"] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--max_data_count", sys.argv[index]):
             param_cfg["max_data_count"] = int(sys.argv[index + 1])
@@ -241,29 +256,45 @@ def check_param():
 
 # Adjust the parameters setting for combination arguments
     if combination_param_cfg["update_dataset_method"] is not None:
-        if combination_param_cfg["update_dataset_config_from_file"]:
-            method_index = int(combination_param_cfg["update_dataset_method"])
-            if CMN.FUNC.is_stock_scrapy_method(method_index):
-                combination_param_cfg["update_dataset_company_list"] = CMN.CONF.GUIScrapyConfigurer.Instance().Company
-
+# Disable some arguments while updatinng dataset
         if param_cfg["config_from_file"]:
             show_warn("The 'config_from_file' argument won't take effect since 'combination argument' is set")
-        param_cfg["config_from_file"] = combination_param_cfg["update_dataset_config_from_file"]
+            param_cfg["config_from_file"] = False
         if param_cfg["method"] is not None:
             show_warn("The 'method' argument won't take effect since 'combination argument' is set")
-        param_cfg["method"] = combination_param_cfg["update_dataset_method"]
+            param_cfg["method"] = None
         if not param_cfg["dataset_finance_folderpath"]:
             show_warn("dataset_finance_folderpath' argument should be TRUE since 'combination argument' is set")
-        param_cfg["dataset_finance_folderpath"] = True
+            param_cfg["dataset_finance_folderpath"] = False
         if not param_cfg["reserve_old"]:
             show_warn("reserve_old' argument should be TRUE since 'combination argument' is set")
-        param_cfg["reserve_old"] = True
+            param_cfg["reserve_old"] = False
         if param_cfg["company"] is not None:
             show_warn("company' argument won't take effect since 'combination argument' is set")
-        param_cfg["company"] = combination_param_cfg["update_dataset_company_list"]
+            param_cfg["company"] = None
+        if param_cfg["time"] is not None:
+            show_warn("time' argument won't take effect since 'combination argument' is set")
+            param_cfg["time"] = None
 # Show error message to nofity the user
         if combination_param_cfg["update_dataset_enable"]:
             show_warn("Only the first argument of updating dataset takes effect")
+
+# Setup the cofig for updating dataset
+        param_cfg["config_from_file"] = combination_param_cfg["update_dataset_config_from_file"]
+        param_cfg["method"] = combination_param_cfg["update_dataset_method"]
+        param_cfg["dataset_finance_folderpath"] = True
+        param_cfg["reserve_old"] = True
+        method_index = int(param_cfg["method"])
+        if CMN.FUNC.scrapy_method_need_company_number(method_index):
+            if param_cfg["config_from_file"]:
+                combination_param_cfg["update_dataset_company_list"] = LIBS.CONF.ScrapyConfigurer.Instance().Company
+            else:
+                param_cfg["company"] = combination_param_cfg["update_dataset_company_list"]
+        if CMN.FUNC.scrapy_method_can_set_time_range(method_index):
+            if param_cfg["config_from_file"]:
+                combination_param_cfg["update_dataset_time"] = LIBS.CONF.ScrapyConfigurer.Instance().TimeRange
+            else:
+                param_cfg["time"] = combination_param_cfg["time"]
     else:
         if param_cfg["config_from_file"]:
             if param_cfg["method"] is not None:
@@ -272,10 +303,21 @@ def check_param():
             if param_cfg["company"] is not None:
                 param_cfg["company"] = None
                 show_warn("The 'company' argument is ignored since 'config_from_file' is set")
+            if param_cfg["time_until_last"]:
+                param_cfg["time_until_last"] = False
+                show_warn("The 'time_until_last' argument is ignored since 'config_from_file' is set")
+            if param_cfg["time"] is not None:
+                param_cfg["time"] = None
+                show_warn("The 'time' argument is ignored since 'config_from_file' is set")
         else:
-            if param_cfg["method"] is None:
-                # import pdb; pdb.set_trace()
-                param_cfg["method"] = ",".join(map(str, range(CMN.DEF.SCRAPY_METHOD_END)))
+            # if param_cfg["method"] is None:
+            #     # import pdb; pdb.set_trace()
+            #     param_cfg["method"] = ",".join(map(str, range(CMN.DEF.SCRAPY_METHOD_END)))
+            if param_cfg["time_until_last"]:
+                if param_cfg["time"] is not None:
+                    param_cfg["time"] = None
+                    show_warn("The 'time' argument is ignored since 'time_until_last' is set")
+                    # param_cfg["time"] = ",%s," % CMN.FUNC.generate_today_time_str()
 
     if param_cfg["dataset_finance_folderpath"]:
         if param_cfg["finance_folderpath"] is not None:
@@ -285,17 +327,9 @@ def check_param():
 def setup_param():
 # Set method/compnay
     if param_cfg["config_from_file"]:
-        g_mgr.set_config_from_file()
+        g_mgr.set_scrapy_config_from_file()
     else:
-# Set method
-        method_index_list = None
-        if param_cfg["method"] is not None:
-            method_index_list = CMN.FUNC.parse_method_str_to_list(param_cfg["method"])
-        g_mgr.set_method(method_index_list)
-# Set Company
-        if param_cfg["company"] is not None:
-            g_mgr.set_company(param_cfg["company"])
-
+        g_mgr.set_scrapy_config(param_cfg["method"], param_cfg["company"], param_cfg["time"])
     g_mgr.reserve_old_finance_folder(param_cfg["reserve_old"])
     g_mgr.enable_dry_run(param_cfg["dry_run"])
     if param_cfg["dataset_finance_folderpath"]:
@@ -393,14 +427,18 @@ if __name__ == "__main__":
     # print csv_old_time_duration_tuple.time_duration_end
     # print web2csv_time_duration_update_tuple
 
-    time_start = CMN.CLS.FinanceDate("2018-12-03")
-    time_end = CMN.CLS.FinanceDate("2018-12-13")
+    # time_start = CMN.CLS.FinanceDate("2018-12-03")
+    # time_end = CMN.CLS.FinanceDate("2018-12-13")
 
-    time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
-    for index, time_slice in enumerate(time_slice_generator.generate_time_range_slice(time_start, time_end, 5)):
-        print "%d: %s, %s" % (index, time_slice[0], time_slice[1])
+    # time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
+    # for index, time_slice in enumerate(time_slice_generator.generate_time_range_slice(time_start, time_end, 5)):
+    #     print "%d: %s, %s" % (index, time_slice[0], time_slice[1])
 
-    sys.exit(0)
+    # my_derived = MyDerived()
+    # my_derived.show()
+    # print "Var: %d" % my_derived.Var
+
+    # sys.exit(0)
 
 # Parse the parameters and apply to manager class
     init_param()

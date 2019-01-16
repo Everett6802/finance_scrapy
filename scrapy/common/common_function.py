@@ -1188,17 +1188,20 @@ def parse_method_str_to_list(method_str):
     return method_index_list
 
 
-def parse_time_duration_range_str_to_object(time_duration_range_list_str):
-    time_duration_range_list = time_duration_range_list_str.split(",")
-    time_duration_range_list_len = len(time_duration_range_list)
-    time_range_start = time_range_end = None
-    if time_duration_range_list_len == 2:
-        if not time_duration_range_list_str.startswith(","):
+def parse_time_range_str_to_object(time_range_str):
+    time_range_list = time_range_str.split(",")
+    time_range_list_len = len(time_range_list)
+    time_start = time_end = time_slice = None
+    if time_range_list_len == 2:
+        if len(time_range_list[0]) != 0:
 # For time range
-            time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
-        time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(time_duration_range_list[1])
-    elif time_duration_range_list_len == 1:
-        time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(time_duration_range_list[0])
+            time_range_start = CMN_CLS.FinanceTimeBase.from_time_string(time_range_list[0])
+        if len(time_range_list[1]) != 0:
+            time_range_end = CMN_CLS.FinanceTimeBase.from_time_string(time_range_list[1])
+    elif time_range_list_len == 3:
+        time_slice = int(time_range_list[2])
+    else:
+        raise ValueError("Incorrect timme range string format: %s" % time_range_list_str)
     return (time_range_start, time_range_end)
 
 
@@ -1343,6 +1346,17 @@ def scrapy_method_need_company_number(scrapy_method):
     else:
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
     return need_company_number
+
+
+def scrapy_method_can_set_time_range(scrapy_method):
+    can_set_time_range = None
+    if type(scrapy_method) is str:
+        can_set_time_range = CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method]['can_set_time_range']
+    elif type(scrapy_method) is int:
+        can_set_time_range = CMN_DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method]['can_set_time_range']
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return can_set_time_range
 
 
 def get_finance_data_folderpath(finance_parent_folderpath, company_group_number=None, company_number=None):
