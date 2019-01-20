@@ -78,6 +78,9 @@ class TaifexScrapyMeta(type):
 class TaifexScrapy(ScrapyBase.ScrapyBase):
 
     __metaclass__ = TaifexScrapyMeta
+
+    _CAN_SET_TIME_RANGE = True
+
     __TAIFEX_ULR_PREFIX = "http://www.taifex.com.tw/"
 
     __MARKET_SCRAPY_CFG = {

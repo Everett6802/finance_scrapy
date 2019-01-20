@@ -172,7 +172,7 @@ class ScrapyMgr(object):
             "max_data_count": self.xcfg['max_data_count'],
         }
 
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         for method_index in self.method_index_list:
             web_scrapy_class = CMN.FUNC.get_scrapy_class(method_index)
             if type(web_scrapy_class) is list:
@@ -185,6 +185,7 @@ class ScrapyMgr(object):
 # Scrape the web data
                 with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                     web_scrapy_object.ScrapyMethodIndex = method_index
+                    web_scrapy_object.TimeCfg = self.time_cfg
                     if not CMN.FUNC.scrapy_method_need_company_number(method_index):
 # Market
                         web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
