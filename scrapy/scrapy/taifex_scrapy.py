@@ -152,7 +152,7 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
 
 
     def scrape_web(self, *args, **kwargs):
-        url = None
+        # url = None
         # import pdb; pdb.set_trace()
         # scrapy_method_name = None
         # try:

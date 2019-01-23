@@ -1,7 +1,8 @@
 # -*- coding: utf8 -*-
 
 import re
-from bs4 import BeautifulSoup
+# from bs4 import BeautifulSoup
+import json
 from datetime import datetime, timedelta
 import scrapy.common as CMN
 import scrapy_class_base as ScrapyBase# as ScrapyBase
@@ -11,30 +12,40 @@ g_logger = CMN.LOG.get_logger()
 def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     url = scrapy_cfg['url']
-    if kwargs.has_key("month") is not None:
-        finance_month = kwargs["month"]
-        year = finance_month.year
-        month = finance_month.month
-        start_date = 1
-        end_date = finance_month.get_last_date_of_month()
-        url_time_range = scrapy_cfg["url_time_range_format"].format(year, month, start_date, end_date)  
+    if kwargs.has_key("time_range"):
+        time_range_cfg = kwargs["time_range"]
+        time_start = time_range_cfg['start']
+        time_end = time_range_cfg['end']
+        assert time_start == time_end, "The start[%s] and end[%s] months are NOT identical" % (time_start, time_end)
+        url_time_range = scrapy_cfg["url_time_range_format"].format(time_start.year, time_start.month)  
         url += url_time_range
 
-    def parse_url(url_data):
-        pass
-
-    web_data = ScrapyBase.try_get_web_data(url, parse_url)
-
-    data_name_list = []
-    data_list = []
-    web_data_len = len(web_data)
-    # print "len: %d" % data_len
-    for tr in web_data[web_data_len - 1 : 0 : -1]:
-        td = tr.select('td')
-        entry = [str(td[0].text.replace("/", "-")),]
-        for index in range(1, 7):
-            entry.append(str(td[index].text).replace(',', ''))
-        data_list.append(entry)
+    parse_data_name = kwargs.get("parse_data_name", True)
+    parse_data = kwargs.get("parse_data", True)
+    def parse_url_data(req):
+        # import pdb; pdb.set_trace()
+        scrapy_res = json.loads(req.text)
+        data_name_list = None
+        if parse_data_name:
+            data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
+            scrapy_res_field = scrapy_res['fields']
+            data_name_list.extend(scrapy_res_field[1:])
+        data_list = None
+        if parse_data:
+            data_list = []
+            scrapy_res_data = scrapy_res['data']
+            for entry in scrapy_res_data:
+                date_list = str(entry[0]).split('/')
+                if len(date_list) != 3:
+                    raise RuntimeError("The date format is NOT as expected: %s", date_list)
+                date_str = CMN.FUNC.transform_date_str((int(date_list[0]) + CMN.DEF.REPUBLIC_ERA_YEAR_OFFSET), int(date_list[1]), int(date_list[2]))
+                data_element_list = [date_str,]
+                data_element_list.extend(entry[1:])
+                data_list.append(data_element_list)
+        # import pdb; pdb.set_trace()
+        return (data_list, data_name_list)
+    data_list, data_name_list = ScrapyBase.ScrapyBase.try_request_web_data(url, parse_url_data)
+    # import pdb; pdb.set_trace()
     return (data_list, data_name_list)
 
 
@@ -52,12 +63,15 @@ class TwseScrapyMeta(type):
 class TwseScrapy(ScrapyBase.ScrapyBase):
 
     __metaclass__ = TwseScrapyMeta
+
+    _CAN_SET_TIME_RANGE = True
+
     __TWSE_ULR_PREFIX = "http://www.twse.com.tw/"
 
     __MARKET_SCRAPY_CFG = {
         "taiwan weighted index and volume": { # 臺股指數及成交量
-            "url": __TWSE_ULR_PREFIX + "cht/3/pcRatio",
-            "url_time_range_format": "?queryStartDate={0}%2F{1:02d}}%2F{2:02d}&queryEndDate={0}%2F{1:02d}%2F{3:02d}",
+            "url": __TWSE_ULR_PREFIX + "exchangeReport/FMTQIK?response=json",
+            "url_time_range_format": "&date={0}{1:02d}01",
             "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
         },
     }
@@ -123,15 +137,16 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
 
 
     def scrape_web(self, *args, **kwargs):
-        url = None
+        # url = None
         # import pdb; pdb.set_trace()
-        scrapy_method_name = None
-        try:
-            scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
-        except:
-            raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
-        scrapy_cfg = self.__SCRAPY_CFG[scrapy_method_name]
-        return (self.__FUNC_PTR[self.scrapy_method])(scrapy_cfg, *args, **kwargs)
+        # scrapy_method_name = None
+        # try:
+        #     scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
+        # except:
+        #     raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
+        # scrapy_cfg = self.__SCRAPY_CFG[scrapy_method_name]
+        # return (self.__FUNC_PTR[self.scrapy_method])(scrapy_cfg, *args, **kwargs)
+        return (self.__FUNC_PTR[self.scrapy_method])(self.__SCRAPY_CFG[self.scrapy_method], *args, **kwargs)
 
 
     # def update_csv_field(self):

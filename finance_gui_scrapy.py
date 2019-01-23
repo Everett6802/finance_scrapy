@@ -430,13 +430,15 @@ if __name__ == "__main__":
     # time_start = CMN.CLS.FinanceDate("2018-12-03")
     # time_end = CMN.CLS.FinanceDate("2018-12-13")
 
+    # time_start = CMN.CLS.FinanceMonth("2017-12")
+    # time_end = CMN.CLS.FinanceMonth("2018-12")
     # time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
-    # for index, time_slice in enumerate(time_slice_generator.generate_time_range_slice(time_start, time_end, 5)):
+    # for index, time_slice in enumerate(time_slice_generator.generate_time_range_slice(time_start, time_end)):
     #     print "%d: %s, %s" % (index, time_slice[0], time_slice[1])
 
-    # my_derived = MyDerived()
-    # my_derived.show()
-    # print "Var: %d" % my_derived.Var
+    # # my_derived = MyDerived()
+    # # my_derived.show()
+    # # print "Var: %d" % my_derived.Var
 
     # sys.exit(0)
 

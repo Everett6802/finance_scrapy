@@ -185,6 +185,7 @@ class ScrapyMgr(object):
 # Scrape the web data
                 with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                     web_scrapy_object.ScrapyMethodIndex = method_index
+# The data type of the 'start' and 'end' in self.time_cfg is string
                     web_scrapy_object.TimeCfg = self.time_cfg
                     if not CMN.FUNC.scrapy_method_need_company_number(method_index):
 # Market

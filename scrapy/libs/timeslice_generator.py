@@ -354,7 +354,7 @@ class TimeSliceGenerator(object):
         return time_slice_iterable_len
 
 
-    def generate_time_range_slice(self, time_start, time_end, time_slice_size=1):
+    def generate_time_range_slice(self, time_start, time_end, time_slice_size=1, time_unit=None):
 # The data type in the list is datetime
 # Define the iterator
         class TimeSliceIterator(object):
@@ -389,7 +389,9 @@ class TimeSliceGenerator(object):
         if type(time_start) is str:
            time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start)
            time_end = CMN.CLS.FinanceTimeBase.from_time_string(time_end)
-
+        if (time_unit is not None) and (time_start.get_time_unit_type() != time_unit):
+            time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start.to_string(), time_unit)
+            time_end = CMN.CLS.FinanceTimeBase.from_time_string(time_end.to_string(), time_unit)
         return TimeSliceIterator(time_start, time_end, time_slice_size)
 
 

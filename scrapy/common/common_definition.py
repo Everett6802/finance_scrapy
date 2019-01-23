@@ -100,7 +100,7 @@ TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING = {
 }
 
 REPUBLIC_ERA_YEAR_OFFSET = 1911
-START_YEAR = 1950
+START_YEAR = 2000
 END_YEAR = 2100
 START_DATE_STR = "%d-01-01" % START_YEAR
 END_DATE_STR = "%d-01-01" % END_YEAR
@@ -197,6 +197,8 @@ SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG = {# 臺股指數及成交量
     "module_name": "twse_scrapy",
     "class_name": "TwseScrapy",
     "data_time_unit": DATA_TIME_UNIT_DAY,
+    "scrapy_time_slice_unit": DATA_TIME_UNIT_MONTH,
+    "scrapy_time_slice_size": 1,
     "can_set_time_range": True,
 }
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_MARKET)
@@ -302,6 +304,9 @@ SCRAPY_METHOD_URL_TIME_UNIT = [cfg['data_time_unit'] for cfg in SCRAPY_METHOD_CO
 SCRAPY_METHOD_MODULE_NAME = [cfg["module_name"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_METHOD_CLASS_NAME = [cfg["class_name"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_CSV_FILENAME = [method_name.replace(" ", "_").lower() for method_name in SCRAPY_METHOD_NAME]
+SCRAPY_DATA_TIME_UNIT = [cfg["data_time_unit"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_TIME_SLICE_UNIT = [(cfg["scrapy_time_slice_unit"] if cfg.has_key("scrapy_time_slice_unit") else cfg["data_time_unit"]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_TIME_SLICE_DEFUALT_SIZE = [(cfg["scrapy_time_slice_size"] if cfg.has_key("scrapy_time_slice_size") else cfg["data_time_unit"]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME)
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_NAME)

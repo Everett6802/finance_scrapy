@@ -488,10 +488,18 @@ class FinanceMonth(FinanceTimeBase):
             if len(args) == 1:
                 time_cfg = None
                 if isinstance(args[0], str):
-                    mobj = CMN_FUNC.check_month_str_format(args[0])
-                    self.setup_year_value(mobj.group(1))
-                    # self.year = mobj.group(1)
-                    self.month = int(mobj.group(2))
+                    # mobj = CMN_FUNC.check_month_str_format(args[0])
+                    # self.setup_year_value(mobj.group(1))
+                    # # self.year = mobj.group(1)
+                    # self.month = int(mobj.group(2))
+                    if CMN_FUNC.is_date_str_format(args[0]):
+                        mobj = CMN_FUNC.check_date_str_format(args[0])
+                        self.setup_year_value(mobj.group(1))
+                        self.month = int(mobj.group(2))
+                    elif CMN_FUNC.is_month_str_format(args[0]):
+                        mobj = CMN_FUNC.check_week_str_format(args[0])
+                        self.setup_year_value(mobj.group(1))
+                        self.month = int(mobj.group(2))
                 elif isinstance(args[0], datetime) or isinstance(args[0], FinanceMonth):
                     self.setup_year_value(args[0].year)
                     # self.year = args[0].year

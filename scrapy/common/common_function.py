@@ -1360,6 +1360,39 @@ def scrapy_method_can_set_time_range(scrapy_method):
     return can_set_time_range
 
 
+def scrapy_method_need_time_slice_default_size(scrapy_method):
+    need_time_slice_default_size = None
+    if type(scrapy_method) is str:
+        need_time_slice_default_size = CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method].has_key('scrapy_time_slice_size')
+    elif type(scrapy_method) is int:
+        need_time_slice_default_size = CMN_DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method].has_key('scrapy_time_slice_size')
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return need_time_slice_default_size
+
+
+def scrapy_method_time_slice_default_size(scrapy_method):
+    time_slice_default_size = None
+    if type(scrapy_method) is str:
+        time_slice_default_size = CMN_DEF.SCRAPY_TIME_SLICE_DEFUALT_SIZE[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
+    elif type(scrapy_method) is int:
+        time_slice_default_size = CMN_DEF.SCRAPY_TIME_SLICE_DEFUALT_SIZE[scrapy_method]
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return time_slice_default_size
+
+
+def scrapy_method_time_slice_unit(scrapy_method):
+    time_slice_unit = None
+    if type(scrapy_method) is str:
+        time_slice_default_size = CMN_DEF.SCRAPY_TIME_SLICE_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
+    elif type(scrapy_method) is int:
+        time_slice_default_size = CMN_DEF.SCRAPY_TIME_SLICE_UNIT[scrapy_method]
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return time_slice_default_size
+
+
 def get_finance_data_folderpath(finance_parent_folderpath, company_group_number=None, company_number=None):
 # company_group_number:
 # None: Ignore

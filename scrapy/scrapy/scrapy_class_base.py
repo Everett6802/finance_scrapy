@@ -135,12 +135,12 @@ class ScrapyBase(object):
         csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
         csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
 
-        data_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method_index]["data_time_unit"]
+        data_time_unit = CMN.DEF.SCRAPY_DATA_TIME_UNIT[scrapy_method_index]
 # Caution: Need transfrom the time string from unicode to string
         if type(time_duration_start) is str: 
             time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start, data_time_unit)
         if type(time_duration_end) is str: 
-            time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end_str, data_time_unit)
+            time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end, data_time_unit)
 
         csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
 
@@ -160,7 +160,7 @@ class ScrapyBase(object):
     def _write_scrapy_data_to_csv(cls, csv_data_list, time_duration_start, time_duration_end, scrapy_method_index, finance_parent_folderpath, company_number=None, company_group_number=None, dry_run_only=False):
         assert csv_data_list is not None, "csv_data_list should NOT be None"
 # Check data time range
-        data_time_unit = CMN.DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method_index]["data_time_unit"]
+        data_time_unit = CMN.DEF.SCRAPY_DATA_TIME_UNIT[scrapy_method_index]
         if type(time_duration_start) is str: 
             time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start, data_time_unit)
         csv_time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[0][0]), data_time_unit)
@@ -305,41 +305,53 @@ class ScrapyBase(object):
 # Scrape web data
         # import pdb; pdb.set_trace()
         if set_time_range:
+# Define the time slice
+            time_slice_size = self.time_cfg.get("slice_size", None)
+            if time_slice_size is not None:
+                if CMN.FUNC.scrapy_method_need_time_slice_default_size(self.scrapy_method_index):
+                    g_logger.warn("%s should use time slice default size: %d" % (self.scrapy_method, CMN.FUNC.scrapy_method_time_slice_default_size(self.scrapy_method_index)))
+                    time_slice_size = None
+            if time_slice_size is None:
+                time_slice_size = CMN.FUNC.scrapy_method_time_slice_default_size(self.scrapy_method_index)
+# Adjust the scrapy time range according to the CSV file
+            _, web2csv_time_duration_update_tuple = self.find_scrapy_new_time_range_from_csv(self.time_cfg["start"], self.time_cfg["end"], self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number)
             time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
-            total_csv_data_list = []
-            total_csv_data_list_len = 0
-            finance_time_range = None
-            for time_range_slice in time_slice_generator.generate_time_range_slice(self.time_cfg["start"], self.time_cfg["end"], self.time_cfg["slice_size"]):
-                # print "%s, %s" % (time_slice[0], time_slice[1])
+            for web2csv_time_duration_update in web2csv_time_duration_update_tuple:
+                total_csv_data_list = []
+                total_csv_data_list_len = 0
+                finance_time_range = None
+                for time_range_slice in time_slice_generator.generate_time_range_slice(web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, time_slice_size, CMN.FUNC.scrapy_method_time_slice_unit(self.scrapy_method_index)):
+                    # print "%s, %s" % (time_slice[0], time_slice[1])
 # New sub time range
-                time_range_cfg = {
-                    "start": time_range_slice[0],
-                    "end": time_range_slice[1],
-                }
-                if finance_time_range is None:
-                    finance_time_range = CMN.CLS.FinanceTimeRange(time_range_slice[0], time_range_slice[1])
-                    # finance_time_range.time_start = time_range_slice[0]
-                    # finance_time_range.time_end = time_range_slice[1]
-                else:
-                    if time_range_slice[0] < finance_time_range.time_start:
-                        finance_time_range.time_start = time_range_slice[0]
-                    if time_range_slice[1] > finance_time_range.time_end:
-                        finance_time_range.time_end = time_range_slice[1]
+                    time_range_cfg = {
+                        "start": time_range_slice[0],
+                        "end": time_range_slice[1],
+                    }
+                    if finance_time_range is None:
+                        finance_time_range = CMN.CLS.FinanceTimeRange(time_range_slice[0], time_range_slice[1])
+                        # finance_time_range.time_start = time_range_slice[0]
+                        # finance_time_range.time_end = time_range_slice[1]
+                    else:
+                        if time_range_slice[0] < finance_time_range.time_start:
+                            finance_time_range.time_start = time_range_slice[0]
+                        if time_range_slice[1] > finance_time_range.time_end:
+                            finance_time_range.time_end = time_range_slice[1]
 # Update the sub time range to the config for scraping data
-                slice_kwargs = copy.deepcopy(kwargs)
-                slice_kwargs["time_range"] = time_range_cfg
+                    slice_kwargs = copy.deepcopy(kwargs)
+                    slice_kwargs["time_range"] = time_range_cfg
 # Scrape data in each sub time range
-                csv_data_list, _ = self.scrape_web(*args, **slice_kwargs)
-                csv_data_list_len = len(csv_data_list)
-                total_csv_data_list.extend(csv_data_list)
-                total_csv_data_list_len += csv_data_list_len
-                if total_csv_data_list_len >= 100:
-                    self._write_scrapy_data_to_csv(total_csv_data_list, finance_time_range.time_start, finance_time_range.time_end, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
-                    total_csv_data_list = []
-                    total_csv_data_list_len = 0
-                    finance_time_range = None
-            if total_csv_data_list_len != 0:
-                self._write_scrapy_data_to_csv(total_csv_data_list, finance_time_range.time_start, finance_time_range.time_end, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])         
+                    import pdb; pdb.set_trace()
+                    csv_data_list, _ = self.scrape_web(*args, **slice_kwargs)
+                    csv_data_list_len = len(csv_data_list)
+                    total_csv_data_list.extend(csv_data_list)
+                    total_csv_data_list_len += csv_data_list_len
+                    if total_csv_data_list_len >= 100:
+                        self._write_scrapy_data_to_csv(total_csv_data_list, finance_time_range.time_start, finance_time_range.time_end, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
+                        total_csv_data_list = []
+                        total_csv_data_list_len = 0
+                        finance_time_range = None
+                if total_csv_data_list_len != 0:
+                    self._write_scrapy_data_to_csv(total_csv_data_list, finance_time_range.time_start, finance_time_range.time_end, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])       
         else:
             csv_data_list, _ = self.scrape_web(*args, **kwargs)
             # import pdb; pdb.set_trace()
