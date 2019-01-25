@@ -30,6 +30,9 @@ class WorkdayCanlendar(object):
 # The first/last workday
         self.date_first = None
         self.date_last = None
+# The first/last month of workday
+        self.month_of_date_first = None
+        self.month_of_date_last = None
 ###############################################################################################
         self.update_from_web_flag = False # Should be updated for just one time
         self.date_start_year = self.date_start.year
@@ -291,6 +294,12 @@ class WorkdayCanlendar(object):
         return self.date_first
 
 
+    def get_first_month_of_workday(self):
+        if self.month_of_date_first is None:
+            self.month_of_date_first = CMN.CLS.FinanceMonth.get_finance_month_from_date(self.get_first_workday())
+        return self.month_of_date_first
+
+
     def get_last_workday(self):
         if self.date_last is None:
             if self.workday_canlendar is None:
@@ -306,6 +315,12 @@ class WorkdayCanlendar(object):
                 month = 12
                 self.date_last = CMN.CLS.FinanceDate(year, month, self.workday_canlendar[year][month - 1][-1]) 
         return self.date_last
+
+
+    def get_last_month_of_workday(self):
+        if self.month_of_date_last is None:
+            self.month_of_date_last = CMN.CLS.FinanceMonth.get_finance_month_from_date(self.get_last_workday())
+        return self.month_of_date_last
 
 
     def is_in_range(self, date_cur):
@@ -463,8 +478,18 @@ class WorkdayCanlendar(object):
 
 
     @property
+    def FirstMonthOfWorkday(self):
+        return self.get_first_month_of_workday()
+
+
+    @property
     def LastWorkday(self):
         return self.get_last_workday()
+
+
+    @property
+    def LastMonthOfWorkday(self):
+        return self.get_last_month_of_workday()
 
 
 ####################################################################################################

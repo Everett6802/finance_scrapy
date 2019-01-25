@@ -2,13 +2,11 @@
 # -*- coding: utf8 -*-
 
 import copy
+import time
 from abc import ABCMeta, abstractmethod
 
 import scrapy.common as CMN
 import scrapy.libs as LIBS
-# import scrapy_definition as CMN.DEF
-# import scrapy_function as CMN.FUNC
-# import libs.common as CMN
 g_logger = CMN.LOG.get_logger()
 
 
@@ -160,6 +158,7 @@ class ScrapyBase(object):
     def _write_scrapy_data_to_csv(cls, csv_data_list, time_duration_start, time_duration_end, scrapy_method_index, finance_parent_folderpath, company_number=None, company_group_number=None, dry_run_only=False):
         assert csv_data_list is not None, "csv_data_list should NOT be None"
 # Check data time range
+        # import pdb; pdb.set_trace()
         data_time_unit = CMN.DEF.SCRAPY_DATA_TIME_UNIT[scrapy_method_index]
         if type(time_duration_start) is str: 
             time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start, data_time_unit)
@@ -238,6 +237,37 @@ class ScrapyBase(object):
         conf_folderpath = "%s/%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
         conf_filename = ("%s" % CMN.DEF.SCRAPY_CSV_FILENAME[scrapy_method_index]) + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
         CMN.FUNC.unicode_write_config_file_lines(csv_data_field_list, conf_filename, conf_folderpath)
+
+
+    @classmethod
+    def _extend_csv_data_time_range(cls, scrapy_method_index, finance_time_range, extended_time_range_start, extended_time_range_end):
+        if not CMN.FUNC.scrapy_method_is_scrapy_and_data_time_unit_the_same(scrapy_method_index):
+            data_time_unit = CMN.FUNC.scrapy_method_data_time_unit(scrapy_method_index)
+            scrapy_time_unit = CMN.FUNC.scrapy_method_scrapy_time_unit(scrapy_method_index)
+            if data_time_unit == CMN.DEF.DATA_TIME_UNIT_DAY and scrapy_time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
+                assert extended_time_range_start == extended_time_range_end, "The extended time range start[%s] and end[%s] should be the same month" % (extended_time_range_start, extended_time_range_end)
+                workday_canlendar = LIBS.WC.WorkdayCanlendar.Instance()
+                # extended_time_range_date_start = None
+                if workday_canlendar.FirstMonthOfWorkday == extended_time_range_start:
+                    extended_time_range_start = workday_canlendar.FirstWorkday
+                else:
+                    extended_time_range_start = CMN.CLS.FinanceDate(extended_time_range_start.year, extended_time_range_start.month, 1)
+                # extended_time_range_date_end = None
+                if workday_canlendar.LastMonthOfWorkday == extended_time_range_end:
+                    extended_time_range_end = workday_canlendar.LastWorkday
+                else:
+                    extended_time_range_end = CMN.CLS.FinanceDate(extended_time_range_end.year, extended_time_range_end.month, extended_time_range_end.get_last_date_of_month())
+            else:
+                raise ValueError("Unsupport time unit to extend, data: %d, scrapy: %d" % (data_time_unit, scrapy_time_unit))
+
+        if finance_time_range is None:
+            finance_time_range = CMN.CLS.FinanceTimeRange(extended_time_range_start, extended_time_range_end)
+        else:
+            if extended_time_range_start < finance_time_range.time_start:
+                finance_time_range.time_start = extended_time_range_start
+            if extended_time_range_end > finance_time_range.time_end:
+                finance_time_range.time_end = extended_time_range_end
+        return finance_time_range
 
 
     # @classmethod
@@ -327,22 +357,22 @@ class ScrapyBase(object):
                         "start": time_range_slice[0],
                         "end": time_range_slice[1],
                     }
-                    if finance_time_range is None:
-                        finance_time_range = CMN.CLS.FinanceTimeRange(time_range_slice[0], time_range_slice[1])
-                        # finance_time_range.time_start = time_range_slice[0]
-                        # finance_time_range.time_end = time_range_slice[1]
-                    else:
-                        if time_range_slice[0] < finance_time_range.time_start:
-                            finance_time_range.time_start = time_range_slice[0]
-                        if time_range_slice[1] > finance_time_range.time_end:
-                            finance_time_range.time_end = time_range_slice[1]
+
+                    # if finance_time_range is None:
+                    #     finance_time_range = CMN.CLS.FinanceTimeRange(time_range_slice[0], time_range_slice[1])
+                    # else:
+                    #     if time_range_slice[0] < finance_time_range.time_start:
+                    #         finance_time_range.time_start = time_range_slice[0]
+                    #     if time_range_slice[1] > finance_time_range.time_end:
+                    #         finance_time_range.time_end = time_range_slice[1]
 # Update the sub time range to the config for scraping data
                     slice_kwargs = copy.deepcopy(kwargs)
                     slice_kwargs["time_range"] = time_range_cfg
 # Scrape data in each sub time range
-                    import pdb; pdb.set_trace()
+                    # import pdb; pdb.set_trace()
                     csv_data_list, _ = self.scrape_web(*args, **slice_kwargs)
                     csv_data_list_len = len(csv_data_list)
+                    finance_time_range = self._extend_csv_data_time_range(self.scrapy_method_index, finance_time_range, time_range_cfg["start"], time_range_cfg["end"])
                     total_csv_data_list.extend(csv_data_list)
                     total_csv_data_list_len += csv_data_list_len
                     if total_csv_data_list_len >= 100:

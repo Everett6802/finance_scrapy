@@ -40,7 +40,7 @@ def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
                     raise RuntimeError("The date format is NOT as expected: %s", date_list)
                 date_str = CMN.FUNC.transform_date_str((int(date_list[0]) + CMN.DEF.REPUBLIC_ERA_YEAR_OFFSET), int(date_list[1]), int(date_list[2]))
                 data_element_list = [date_str,]
-                data_element_list.extend(entry[1:])
+                data_element_list.extend([str(data_element).replace(',', '') for data_element in entry[1:]])
                 data_list.append(data_element_list)
         # import pdb; pdb.set_trace()
         return (data_list, data_name_list)

@@ -1385,12 +1385,45 @@ def scrapy_method_time_slice_default_size(scrapy_method):
 def scrapy_method_time_slice_unit(scrapy_method):
     time_slice_unit = None
     if type(scrapy_method) is str:
-        time_slice_default_size = CMN_DEF.SCRAPY_TIME_SLICE_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
+        time_slice_default_size = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
     elif type(scrapy_method) is int:
-        time_slice_default_size = CMN_DEF.SCRAPY_TIME_SLICE_UNIT[scrapy_method]
+        time_slice_default_size = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]
     else:
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
     return time_slice_default_size
+
+
+def scrapy_method_data_time_unit(scrapy_method):
+    data_time_unit = None
+    if type(scrapy_method) is str:
+        data_time_unit = CMN_DEF.SCRAPY_METHOD_DATA_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
+    elif type(scrapy_method) is int:
+        data_time_unit = CMN_DEF.SCRAPY_METHOD_DATA_TIME_UNIT[scrapy_method]
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return data_time_unit
+
+
+def scrapy_method_scrapy_time_unit(scrapy_method):
+    scrapy_time_unit = None
+    if type(scrapy_method) is str:
+        scrapy_time_unit = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
+    elif type(scrapy_method) is int:
+        scrapy_time_unit = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return scrapy_time_unit
+
+
+def scrapy_method_is_scrapy_and_data_time_unit_the_same(scrapy_method):
+    time_unit_the_same = None
+    if type(scrapy_method) is str:
+        time_unit_the_same = not CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method].has_key("scrapy_time_unit")
+    elif type(scrapy_method) is int:
+        time_unit_the_same = not CMN_DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method].has_key("scrapy_time_unit")
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return time_unit_the_same
 
 
 def get_finance_data_folderpath(finance_parent_folderpath, company_group_number=None, company_number=None):

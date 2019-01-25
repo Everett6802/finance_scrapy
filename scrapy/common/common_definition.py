@@ -197,7 +197,7 @@ SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG = {# 臺股指數及成交量
     "module_name": "twse_scrapy",
     "class_name": "TwseScrapy",
     "data_time_unit": DATA_TIME_UNIT_DAY,
-    "scrapy_time_slice_unit": DATA_TIME_UNIT_MONTH,
+    "scrapy_time_unit": DATA_TIME_UNIT_MONTH,
     "scrapy_time_slice_size": 1,
     "can_set_time_range": True,
 }
@@ -300,12 +300,12 @@ SCRAPY_METHOD_INDEX_CONSTANT_CFG = SCRAPY_METHOD_CONSTANT_CFG.values()
 SCRAPY_METHOD_LEN = len(SCRAPY_METHOD_NAME)
 SCRAPY_METHOD_NAME_TO_INDEX = {name: index for index, name in enumerate(SCRAPY_METHOD_NAME)}
 SCRAPY_METHOD_DESCRIPTION = [cfg["description"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
-SCRAPY_METHOD_URL_TIME_UNIT = [cfg['data_time_unit'] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_METHOD_DATA_TIME_UNIT = [cfg['data_time_unit'] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_METHOD_MODULE_NAME = [cfg["module_name"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_METHOD_CLASS_NAME = [cfg["class_name"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_CSV_FILENAME = [method_name.replace(" ", "_").lower() for method_name in SCRAPY_METHOD_NAME]
 SCRAPY_DATA_TIME_UNIT = [cfg["data_time_unit"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
-SCRAPY_TIME_SLICE_UNIT = [(cfg["scrapy_time_slice_unit"] if cfg.has_key("scrapy_time_slice_unit") else cfg["data_time_unit"]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_METHOD_SCRAPY_TIME_UNIT = [(cfg["scrapy_time_unit"] if cfg.has_key("scrapy_time_unit") else cfg["data_time_unit"]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_TIME_SLICE_DEFUALT_SIZE = [(cfg["scrapy_time_slice_size"] if cfg.has_key("scrapy_time_slice_size") else cfg["data_time_unit"]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME)
@@ -637,7 +637,7 @@ SCRAPY_METHOD_END = len(SCRAPY_METHOD_NAME)
 # SCRAPY_STOCK_METHOD_START = SCRAPY_MARKET_METHOD_END
 # SCRAPY_STOCK_METHOD_END = len(SCRAPY_METHOD_DESCRIPTION)
 
-# SCRAPY_METHOD_URL_TIME_UNIT = [cfg['data_time_unit'] for cfg in SCRAPY_CLASS_CONSTANT_CFG if not cfg['is_duplicate_module']]
+# SCRAPY_METHOD_DATA_TIME_UNIT = [cfg['data_time_unit'] for cfg in SCRAPY_CLASS_CONSTANT_CFG if not cfg['is_duplicate_module']]
 
 # # SCRAPY_STOCK_METHOD_STATMENT_START = SCRAPY_METHOD_DESCRIPTION.index(u'資產負債表')
 # # SCRAPY_STOCK_METHOD_STATMENT_END = SCRAPY_METHOD_DESCRIPTION.index(u'股東權益變動表') + 1

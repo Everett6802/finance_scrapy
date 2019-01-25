@@ -29,11 +29,11 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 	if is_selenium:
 		SL.FUNC.check_scrapy_method_index_in_range(method_index, (company_code_number is not None))
 		conf_filename = SL.DEF.SCRAPY_CLASS_METHOD[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
-		data_time_unit = SL.DEF.SCRAPY_METHOD_URL_TIME_UNIT[method_index]
+		data_time_unit = SL.DEF.SCRAPY_METHOD_DATA_TIME_UNIT[method_index]
 	else:
 		CMN.FUNC.check_scrapy_method_index_in_range(method_index, (CMN.DEF.FINANCE_MODE_MARKET if (company_code_number is None) else CMN.DEF.FINANCE_MODE_STOCK))
 		conf_filename = CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
-		data_time_unit = CMN.DEF.SCRAPY_METHOD_URL_TIME_UNIT[method_index]
+		data_time_unit = CMN.DEF.SCRAPY_METHOD_DATA_TIME_UNIT[method_index]
 	if company_code_number is not None:
 		if company_group_number is None:
 			profile_lookup = BASE.CP.CompanyProfile.Instance()
@@ -109,8 +109,8 @@ def load_hybrid(method_index_list, company_code_number=None, field_index_dict=No
 			raise ValueError("Unsupport data type of method_index_list: %s" % type(method_index_list))
 
 # Check the time units of the methods are identical
-	SCRAPY_METHOD_URL_TIME_UNIT = SL.DEF.SCRAPY_METHOD_URL_TIME_UNIT if is_selenium else CMN.DEF.SCRAPY_METHOD_URL_TIME_UNIT
-	data_time_unit = [SCRAPY_METHOD_URL_TIME_UNIT[method_index] for method_index in method_index_list]
+	SCRAPY_METHOD_DATA_TIME_UNIT = SL.DEF.SCRAPY_METHOD_DATA_TIME_UNIT if is_selenium else CMN.DEF.SCRAPY_METHOD_DATA_TIME_UNIT
+	data_time_unit = [SCRAPY_METHOD_DATA_TIME_UNIT[method_index] for method_index in method_index_list]
 	if len(filter(lambda time_unit: time_unit != data_time_unit[0], data_time_unit)) != 0:
 		raise ValueError("The time unit[%s] are NOT identical" % data_time_unit)
 
