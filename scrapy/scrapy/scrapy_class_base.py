@@ -130,18 +130,32 @@ class ScrapyBase(object):
             return None
 
         # import pdb; pdb.set_trace()
+# Check old data time range
         csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
         csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
+        csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
+        csv_old_data_exist = True
+        if csv_old_time_duration_tuple is None:
+            msg = ("No %s:%s data......" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number)) if company_number is not None else ("No %s data......" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index])
+            g_logger.debug(msg)
+            csv_old_data_exist = False
 
         data_time_unit = CMN.DEF.SCRAPY_DATA_TIME_UNIT[scrapy_method_index]
 # Caution: Need transfrom the time string from unicode to string
-        if type(time_duration_start) is str: 
-            time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start, data_time_unit)
+# Set the end time
+        if time_duration_end is None:
+            time_duration_end = CMN.FUNC.generate_today_time_str()
         if type(time_duration_end) is str: 
             time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end, data_time_unit)
-
-        csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
-
+# Set the start time
+        if time_duration_start is None:
+            if csv_old_data_exist:
+                time_duration_start = csv_old_time_duration_tuple.time_duration_end
+            else:
+                time_duration_start = time_duration_end - CMN.DEF.DEF_TIME_RANGE_LIST[data_time_unit]
+        if type(time_duration_start) is str: 
+            time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start, data_time_unit)
+# Calculate the time range
         new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
             time_duration_start, 
             time_duration_end,
@@ -166,29 +180,21 @@ class ScrapyBase(object):
         if time_duration_start > csv_time_duration_start:
             raise ValueError("Incorrect time range: time_duration_start[%s] > csv_time_duration_start[%s]" % (time_duration_start, csv_time_duration_start))
         if type(time_duration_end) is str: 
-            time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end_str, data_time_unit)
+            time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end, data_time_unit)
         csv_time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(str(csv_data_list[-1][0]), data_time_unit)
         if time_duration_end < csv_time_duration_end:
             raise ValueError("Incorrect time range: time_duration_end[%s] < csv_time_duration_end[%s]" % (time_duration_end, csv_time_duration_end))
         # import pdb; pdb.set_trace()
         csv_time_duration_dict, web2csv_time_duration_update_tuple = cls.find_scrapy_new_time_range_from_csv(time_duration_start, time_duration_end, scrapy_method_index, finance_parent_folderpath, company_number, company_group_number)
         if  web2csv_time_duration_update_tuple is None:
-            msg = None
-            if company_number is not None:
-                msg = u"The data[%s:%s] is Update-to-Date" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number)
-            else:
-                msg = u"The data[%s] is Update-to-Date" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index]
+            msg = (u"The data[%s:%s] is Update-to-Date" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number)) if company_number is not None else (u"The data[%s] is Update-to-Date" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index])
             g_logger.debug(msg)
             return
 # Find the file path for writing data into csv
         csv_filepath = CMN.FUNC.get_finance_data_csv_filepath(scrapy_method_index, finance_parent_folderpath, company_group_number, company_number)
 # Scrape the web data from each time duration
         for web2csv_time_duration_update in web2csv_time_duration_update_tuple:
-            scrapy_msg = None
-            if company_number is not None:
-                scrapy_msg = u"[%s:%s] %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
-            else:
-                scrapy_msg = "[%s] %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)
+            scrapy_msg = ("[%s:%s] %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number, web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath)) if company_number is not None else ("[%s] %s:%s => %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, csv_filepath))
             g_logger.info(scrapy_msg)
 # Check if only dry-run
             if dry_run_only:
@@ -320,37 +326,46 @@ class ScrapyBase(object):
         if kwargs.get("parse_data_name", False):
             g_logger.warn("the 'parse_data_name' will NOT take effect")
         kwargs["parse_data_name"] = False
-        set_time_range = False
-        if self.time_cfg is not None:
-            if not self._CAN_SET_TIME_RANGE:
-                g_logger.warn("The method[%s] does NOT support time range setting !" % self.ScrapyMethod)
-            else:
-                set_time_range = True
 # Set company number if necessary
         company_number = None
         company_group_number = None
         if CMN.FUNC.scrapy_method_need_company_number(self.scrapy_method_index):
             company_number = self.company_number
             company_group_number = self.company_group_number
+# Set time if necessary
+        set_time_range = False
+        if self.time_cfg is not None:
+            if not self._CAN_SET_TIME_RANGE:
+                g_logger.warn("The method[%s] does NOT support time range setting !" % self.ScrapyMethod)
+            else:
+                set_time_range = True
+        else:
+            set_time_range = self._CAN_SET_TIME_RANGE
 # Scrape web data
         # import pdb; pdb.set_trace()
         if set_time_range:
+            time_cfg_start = None
+            time_cfg_end = None
+            time_cfg_slice_size = None
+            if self.time_cfg is not None:
+                time_cfg_start = self.time_cfg.get("start", None)
+                time_cfg_end = self.time_cfg.get("end", None)
+                time_cfg_slice_size = self.time_cfg.get("slice_size", None)
 # Define the time slice
-            time_slice_size = self.time_cfg.get("slice_size", None)
-            if time_slice_size is not None:
+            if time_cfg_slice_size is not None:
                 if CMN.FUNC.scrapy_method_need_time_slice_default_size(self.scrapy_method_index):
                     g_logger.warn("%s should use time slice default size: %d" % (self.scrapy_method, CMN.FUNC.scrapy_method_time_slice_default_size(self.scrapy_method_index)))
-                    time_slice_size = None
-            if time_slice_size is None:
-                time_slice_size = CMN.FUNC.scrapy_method_time_slice_default_size(self.scrapy_method_index)
+                    time_cfg_slice_size = None
+            if time_cfg_slice_size is None:
+                time_cfg_slice_size = CMN.FUNC.scrapy_method_time_slice_default_size(self.scrapy_method_index)
 # Adjust the scrapy time range according to the CSV file
-            _, web2csv_time_duration_update_tuple = self.find_scrapy_new_time_range_from_csv(self.time_cfg["start"], self.time_cfg["end"], self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number)
+            _, web2csv_time_duration_update_tuple = self.find_scrapy_new_time_range_from_csv(time_cfg_start, time_cfg_end, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number)
             time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
             for web2csv_time_duration_update in web2csv_time_duration_update_tuple:
                 total_csv_data_list = []
                 total_csv_data_list_len = 0
                 finance_time_range = None
-                for time_range_slice in time_slice_generator.generate_time_range_slice(web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, time_slice_size, CMN.FUNC.scrapy_method_time_slice_unit(self.scrapy_method_index)):
+                for time_range_slice in time_slice_generator.generate_time_range_slice(web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, time_cfg_slice_size, CMN.FUNC.scrapy_method_time_slice_unit(self.scrapy_method_index)):
                     # print "%s, %s" % (time_slice[0], time_slice[1])
 # New sub time range
                     time_range_cfg = {
@@ -387,7 +402,7 @@ class ScrapyBase(object):
             # import pdb; pdb.set_trace()
             time_range_start = str(csv_data_list[0][0])
             time_range_end = str(csv_data_list[-1][0])
-            self._write_scrapy_data_to_csv(csv_data_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
+            self._write_scrapy_data_to_csv(csv_data_list, time_range_start, time_range_end, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
 
 
     @abstractmethod

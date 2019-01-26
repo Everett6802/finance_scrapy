@@ -91,14 +91,16 @@ class ScrapyMgr(object):
 
 
     def set_time(self, time_range_string=None):
-        if time_range_string is None:
-            time_range_string = ",%s," % CMN.FUNC.generate_today_time_str()
-        time_range_split = time_range_string.split(",")
-        self.time_cfg = {
-            "start": time_range_split[0] if len(time_range_split[0]) != 0 else None,
-            "end": time_range_split[1] if len(time_range_split[1]) != 0 else None,
-            "slice_size": int(time_range_split[2]) if len(time_range_split[2]) != 0 else None,
-        }
+        if time_range_string is not None:
+            # time_range_string = ",%s," % CMN.FUNC.generate_today_time_str()
+            time_range_split = time_range_string.split(",")
+            self.time_cfg = {
+                "start": time_range_split[0] if len(time_range_split[0]) != 0 else None,
+                "end": time_range_split[1] if len(time_range_split[1]) != 0 else None,
+                "slice_size": int(time_range_split[2]) if len(time_range_split) == 3 else None,
+            }
+        else:
+            self.time_cfg = None
 
 
     def set_scrapy_config_from_file(self):
@@ -200,9 +202,6 @@ class ScrapyMgr(object):
 # Scrape the web
                                 # import pdb; pdb.set_trace()
                                 web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
-        # 						g_logger.debug("Write %d data to %s" % (len(csv_data_list), csv_filepath))
-                    # else:
-                    #     raise ValueError("Unknown scrapy method index: %d" % method_index)
 
 
     def update_csv_field(self, method_index_list=None):

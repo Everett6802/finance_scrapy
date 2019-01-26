@@ -306,7 +306,7 @@ SCRAPY_METHOD_CLASS_NAME = [cfg["class_name"] for cfg in SCRAPY_METHOD_CONSTANT_
 SCRAPY_CSV_FILENAME = [method_name.replace(" ", "_").lower() for method_name in SCRAPY_METHOD_NAME]
 SCRAPY_DATA_TIME_UNIT = [cfg["data_time_unit"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_METHOD_SCRAPY_TIME_UNIT = [(cfg["scrapy_time_unit"] if cfg.has_key("scrapy_time_unit") else cfg["data_time_unit"]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
-SCRAPY_TIME_SLICE_DEFUALT_SIZE = [(cfg["scrapy_time_slice_size"] if cfg.has_key("scrapy_time_slice_size") else cfg["data_time_unit"]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_TIME_SLICE_DEFUALT_SIZE = [(cfg["scrapy_time_slice_size"] if cfg.has_key("scrapy_time_slice_size") else DEF_TIME_RANGE_LIST[cfg["data_time_unit"]]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME)
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_NAME)
