@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import seaborn as sns
 
-import libs.common as CMN
+from scrapy import common as CMN
 # from libs.common.common_variable import GlobalVar as GV
 import common_definition as DS_CMN_DEF
 # import common_variable as DS_CMN_VAR

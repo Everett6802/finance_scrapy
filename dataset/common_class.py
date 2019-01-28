@@ -1,9 +1,8 @@
 # -*- coding: utf8 -*-
 
-import libs.common as CMN
+from scrapy import common as CMN
 import common_definition as DS_CMN_DEF
 g_logger = CMN.LOG.get_logger()
-
 
 
 class StockPrice(object):

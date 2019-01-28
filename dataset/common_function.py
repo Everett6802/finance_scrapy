@@ -6,7 +6,7 @@ import pandas as pd
 import talib
 # conda install -c quantopian ta-lib=0.4.9
 # https://blog.csdn.net/fortiy/article/details/76531700
-import libs.common as CMN
+from scrapy import common as CMN
 import common_definition as DS_CMN_DEF
 #CAUTION: DO NOT import common_class here to avoid import loop
 # import common_class as DS_CMN_CLS

@@ -4,19 +4,19 @@ import numpy as np
 import pandas as pd
 # import matplotlib.pyplot as plt
 # import seaborn as sns
-import libs.common as CMN
-from libs.common.common_variable import GlobalVar as GV
-import libs.base as BASE
-import libs.selenium as SL
+from scrapy import common as CMN
+from scrapy.common.common_variable import GlobalVar as GV
+from scrapy import libs as LIBS
+# import libs.selenium as SL
 import common_definition as DS_CMN_DEF
 import common_variable as DS_CMN_VAR
 import common_function as DS_CMN_FUNC
 # import common_class as DS_CMN_CLS
 
-g_profile_lookup = BASE.CP.CompanyProfile.Instance()
+g_profile_lookup = LIBS.CP.CompanyProfile.Instance()
 
 
-def load_raw(method_index, company_code_number=None, field_index_list=None, company_group_number=None, is_selenium=False):
+def load_raw(method_index, company_code_number=None, field_index_list=None, company_group_number=None):
 	'''
 	CAUTION: 
 	The start field index must be 1
@@ -26,17 +26,12 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 	conf_filename = None
 	data_time_unit = None
 # Check method index
-	if is_selenium:
-		SL.FUNC.check_scrapy_method_index_in_range(method_index, (company_code_number is not None))
-		conf_filename = SL.DEF.SCRAPY_CLASS_METHOD[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
-		data_time_unit = SL.DEF.SCRAPY_METHOD_DATA_TIME_UNIT[method_index]
-	else:
-		CMN.FUNC.check_scrapy_method_index_in_range(method_index, (CMN.DEF.FINANCE_MODE_MARKET if (company_code_number is None) else CMN.DEF.FINANCE_MODE_STOCK))
-		conf_filename = CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
-		data_time_unit = CMN.DEF.SCRAPY_METHOD_DATA_TIME_UNIT[method_index]
+	CMN.FUNC.check_scrapy_method_index_in_range(method_index, (CMN.DEF.FINANCE_MODE_MARKET if (company_code_number is None) else CMN.DEF.FINANCE_MODE_STOCK))
+	conf_filename = CMN.DEF.SCRAPY_MODULE_NAME_BY_METHOD_MAPPING[method_index] + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
+	data_time_unit = CMN.DEF.SCRAPY_METHOD_DATA_TIME_UNIT[method_index]
 	if company_code_number is not None:
 		if company_group_number is None:
-			profile_lookup = BASE.CP.CompanyProfile.Instance()
+			profile_lookup = LIBS.CP.CompanyProfile.Instance()
 			company_group_number = profile_lookup.lookup_company_group_number(company_code_number)
 # Define the column name
 # Read the column description list
@@ -60,11 +55,7 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 			column_index_list.append(index)
 	# import pdb; pdb.set_trace()
 # Read the data in dataset
-	filepath = None
-	if is_selenium:
-		filepath = SL.FUNC.get_finance_data_csv_filepath(method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, company_group_number, company_code_number)
-	else:
-		filepath = CMN.FUNC.get_finance_data_csv_filepath(method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, company_group_number, company_code_number)
+	filepath = CMN.FUNC.get_finance_data_csv_filepath(method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, company_group_number, company_code_number)
 	df = None
 	# import pdb; pdb.set_trace()
 # Set the parameters for reading data from CSV
@@ -90,7 +81,7 @@ def load_raw(method_index, company_code_number=None, field_index_list=None, comp
 	return df, column_description_list
 
 
-def load_hybrid(method_index_list, company_code_number=None, field_index_dict=None, company_group_number=None, is_selenium=False):
+def load_hybrid(method_index_list, company_code_number=None, field_index_dict=None, company_group_number=None):
 	'''
 	# field_index_dict: The field index list in each method
 	# Format: 
@@ -109,7 +100,7 @@ def load_hybrid(method_index_list, company_code_number=None, field_index_dict=No
 			raise ValueError("Unsupport data type of method_index_list: %s" % type(method_index_list))
 
 # Check the time units of the methods are identical
-	SCRAPY_METHOD_DATA_TIME_UNIT = SL.DEF.SCRAPY_METHOD_DATA_TIME_UNIT if is_selenium else CMN.DEF.SCRAPY_METHOD_DATA_TIME_UNIT
+	SCRAPY_METHOD_DATA_TIME_UNIT = CMN.DEF.SCRAPY_METHOD_DATA_TIME_UNIT
 	data_time_unit = [SCRAPY_METHOD_DATA_TIME_UNIT[method_index] for method_index in method_index_list]
 	if len(filter(lambda time_unit: time_unit != data_time_unit[0], data_time_unit)) != 0:
 		raise ValueError("The time unit[%s] are NOT identical" % data_time_unit)
@@ -122,7 +113,7 @@ def load_hybrid(method_index_list, company_code_number=None, field_index_dict=No
 		if data_time_unit is None:
 			data_time_unit
 		field_index_list = (field_index_dict.get(method_index, None) if (field_index_dict is not None) else None)
-		df_new, column_description_list_new = load_raw(method_index, company_code_number, field_index_list, company_group_number, is_selenium)
+		df_new, column_description_list_new = load_raw(method_index, company_code_number, field_index_list, company_group_number)
 		if df is None:
 			df = df_new
 			column_description_list.extend(column_description_list_new)
@@ -140,12 +131,12 @@ def load_stock_hybrid(method_index_list, company_code_number, field_index_dict=N
 	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number)
 
 
-def load_selenium_market_hybrid(method_index_list, field_index_dict=None):
-	return load_hybrid(method_index_list, field_index_dict=field_index_dict, is_selenium=True)
+# def load_selenium_market_hybrid(method_index_list, field_index_dict=None):
+# 	return load_hybrid(method_index_list, field_index_dict=field_index_dict)
 
 
-def load_selenium_stock_hybrid(method_index_list, company_code_number, field_index_dict=None, company_group_number=None):
-	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number, is_selenium=True)
+# def load_selenium_stock_hybrid(method_index_list, company_code_number, field_index_dict=None, company_group_number=None):
+# 	return load_hybrid(method_index_list, company_code_number, field_index_dict=field_index_dict, company_group_number=company_group_number)
 
 
 def transfrom_stock_price_time_unit(df, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DAY):
@@ -203,16 +194,16 @@ def transfrom_stock_price_time_unit(df, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DA
 def load_stock_price_history(company_number, overwrite_stock_price_list=None, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DAY):
 # overwrite_stock_price_list
 # Format: Date O:OpenPrice H:HighPrice L:LowPrice C:ClosePrice; Ex. 180613 O:98.6 H: 100.5 L: 97.9 C 99.9
-    df, column_description_list = load_stock_hybrid(CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX, company_number)
+    df, column_description_list = load_stock_hybrid(CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX, company_number)
     # df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'change', '0908': 'volume'}, inplace=True)
 # "成交張數", "開盤價", "最高價", "最低價", "收盤價", "漲跌價差",
     new_columns={
-    	('%02d01' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'volume', 
-    	('%02d03' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'open', 
-    	('%02d04' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'high', 
-    	('%02d05' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'low', 
-    	('%02d06' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'close', 
-    	('%02d07' % CMN.DEF.DAILY_STOCK_PRICE_AND_VOLUME_METHOD_INDEX): 'change',
+    	('%02d01' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'volume', 
+    	('%02d03' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'open', 
+    	('%02d04' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'high', 
+    	('%02d05' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'low', 
+    	('%02d06' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'close', 
+    	('%02d07' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'change',
     }
     df.rename(columns=new_columns, inplace=True)
     # import pdb; pdb.set_trace()

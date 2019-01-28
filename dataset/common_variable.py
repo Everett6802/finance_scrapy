@@ -1,8 +1,8 @@
 # -*- coding: utf8 -*-
 
 import os
-import libs.common as CMN
-from libs.common.common_variable import GlobalVar as GV
+from scrapy import common as CMN
+from scrapy.common.common_variable import GlobalVar as GV
 import common_definition as DS_CMN_DEF
 
 

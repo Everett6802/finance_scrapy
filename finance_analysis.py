@@ -6,9 +6,9 @@ import re
 import sys
 import time
 import subprocess
-from libs import common as CMN
-from libs.common.common_variable import GlobalVar as GV
-from libs import base as BASE
+from scrapy import common as CMN
+from scrapy.common.common_variable import GlobalVar as GV
+from scrapy import libs as LIBS
 # from dataset import dataset_loader as DSL
 import dataset as DS
 from dataset.common_variable import DatasetVar as DV

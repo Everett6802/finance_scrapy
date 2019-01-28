@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 
-import libs.common as CMN
+from scrapy import common as CMN
 import common_definition as DS_CMN_DEF
 # import common_variable as DS_CMN_VAR
 import common_function as DS_CMN_FUNC
