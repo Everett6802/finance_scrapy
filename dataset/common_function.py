@@ -680,9 +680,12 @@ def find_stock_price_main_key_supprot_resistance(df, main_key_support_resistance
 # Return:
     # A list, element in a list:
     # 0: supoort date string, 1: resistance date string
+    # import pdb; pdb.set_trace()
     start_index = 0
     if main_key_support_resistance_start_date is not None:
         main_key_support_resistance_start_date_index = date2Date(main_key_support_resistance_start_date)
+# https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.Index.get_loc.html
+# Returns:  loc : int if unique index, slice if monotonic index, else mask
         start_index = df.index.get_loc(main_key_support_resistance_start_date_index)
     min_price = df.ix[start_index]['low']
     # min_price_H = df.ix[0]['high']
