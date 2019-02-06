@@ -15,9 +15,12 @@ class ScrapyBase(object):
     _CAN_SET_TIME_RANGE = False
 
     @classmethod
-    def request_web_data(cls, url, parse_url_method_func_ptr, pre_check_web_data_func_ptr=None, post_check_web_data_func_ptr=None):
+    def request_web_data(cls, url, parse_url_method_func_ptr, pre_check_web_data_func_ptr=None, post_check_web_data_func_ptr=None, url_encoding=None):
         # req = CMN.FUNC.try_to_request_from_url_and_check_return(url)
         req = CMN.FUNC.request_from_url_and_check_return(url)
+        # import pdb; pdb.set_trace()
+        if url_encoding is not None:
+            req.encoding = url_encoding
         if pre_check_web_data_func_ptr is not None: 
             pre_check_web_data_func_ptr(req)
         web_data_name = None
@@ -30,13 +33,13 @@ class ScrapyBase(object):
 
 
     @classmethod
-    def try_request_web_data(cls, url, parse_url_method_func_ptr, ignore_data_not_found_exception=False, pre_check_web_data_func_ptr=None, post_check_web_data_func_ptr=None):
+    def try_request_web_data(cls, url, parse_url_method_func_ptr, ignore_data_not_found_exception=False, pre_check_web_data_func_ptr=None, post_check_web_data_func_ptr=None, url_encoding=None):
         g_logger.debug("Scrape web data from URL: %s" % url)
         web_data_name = None
         web_data = None
         try:
 # Grab the data from website and assemble the data to the entry of CSV
-            web_data, web_data_name = cls.request_web_data(url, parse_url_method_func_ptr, pre_check_web_data_func_ptr, post_check_web_data_func_ptr)
+            web_data, web_data_name = cls.request_web_data(url, parse_url_method_func_ptr, pre_check_web_data_func_ptr, post_check_web_data_func_ptr, url_encoding)
         except CMN.EXCEPTION.WebScrapyNotFoundException as e:
             if not ignore_data_not_found_exception:
                 errmsg = None
@@ -57,7 +60,7 @@ class ScrapyBase(object):
                 g_logger.warn("Server is busy, let's retry...... %d", retry_times)
                 time.sleep(SLEEP_TIME_BEFORE_RETRY * retry_times)
                 try:
-                    web_data, web_data_name = cls.request_web_data(url, parse_url_method_func_ptr, pre_check_web_data_func_ptr, post_check_web_data_func_ptr)
+                    web_data, web_data_name = cls.request_web_data(url, parse_url_method_func_ptr, pre_check_web_data_func_ptr, post_check_web_data_func_ptr, url_encoding)
                     # assert (web_data is not None), "web_data should NOT be None"
                     if post_check_web_data_func_ptr is not None:
                         post_check_web_data_func_ptr(web_data)
@@ -242,6 +245,7 @@ class ScrapyBase(object):
     def _write_scrapy_field_data_to_config(cls, csv_data_field_list, scrapy_method_index, finance_parent_folderpath):
         conf_folderpath = "%s/%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
         conf_filename = ("%s" % CMN.DEF.SCRAPY_CSV_FILENAME[scrapy_method_index]) + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
+        # import pdb; pdb.set_trace()
         CMN.FUNC.unicode_write_config_file_lines(csv_data_field_list, conf_filename, conf_folderpath)
 
 
