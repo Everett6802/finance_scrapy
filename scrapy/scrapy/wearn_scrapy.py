@@ -76,7 +76,7 @@ class WEarnScrapy(ScrapyBase.ScrapyBase):
     __WEARN_ULR_PREFIX = "https://stock.wearn.com/"
 
     __MARKET_SCRAPY_CFG = {
-        "TFE open interest": { # 台指期未平倉(大額近月、法人所有月)
+        "tfe open interest": { # 台指期未平倉(大額近月、法人所有月)
             "url": __WEARN_ULR_PREFIX + "taifexphoto.asp",
             # "table_time_unit_description_list": [u"日",],
        },
@@ -109,7 +109,7 @@ class WEarnScrapy(ScrapyBase.ScrapyBase):
 
     __FUNC_PTR = {
 # market start
-        "TFE open interest": _scrape_tfe_open_interest_,
+        "tfe open interest": _scrape_tfe_open_interest_,
 # market end
 # stock start
 # stock end
@@ -217,16 +217,16 @@ class WEarnScrapy(ScrapyBase.ScrapyBase):
 
 
 if __name__ == '__main__':
-    with WEarnScrapy() as goodinfo:
-        goodinfo.CompanyNumber = "6274"
+    with WEarnScrapy() as wearn:
+        wearn.CompanyNumber = "6274"
         kwargs = {}
-        goodinfo.scrape("institutional investor net buy sell", **kwargs)
+        wearn.scrape("tfe open interest", **kwargs)
     	# kwargs["table_data_count"] = 2
 		# for scrapy_method in WEarnWebScrapy.get_scrapy_method_list():
-		# 	goodinfo.scrape(scrapy_method, **kwargs)
+		# 	wearn.scrape(scrapy_method, **kwargs)
 		# 	print "\n"
-		# goodinfo.scrape("legal_persion_buy_sell", **kwargs)
+		# wearn.scrape("legal_persion_buy_sell", **kwargs)
 		# import pdb; pdb.set_trace()
-		# (scrapy_list, scrapy_time_list, scrapy_name_list) = goodinfo.scrape("income statement", 2)
+		# (scrapy_list, scrapy_time_list, scrapy_name_list) = wearn.scrape("income statement", 2)
 		# import pdb; pdb.set_trace()
 	# 	print "Done"
