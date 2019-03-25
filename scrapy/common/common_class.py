@@ -483,6 +483,7 @@ class FinanceMonth(FinanceTimeBase):
         super(FinanceMonth, self).__init__()
         self.month = None # range: 1 - 12
         self.month_str = None
+        # import pdb; pdb.set_trace()
         try:
             format_unsupport = False
             if len(args) == 1:
@@ -497,7 +498,7 @@ class FinanceMonth(FinanceTimeBase):
                         self.setup_year_value(mobj.group(1))
                         self.month = int(mobj.group(2))
                     elif CMN_FUNC.is_month_str_format(args[0]):
-                        mobj = CMN_FUNC.check_week_str_format(args[0])
+                        mobj = CMN_FUNC.check_month_str_format(args[0])
                         self.setup_year_value(mobj.group(1))
                         self.month = int(mobj.group(2))
                 elif isinstance(args[0], datetime) or isinstance(args[0], FinanceMonth):
@@ -959,7 +960,7 @@ class CSVTimeRangeUpdate(object):
         # CSV_APPEND_BOTH = 3 #  new web data will be appended in front and back(both) of the old csv data
 
     @classmethod
-    def get_init_csv_time_duration_update(cls, time_duration_start, time_duration_end):
+    def __get_init_csv_time_duration_update(cls, time_duration_start, time_duration_end):
         # import pdb; pdb.set_trace()
 # If it's time first time to write the data from web to CSV ......
         web2csv_time_duration_update = cls()
@@ -971,14 +972,14 @@ class CSVTimeRangeUpdate(object):
 
 
     @classmethod
-    def get_extended_csv_time_duration_update(cls, time_duration_start, time_duration_end, csv_old_time_duration_tuple):
+    def __get_extended_csv_time_duration_update(cls, time_duration_start, time_duration_end, csv_old_time_duration_tuple, time_continuity=False, check_time_continuity_funcptr=None):
         # import pdb; pdb.set_trace()
 # Adjust the time duration, ignore the data which already exist in the finance data folder
 # I assume that the time duration between the csv data and new data should be consecutive
 # Two cases which the original time range can be extended successfully: 
 # (1) The new time range overlaps the original one
 # (2) The new time range fully covers the original one
-        overlap_case = CMN_FUNC.get_time_range_overlap_case(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end)
+        overlap_case = CMN_FUNC.get_time_range_overlap_case(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_continuity, check_time_continuity_funcptr)
         new_csv_extension_time_duration = None
         web2csv_time_duration_update_before = None
         web2csv_time_duration_update_after = None
@@ -1030,15 +1031,15 @@ class CSVTimeRangeUpdate(object):
             return (new_csv_extension_time_duration, (web2csv_time_duration_update_before, web2csv_time_duration_update_after,),)
 # If the time range of new data contain all the time range of csv data, the system is not desiged to update two time range interval
         else:
-            raise CMN_EXCEPT.WebScrapyUnDefiedCaseException("The system does NOT support this type[2] of the range update; CSV data[%s:%s], new data[%s:%s]" % (csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
+            raise CMN_EXCEPT.WebScrapyUnDefiedCaseException("The system does NOT support this type[%d] of the range update; CSV data[%s:%s], new data[%s:%s]" % (overlap_case, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_duration_start, time_duration_end))
 
 
     @classmethod
-    def get_csv_time_duration_update(cls, time_duration_start, time_duration_end, csv_old_time_duration_tuple=None):
+    def get_csv_time_duration_update(cls, time_duration_start, time_duration_end, csv_old_time_duration_tuple=None, time_continuity=False, check_time_continuity_funcptr=None):
         if csv_old_time_duration_tuple is None:
-            return cls.get_init_csv_time_duration_update(time_duration_start, time_duration_end)
+            return cls.__get_init_csv_time_duration_update(time_duration_start, time_duration_end)
         else:
-            return cls.get_extended_csv_time_duration_update(time_duration_start, time_duration_end, csv_old_time_duration_tuple)
+            return cls.__get_extended_csv_time_duration_update(time_duration_start, time_duration_end, csv_old_time_duration_tuple, time_continuity, check_time_continuity_funcptr)
 
 
     def __init__(self):

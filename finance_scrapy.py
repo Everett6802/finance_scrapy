@@ -48,6 +48,9 @@ def show_usage_and_exit():
     print "-t | --time\nDescription: The time range\nCaution: Some Scrapy Methods can't set time range\nOnly take effect when config_from_file is NOT set"
     print "  Format1: start_time, end_time, time_slice"
     print "  Format2: start_time, end_time"
+    print "--time_at\nDescription: The time\nCaution: Some Scrapy Methods can't set time\nOnly take effect when config_from_file is NOT set"
+    print "  Format1: time, time_slice; Eqaul to --time time, time, time_slice"
+    print "  Format2: time; Eqaul to --time time, time"
     print "--time_until_last\nDescription: The time range until last day"
     print ""
     print "--max_data_count\nDescription: Only scrape the latest N data\n"
@@ -119,6 +122,7 @@ def init_param():
     param_cfg["method"] = None
     param_cfg["company"] = None
     param_cfg["time_until_last"] = False
+    param_cfg["time_at"] = None
     param_cfg["time"] = None
     param_cfg["max_data_count"] = None
     param_cfg["enable_company_not_found_exception"] = False
@@ -177,6 +181,9 @@ def parse_param():
         elif re.match("--time_until_last", sys.argv[index]):
             param_cfg["time_until_last"] = True
             index_offset = 1
+        elif re.match("--time_at", sys.argv[index]):
+            param_cfg["time_at"] = sys.argv[index + 1]
+            index_offset = 2
         elif re.match("(-t|--time)", sys.argv[index]):
             param_cfg["time"] = sys.argv[index + 1]
             index_offset = 2
@@ -308,9 +315,15 @@ def check_param():
                 param_cfg["time"] = None
                 show_warn("The 'time' argument is ignored since 'config_from_file' is set")
         else:
+            # import pdb; pdb.set_trace()
             # if param_cfg["method"] is None:
             #     # import pdb; pdb.set_trace()
             #     param_cfg["method"] = ",".join(map(str, range(CMN.DEF.SCRAPY_METHOD_END)))
+            if param_cfg["time_at"] is not None:
+                if param_cfg["time"] is not None:
+                    param_cfg["time"] = None
+                    show_warn("The 'time' argument is ignored since 'time_at' is set")
+                param_cfg["time"] = param_cfg["time_at"].split(",")[0] + "," + param_cfg["time_at"]
             if param_cfg["time_until_last"]:
                 if param_cfg["time"] is not None:
                     param_cfg["time"] = None
@@ -383,62 +396,11 @@ def do_scrapy():
 
 # import dataset as DS
 
+
 if __name__ == "__main__":
     # # # # df, _ = DS.LD.load_stock_price_history("2458", data_time_unit=CMN.DEF.DATA_TIME_UNIT_QUARTER)
     # # df, _ = DS.LD.load_revenue_history("2458")
     # # # df, _ = DS.LD.load_stock_price_history("2458")
-    # week_str = '2018W40'
-    # day_str = '2018-11-14'
-    # import pdb; pdb.set_trace()
-    # week_obj = CMN.CLS.FinanceWeek(day_str)
-    # print week_obj
-    # print (week_obj + 20)
-    # print (week_obj - 20)
-
-    # orig_start = CMN.CLS.FinanceDate("2019-01-03")
-    # orig_end = CMN.CLS.FinanceDate("2019-01-05")
-
-    # new_start = CMN.CLS.FinanceDate("2019-01-01")
-    # new_end = CMN.CLS.FinanceDate("2019-01-03")
-
-    # month_new_start = CMN.CLS.FinanceMonth("2019-06")
-    # month_new_end = CMN.CLS.FinanceMonth("2019-07")
-
-    # print min(new_end, new_start)
-    # # print (new_end + 1) == new_start
-    # # print (month_new_end - 1) == month_new_start
-    # # print (month_new_end > month_new_start)
-    # # print (type(month_new_end) == type(new_start))
-
-    # overlap_case = CMN.FUNC.get_time_range_overlap_case(new_start, new_end, orig_start, orig_end)
-    # print overlap_case
-
-    # # time_range_update = CMN.CLS.CSVTimeRangeUpdate.get_init_csv_time_duration_update(orig_start, orig_end)
-    # csv_old_time_duration_tuple = CMN.CLS.TimeDurationTuple(orig_start, orig_end)
-    # # csv_old_time_duration_tuple.time_duration_start = orig_start
-    # # csv_old_time_duration_tuple.time_duration_end = orig_end
-    # new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
-    #     new_start, 
-    #     new_end,
-    #     csv_old_time_duration_tuple
-    # )
-    # print csv_old_time_duration_tuple.time_duration_start
-    # print csv_old_time_duration_tuple.time_duration_end
-    # print web2csv_time_duration_update_tuple
-
-    # time_start = CMN.CLS.FinanceDate("2018-12-03")
-    # time_end = CMN.CLS.FinanceDate("2018-12-13")
-
-    # time_start = CMN.CLS.FinanceMonth("2017-12")
-    # time_end = CMN.CLS.FinanceMonth("2018-12")
-    # time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
-    # for index, time_slice in enumerate(time_slice_generator.generate_time_range_slice(time_start, time_end)):
-    #     print "%d: %s, %s" % (index, time_slice[0], time_slice[1])
-
-    # # my_derived = MyDerived()
-    # # my_derived.show()
-    # # print "Var: %d" % my_derived.Var
-
     # sys.exit(0)
 
 # Parse the parameters and apply to manager class

@@ -472,6 +472,25 @@ class WorkdayCanlendar(object):
         return date_nearest_prev
 
 
+    def is_consecutive_next_workday(self, date_cur, date_next):
+        return True if (self.get_nearest_next_workday(date_cur + 1) == date_next) else False
+
+
+    def is_consecutive_prev_workday(self, date_cur, date_prev):
+        return True if (self.get_nearest_prev_workday(date_cur - 1) == date_prev) else False
+
+
+    def is_consecutive_workdays(self, date1, date2):
+        date1_value = date1.get_value()
+        date2_value = date2.get_value()
+        if date1_value < date2_value:
+            return True if (self.get_nearest_next_workday(date1) == date2) else False
+        elif date1_value > date2_value:
+            return True if (self.get_nearest_prev_workday(date1) == date2) else False
+        else:
+            return False
+
+
     @property
     def FirstWorkday(self):
         return self.get_first_workday()

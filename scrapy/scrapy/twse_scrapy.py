@@ -12,13 +12,13 @@ g_logger = CMN.LOG.get_logger()
 def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     url = scrapy_cfg['url']
-    if kwargs.has_key("time_range"):
-        time_range_cfg = kwargs["time_range"]
-        time_start = time_range_cfg['start']
-        time_end = time_range_cfg['end']
-        assert time_start == time_end, "The start[%s] and end[%s] months are NOT identical" % (time_start, time_end)
-        url_time_range = scrapy_cfg["url_time_range_format"].format(time_start.year, time_start.month)  
-        url += url_time_range
+    if kwargs.has_key("time"):
+        time_cfg = kwargs["time"]
+        # time_start = time_cfg['start']
+        # time_end = time_cfg['end']
+        # assert time_start == time_end, "The start[%s] and end[%s] months are NOT identical" % (time_start, time_end)
+        url_time = scrapy_cfg["url_time_format"].format(time_cfg.year, time_cfg.month)  
+        url += url_time
 
     parse_data_name = kwargs.get("parse_data_name", True)
     parse_data = kwargs.get("parse_data", True)
@@ -71,7 +71,7 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
     __MARKET_SCRAPY_CFG = {
         "taiwan weighted index and volume": { # 臺股指數及成交量
             "url": __TWSE_ULR_PREFIX + "exchangeReport/FMTQIK?response=json",
-            "url_time_range_format": "&date={0}{1:02d}01",
+            "url_time_format": "&date={0}{1:02d}01",
             "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
         },
     }

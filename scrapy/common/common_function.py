@@ -1065,6 +1065,13 @@ def assemble_stock_csv_filepath_by_method_index(finance_root_folderpath, scrapy_
     return csv_filepath
 
 
+def assemble_scrapy_method_description(scrapy_method, company_number):
+    need_company_number = None
+    if type(scrapy_method) is str:
+        scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    return ("%s:%s" % (CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method], company_number)) if (company_number is not None) else ("%s" % CMN_DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method])
+
+
 # SCRAPY_WAIT_TIMEOUT = 8
 def request_from_url_and_check_return(url, timeout=None):
     if timeout is None:
@@ -1103,24 +1110,26 @@ def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_t
         return (True if (finance_time_range_start >= finance_time >= finance_time_range_end) else False)
 
 
-def get_time_range_overlap_case(new_finance_time_start, new_finance_time_end, orig_finance_time_start, orig_finance_time_end, finance_time_continuity=True):
-    assert new_finance_time_start <= new_finance_time_end, "The new start time[%s] should be smaller than the end time[%s]" % (new_finance_time_start.to_string(), new_finance_time_end.to_string())
-    assert orig_finance_time_start <= orig_finance_time_end, "The original start time[%s] should be smaller than the end time[%s]" % (orig_finance_time_start.to_string(), orig_finance_time_end.to_string())
+def get_time_range_overlap_case(new_time_start, new_time_end, orig_time_start, orig_time_end, time_continuity=False, check_time_continuity_funcptr=None):
+    assert new_time_start <= new_time_end, "The new start time[%s] should be smaller than the end time[%s]" % (new_time_start.to_string(), new_time_end.to_string())
+    assert orig_time_start <= orig_time_end, "The original start time[%s] should be smaller than the end time[%s]" % (orig_time_start.to_string(), orig_time_end.to_string())
     # import pdb ; pdb.set_trace()
-    if new_finance_time_end < orig_finance_time_start or new_finance_time_start > orig_finance_time_end:
-        if finance_time_continuity:
-            if new_finance_time_end < orig_finance_time_start:
-                assert type(new_finance_time_end) == type(orig_finance_time_start), "The time type [new_finance_time_end: %s, orig_finance_time_start: %s] is NOT identical" % (new_finance_time_end, orig_finance_time_start)
-                if new_finance_time_end + 1 == orig_finance_time_start:
+    if new_time_end < orig_time_start or new_time_start > orig_time_end:
+        if check_time_continuity_funcptr is not None:
+            return check_time_continuity_funcptr(new_time_start, new_time_end, orig_time_start, orig_time_end)
+        elif time_continuity:
+            if new_time_end < orig_time_start:
+                assert type(new_time_end) == type(orig_time_start), "The time type [new_time_end: %s, orig_time_start: %s] is NOT identical" % (new_time_end, orig_time_start)
+                if new_time_end + 1 == orig_time_start:
                     return CMN_DEF.TIME_OVERLAP_BEFORE
             else:
-                assert type(new_finance_time_start) == type(orig_finance_time_end), "The time type [new_finance_time_start: %s, orig_finance_time_end: %s] is NOT identical" % (new_finance_time_start, orig_finance_time_end) 
-                if new_finance_time_start - 1 == orig_finance_time_end:
+                assert type(new_time_start) == type(orig_time_end), "The time type [new_time_start: %s, orig_time_end: %s] is NOT identical" % (new_time_start, orig_time_end) 
+                if new_time_start - 1 == orig_time_end:
                     return CMN_DEF.TIME_OVERLAP_AFTER
         return CMN_DEF.TIME_OVERLAP_NONE
     else:
-        new_start_time_in_range = is_time_in_range(orig_finance_time_start, orig_finance_time_end, new_finance_time_start)
-        new_end_time_in_range = is_time_in_range(orig_finance_time_start, orig_finance_time_end, new_finance_time_end)
+        new_start_time_in_range = is_time_in_range(orig_time_start, orig_time_end, new_time_start)
+        new_end_time_in_range = is_time_in_range(orig_time_start, orig_time_end, new_time_end)
         if new_start_time_in_range and new_end_time_in_range:
             return CMN_DEF.TIME_OVERLAP_COVERED
         elif (not new_start_time_in_range) and new_end_time_in_range:
@@ -1360,69 +1369,98 @@ def scrapy_method_can_set_time_range(scrapy_method):
     return can_set_time_range
 
 
-def scrapy_method_need_time_slice_default_size(scrapy_method):
-    need_time_slice_default_size = None
+def scrapy_method_need_time_slice_size(scrapy_method):
+    need_time_slice_size = None
     if type(scrapy_method) is str:
-        need_time_slice_default_size = CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method].has_key('scrapy_time_slice_size')
+        need_time_slice_size = CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method].has_key('scrapy_time_slice_size')
     elif type(scrapy_method) is int:
-        need_time_slice_default_size = CMN_DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method].has_key('scrapy_time_slice_size')
+        need_time_slice_size = CMN_DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method].has_key('scrapy_time_slice_size')
     else:
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
-    return need_time_slice_default_size
+    return need_time_slice_size
 
 
 def scrapy_method_time_slice_default_size(scrapy_method):
-    time_slice_default_size = None
     if type(scrapy_method) is str:
-        time_slice_default_size = CMN_DEF.SCRAPY_TIME_SLICE_DEFUALT_SIZE[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
-    elif type(scrapy_method) is int:
-        time_slice_default_size = CMN_DEF.SCRAPY_TIME_SLICE_DEFUALT_SIZE[scrapy_method]
-    else:
+        scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    elif type(scrapy_method) is not int:
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
-    return time_slice_default_size
+
+    return CMN_DEF.SCRAPY_TIME_SLICE_DEFUALT_SIZE[scrapy_method]
 
 
-def scrapy_method_time_slice_unit(scrapy_method):
-    time_slice_unit = None
+def scrapy_method_csv_flush_threshold(scrapy_method):
     if type(scrapy_method) is str:
-        time_slice_default_size = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
-    elif type(scrapy_method) is int:
-        time_slice_default_size = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]
-    else:
+        scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    elif type(scrapy_method) is not int:
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
-    return time_slice_default_size
+
+    return CMN_DEF.SCRAPY_CSV_FLUSH_THRESHOLD[scrapy_method]
+
+
+# def scrapy_method_time_slice_unit(scrapy_method):
+#     time_slice_unit = None
+#     if type(scrapy_method) is str:
+#         time_slice_default_size = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
+#     elif type(scrapy_method) is int:
+#         time_slice_default_size = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]
+#     else:
+#         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+#     return time_slice_default_size
 
 
 def scrapy_method_data_time_unit(scrapy_method):
-    data_time_unit = None
     if type(scrapy_method) is str:
-        data_time_unit = CMN_DEF.SCRAPY_METHOD_DATA_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
-    elif type(scrapy_method) is int:
-        data_time_unit = CMN_DEF.SCRAPY_METHOD_DATA_TIME_UNIT[scrapy_method]
-    else:
+        scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    elif type(scrapy_method) is not int:
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
-    return data_time_unit
+
+    return CMN_DEF.SCRAPY_METHOD_DATA_TIME_UNIT[scrapy_method]
 
 
 def scrapy_method_scrapy_time_unit(scrapy_method):
-    scrapy_time_unit = None
     if type(scrapy_method) is str:
-        scrapy_time_unit = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]
-    elif type(scrapy_method) is int:
-        scrapy_time_unit = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]
-    else:
+        scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    elif type(scrapy_method) is not int:
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
-    return scrapy_time_unit
+
+    return CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]
+
+
+def scrapy_method_scrapy_time_unit_is_range(scrapy_method):
+    if type(scrapy_method) is str:
+        scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    elif type(scrapy_method) is not int:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+
+    scrapy_time_unit = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]
+    scrapy_time_unit_is_range = (scrapy_time_unit in CMN_DEF.TIMESLICE_GENERATE_BY_TIME_RANGE)
+    return scrapy_time_unit_is_range
 
 
 def scrapy_method_is_scrapy_and_data_time_unit_the_same(scrapy_method):
-    time_unit_the_same = None
     if type(scrapy_method) is str:
-        time_unit_the_same = not CMN_DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method].has_key("scrapy_time_unit")
-    elif type(scrapy_method) is int:
-        time_unit_the_same = not CMN_DEF.SCRAPY_METHOD_INDEX_CONSTANT_CFG[scrapy_method].has_key("scrapy_time_unit")
-    else:
+        scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    elif type(scrapy_method) is not int:
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+
+    scrapy_time_unit = CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]
+    if scrapy_time_unit is None:
+        return True
+    time_unit_the_same = None
+    data_time_unit = CMN_DEF.SCRAPY_DATA_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]]
+    mapped_scrapy_time_unit = CMN_DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[scrapy_time_unit]
+    time_unit_the_same = (data_time_unit == mapped_scrapy_time_unit)
+    # if type(scrapy_method) is str:
+    #     data_time_unit = CMN_DEF.SCRAPY_DATA_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]]
+    #     mapped_scrapy_time_unit = CMN_DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]]]
+    #     time_unit_the_same = (data_time_unit == mapped_scrapy_time_unit)
+    # elif type(scrapy_method) is int:
+    #     data_time_unit = CMN_DEF.SCRAPY_DATA_TIME_UNIT[CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]]
+    #     mapped_scrapy_time_unit = CMN_DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[CMN_DEF.SCRAPY_METHOD_SCRAPY_TIME_UNIT[scrapy_method]]
+    #     time_unit_the_same = (data_time_unit == mapped_scrapy_time_unit)
+    # else:
+    #     ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
     return time_unit_the_same
 
 

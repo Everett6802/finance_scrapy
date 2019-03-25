@@ -5,7 +5,7 @@ import sys
 import re
 import requests
 import time
-import threading
+# import threading
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from requests.exceptions import ConnectionError
@@ -15,7 +15,7 @@ import scrapy.common as CMN
 g_logger = CMN.LOG.get_logger()
 
 
-thread_lock = threading.Lock()
+# thread_lock = threading.Lock()
 
 @CMN.CLS.Singleton
 class TimeSliceGenerator(object):
@@ -27,13 +27,14 @@ class TimeSliceGenerator(object):
         # self.FINANCIAL_STATEMENT_DATE_LIST = [[3, 31], [5, 15], [8, 14], [11, 14],]
         # self.FINANCIAL_STATEMENT_SEASON_OFFSET_LIST = [[-1, 3], [-1, 4], [0, 1], [0, 2], [0, 3]]        
         self.workday_canlendar = None
-        self.generate_time_slice_func_ptr = [
-            self.__generate_time_slice_by_workday,
+        self.generate_time_slice_func_ptr = {
+            CMN.DEF.TIMESLICE_GENERATE_BY_WORKDAY: self.__generate_time_slice_by_workday,
+            CMN.DEF.TIMESLICE_GENERATE_BY_DAY_RANGE: self.__generate_time_range_slice_from_day,
             # self.__generate_time_slice_by_company_foreign_investors_shareholder,
-            self.__generate_time_slice_by_month,
-            self.__generate_time_slice_by_revenue,
-            self.__generate_time_slice_by_financial_statement_season,
-        ]
+            CMN.DEF.TIMESLICE_GENERATE_BY_MONTH: self.__generate_time_slice_by_month,
+            # self.__generate_time_slice_by_revenue,
+            # self.__generate_time_slice_by_financial_statement_season,
+        }
         # self.company_foreign_investors_shareholder_date_list = None
         # self.financial_statement_last_season = None
         self.date_today = None
@@ -234,127 +235,7 @@ class TimeSliceGenerator(object):
 #         return TimeSliceIterator(date_start, date_end, company_foreign_investors_shareholder_date_list)
 
 
-    def __generate_time_slice_by_month(self, month_start, month_end, **kwargs):
-# The data type in the list is datetime
-# Define the iterator
-        class TimeSliceIterator(object):
-            def __init__(self, month_start, month_end):
-                self.time_to_stop = False
-                # import pdb; pdb.set_trace()
-                self.month_cur = month_start
-                self.month_end = month_end
-
-            def __iter__(self):
-                return self
-
-            def next(self):
-                # import pdb; pdb.set_trace()
-                if self.time_to_stop:
-                    raise StopIteration
-                month_cur = self.month_cur
-                if self.month_cur == self.month_end:
-                    self.time_to_stop = True
-                if not self.time_to_stop:
-                    self.month_cur = month_cur + 1
-                return month_cur
-# Check time type
-        if not isinstance(month_start, CMN.CLS.FinanceMonth):
-            raise TypeError("The type of month_start should be FinanceMonth, NOT %s" % type(month_start))
-        if not isinstance(month_end, CMN.CLS.FinanceMonth):
-            raise TypeError("The type of month_end should be FinanceMonth, NOT %s" % type(month_end))
-# Check time range
-        return TimeSliceIterator(month_start, month_end)
-
-
-    def __generate_time_slice_by_revenue(self, month_start, month_end, **kwargs):
-# Check time range
-        if month_end == self.month_today:
-            if datetime_end.day < self.REVENUE_DAY:
-                g_logger.warn("The revenue of this month is NOT released on the date [%s] " % self.date_today)
-                month_end = month_end - 1
-
-        return self.__generate_time_slice_by_month(month_start, month_end, **kwargs)
-
-
-    def __generate_time_slice_by_financial_statement_season(self, quarter_start, quarter_end, **kwargs):
-# Define the iterator
-        class TimeSliceIterator(object):
-            def __init__(self, quarter_start, quarter_end):
-                self.time_to_stop = False
-                self.quarter_cur = quarter_start
-                self.quarter_end = quarter_end
-
-            def __iter__(self):
-                return self
-
-            def next(self):
-                # import pdb; pdb.set_trace()
-                if self.time_to_stop:
-                    raise StopIteration
-                quarter_cur = self.quarter_cur
-                if self.quarter_cur == self.quarter_end:
-                    self.time_to_stop = True
-                if not self.time_to_stop:
-                    self.quarter_cur = quarter_cur + 1
-                return quarter_cur
-# Check time type
-        if not isinstance(quarter_start, CMN.CLS.FinanceQuarter):
-            raise TypeError("The type of quarter_start should be FinanceQuarter, NOT %s" % type(quarter_start))
-        if not isinstance(quarter_end, CMN.CLS.FinanceQuarter):
-            raise TypeError("The type of quarter_end should be FinanceQuarter, NOT %s" % type(quarter_end))
-# Return the iterable
-        return TimeSliceIterator(quarter_start, quarter_end)
-
-
-    def __init_today_time_cfg(self):
-        if self.date_today is None:
-           self.date_today = CMN.CLS.FinanceDate(datetime.today())
-        if self.month_today is None:
-           self.month_today = CMN.CLS.FinanceMonth(datetime.today())
-
-
-    def __check_time_range(self, time_start, time_end):
-        # import pdb; pdb.set_trace()
-        if time_start is not None and time_end is not None:
-            if time_start > time_end:
-                raise RuntimeError("The Start Time[%s] should NOT be later than the End Time[%s]" % (time_start, time_end))
-
-
-    def __restrict_date_range(self, date_start, date_end, data_source_id):
-# Caution: For Market mode, the data_source_id is date source type.
-# Caution: For Stock Mode, the data_source_id is company code number.
-        if date_start > date_end:
-            raise RuntimeError("The Start Date[%s] should NOT be later than the End Date[%s]" % (date_start, date_end))
-# TBD
-        # if self.url_date_range is None:
-        #     self.url_date_range = URLTimeRange.MarketURLTimeRange.Instance() if CMN.IS_FINANCE_MARKET_MODE else URLTimeRange.StockURLTimeRange.Instance()
-        # if date_start is None or date_start < self.url_date_range.get_date_range_start(data_source_id):
-        #     date_start = self.url_date_range.get_date_range_start(data_source_id)
-        # if date_end is None or date_end > self.url_date_range.get_date_range_end(data_source_id):
-        #     date_end = self.url_date_range.get_date_range_end(data_source_id)
-        # g_logger.debug("The URL[ID: %d] restricted date range: %s %s" % (data_source_id, date_start, date_end))
-        return (date_start, date_end)
-
-
-# Need Thread-safe
-    def generate_time_slice(self, time_slice_type, time_start, time_end, **kwargs):
-        thread_lock.acquire()
-        self.__check_time_range(time_start, time_end)
-        self.__init_today_time_cfg()
-        ret = (self.generate_time_slice_func_ptr[time_slice_type])(time_start, time_end, **kwargs)
-        thread_lock.release()
-        return ret
-
-
-    def get_time_slice_len(self, time_slice_type, time_start, time_end, **kwargs):
-        timeslice_iterable = self.generate_time_slice(time_slice_type, time_start, time_end, **kwargs)
-        time_slice_iterable_len = 0
-        for timeslice in timeslice_iterable:
-            time_slice_iterable_len += 1
-        return time_slice_iterable_len
-
-
-    def generate_time_range_slice(self, time_start, time_end, time_slice_size=1, time_unit=None):
+    def __generate_time_range_slice_from_time_unit(self, time_start, time_end, time_slice_size, time_unit, **kwargs):
 # The data type in the list is datetime
 # Define the iterator
         class TimeSliceIterator(object):
@@ -380,8 +261,7 @@ class TimeSliceGenerator(object):
                 self.time_cur = self.time_cur + self.time_slice_size
                 if self.time_cur > self.time_end:
                     self.time_to_stop = True
-                # if not self.time_to_stop:
-                    
+                # if not self.time_to_stop:   
                 return (time_slice_start, time_slice_end)
 
         if type(time_start) != type(time_end):
@@ -392,7 +272,146 @@ class TimeSliceGenerator(object):
         if (time_unit is not None) and (time_start.get_time_unit_type() != time_unit):
             time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start.to_string(), time_unit)
             time_end = CMN.CLS.FinanceTimeBase.from_time_string(time_end.to_string(), time_unit)
+
         return TimeSliceIterator(time_start, time_end, time_slice_size)
+
+
+    def __generate_time_slice_by_month(self, time_start, time_end, **kwargs):
+# The data type in the list is datetime
+# Define the iterator
+        class TimeSliceIterator(object):
+            def __init__(self, month_start, month_end):
+                self.time_to_stop = False
+                # import pdb; pdb.set_trace()
+                self.month_cur = month_start
+                self.month_end = month_end
+
+            def __iter__(self):
+                return self
+
+            def next(self):
+                # import pdb; pdb.set_trace()
+                if self.time_to_stop:
+                    raise StopIteration
+                month_cur = self.month_cur
+                if self.month_cur == self.month_end:
+                    self.time_to_stop = True
+                if not self.time_to_stop:
+                    self.month_cur = month_cur + 1
+                return month_cur
+# Check time type
+        # if not isinstance(month_start, CMN.CLS.FinanceMonth):
+        #     raise TypeError("The type of month_start should be FinanceMonth, NOT %s" % type(month_start))
+        # if not isinstance(month_end, CMN.CLS.FinanceMonth):
+        #     raise TypeError("The type of month_end should be FinanceMonth, NOT %s" % type(month_end))
+        if type(time_start) != type(time_end):
+            raise TypeError("The types of time start[%s] and end[%s] are NOT identical" % (type(time_start) != type(time_end)))
+        if type(time_start) is str:
+           time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start, CMN.DEF.DATA_TIME_UNIT_MONTH)
+           time_end = CMN.CLS.FinanceTimeBase.from_time_string(time_end, CMN.DEF.DATA_TIME_UNIT_MONTH)
+        elif time_start.get_time_unit_type() != CMN.DEF.DATA_TIME_UNIT_MONTH:
+            time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start.to_string(), CMN.DEF.DATA_TIME_UNIT_MONTH)
+            time_end = CMN.CLS.FinanceTimeBase.from_time_string(time_end.to_string(), CMN.DEF.DATA_TIME_UNIT_MONTH)
+
+# Check time range
+        return TimeSliceIterator(time_start, time_end)
+        # return self.__generate_time_range_slice_from_time_unit(time_start, time_end, 1, CMN.DEF.DATA_TIME_UNIT_MONTH, **kwargs)
+
+
+#     def __generate_time_slice_by_revenue(self, month_start, month_end, **kwargs):
+# # Check time range
+#         if month_end == self.month_today:
+#             if datetime_end.day < self.REVENUE_DAY:
+#                 g_logger.warn("The revenue of this month is NOT released on the date [%s] " % self.date_today)
+#                 month_end = month_end - 1
+
+#         return self.__generate_time_slice_by_month(month_start, month_end, **kwargs)
+
+
+#     def __generate_time_slice_by_financial_statement_season(self, quarter_start, quarter_end, **kwargs):
+# # Define the iterator
+#         class TimeSliceIterator(object):
+#             def __init__(self, quarter_start, quarter_end):
+#                 self.time_to_stop = False
+#                 self.quarter_cur = quarter_start
+#                 self.quarter_end = quarter_end
+
+#             def __iter__(self):
+#                 return self
+
+#             def next(self):
+#                 # import pdb; pdb.set_trace()
+#                 if self.time_to_stop:
+#                     raise StopIteration
+#                 quarter_cur = self.quarter_cur
+#                 if self.quarter_cur == self.quarter_end:
+#                     self.time_to_stop = True
+#                 if not self.time_to_stop:
+#                     self.quarter_cur = quarter_cur + 1
+#                 return quarter_cur
+# # Check time type
+#         if not isinstance(quarter_start, CMN.CLS.FinanceQuarter):
+#             raise TypeError("The type of quarter_start should be FinanceQuarter, NOT %s" % type(quarter_start))
+#         if not isinstance(quarter_end, CMN.CLS.FinanceQuarter):
+#             raise TypeError("The type of quarter_end should be FinanceQuarter, NOT %s" % type(quarter_end))
+# # Return the iterable
+#         return TimeSliceIterator(quarter_start, quarter_end)
+        return TimeSliceIterator(time_start, time_end, time_slice_size)
+
+
+    def __generate_time_range_slice_from_day(self, time_start, time_end, time_slice_size, **kwargs):
+        return self.__generate_time_range_slice_from_time_unit(time_start, time_end, time_slice_size, CMN.DEF.DATA_TIME_UNIT_DAY, **kwargs)
+
+
+    def __init_today_time_cfg(self):
+        if self.date_today is None:
+           self.date_today = CMN.CLS.FinanceDate(datetime.today())
+        if self.month_today is None:
+           self.month_today = CMN.CLS.FinanceMonth(datetime.today())
+
+
+    def __check_time_range(self, time_start, time_end):
+        # import pdb; pdb.set_trace()
+        if time_start is not None and time_end is not None:
+            if time_start > time_end:
+                raise RuntimeError("The Start Time[%s] should NOT be later than the End Time[%s]" % (time_start, time_end))
+
+
+#     def __restrict_date_range(self, date_start, date_end, data_source_id):
+# # Caution: For Market mode, the data_source_id is date source type.
+# # Caution: For Stock Mode, the data_source_id is company code number.
+#         if date_start > date_end:
+#             raise RuntimeError("The Start Date[%s] should NOT be later than the End Date[%s]" % (date_start, date_end))
+# # TBD
+#         # if self.url_date_range is None:
+#         #     self.url_date_range = URLTimeRange.MarketURLTimeRange.Instance() if CMN.IS_FINANCE_MARKET_MODE else URLTimeRange.StockURLTimeRange.Instance()
+#         # if date_start is None or date_start < self.url_date_range.get_date_range_start(data_source_id):
+#         #     date_start = self.url_date_range.get_date_range_start(data_source_id)
+#         # if date_end is None or date_end > self.url_date_range.get_date_range_end(data_source_id):
+#         #     date_end = self.url_date_range.get_date_range_end(data_source_id)
+#         # g_logger.debug("The URL[ID: %d] restricted date range: %s %s" % (data_source_id, date_start, date_end))
+#         return (date_start, date_end)
+
+
+    def generate_time_slice(self, time_slice_type, time_start, time_end, **kwargs):
+        # thread_lock.acquire()
+        # import pdb; pdb.set_trace()
+        self.__check_time_range(time_start, time_end)
+        self.__init_today_time_cfg()
+        if time_slice_type in CMN.DEF.TIMESLICE_GENERATE_BY_TIME_RANGE:
+            if not kwargs.has_key('time_slice_size'):
+                raise ValueError("The time_slice_size is NOT set for the time_slice_type: %d" % time_slice_type)
+        ret = (self.generate_time_slice_func_ptr[time_slice_type])(time_start, time_end, **kwargs)
+        # thread_lock.release()
+        return ret
+
+
+    def get_time_slice_len(self, time_slice_type, time_start, time_end, **kwargs):
+        timeslice_iterable = self.generate_time_slice(time_slice_type, time_start, time_end, **kwargs)
+        time_slice_iterable_len = 0
+        for timeslice in timeslice_iterable:
+            time_slice_iterable_len += 1
+        return time_slice_iterable_len
 
 
 #     def generate_source_time_slice(self, data_source_type, time_start, time_end, **kwargs):

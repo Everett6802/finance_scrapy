@@ -369,7 +369,7 @@ class CMoneyScrapy(ScrapyBase.ScrapyBase):
         "financial structure": _scrape_financial_structure_,
         "solvency": _scrape_solvency_,
 # stock end
-    # }
+    }
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
 
 

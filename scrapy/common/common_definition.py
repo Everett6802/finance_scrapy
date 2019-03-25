@@ -21,6 +21,8 @@ TIME_OVERLAP_BEFORE = 1 # The new time range overlaps the original one
 TIME_OVERLAP_AFTER = 2 # The new time range overlaps the original one
 TIME_OVERLAP_COVER = 3 # The new time range covers the original one
 TIME_OVERLAP_COVERED = 4 # The new time range is covered by the original one
+TIME_OVERLAP_POTENTIAL_BEFORE = 5 # The new time range POTENTIALLY overlaps the original one, need furthur check
+TIME_OVERLAP_POTENTIAL_AFTER = 6 # The new time range POTENTIALLY overlaps the original one, need furthur check
 
 #################################################################################
 # Return Value
@@ -72,31 +74,37 @@ DATA_TIME_UNIT_QUARTER = 3
 DATA_TIME_UNIT_YEAR = 4
 
 TIMESLICE_GENERATE_BY_WORKDAY = 0
+TIMESLICE_GENERATE_BY_DAY_RANGE = 1
 # TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER = 1
-TIMESLICE_GENERATE_BY_MONTH = 1
-TIMESLICE_GENERATE_BY_REVENUE = 2
-TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON = 3
+TIMESLICE_GENERATE_BY_MONTH = 2
+# TIMESLICE_GENERATE_BY_REVENUE = 2
+# TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON = 3
 
-DEF_TIME_RANGE_DAY = 30
-DEF_TIME_RANGE_WEEK = 52
-DEF_TIME_RANGE_MONTH = 12
-DEF_TIME_RANGE_QUARTER = 4
-DEF_TIME_RANGE_YEAR = 5
-
-DEF_TIME_RANGE_LIST = [
-    DEF_TIME_RANGE_DAY,
-    DEF_TIME_RANGE_WEEK,
-    DEF_TIME_RANGE_MONTH,
-    DEF_TIME_RANGE_QUARTER,
-    DEF_TIME_RANGE_YEAR,
+TIMESLICE_GENERATE_BY_TIME_RANGE = [
+    TIMESLICE_GENERATE_BY_DAY_RANGE,
 ]
+
+# DEF_TIME_RANGE_DAY = 30
+# DEF_TIME_RANGE_WEEK = 52
+# DEF_TIME_RANGE_MONTH = 12
+# DEF_TIME_RANGE_QUARTER = 4
+# DEF_TIME_RANGE_YEAR = 5
+
+# DEF_TIME_RANGE_LIST = [
+#     DEF_TIME_RANGE_DAY,
+#     DEF_TIME_RANGE_WEEK,
+#     DEF_TIME_RANGE_MONTH,
+#     DEF_TIME_RANGE_QUARTER,
+#     DEF_TIME_RANGE_YEAR,
+# ]
 
 TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING = {
     TIMESLICE_GENERATE_BY_WORKDAY: DATA_TIME_UNIT_DAY,
+    TIMESLICE_GENERATE_BY_DAY_RANGE: DATA_TIME_UNIT_DAY,
     # TIMESLICE_GENERATE_BY_COMPANY_FOREIGN_INVESTORS_SHAREHOLDER: DATA_TIME_UNIT_WEEK,
     TIMESLICE_GENERATE_BY_MONTH: DATA_TIME_UNIT_MONTH,
-    TIMESLICE_GENERATE_BY_REVENUE: DATA_TIME_UNIT_MONTH,
-    TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON: DATA_TIME_UNIT_QUARTER,
+    # TIMESLICE_GENERATE_BY_REVENUE: DATA_TIME_UNIT_MONTH,
+    # TIMESLICE_GENERATE_BY_FINANCIAL_STATEMENT_SEASON: DATA_TIME_UNIT_QUARTER,
 }
 
 REPUBLIC_ERA_YEAR_OFFSET = 1911
@@ -193,30 +201,52 @@ SCRAPY_METHOD_CONSTANT_CFG = OrderedDict()
 # Market Start
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME = "taiwan weighted index and volume"
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG = {# 臺股指數及成交量
+# URL Ex: http://www.twse.com.tw/exchangeReport/FMTQIK?response=json&date=20190101
     "description": u'臺股指數及成交量',
     "module_name": "twse_scrapy",
     "class_name": "TwseScrapy",
     "data_time_unit": DATA_TIME_UNIT_DAY,
-    "scrapy_time_unit": DATA_TIME_UNIT_MONTH,
-    "scrapy_time_slice_size": 1,
+    "scrapy_time_unit": TIMESLICE_GENERATE_BY_MONTH,
+    # "scrapy_time_slice_size": 1,
     "can_set_time_range": True,
+    "csv_flush_threshold": 100, # Valid only when can_set_time_range is True
 }
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_MARKET)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME] = SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_CFG
 
+SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_NAME = "taiwan future index and lot"
+SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_CFG = {# 臺股期貨指數(近月)及成交口數
+# URL Ex: http://www.taifex.com.tw/cht/3/futDailyMarketReport?queryType=2&marketCode=0&commodity_id=TX&queryDate=2019%2F01%2F21
+    "description": u'臺股期貨指數(近月)及成交口數',
+    "module_name": "taifex_scrapy",
+    "class_name": "TaifexScrapy",
+    "data_time_unit": DATA_TIME_UNIT_DAY,
+    "scrapy_time_unit": TIMESLICE_GENERATE_BY_WORKDAY,
+    "can_set_time_range": True,
+    "csv_flush_threshold": 30, # Valid only when can_set_time_range is True
+}
+SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_MARKET)
+SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_NAME] = SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_CFG
+
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_NAME = "option put call ratio"
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_CFG = {# 臺指選擇權賣權買權比
+# URL Ex: http://www.taifex.com.tw/cht/3/pcRatio?queryStartDate=2019%2F02%2F12&queryEndDate=2019%2F02%2F18
+# Caution: Can NOT scrape more than 30 days for each time
     "description": u'臺指選擇權賣權買權比',
     "module_name": "taifex_scrapy",
     "class_name": "TaifexScrapy",
     "data_time_unit": DATA_TIME_UNIT_DAY,
+    "scrapy_time_unit": TIMESLICE_GENERATE_BY_DAY_RANGE,
+    "scrapy_time_slice_size": 29,
     "can_set_time_range": True,
+    "csv_flush_threshold": 150, # Valid only when can_set_time_range is True
 }
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_MARKET)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_NAME] = SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_CFG
 
 SCRAPY_METHOD_TFE_OPEN_INTEREST_NAME = "tfe open interest"
 SCRAPY_METHOD_TFE_OPEN_INTEREST_CFG = {
+# URL Ex: https://stock.wearn.com/taifexphoto.asp
     "description": u'台指期未平倉(大額近月、法人所有月)',
     "module_name": "wearn_scrapy",
     "class_name": "WEarnScrapy",
@@ -300,7 +330,9 @@ SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG = {# 個股股價及成交量
     "module_name": ["twse_scrapy", "daily_stock_price_and_volume",],
     "class_name": ["TwseScrapy", "OTCDailyStockPriceAndVolume",],
     "data_time_unit": DATA_TIME_UNIT_DAY,
+    "scrapy_time_unit": TIMESLICE_GENERATE_BY_MONTH,
     "can_set_time_range": True,
+    "csv_flush_threshold": 150, # Valid only when can_set_time_range is True
 }
 SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG.update(SCRAPY_METHOD_TYPE_REQUESTS_STOCK)
 SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME] = SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG
@@ -316,10 +348,12 @@ SCRAPY_METHOD_MODULE_NAME = [cfg["module_name"] for cfg in SCRAPY_METHOD_CONSTAN
 SCRAPY_METHOD_CLASS_NAME = [cfg["class_name"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_CSV_FILENAME = [method_name.replace(" ", "_").lower() for method_name in SCRAPY_METHOD_NAME]
 SCRAPY_DATA_TIME_UNIT = [cfg["data_time_unit"] for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
-SCRAPY_METHOD_SCRAPY_TIME_UNIT = [(cfg["scrapy_time_unit"] if cfg.has_key("scrapy_time_unit") else cfg["data_time_unit"]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
-SCRAPY_TIME_SLICE_DEFUALT_SIZE = [(cfg["scrapy_time_slice_size"] if cfg.has_key("scrapy_time_slice_size") else DEF_TIME_RANGE_LIST[cfg["data_time_unit"]]) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_METHOD_SCRAPY_TIME_UNIT = [(cfg["scrapy_time_unit"] if cfg.has_key("scrapy_time_unit") else None) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_TIME_SLICE_DEFUALT_SIZE = [(cfg["scrapy_time_slice_size"] if cfg.has_key("scrapy_time_slice_size") else None) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_CSV_FLUSH_THRESHOLD = [(cfg["csv_flush_threshold"] if cfg.has_key("csv_flush_threshold") else None) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME)
+SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_NAME)
 SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_NAME)
 SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TFE_OPEN_INTEREST_NAME)
 SCRAPY_METHOD_VIX_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_VIX_NAME)
