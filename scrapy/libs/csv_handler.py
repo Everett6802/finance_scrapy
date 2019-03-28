@@ -73,7 +73,7 @@ class CSVHandler(object):
         self.csv_buffer_list = None
         self.csv_buffer_list_len = 0
         # self.csv_time_range = None
-        self.csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(self.scrapy_method_index, self.csv_parent_folderpath, self.company_group_number)
+        self.csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(self.scrapy_method_index, self.csv_parent_folderpath, self.company_group_number, self.company_number)
         self.csv_time_duration_cfg_dict = None # {}} if the time range configuration file does NOT exist
         self.csv_time_duration_tuple = None # None if the time range of the scrapy method does NOT exist
         self.append_direction = CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_NONE
@@ -92,6 +92,7 @@ class CSVHandler(object):
 
     def __get_old_csv_time_range(self):
         if self.csv_time_duration_cfg_dict is None:
+            # import pdb; pdb.set_trace()
             self.__read_time_range_cfg()
             self.csv_time_duration_tuple = self.csv_time_duration_cfg_dict.get(self.scrapy_method_index, None)
             if self.csv_time_duration_tuple is None:
@@ -233,6 +234,7 @@ class CSVHandler(object):
 
     def __flush(self):
 # Update the data 
+        # import pdb;pdb.set_trace()
         if self.csv_buffer_list is not None and self.csv_buffer_list_len > 0:
             # assert self.csv_time_duration_tuple is not None, "csv_time_duration_tuple should NOT be None"
             g_logger.debug("Write %d data to %s" % (self.csv_buffer_list_len, self.csv_filepath))
@@ -241,9 +243,13 @@ class CSVHandler(object):
             self.csv_buffer_list_len = 0
             self.append_direction = CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_NONE
 # Update the data time range
-        if self.csv_time_duration_tuple is not None and self.csv_time_duration_cfg_dict[self.scrapy_method_index] != self.csv_time_duration_tuple:
-            self.csv_time_duration_cfg_dict[self.scrapy_method_index] = self.csv_time_duration_tuple
-            CMN.FUNC.write_csv_time_duration(self.csv_time_duration_cfg_dict, self.csv_time_duration_folderpath)
+        if self.csv_time_duration_tuple is not None: 
+            need_update = True
+            if self.csv_time_duration_cfg_dict.has_key(self.scrapy_method_index) and self.csv_time_duration_cfg_dict[self.scrapy_method_index] == self.csv_time_duration_tuple:
+                need_update = False
+            if need_update:
+                self.csv_time_duration_cfg_dict[self.scrapy_method_index] = self.csv_time_duration_tuple
+                CMN.FUNC.write_csv_time_duration(self.csv_time_duration_cfg_dict, self.csv_time_duration_folderpath)
 
 
     @property

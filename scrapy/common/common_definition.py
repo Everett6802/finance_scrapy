@@ -326,9 +326,10 @@ SCRAPY_METHOD_CONSTANT_CFG[SCRAPY_METHOD_INSTITUTIONAL_INVESTOR_NET_BUY_SELL_NAM
 
 SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME = "stock price and volume"
 SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG = {# 個股股價及成交量
+# URL Ex: http://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php?l=zh-tw&d=108/03&stkno=1264
     "description": u'個股股價及成交量',
-    "module_name": ["twse_scrapy", "daily_stock_price_and_volume",],
-    "class_name": ["TwseScrapy", "OTCDailyStockPriceAndVolume",],
+    "module_name": ["twse_scrapy", "tpxe_scrapy",],
+    "class_name": ["TwseScrapy", "TpxeScrapy",],
     "data_time_unit": DATA_TIME_UNIT_DAY,
     "scrapy_time_unit": TIMESLICE_GENERATE_BY_MONTH,
     "can_set_time_range": True,
