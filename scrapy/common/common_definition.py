@@ -84,19 +84,19 @@ TIMESLICE_GENERATE_BY_TIME_RANGE = [
     TIMESLICE_GENERATE_BY_DAY_RANGE,
 ]
 
-# DEF_TIME_RANGE_DAY = 30
-# DEF_TIME_RANGE_WEEK = 52
-# DEF_TIME_RANGE_MONTH = 12
-# DEF_TIME_RANGE_QUARTER = 4
-# DEF_TIME_RANGE_YEAR = 5
+DEF_TIME_RANGE_DAY = 30
+DEF_TIME_RANGE_WEEK = 52
+DEF_TIME_RANGE_MONTH = 12
+DEF_TIME_RANGE_QUARTER = 4
+DEF_TIME_RANGE_YEAR = 5
 
-# DEF_TIME_RANGE_LIST = [
-#     DEF_TIME_RANGE_DAY,
-#     DEF_TIME_RANGE_WEEK,
-#     DEF_TIME_RANGE_MONTH,
-#     DEF_TIME_RANGE_QUARTER,
-#     DEF_TIME_RANGE_YEAR,
-# ]
+DEF_TIME_RANGE_LIST = [
+    DEF_TIME_RANGE_DAY,
+    DEF_TIME_RANGE_WEEK,
+    DEF_TIME_RANGE_MONTH,
+    DEF_TIME_RANGE_QUARTER,
+    DEF_TIME_RANGE_YEAR,
+]
 
 TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING = {
     TIMESLICE_GENERATE_BY_WORKDAY: DATA_TIME_UNIT_DAY,
@@ -188,6 +188,9 @@ COLON_DATA_SPLIT = ":"
 # COLUMN_FIELD_START_FLAG_IN_CONFIG = "===== Column Field Start =====" # Caution: Can't start with '#' which is ignored while reading config file
 CONFIG_TIMESTAMP_STRING_PREFIX = "#time@"
 DATE_IN_CHINESE = u"日期"
+
+SCCRAPY_CLASS_COMPANY_NUMBER = '2330'
+SCCRAPY_CLASS_COMPANY_GROUP_NUMBER = 9
 
 SCRAPY_MODULE_FOLDER = "scrapy"
 
@@ -328,8 +331,8 @@ SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_NAME = "stock price and volume"
 SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_CFG = {# 個股股價及成交量
 # URL Ex: http://www.tpex.org.tw/web/stock/aftertrading/daily_trading_info/st43_result.php?l=zh-tw&d=108/03&stkno=1264
     "description": u'個股股價及成交量',
-    "module_name": ["twse_scrapy", "tpxe_scrapy",],
-    "class_name": ["TwseScrapy", "TpxeScrapy",],
+    "module_name": ["twse_scrapy", "tpex_scrapy",],
+    "class_name": ["TwseScrapy", "TpexScrapy",],
     "data_time_unit": DATA_TIME_UNIT_DAY,
     "scrapy_time_unit": TIMESLICE_GENERATE_BY_MONTH,
     "can_set_time_range": True,
@@ -352,6 +355,7 @@ SCRAPY_DATA_TIME_UNIT = [cfg["data_time_unit"] for cfg in SCRAPY_METHOD_CONSTANT
 SCRAPY_METHOD_SCRAPY_TIME_UNIT = [(cfg["scrapy_time_unit"] if cfg.has_key("scrapy_time_unit") else None) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_TIME_SLICE_DEFUALT_SIZE = [(cfg["scrapy_time_slice_size"] if cfg.has_key("scrapy_time_slice_size") else None) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_CSV_FLUSH_THRESHOLD = [(cfg["csv_flush_threshold"] if cfg.has_key("csv_flush_threshold") else None) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+SCRAPY_METHOD_NEED_SELECT_CLASS = [(True if type(cfg["class_name"]) is list else False) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME)
 SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_NAME)

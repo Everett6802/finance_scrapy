@@ -14,6 +14,12 @@ g_logger = CMN.LOG.get_logger()
 
 class ScrapyMgr(object):
 
+    @classmethod
+    def check_csv_field_description_exist(cls, scrapy_method_index, finance_parent_folderpath):
+        conf_filepath = "%s/%s/%s%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME, CMN.DEF.SCRAPY_CSV_FILENAME[scrapy_method_index], CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX)
+        return CMN.FUNC.check_file_exist(conf_filepath)
+
+
     def __init__(self, **cfg):
         self.xcfg = {
             "reserve_old_finance_folder": False,
@@ -162,6 +168,19 @@ class ScrapyMgr(object):
         return self.xcfg["dry_run_only"]
 
 
+    def __select_scrapy_class(self, scrapy_method_index, web_scrapy_class_list, **kwargs):
+        assert type(web_scrapy_class_list) == list, "The type of the argument should be list"
+        if scrapy_method_index == CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX:
+            company_number = kwargs.get("company_number", None)
+            assert company_number is not None, "company_number should NOT be NONE"
+            market_type_index = self.__get_company_profile().lookup_company_market_type_index(company_number)
+            if market_type_index == CMN.DEF.MARKET_TYPE_NONE:
+                raise ValueError("The market type is Unsupported")
+            return web_scrapy_class_list[market_type_index]
+        else:
+            raise ValueError("The scrapy method[%d] of selecting scrapy class is NOT supported" % scrapy_method_index)
+
+
     def do_scrapy(self):
         # import pdb; pdb.set_trace()
         if not self.xcfg["reserve_old_finance_folder"]:
@@ -176,15 +195,38 @@ class ScrapyMgr(object):
 
         # import pdb; pdb.set_trace()
         for method_index in self.method_index_list:
-            web_scrapy_class = CMN.FUNC.get_scrapy_class(method_index)
-            if type(web_scrapy_class) is list:
-                raise NotImplementedError
+            if CMN.FUNC.scrapy_method_need_select_class(method_index):
+# Check the field description file exist
+                if not self.check_csv_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):
+                    g_logger.info(u"The CSV field config of %s does NOT exist, update it in %s......" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index], self.xcfg['finance_root_folderpath']))
+                    self.update_csv_field_description(method_index)
+# Scrape the web data
+                web_scrapy_class_list = CMN.FUNC.get_scrapy_class(method_index)
+                if not CMN.FUNC.scrapy_method_need_company_number(method_index):
+                    raise NotImplementedError
+                else:
+                    for company_group_number, company_number_list in  self.company_group_set.items():
+                        for company_number in company_number_list:
+                            kwargs = {"company_number": company_number}
+                            web_scrapy_class = self.__select_scrapy_class(method_index, web_scrapy_class_list, **kwargs)
+# Update the config of the scrapy object
+                            with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
+                                web_scrapy_object.ScrapyMethodIndex = method_index
+# The data type of the 'start' and 'end' in self.time_cfg is string
+                                web_scrapy_object.TimeCfg = self.time_cfg
+
+                                web_scrapy_object.CompanyNumber = company_number
+                                web_scrapy_object.CompanyGroupNumber = company_group_number
+# Scrape the web
+                                # import pdb; pdb.set_trace()
+                                web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
             else:
 # Check the field description file exist
-                if not web_scrapy_class.check_scrapy_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):
+                if not self.check_csv_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):
                     g_logger.info(u"The CSV field config of %s does NOT exist, update it in %s......" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index], self.xcfg['finance_root_folderpath']))
-                    self.update_csv_field(method_index)
+                    self.update_csv_field_description(method_index)
 # Scrape the web data
+                web_scrapy_class = CMN.FUNC.get_scrapy_class(method_index)
                 with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                     web_scrapy_object.ScrapyMethodIndex = method_index
 # The data type of the 'start' and 'end' in self.time_cfg is string
@@ -204,10 +246,7 @@ class ScrapyMgr(object):
                                 web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
 
 
-    def update_csv_field(self, method_index_list=None):
-        # if not self.xcfg["reserve_old_finance_folder"]:
-        #     self.__remove_old_finance_folder()
-        # self.__create_finance_folder_if_not_exist()
+    def update_csv_field_description(self, method_index_list=None):
         # import pdb; pdb.set_trace()
         if method_index_list is not None:
             if type(method_index_list) is int:
@@ -221,15 +260,7 @@ class ScrapyMgr(object):
             }
             with web_scrapy_class(**web_scrapy_cfg) as web_scrapy_object:
                 web_scrapy_object.ScrapyMethodIndex = method_index
-                # if CMN.DEF.SCRAPY_MARKET_METHOD_START <= method_index < CMN.DEF.SCRAPY_MARKET_METHOD_END:
-                #     pass
-                # elif CMN.DEF.SCRAPY_STOCK_METHOD_START <= method_index < CMN.DEF.SCRAPY_STOCK_METHOD_END:
-                #     web_scrapy_object.CompanyNumber = '2330'
-                #     web_scrapy_object.CompanyGroupNumber = 9
-                # else:
-                #     raise ValueError("Unknown scrapy method index: %d" % method_index)
                 if CMN.FUNC.scrapy_method_need_company_number(method_index):
-                # if SC_FUNC.is_stock_scrapy_method(method_index):
-                    web_scrapy_object.CompanyNumber = '2330'
-                    web_scrapy_object.CompanyGroupNumber = 9               
-                web_scrapy_object.update_csv_field()
+                    web_scrapy_object.CompanyNumber = CMN.DEF.SCCRAPY_CLASS_COMPANY_NUMBER
+                    web_scrapy_object.CompanyGroupNumber = CMN.DEF.SCCRAPY_CLASS_COMPANY_GROUP_NUMBER            
+                web_scrapy_object.update_csv_field_description()

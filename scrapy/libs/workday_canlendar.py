@@ -473,11 +473,11 @@ class WorkdayCanlendar(object):
 
 
     def is_consecutive_next_workday(self, date_cur, date_next):
-        return True if (self.get_nearest_next_workday(date_cur + 1) == date_next) else False
+        return True if (self.get_nearest_next_workday(date_cur + 1) >= date_next) else False
 
 
     def is_consecutive_prev_workday(self, date_cur, date_prev):
-        return True if (self.get_nearest_prev_workday(date_cur - 1) == date_prev) else False
+        return True if (self.get_nearest_prev_workday(date_cur - 1) <= date_prev) else False
 
 
     def is_consecutive_workdays(self, date1, date2):

@@ -9,7 +9,7 @@ import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
-def _scrape_stock_daily_info_(scrapy_cfg, *args, **kwargs):
+def _scrape_stock_price_and_volume_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     company_number = kwargs.get("company_number", None)
     if company_number is None:
@@ -28,13 +28,14 @@ def _scrape_stock_daily_info_(scrapy_cfg, *args, **kwargs):
         scrapy_res = json.loads(req.text)
         data_name_list = None
         if parse_data_name:
-            data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
-            scrapy_res_field = scrapy_res['fields']
-            data_name_list.extend(scrapy_res_field[1:])
+            raise ValueError("The scrapy data does NOT contain field name")
+            # data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
+            # scrapy_res_field = scrapy_res['fields']
+            # data_name_list.extend(scrapy_res_field[1:])
         data_list = None
         if parse_data:
             data_list = []
-            scrapy_res_data = scrapy_res['data']
+            scrapy_res_data = scrapy_res['aaData']
             for entry in scrapy_res_data:
                 date_list = str(entry[0]).split('/')
                 if len(date_list) != 3:
@@ -53,7 +54,7 @@ def _scrape_stock_daily_info_(scrapy_cfg, *args, **kwargs):
 class TpexScrapyMeta(type):
 
     __ATTRS = {
-        "_scrape_stock_daily_info_": _scrape_stock_daily_info_,
+        "_scrape_stock_price_and_volume_": _scrape_stock_price_and_volume_,
     }
 
     def __new__(mcs, name, bases, attrs):
@@ -72,7 +73,7 @@ class TpexScrapy(ScrapyBase.ScrapyBase):
     __TWSE_ULR_PREFIX = "http://www.tpex.org.tw/"
 
     __MARKET_SCRAPY_CFG = {
-        "stock daily info": { # 個股股價及成交量
+        "stock price and volume": { # 個股股價及成交量
             "url": __TWSE_ULR_PREFIX + "web/stock/aftertrading/daily_trading_info/st43_result.php?l=zh-tw&stkno=%s",
             "url_time_format": "&d={0}{1:02d}",
             # "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
@@ -104,7 +105,7 @@ class TpexScrapy(ScrapyBase.ScrapyBase):
 
     __FUNC_PTR = {
 # market start
-        "stock daily info": _scrape_stock_daily_info_,
+        "stock price and volume": _scrape_stock_price_and_volume_,
 # market end
 # stock start
 # stock end
@@ -144,4 +145,4 @@ if __name__ == '__main__':
     with TpexScrapy() as taifex:
         kwargs = {}
         import pdb; pdb.set_trace()
-        taifex.scrape("stock daily info", **kwargs)
+        taifex.scrape("stock price and volume", **kwargs)

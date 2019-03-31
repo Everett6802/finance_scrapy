@@ -191,21 +191,6 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
 
 
-    # @classmethod
-    # def get_scrapy_method_list(cls):
-    #     return cls.__METHOD_NAME_LIST
-
-
-    # @classmethod
-    # def print_scrapy_method(cls):
-    #     print ", ".join(cls.__METHOD_NAME_LIST)
-
-
-    # @classmethod
-    # def print_scrapy_method_time_unit_description(cls, scrapy_method):
-    #     print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
-
-
     def __init__(self, **cfg):
 # For the variables which are NOT changed during scraping
         self.xcfg = {
@@ -214,19 +199,9 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
             "max_data_count": None,
         }
         self.xcfg.update(cfg)
-        # self.url = url
-        # self.csv_time_duration = None
 
 
     def scrape_web(self, *args, **kwargs):
-        # url = None
-        # import pdb; pdb.set_trace()
-        # scrapy_method_name = None
-        # try:
-        #     scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
-        # except:
-        #     raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
-        # scrapy_cfg = self.__SCRAPY_CFG[scrapy_method_name]
         return (self.__FUNC_PTR[self.scrapy_method])(self.__SCRAPY_CFG[self.scrapy_method], *args, **kwargs)
 
 

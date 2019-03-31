@@ -9,7 +9,7 @@ import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
-def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
+def _scrape_stock_price_and_volume_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     url = scrapy_cfg['url']
     if kwargs.has_key("time"):
@@ -52,7 +52,7 @@ def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
 class TwseScrapyMeta(type):
 
     __ATTRS = {
-        "_scrape_taiwan_weighted_index_and_volume_": _scrape_taiwan_weighted_index_and_volume_,
+        "_scrape_stock_price_and_volume_": _scrape_stock_price_and_volume_,
     }
 
     def __new__(mcs, name, bases, attrs):
@@ -69,7 +69,7 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
     __TWSE_ULR_PREFIX = "http://www.twse.com.tw/"
 
     __MARKET_SCRAPY_CFG = {
-        "taiwan weighted index and volume": { # 個股股價及成交量
+        "stock price and volume": { # 個股股價及成交量
             "url": __TWSE_ULR_PREFIX + "exchangeReport/FMTQIK?response=json",
             "url_time_format": "&date={0}{1:02d}01",
             "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
@@ -101,27 +101,12 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
 
     __FUNC_PTR = {
 # market start
-        "taiwan weighted index and volume": _scrape_taiwan_weighted_index_and_volume_,
+        "stock price and volume": _scrape_stock_price_and_volume_,
 # market end
 # stock start
 # stock end
     }
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
-
-
-    # @classmethod
-    # def get_scrapy_method_list(cls):
-    #     return cls.__METHOD_NAME_LIST
-
-
-    # @classmethod
-    # def print_scrapy_method(cls):
-    #     print ", ".join(cls.__METHOD_NAME_LIST)
-
-
-    # @classmethod
-    # def print_scrapy_method_time_unit_description(cls, scrapy_method):
-    #     print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
     def __init__(self, **cfg):
@@ -132,25 +117,14 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
             "max_data_count": None,
         }
         self.xcfg.update(cfg)
-        # self.url = url
-        # self.csv_time_duration = None
 
 
     def scrape_web(self, *args, **kwargs):
-        # url = None
-        # import pdb; pdb.set_trace()
-        # scrapy_method_name = None
-        # try:
-        #     scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
-        # except:
-        #     raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
-        # scrapy_cfg = self.__SCRAPY_CFG[scrapy_method_name]
-        # return (self.__FUNC_PTR[self.scrapy_method])(scrapy_cfg, *args, **kwargs)
         return (self.__FUNC_PTR[self.scrapy_method])(self.__SCRAPY_CFG[self.scrapy_method], *args, **kwargs)
 
 
 if __name__ == '__main__':
     with TwseScrapy() as taifex:
         kwargs = {}
-        import pdb; pdb.set_trace()
-        taifex.scrape("option put call ratio", **kwargs)
+        # import pdb; pdb.set_trace()
+        taifex.scrape("stock price and volume", **kwargs)

@@ -259,7 +259,6 @@ def get_scrapy_class(scrapy_method): #, init_class_variables=True):
 
     module_name = CMN_DEF.SCRAPY_METHOD_MODULE_NAME[scrapy_method_index]
     class_name = CMN_DEF.SCRAPY_METHOD_CLASS_NAME[scrapy_method_index]
-    g_logger.debug("Try to instantiate %s.%s" % (module_name, class_name))
     assert type(module_name) == type(class_name), "The module name type[%s] and class name type[%s] is NOT identical" % (type(module_name), type(class_name))
 # Find the class module
     scrapy_class = None
@@ -268,8 +267,10 @@ def get_scrapy_class(scrapy_method): #, init_class_variables=True):
         assert module_name_len == len(class_name), "The module name length[%d] and class name length[%d] is NOT identical" % (module_name_len, len(class_name))
         scrapy_class = []
         for index in range(module_name_len):
+            g_logger.debug("Try to instantiate %s.%s" % (module_name[index], class_name[index]))
             scrapy_class.append(get_scrapy_class_for_name(CMN_DEF.SCRAPY_MODULE_FOLDER, module_name[index], class_name[index]))
     else:
+        g_logger.debug("Try to instantiate %s.%s" % (module_name, class_name))
         scrapy_class = get_scrapy_class_for_name(CMN_DEF.SCRAPY_MODULE_FOLDER, module_name, class_name)
     #     if init_class_variables:
     #         scrapy_class.init_class_common_variables() # Caution: Must be called in the leaf derived class
@@ -1396,6 +1397,15 @@ def scrapy_method_csv_flush_threshold(scrapy_method):
         ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
 
     return CMN_DEF.SCRAPY_CSV_FLUSH_THRESHOLD[scrapy_method]
+
+
+def scrapy_method_need_select_class(scrapy_method):
+    if type(scrapy_method) is str:
+        scrapy_method = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    elif type(scrapy_method) is not int:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+
+    return CMN_DEF.SCRAPY_METHOD_NEED_SELECT_CLASS[scrapy_method]
 
 
 # def scrapy_method_time_slice_unit(scrapy_method):
