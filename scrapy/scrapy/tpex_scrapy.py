@@ -26,12 +26,11 @@ def _scrape_stock_price_and_volume_(scrapy_cfg, *args, **kwargs):
     def parse_url_data(req):
         # import pdb; pdb.set_trace()
         scrapy_res = json.loads(req.text)
+# data field
         data_name_list = None
         if parse_data_name:
             raise ValueError("The scrapy data does NOT contain field name")
-            # data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
-            # scrapy_res_field = scrapy_res['fields']
-            # data_name_list.extend(scrapy_res_field[1:])
+# data
         data_list = None
         if parse_data:
             data_list = []
@@ -73,6 +72,9 @@ class TpexScrapy(ScrapyBase.ScrapyBase):
     __TWSE_ULR_PREFIX = "http://www.tpex.org.tw/"
 
     __MARKET_SCRAPY_CFG = {
+    }
+
+    __STOCK_SCRAPY_CFG = {
         "stock price and volume": { # 個股股價及成交量
             "url": __TWSE_ULR_PREFIX + "web/stock/aftertrading/daily_trading_info/st43_result.php?l=zh-tw&stkno=%s",
             "url_time_format": "&d={0}{1:02d}",
@@ -80,34 +82,15 @@ class TpexScrapy(ScrapyBase.ScrapyBase):
         },
     }
 
-    __STOCK_SCRAPY_CFG = {
-    }
-
-    # __MARKET_URL = {key: value["url_format"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    # __MARKET_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    # __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-
-    # __STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    # __STOCK_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    # __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-
-    # __TIME_UNIT_URL_LIST = {}
-    # __TIME_UNIT_URL_LIST.update(__MARKET_TIME_UNIT_URL_LIST)
-    # __TIME_UNIT_URL_LIST.update(__STOCK_TIME_UNIT_URL_LIST)
-
-    # __TIME_UNIT_DESCRIPTION_LIST = {}
-    # __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
-    # __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
-
     __SCRAPY_CFG = {}
     __SCRAPY_CFG.update(__MARKET_SCRAPY_CFG)
     __SCRAPY_CFG.update(__STOCK_SCRAPY_CFG)
 
     __FUNC_PTR = {
 # market start
-        "stock price and volume": _scrape_stock_price_and_volume_,
 # market end
 # stock start
+        "stock price and volume": _scrape_stock_price_and_volume_,
 # stock end
     }
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
@@ -127,15 +110,6 @@ class TpexScrapy(ScrapyBase.ScrapyBase):
 
 
     def scrape_web(self, *args, **kwargs):
-        # url = None
-        # import pdb; pdb.set_trace()
-        # scrapy_method_name = None
-        # try:
-        #     scrapy_method_name = self.__METHOD_NAME_LIST[self.scrapy_method]
-        # except:
-        #     raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
-        # scrapy_cfg = self.__SCRAPY_CFG[scrapy_method_name]
-        # return (self.__FUNC_PTR[self.scrapy_method])(scrapy_cfg, *args, **kwargs)
         if self.company_number is not None:
             kwargs["company_number"] = self.company_number
         return (self.__FUNC_PTR[self.scrapy_method])(self.__SCRAPY_CFG[self.scrapy_method], *args, **kwargs)

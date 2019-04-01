@@ -13,9 +13,6 @@ def _scrape_taiwan_future_index_and_lot_(scrapy_cfg, *args, **kwargs):
     url = scrapy_cfg['url']
     if kwargs.has_key("time"):
         time_cfg = kwargs["time"]
-        # time_start = time_range_cfg['start']
-        # time_end = time_range_cfg['end']
-        # assert time_start == time_end, "The start[%s] and end[%s] days are NOT identical" % (time_start, time_end)
         url_time_range = scrapy_cfg["url_time_format"].format(time_cfg.year, time_cfg.month, time_cfg.day)  
         url += url_time_range
 
@@ -71,11 +68,6 @@ def _scrape_option_put_call_ratio_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     url = scrapy_cfg['url']
     if kwargs.has_key("time"):
-        # finance_month = kwargs["month"]
-        # year = finance_month.year
-        # month = finance_month.month
-        # start_date = 1
-        # end_date = finance_month.get_last_date_of_month()
         time_range_cfg = finance_month = kwargs["time"]
         time_start = time_range_cfg['start']
         time_end = time_range_cfg['end']
@@ -159,22 +151,6 @@ class TaifexScrapy(ScrapyBase.ScrapyBase):
 
     __STOCK_SCRAPY_CFG = {
     }
-
-    # __MARKET_URL = {key: value["url_format"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    # __MARKET_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    # __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-
-    # __STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    # __STOCK_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    # __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-
-    # __TIME_UNIT_URL_LIST = {}
-    # __TIME_UNIT_URL_LIST.update(__MARKET_TIME_UNIT_URL_LIST)
-    # __TIME_UNIT_URL_LIST.update(__STOCK_TIME_UNIT_URL_LIST)
-
-    # __TIME_UNIT_DESCRIPTION_LIST = {}
-    # __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
-    # __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
 
     __SCRAPY_CFG = {}
     __SCRAPY_CFG.update(__MARKET_SCRAPY_CFG)

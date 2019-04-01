@@ -1,7 +1,6 @@
 # -*- coding: utf8 -*-
 
 import re
-# from bs4 import BeautifulSoup
 import json
 from datetime import datetime, timedelta
 import scrapy.common as CMN
@@ -9,7 +8,7 @@ import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
 
-def _scrape_stock_price_and_volume_(scrapy_cfg, *args, **kwargs):
+def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
     # import pdb; pdb.set_trace()
     url = scrapy_cfg['url']
     if kwargs.has_key("time"):
@@ -25,11 +24,13 @@ def _scrape_stock_price_and_volume_(scrapy_cfg, *args, **kwargs):
     def parse_url_data(req):
         # import pdb; pdb.set_trace()
         scrapy_res = json.loads(req.text)
+# data field
         data_name_list = None
         if parse_data_name:
             data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
             scrapy_res_field = scrapy_res['fields']
             data_name_list.extend(scrapy_res_field[1:])
+# data
         data_list = None
         if parse_data:
             data_list = []
@@ -49,9 +50,54 @@ def _scrape_stock_price_and_volume_(scrapy_cfg, *args, **kwargs):
     return (data_list, data_name_list)
 
 
+def _scrape_stock_price_and_volume_(scrapy_cfg, *args, **kwargs):
+    import pdb; pdb.set_trace()
+    company_number = kwargs.get("company_number", None)
+    if company_number is None:
+        raise ValueError("The company number should NOT be NONE")
+    url = scrapy_cfg['url'] % company_number
+    if kwargs.has_key("time"):
+        time_cfg = kwargs["time"]
+        url_time = scrapy_cfg["url_time_format"].format(time_cfg.year, time_cfg.month)  
+        url += url_time
+
+    parse_data_name = kwargs.get("parse_data_name", True)
+    parse_data = kwargs.get("parse_data", True)
+    def parse_url_data(req):
+        # import pdb; pdb.set_trace()
+        scrapy_res = json.loads(req.text)
+# data field
+        data_name_list = None
+        if parse_data_name:
+            data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
+            scrapy_res_field = scrapy_res['fields']
+            data_name_list.extend(scrapy_res_field[1:])
+# data
+        data_list = None
+        if parse_data:
+            data_list = []
+            scrapy_res_data = scrapy_res['data']
+            for entry in scrapy_res_data:
+                date_list = str(entry[0]).split('/')
+                if len(date_list) != 3:
+                    raise RuntimeError("The date format is NOT as expected: %s", date_list)
+                date_str = CMN.FUNC.transform_date_str((int(date_list[0]) + CMN.DEF.REPUBLIC_ERA_YEAR_OFFSET), int(date_list[1]), int(date_list[2]))
+                data_element_list = [date_str,]
+                data_element_list.extend([str(data_element).replace(',', '') for data_element in entry[1:]])
+                data_element_list[1] = str(int(data_element_list[1]) * 1000)
+                data_element_list[2] = str(int(data_element_list[2]) * 1000)
+                data_list.append(data_element_list)
+        # import pdb; pdb.set_trace()
+        return (data_list, data_name_list)
+    data_list, data_name_list = ScrapyBase.ScrapyBase.try_request_web_data(url, parse_url_data)
+    # import pdb; pdb.set_trace()
+    return (data_list, data_name_list)
+
+
 class TwseScrapyMeta(type):
 
     __ATTRS = {
+        "_scrape_taiwan_weighted_index_and_volume_": _scrape_taiwan_weighted_index_and_volume_,
         "_scrape_stock_price_and_volume_": _scrape_stock_price_and_volume_,
     }
 
@@ -69,7 +115,7 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
     __TWSE_ULR_PREFIX = "http://www.twse.com.tw/"
 
     __MARKET_SCRAPY_CFG = {
-        "stock price and volume": { # 個股股價及成交量
+        "taiwan weighted index and volume": { # 臺股指數及成交量
             "url": __TWSE_ULR_PREFIX + "exchangeReport/FMTQIK?response=json",
             "url_time_format": "&date={0}{1:02d}01",
             "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
@@ -77,23 +123,12 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
     }
 
     __STOCK_SCRAPY_CFG = {
+        "stock price and volume": { # 個股股價及成交量
+            "url": __TWSE_ULR_PREFIX + "exchangeReport/STOCK_DAY?response=json&stockNo=%s",
+            "url_time_format": "&date={0}{1:02d}01",
+            "url_encoding": CMN.DEF.URL_ENCODING_UTF8,
+        },
     }
-
-    # __MARKET_URL = {key: value["url_format"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    # __MARKET_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-    # __MARKET_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
-
-    # __STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    # __STOCK_TIME_UNIT_URL_LIST = {key: value["table_time_unit_url_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-    # __STOCK_TIME_UNIT_DESCRIPTION_LIST = {key: value["table_time_unit_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
-
-    # __TIME_UNIT_URL_LIST = {}
-    # __TIME_UNIT_URL_LIST.update(__MARKET_TIME_UNIT_URL_LIST)
-    # __TIME_UNIT_URL_LIST.update(__STOCK_TIME_UNIT_URL_LIST)
-
-    # __TIME_UNIT_DESCRIPTION_LIST = {}
-    # __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
-    # __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
 
     __SCRAPY_CFG = {}
     __SCRAPY_CFG.update(__MARKET_SCRAPY_CFG)
@@ -101,9 +136,10 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
 
     __FUNC_PTR = {
 # market start
-        "stock price and volume": _scrape_stock_price_and_volume_,
+        "taiwan weighted index and volume": _scrape_taiwan_weighted_index_and_volume_,
 # market end
 # stock start
+        "stock price and volume": _scrape_stock_price_and_volume_,
 # stock end
     }
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
@@ -120,6 +156,8 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
 
 
     def scrape_web(self, *args, **kwargs):
+        if self.company_number is not None:
+            kwargs["company_number"] = self.company_number
         return (self.__FUNC_PTR[self.scrapy_method])(self.__SCRAPY_CFG[self.scrapy_method], *args, **kwargs)
 
 
@@ -127,4 +165,4 @@ if __name__ == '__main__':
     with TwseScrapy() as taifex:
         kwargs = {}
         # import pdb; pdb.set_trace()
-        taifex.scrape("stock price and volume", **kwargs)
+        taifex.scrape("taiwan weighted index and volume", **kwargs)
