@@ -1055,19 +1055,21 @@ class CSVTimeRangeUpdate(object):
 
     def __str__(self):
         if self.description is None:
-            self.description = ""
+            # import pdb; pdb.set_trace()
+            description_elem_list = []
             if self.old_csv_start is not None:
-                self.description += "OCS: %s; " % self.old_csv_start
+                description_elem_list.append("OCS: %s" % self.old_csv_start)
             if self.old_csv_end is not None:
-                self.description += "OCE: %s; " % self.old_csv_end
+                description_elem_list.append("OCE: %s" % self.old_csv_end)
             if self.new_web_start is not None:
-                self.description += "NWS: %s; " % self.new_web_start
+                description_elem_list.append("NWS: %s" % self.new_web_start)
             if self.new_web_end is not None:
-                self.description += "NWE: %s; " % self.new_web_end
+                description_elem_list.append("NWE: %s" % self.new_web_end)
             # if self.new_csv_start is not None:
             #     self.description += "NCS: %s; " % self.new_csv_start
             # if self.new_csv_end is not None:
             #     self.description += "NCE: %s; " % self.new_csv_end
+            self.description = "; ".join(description_elem_list)
         return self.description
 
 

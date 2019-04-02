@@ -51,7 +51,7 @@ def _scrape_taiwan_weighted_index_and_volume_(scrapy_cfg, *args, **kwargs):
 
 
 def _scrape_stock_price_and_volume_(scrapy_cfg, *args, **kwargs):
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     company_number = kwargs.get("company_number", None)
     if company_number is None:
         raise ValueError("The company number should NOT be NONE")
@@ -146,6 +146,7 @@ class TwseScrapy(ScrapyBase.ScrapyBase):
 
 
     def __init__(self, **cfg):
+        super(TwseScrapy, self).__init__()
 # For the variables which are NOT changed during scraping
         self.xcfg = {
             "dry_run_only": False,

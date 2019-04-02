@@ -193,7 +193,7 @@ class ScrapyBase(object):
         self.company_number = None
         self.company_group_number = None
         self.time_cfg = None
-        self.ignore_data_not_found_exception
+        # self.ignore_data_not_found_exception = False
 
 
     def update_csv_field(self):
@@ -222,7 +222,7 @@ class ScrapyBase(object):
         else:
             set_time_range = self._CAN_SET_TIME_RANGE
 # Scrape web data
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         if set_time_range:
             time_cfg_start = None
             time_cfg_end = None
@@ -275,6 +275,10 @@ class ScrapyBase(object):
             time_end = str(csv_data_list[-1][0])
             with LIBS.CSVH.CSVHandler(self.scrapy_method, csv_parent_folderpath=self.xcfg['finance_root_folderpath'], company_number=company_number, company_group_number=company_group_number) as csv_handler:
                 # self._write_scrapy_data_to_csv(csv_data_list, time_range_start, time_range_end, self.scrapy_method_index, self.xcfg['finance_root_folderpath'], company_number, company_group_number, dry_run_only=self.xcfg['dry_run_only'])
+                web2csv_time_duration_update_tuple = csv_handler.find_scrapy_time_range(time_start, time_end)
+                if web2csv_time_duration_update_tuple is None:
+                    g_logger.debug(u"The data[%s] is Update-to-Date" % CMN.FUNC.assemble_scrapy_method_description(self.scrapy_method_index, company_number))
+                    return 
                 csv_handler.write(csv_data_list, time_start, time_end, CMN.DEF.TIME_OVERLAP_AFTER) 
 
 
