@@ -180,8 +180,11 @@ class CSVHandler(object):
             self.csv_time_duration_tuple,
             check_time_continuity_funcptr=self.__check_time_continuity,
         )
-
-        assert web2csv_time_duration_update_tuple is not None, "web2csv_time_duration_update_tuple should not be NONE"
+        # assert web2csv_time_duration_update_tuple is not None, "web2csv_time_duration_update_tuple should not be NONE"
+        if web2csv_time_duration_update_tuple is None:
+            assert self.csv_time_duration_tuple is not None, "self.csv_time_duration_tuple should not be NONE"
+            g_logger.warn("No new data Writing into CSV[%s], CSV: %s:%s; New: %s:%s" % (self.csv_filepath, self.csv_time_duration_tuple.time_duration_start, self.csv_time_duration_tuple.time_duration_end, time_start, time_end))
+            return
         web2csv_time_duration_update_tuple_len = len(web2csv_time_duration_update_tuple)
         assert web2csv_time_duration_update_tuple_len == 1, "web2csv_time_duration_update_tuple should not be NONE"
         web2csv_time_duration_update = web2csv_time_duration_update_tuple[0]
