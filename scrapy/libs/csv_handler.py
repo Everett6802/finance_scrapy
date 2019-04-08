@@ -131,6 +131,7 @@ class CSVHandler(object):
     def write(self, data_list, time_start, time_end, append_direction):
         # import pdb; pdb.set_trace()
         assert data_list is not None, "data_list should NOT be None"
+        assert len(data_list) != 0, "The length of data_list should NOT be 0"
         self.__get_old_csv_time_range()
 # Check need to flush the old data
         if self.append_direction != CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_NONE:
