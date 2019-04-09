@@ -33,7 +33,7 @@ def _scrape_taiwan_future_index_and_lot_(scrapy_cfg, *args, **kwargs):
             data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
             th_tags = tr_tags[0].find_all("th")
             for th_tag in th_tags[2:]:
-                data_name_list.append(th_tag.text)
+                data_name_list.append(th_tag.text.strip('*'))
 # parse data
         data_list = None
         if parse_data:
