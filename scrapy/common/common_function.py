@@ -1111,13 +1111,13 @@ def is_time_in_range(finance_time_range_start, finance_time_range_end, finance_t
         return (True if (finance_time_range_start >= finance_time >= finance_time_range_end) else False)
 
 
-def get_time_range_overlap_case(new_time_start, new_time_end, orig_time_start, orig_time_end, time_continuity=False, check_time_continuity_funcptr=None):
+def get_time_range_overlap_case(new_time_start, new_time_end, orig_time_start, orig_time_end, time_continuity=False, check_workday_continuity_funcptr=None):
     assert new_time_start <= new_time_end, "The new start time[%s] should be smaller than the end time[%s]" % (new_time_start.to_string(), new_time_end.to_string())
     assert orig_time_start <= orig_time_end, "The original start time[%s] should be smaller than the end time[%s]" % (orig_time_start.to_string(), orig_time_end.to_string())
     # import pdb ; pdb.set_trace()
     if new_time_end < orig_time_start or new_time_start > orig_time_end:
-        if check_time_continuity_funcptr is not None:
-            return check_time_continuity_funcptr(new_time_start, new_time_end, orig_time_start, orig_time_end)
+        if check_workday_continuity_funcptr is not None:
+            return check_workday_continuity_funcptr(new_time_start, new_time_end, orig_time_start, orig_time_end)
         elif time_continuity:
             if new_time_end < orig_time_start:
                 assert type(new_time_end) == type(orig_time_start), "The time type [new_time_end: %s, orig_time_start: %s] is NOT identical" % (new_time_end, orig_time_start)

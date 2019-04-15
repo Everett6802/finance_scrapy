@@ -22,7 +22,7 @@ class CSVHandler(object):
 
 
     @classmethod
-    def __check_time_continuity(cls, new_time_start, new_time_end, orig_time_start, orig_time_end):
+    def __check_workday_continuity(cls, new_time_start, new_time_end, orig_time_start, orig_time_end):
         # import pdb; pdb.set_trace()
         can_check = False
         if new_time_end < orig_time_start:
@@ -119,12 +119,38 @@ class CSVHandler(object):
         if type(time_start) is str: 
             time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start, data_time_unit)
 # Calculate the time range
-        new_extension_csv_time_duration_tuple, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
-            time_start, 
-            time_end,
-            self.csv_time_duration_tuple,
-            check_time_continuity_funcptr=self.__check_time_continuity,
-        )
+        web2csv_time_duration_update_tuple = None
+        # import pdb; pdb.set_trace()
+        if CMN.FUNC.scrapy_method_scrapy_time_unit(self.scrapy_method_index) in [CMN.DEF.TIMESLICE_GENERATE_BY_WORKDAY,CMN.DEF.TIMESLICE_GENERATE_BY_DAY_RANGE,]:
+# Check if workdays exist in the time range
+            new_extension_csv_time_duration_tuple, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
+                time_start, 
+                time_end,
+                self.csv_time_duration_tuple,
+                check_workday_continuity_funcptr=self.__check_workday_continuity,
+            )
+            if web2csv_time_duration_update_tuple is not None: 
+                workdays_exist = False
+                web2csv_time_duration_update_list = []
+                web2csv_time_duration_no_workday_list = []
+                for web2csv_time_duration_update in web2csv_time_duration_update_tuple:
+                    if self.__get_workday_canlendar().is_time_range_workdays(web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd):
+                        web2csv_time_duration_update_list.append(web2csv_time_duration_update)
+                    else:
+                        web2csv_time_duration_no_workday_list.append(web2csv_time_duration_update)
+                if len(web2csv_time_duration_no_workday_list) != 0:
+                    for web2csv_time_duration_no_workday in web2csv_time_duration_no_workday_list:
+                        g_logger.debug("No workdays between %s:%s" % (web2csv_time_duration_no_workday.NewWebStart, web2csv_time_duration_no_workday.NewWebEnd))
+                if len(web2csv_time_duration_update_list) != 0:
+                    web2csv_time_duration_update_tuple = tuple(web2csv_time_duration_update_list)
+                else:
+                    web2csv_time_duration_update_tuple = None
+        else:
+            new_extension_csv_time_duration_tuple, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
+                time_start, 
+                time_end,
+                self.csv_time_duration_tuple,
+            )
         return web2csv_time_duration_update_tuple
 
 
@@ -179,7 +205,7 @@ class CSVHandler(object):
             time_start, 
             time_end,
             self.csv_time_duration_tuple,
-            check_time_continuity_funcptr=self.__check_time_continuity,
+            check_workday_continuity_funcptr=self.__check_workday_continuity,
         )
         # assert web2csv_time_duration_update_tuple is not None, "web2csv_time_duration_update_tuple should not be NONE"
         if web2csv_time_duration_update_tuple is None:

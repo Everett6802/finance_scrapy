@@ -972,14 +972,14 @@ class CSVTimeRangeUpdate(object):
 
 
     @classmethod
-    def __get_extended_csv_time_duration_update(cls, time_duration_start, time_duration_end, csv_old_time_duration_tuple, time_continuity=False, check_time_continuity_funcptr=None):
+    def __get_extended_csv_time_duration_update(cls, time_duration_start, time_duration_end, csv_old_time_duration_tuple, time_continuity=False, check_workday_continuity_funcptr=None):
         # import pdb; pdb.set_trace()
 # Adjust the time duration, ignore the data which already exist in the finance data folder
 # I assume that the time duration between the csv data and new data should be consecutive
 # Two cases which the original time range can be extended successfully: 
 # (1) The new time range overlaps the original one
 # (2) The new time range fully covers the original one
-        overlap_case = CMN_FUNC.get_time_range_overlap_case(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_continuity, check_time_continuity_funcptr)
+        overlap_case = CMN_FUNC.get_time_range_overlap_case(time_duration_start, time_duration_end, csv_old_time_duration_tuple.time_duration_start, csv_old_time_duration_tuple.time_duration_end, time_continuity, check_workday_continuity_funcptr)
         new_csv_extension_time_duration = None
         web2csv_time_duration_update_before = None
         web2csv_time_duration_update_after = None
@@ -1035,11 +1035,11 @@ class CSVTimeRangeUpdate(object):
 
 
     @classmethod
-    def get_csv_time_duration_update(cls, time_duration_start, time_duration_end, csv_old_time_duration_tuple=None, time_continuity=False, check_time_continuity_funcptr=None):
+    def get_csv_time_duration_update(cls, time_duration_start, time_duration_end, csv_old_time_duration_tuple=None, time_continuity=False, check_workday_continuity_funcptr=None):
         if csv_old_time_duration_tuple is None:
             return cls.__get_init_csv_time_duration_update(time_duration_start, time_duration_end)
         else:
-            return cls.__get_extended_csv_time_duration_update(time_duration_start, time_duration_end, csv_old_time_duration_tuple, time_continuity, check_time_continuity_funcptr)
+            return cls.__get_extended_csv_time_duration_update(time_duration_start, time_duration_end, csv_old_time_duration_tuple, time_continuity, check_workday_continuity_funcptr)
 
 
     def __init__(self):

@@ -404,6 +404,7 @@ class WorkdayCanlendar(object):
 
     def get_nearest_next_workday(self, date_cur):
         index_tuple = self.find_nearest_next_index(date_cur)
+        # import pdb; pdb.set_trace()
         if index_tuple is None:
             raise RuntimeError("Fail to find the nearest next workday from the date: %s" % date_cur)
         (year_index, month_index, day_index) = index_tuple
@@ -473,6 +474,7 @@ class WorkdayCanlendar(object):
     def get_nearest_prev_workday(self, date_cur):
         # import pdb; pdb.set_trace()
         index_tuple = self.find_nearest_prev_index(date_cur)
+        # import pdb; pdb.set_trace()
         if index_tuple is None:
             raise RuntimeError("Fail to find the nearest previous workday from the date: %s" % date_cur)
         (year_index, month_index, day_index) = index_tuple
@@ -516,6 +518,31 @@ class WorkdayCanlendar(object):
             return self.is_consecutive_prev_workday(date1, date2)
         else:
             return False
+
+
+    def is_before_first_workday(self, date_cur):
+        return True if date_cur < self.get_first_workday() else False
+
+
+    def is_after_last_workday(self, date_cur):
+        return True if date_cur > self.get_last_workday() else False
+
+
+    def is_time_range_workdays(self, date1, date2):
+        date_start = None
+        date_end = None
+        if date1 < date2:
+            date_start = date1
+            date_end = date2
+        else:
+            date_start = date2
+            date_end = date1
+        if self.is_before_first_workday(date_end):
+            return False
+        if self.is_after_last_workday(date_start):
+            return False
+        date_start_nearest_next_workday = self.get_nearest_next_workday(date_start)
+        return True if date_start_nearest_next_workday <= date_end else False
 
 
     @property
