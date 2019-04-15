@@ -414,6 +414,17 @@ class WorkdayCanlendar(object):
         return date_nearest_next
 
 
+
+    def try_to_get_nearest_next_workday(self, date_cur):
+        date_nearest_next = None
+        try:
+            date_nearest_next = self.get_nearest_next_workday(date_cur)
+        except RuntimeError:
+            return None
+        return date_nearest_next
+
+
+
     def find_nearest_prev_index(self, date_cur):
         if self.workday_canlendar is None:
             raise RuntimeError("Incorrect Operation: self.workday_canlendar is None")
@@ -472,21 +483,37 @@ class WorkdayCanlendar(object):
         return date_nearest_prev
 
 
+
+    def try_to_get_nearest_prev_workday(self, date_cur):
+        date_nearest_prev = None
+        try:
+            date_nearest_prev = self.get_nearest_prev_workday(date_cur)
+        except RuntimeError:
+            return None
+        return date_nearest_prev
+
+
     def is_consecutive_next_workday(self, date_cur, date_next):
-        return True if (self.get_nearest_next_workday(date_cur + 1) >= date_next) else False
+        date_nearest_next = self.try_to_get_nearest_next_workday(date_cur + 1)
+        if date_nearest_next is None:
+            return False
+        return True if (date_nearest_next >= date_next) else False
 
 
     def is_consecutive_prev_workday(self, date_cur, date_prev):
-        return True if (self.get_nearest_prev_workday(date_cur - 1) <= date_prev) else False
+        date_nearest_prev = self.try_to_get_nearest_prev_workday(date_cur -1)
+        if date_nearest_prev is None:
+            return False
+        return True if (date_nearest_prev <= date_prev) else False
 
 
     def is_consecutive_workdays(self, date1, date2):
         date1_value = date1.get_value()
         date2_value = date2.get_value()
         if date1_value < date2_value:
-            return True if (self.get_nearest_next_workday(date1) == date2) else False
+            return self.is_consecutive_next_workday(date1, date2)
         elif date1_value > date2_value:
-            return True if (self.get_nearest_prev_workday(date1) == date2) else False
+            return self.is_consecutive_prev_workday(date1, date2)
         else:
             return False
 
