@@ -537,6 +537,11 @@ def plot_312_month_revenue_growth_and_stock_price_relation(
     draw_revenue_growth(ax_revenue_growth, df_revenue_growth[diff_len:], month_yoy_growth_3[diff_len:], month_yoy_growth_12[diff_len:], sign_change_positive_index=sign_change_positive_offset_index, sign_change_negative_index=sign_change_negative_offset_index, title='312 revenue growth', show_xaxis_tick=False)
 
 
+def plot_future_index_amplitude_statistics(df):
+    sns.heatmap(df.corr(), annot=True)
+
+
+
 def save_plot(filepath, data_count=0):
     dpi = 100
     if data_count > 0 and data_count > 80:

@@ -195,6 +195,26 @@ def transfrom_stock_price_time_unit(df, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DA
     return df
 
 
+def load_future_index_history():
+    # import pdb; pdb.set_trace()
+    df, column_description_list = load_market_hybrid(CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX)
+# "開盤價", "最高價", "最低價", "最後成交價", "漲跌價", "漲跌%", "盤後交易時段成交量", "一般交易時段成交量", "合計成交量"
+    new_columns={
+    	('%02d01' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'open', 
+    	('%02d02' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'high', 
+    	('%02d03' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'low', 
+    	('%02d04' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'close', 
+    	('%02d05' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'change', 
+    	('%02d06' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'change%', 
+    	('%02d07' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'volume (after hours trading)',
+    	('%02d08' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'volume (general hours trading)',
+    	('%02d09' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'total volume',  
+    }
+    df.rename(columns=new_columns, inplace=True)
+    # import pdb; pdb.set_trace()
+    return df, column_description_list
+
+
 def load_stock_price_history(company_number, overwrite_stock_price_list=None, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DAY):
     # import pdb; pdb.set_trace()
 # overwrite_stock_price_list

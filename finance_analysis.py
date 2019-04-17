@@ -217,7 +217,10 @@ def analyze_and_exit():
 
 
 if __name__ == "__main__":
-    # import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
+    DS.AS.find_future_index_amplitude_statistics()
+    sys.exit(0)
+
 # Parse the parameters and apply to manager class
     init_param()
     # parse_param(True)
