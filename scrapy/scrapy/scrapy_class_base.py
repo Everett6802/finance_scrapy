@@ -124,53 +124,6 @@ class ScrapyBase(object):
         print ", ".join(time_unit_description_list[scrapy_method])
 
 
-#     @classmethod
-#     def find_scrapy_time_range(cls, time_duration_start, time_duration_end, scrapy_method_index, finance_parent_folderpath, company_number=None, company_group_number=None):
-#         def get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict):
-#             if csv_time_duration_dict is not None:
-#                 if csv_time_duration_dict.get(scrapy_method_index, None) is not None:
-#                     return csv_time_duration_dict[scrapy_method_index]
-#             return None
-
-#         # import pdb; pdb.set_trace()
-# # Check old data time range
-#         csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(scrapy_method_index, finance_parent_folderpath, company_group_number)
-#         csv_time_duration_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
-#         csv_old_time_duration_tuple = get_old_csv_time_duration_if_exist(scrapy_method_index, csv_time_duration_dict)
-#         csv_old_data_exist = True
-#         if csv_old_time_duration_tuple is None:
-#             msg = ("No %s:%s data......" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index], company_number)) if company_number is not None else ("No %s data......" % CMN.DEF.SCRAPY_METHOD_DESCRIPTION[scrapy_method_index])
-#             g_logger.debug(msg)
-#             csv_old_data_exist = False
-
-#         data_time_unit = CMN.DEF.SCRAPY_DATA_TIME_UNIT[scrapy_method_index]
-# # Caution: Need transfrom the time string from unicode to string
-# # Set the end time
-#         if time_duration_end is None:
-#             time_duration_end = CMN.FUNC.generate_today_time_str()
-#         if type(time_duration_end) is str: 
-#             time_duration_end = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_end, data_time_unit)
-# # Set the start time
-#         if time_duration_start is None:
-#             if csv_old_data_exist:
-#                 time_duration_start = csv_old_time_duration_tuple.time_duration_end
-#             else:
-#                 time_duration_start = time_duration_end - CMN.DEF.DEF_TIME_RANGE_LIST[data_time_unit]
-#         if type(time_duration_start) is str: 
-#             time_duration_start = CMN.CLS.FinanceTimeBase.from_time_string(time_duration_start, data_time_unit)
-# # Calculate the time range
-#         new_csv_extension_time_duration, web2csv_time_duration_update_tuple = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
-#             time_duration_start, 
-#             time_duration_end,
-#             csv_old_time_duration_tuple
-#         )
-#         if csv_time_duration_dict is None:
-#             csv_time_duration_dict = {}
-#         csv_time_duration_dict[scrapy_method_index] = new_csv_extension_time_duration
-
-#         return csv_time_duration_dict, web2csv_time_duration_update_tuple
-
-
     @classmethod
     def _write_scrapy_field_data_to_config(cls, csv_data_field_list, scrapy_method_index, finance_parent_folderpath):
         conf_folderpath = "%s/%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
@@ -249,8 +202,8 @@ class ScrapyBase(object):
                 time_slice_generator = LIBS.TSG.TimeSliceGenerator.Instance()
                 for web2csv_time_duration_update in web2csv_time_duration_update_tuple:
                     # import pdb; pdb.set_trace()
+                    # print "Time Slice range: %s" % web2csv_time_duration_update
                     for time_slice in time_slice_generator.generate_time_slice(CMN.FUNC.scrapy_method_scrapy_time_unit(self.scrapy_method_index), web2csv_time_duration_update.NewWebStart, web2csv_time_duration_update.NewWebEnd, **time_slice_generator_kwargs):
-                        # print "%s, %s" % (time_slice[0], time_slice[1])
 # Update the sub time range to the config for scraping data
                         slice_kwargs = copy.deepcopy(kwargs)
                         time_start = time_end = None
@@ -261,9 +214,11 @@ class ScrapyBase(object):
                             }
                             time_start = time_slice[0]
                             time_end = time_slice[1]
+                            # print "%s, %s" % (time_start, time_end) 
                         else:
                             slice_kwargs["time"] = time_slice
                             time_start = time_end = time_slice
+                            # print "%s" % time_slice
 # Scrape data in each sub time range
                         # import pdb; pdb.set_trace()
                         csv_data_list, _ = self.scrape_web(*args, **slice_kwargs)                    

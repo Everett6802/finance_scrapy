@@ -9,7 +9,6 @@ import time
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 from requests.exceptions import ConnectionError
-# from libs import web_scrapy_url_date_range as URLTimeRange
 import workday_canlendar as WorkdayCanlendar
 import scrapy.common as CMN
 g_logger = CMN.LOG.get_logger()
@@ -272,6 +271,14 @@ class TimeSliceGenerator(object):
         if (time_unit is not None) and (time_start.get_time_unit_type() != time_unit):
             time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start.to_string(), time_unit)
             time_end = CMN.CLS.FinanceTimeBase.from_time_string(time_end.to_string(), time_unit)
+# Check time range
+        if isinstance(time_start, CMN.CLS.FinanceDate):
+            if time_start < self.__get_workday_calendar().get_first_workday():
+                g_logger.warn("The start workday [%s] is earlier than the first day[%s]" % (time_start, self.__get_workday_calendar().get_first_workday()))
+                time_start = self.__get_workday_calendar().get_first_workday()
+            if time_end > self.__get_workday_calendar().get_last_workday():
+                g_logger.warn("The end workday [%s] is later than the last day[%s]" % (time_end, self.__get_workday_calendar().get_last_workday()))
+                time_end = self.__get_workday_calendar().get_last_workday()
 
         return TimeSliceIterator(time_start, time_end, time_slice_size)
 
