@@ -13,14 +13,17 @@ class ScrapyConfigurer(object):
 
     def __init__(self):
         # self.finance_mode = None
+        self.config_filename = None
         self.config = {}
         self.config_title = set()
 
 
-    def initialize(self):
+    def initialize(self, config_filename=None):
         # import pdb; pdb.set_trace()
+        self.config_filename = CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME if (config_filename is None) else config_filename
+            
         cur_conf_title = None
-        conf_line_list = CMN.FUNC.read_config_file_lines(CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME)
+        conf_line_list = CMN.FUNC.read_config_file_lines(config_filename)
         for conf_line in conf_line_list:
             if re.match("\[[\w]+\]", conf_line) is not None:
                 cur_conf_title = conf_line.strip("[]")
@@ -46,6 +49,10 @@ class ScrapyConfigurer(object):
 
     # def _get_company(self):
     #     raise NotImplementedError
+
+    @property
+    def ConfigFilename(self):
+        return self.config_filename
 
 
     @property

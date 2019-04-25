@@ -38,46 +38,46 @@ class GlobalVar(object):
             cls._GLOBAL_VARIABLE_UPDATED = global_variable_updated
 
 
-        @property
-        def FINANCE_MODE(cls):
-            if not cls._GLOBAL_VARIABLE_UPDATED:
-                raise RuntimeError("Global variables are NOT updated !!!")
-            return cls._FINANCE_MODE
+        # @property
+        # def FINANCE_MODE(cls):
+        #     if not cls._GLOBAL_VARIABLE_UPDATED:
+        #         raise RuntimeError("Global variables are NOT updated !!!")
+        #     return cls._FINANCE_MODE
 
 
-        @FINANCE_MODE.setter
-        def FINANCE_MODE(cls, finance_mode):
-            if cls._GLOBAL_VARIABLE_UPDATED:
-                raise RuntimeError("Global variables have already been UPDATED !!!")
-            cls._FINANCE_MODE = finance_mode
+        # @FINANCE_MODE.setter
+        # def FINANCE_MODE(cls, finance_mode):
+        #     if cls._GLOBAL_VARIABLE_UPDATED:
+        #         raise RuntimeError("Global variables have already been UPDATED !!!")
+        #     cls._FINANCE_MODE = finance_mode
 
 
-        @property
-        def IS_FINANCE_MARKET_MODE(cls):
-            if not cls._GLOBAL_VARIABLE_UPDATED:
-                raise RuntimeError("Global variables are NOT updated !!!")
-            return cls._IS_FINANCE_MARKET_MODE
+        # @property
+        # def IS_FINANCE_MARKET_MODE(cls):
+        #     if not cls._GLOBAL_VARIABLE_UPDATED:
+        #         raise RuntimeError("Global variables are NOT updated !!!")
+        #     return cls._IS_FINANCE_MARKET_MODE
 
 
-        @IS_FINANCE_MARKET_MODE.setter
-        def IS_FINANCE_MARKET_MODE(cls, is_finance_market_mode):
-            if cls._GLOBAL_VARIABLE_UPDATED:
-                raise RuntimeError("Global variables have already been UPDATED !!!")
-            cls._IS_FINANCE_MARKET_MODE = is_finance_market_mode
+        # @IS_FINANCE_MARKET_MODE.setter
+        # def IS_FINANCE_MARKET_MODE(cls, is_finance_market_mode):
+        #     if cls._GLOBAL_VARIABLE_UPDATED:
+        #         raise RuntimeError("Global variables have already been UPDATED !!!")
+        #     cls._IS_FINANCE_MARKET_MODE = is_finance_market_mode
 
 
-        @property
-        def IS_FINANCE_STOCK_MODE(cls):
-            if not cls._GLOBAL_VARIABLE_UPDATED:
-                raise RuntimeError("Global variables are NOT updated !!!")
-            return cls._IS_FINANCE_STOCK_MODE
+        # @property
+        # def IS_FINANCE_STOCK_MODE(cls):
+        #     if not cls._GLOBAL_VARIABLE_UPDATED:
+        #         raise RuntimeError("Global variables are NOT updated !!!")
+        #     return cls._IS_FINANCE_STOCK_MODE
 
 
-        @IS_FINANCE_STOCK_MODE.setter
-        def IS_FINANCE_STOCK_MODE(cls, is_finance_stock_mode):
-            if cls._GLOBAL_VARIABLE_UPDATED:
-                raise RuntimeError("Global variables have already been UPDATED !!!")
-            cls._IS_FINANCE_STOCK_MODE = is_finance_stock_mode
+        # @IS_FINANCE_STOCK_MODE.setter
+        # def IS_FINANCE_STOCK_MODE(cls, is_finance_stock_mode):
+        #     if cls._GLOBAL_VARIABLE_UPDATED:
+        #         raise RuntimeError("Global variables have already been UPDATED !!!")
+        #     cls._IS_FINANCE_STOCK_MODE = is_finance_stock_mode
 
 
         @property

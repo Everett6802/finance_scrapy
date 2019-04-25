@@ -149,7 +149,7 @@ class ScrapyBase(object):
         # self.ignore_data_not_found_exception = False
 
 
-    def update_csv_field(self):
+    def update_csv_field_description(self):
         _, csv_data_field_list = self.scrape_web()
         self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
 

@@ -25,6 +25,7 @@ class ScrapyMgr(object):
             "reserve_old_finance_folder": False,
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
+            "config_filename": CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME,
             "max_data_count": None
         }
         self.xcfg.update(cfg)
@@ -40,7 +41,7 @@ class ScrapyMgr(object):
 
     def __get_configurer(self):
         if self.configurer is None:
-            self.configurer = LIBS.SC.ScrapyConfigurer.Instance()
+            self.configurer = LIBS.SC.ScrapyConfigurer.Instance(config_filename=self.xcfg["config_filename"])
         return self.configurer
 
 
@@ -124,12 +125,14 @@ class ScrapyMgr(object):
         self.set_time(time_range_string)
 
 
-    def set_finance_root_folderpath(self, csv_root_folderpath=None, update_dataset=False):
-        assert ((csv_root_folderpath is None) or (not update_dataset)), "incorrect arguments in the 'set_finance_root_folderpath' function"
-        if update_dataset:
-            csv_root_folderpath = GV.FINANCE_DATASET_DATA_FOLDERPATH
+    def set_finance_root_folderpath(self, csv_root_folderpath):
         g_logger.debug("Set CSV root folder path: %s" % csv_root_folderpath)
         self.xcfg["finance_root_folderpath"] = csv_root_folderpath
+
+
+    def set_config_filename(self, config_filename):
+        g_logger.debug("Set cofig filename: %s" % config_filename)
+        self.xcfg["config_filename"] = config_filename
 
 
     @property

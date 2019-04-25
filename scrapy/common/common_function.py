@@ -1348,6 +1348,17 @@ def remove_finance_file_system(finance_parent_folderpath, company_group_count, n
     shutil.rmtree(finance_parent_folderpath, ignore_errors=True)
 
 
+def scrapy_method_name_to_index(scrapy_method):
+    scrapy_method_index = None
+    if type(scrapy_method) is str:
+        scrapy_method_index = CMN_DEF.SCRAPY_METHOD_NAME_TO_INDEX[scrapy_method]
+    elif type(scrapy_method) is int:
+        scrapy_method_index = scrapy_method_index
+    else:
+        ValueError("Unknown Scrapy Method type: %s" % type(scrapy_method))
+    return scrapy_method_index
+
+
 def scrapy_method_need_company_number(scrapy_method):
     need_company_number = None
     if type(scrapy_method) is str:
