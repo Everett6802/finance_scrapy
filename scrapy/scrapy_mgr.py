@@ -41,7 +41,8 @@ class ScrapyMgr(object):
 
     def __get_configurer(self):
         if self.configurer is None:
-            self.configurer = LIBS.SC.ScrapyConfigurer.Instance(config_filename=self.xcfg["config_filename"])
+            cfg = {'config_filename': self.xcfg["config_filename"]}
+            self.configurer = LIBS.SC.ScrapyConfigurer.Instance(cfg)
         return self.configurer
 
 
@@ -97,10 +98,10 @@ class ScrapyMgr(object):
             self.company_group_set = LIBS.CGS.CompanyGroupSet.get_whole_company_group_set()
 
 
-    def set_time(self, time_range_string=None):
-        if time_range_string is not None:
-            # time_range_string = ",%s," % CMN.FUNC.generate_today_time_str()
-            time_range_split = time_range_string.split(",")
+    def set_time(self, time_string=None):
+        if time_string is not None:
+            # time_string = ",%s," % CMN.FUNC.generate_today_time_str()
+            time_range_split = time_string.split(",")
             self.time_cfg = {
                 "start": time_range_split[0] if len(time_range_split[0]) != 0 else None,
                 "end": time_range_split[1] if len(time_range_split[1]) != 0 else None,
@@ -115,14 +116,14 @@ class ScrapyMgr(object):
         self.set_method(method_index_list=method_index_list)
         company_word_list_string = self.__get_configurer().Company
         self.set_company(company_word_list_string)
-        time_range_string = self.__get_configurer().TimeRange
-        self.set_time(time_range_string)
+        time_string = self.__get_configurer().Time
+        self.set_time(time_string)
 
 
-    def set_scrapy_config(self, method_index_list_string=None, company_word_list_string=None, time_range_string=None):
+    def set_scrapy_config(self, method_index_list_string=None, company_word_list_string=None, time_string=None):
         self.set_method(method_index_list_string)
         self.set_company(company_word_list_string)
-        self.set_time(time_range_string)
+        self.set_time(time_string)
 
 
     def set_finance_root_folderpath(self, csv_root_folderpath):
@@ -196,7 +197,7 @@ class ScrapyMgr(object):
             "max_data_count": self.xcfg['max_data_count'],
         }
 
-        # import pdb; pdb.set_trace()
+        import pdb; pdb.set_trace()
         for method_index in self.method_index_list:
             if CMN.FUNC.scrapy_method_need_select_class(method_index):
 # Check the field description file exist

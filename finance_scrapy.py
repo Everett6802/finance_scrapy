@@ -57,6 +57,7 @@ def show_usage_and_exit():
     print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
 # Combination argument
     print "Combination argument:\n Caution: Exclusive. Only the first combination argument takes effect. Some related arguments may be overwriten"
+    print "--update_config_from_filename\nDescription: Update dataset from config file\nCaution: This arugment is equal to the argument combination as below: --finance_folderpath %s --reserve_old --config_from_filename xxx\n" % GV.FINANCE_DATASET_DATA_FOLDERPATH
     print "*** Scrapy Method ***"
     for scrapy_method_index, csv_filename in enumerate(CMN.DEF.SCRAPY_CSV_FILENAME):
         # import pdb; pdb.set_trace()
@@ -196,7 +197,8 @@ def parse_param():
             param_cfg["enable_company_not_found_exception"] = True
             index_offset = 1
         elif re.match("--update_config_from_filename", sys.argv[index]):
-            combination_param_cfg['update_config_from_filename'] = sys.argv[index + 1]
+            # import pdb; pdb.set_trace()
+            combination_param_cfg['update_dataset_config_from_filename'] = sys.argv[index + 1]
             index_offset = 2
         elif re.match("--update", sys.argv[index]):
             # import pdb; pdb.set_trace()
@@ -238,7 +240,8 @@ def check_param():
     if param_cfg['update_csv_field']:
         show_warn("Update CSV field description and Exit. Other parameters are ignored")
 
-    combination_argument = (combination_param_cfg["update_dataset_method"] is not None) or (combination_param_cfg["update_dataset_method"] is not None)
+    # import pdb; pdb.set_trace()
+    combination_argument = (combination_param_cfg["update_dataset_config_from_filename"] is not None) or (combination_param_cfg["update_dataset_method"] is not None)
     if combination_argument:
 # Disable the other parameters while combination argment is set
         if param_cfg["method"] is not None:
@@ -324,7 +327,7 @@ def setup_param():
         g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
 # Set method/compnay/time
     if param_cfg["config_from_filename"]:
-        g_mgr.set_config_filename(param_cfg["config_filename"])
+        g_mgr.set_config_filename(param_cfg["config_from_filename"])
         g_mgr.set_scrapy_config_from_file()
     else:
         g_mgr.set_scrapy_config(param_cfg["method"], param_cfg["company"], param_cfg["time"])

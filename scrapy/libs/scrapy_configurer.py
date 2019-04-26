@@ -38,6 +38,16 @@ class ScrapyConfigurer(object):
                 self.config[cur_conf_title][key] = value
 
 
+    # @staticmethod
+    def __get_config_decorator(func):
+        def wrapper(self, *args, **kwargs):
+            print "start magic"
+            func(self, *args, **kwargs)
+            print "end magic"
+        return wrapper
+
+
+    @__get_config_decorator
     def get_config(self, title, subtitle=None):
         assert title in self.config_title, "Unknown config title: %s" % title
         if subtitle is None:
@@ -88,10 +98,11 @@ class ScrapyConfigurer(object):
 
 
     @property
-    def TimeRange(self):
-        if not hasattr(self, "time_range"):
+    def Time(self):
+        import pdb; pdb.set_trace()
+        if not hasattr(self, "time"):
             # assert self.TimeType == CMN.DEF.DATA_TIME_DURATION_RANGE, "The time_range should be %d, not %d" % (CMN_DEF.DATA_TIME_DURATION_RANGE, self.TimeType)
-            time_range_str = self.get_config("Common", "time_range")
+            time_str = self.get_config("Common", "time")
 #             time_range_list = time_range_list_str.split(",")
 #             time_range_list_len = len(time_range_list)
 #             time_range_start = time_range_end = None
@@ -102,8 +113,8 @@ class ScrapyConfigurer(object):
 #                 time_range_end = CMN.CLS.FinanceTimeBase.from_time_string(time_range_list[1])
 #             elif time_range_list_len == 1:
 #                 time_range_start = CMN.CLS.FinanceTimeBase.from_time_string(time_range_list[0])
-            self.time_range = CMN.FUNC.parse_time_range_str_to_object(time_range_str)
-        return self.time_range
+            self.time = CMN.FUNC.parse_time_range_str_to_object(time_str)
+        return self.time
 
 
     @property
