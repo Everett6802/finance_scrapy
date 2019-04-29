@@ -1,14 +1,10 @@
 #! /usr/bin/python
 # -*- coding: utf8 -*-
 
+import time
 import common as CMN
 from common.common_variable import GlobalVar as GV
 import libs as LIBS
-# import scrapy.scrapy_definition as CMN.DEF
-# import scrapy.scrapy_function as SC_FUNC
-# import gui_scrapy_configurer as Configurer
-# import cmoney_scrapy as CMS
-# import statement_dog_scrapy as SDS
 g_logger = CMN.LOG.get_logger()
 
 
@@ -197,8 +193,12 @@ class ScrapyMgr(object):
             "max_data_count": self.xcfg['max_data_count'],
         }
 
-        import pdb; pdb.set_trace()
-        for method_index in self.method_index_list:
+        # import pdb; pdb.set_trace()
+        for i, method_index in enumerate(self.method_index_list):
+            if i != 0:
+                sleep_time = 5
+                g_logger.debug("Sleep %d seconds before scraping %s......" % CMN.FUNC.get_method_index_from_description(method_index))
+                time.sleep(sleep_time)
             if CMN.FUNC.scrapy_method_need_select_class(method_index):
 # Check the field description file exist
                 if not self.check_csv_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):

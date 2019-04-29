@@ -192,7 +192,7 @@ class ScrapyBase(object):
             else:
                 if time_cfg_slice_size is not None:
                     g_logger.debug("%s don't need to set time slice size, just ignore......" % self.scrapy_method)
-            import pdb; pdb.set_trace()
+            # import pdb; pdb.set_trace()
             with LIBS.CSVH.CSVHandler(self.scrapy_method, csv_parent_folderpath=self.xcfg['finance_root_folderpath'], company_number=company_number, company_group_number=company_group_number) as csv_handler:
 # Adjust the scrapy time range according to the CSV file
                 web2csv_time_duration_update_tuple = csv_handler.find_scrapy_time_range(time_cfg_start, time_cfg_end)

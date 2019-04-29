@@ -41,14 +41,18 @@ class ScrapyConfigurer(object):
     # @staticmethod
     def __get_config_decorator(func):
         def wrapper(self, *args, **kwargs):
-            print "start magic"
-            func(self, *args, **kwargs)
-            print "end magic"
+            # print "start magic"
+            value = func(self, *args, **kwargs)
+            if len(value) == 0:
+                return None
+            # print "end magic"
+            return value
         return wrapper
 
 
     @__get_config_decorator
     def get_config(self, title, subtitle=None):
+        # import pdb; pdb.set_trace()
         assert title in self.config_title, "Unknown config title: %s" % title
         if subtitle is None:
             return self.config[title]
@@ -85,7 +89,10 @@ class ScrapyConfigurer(object):
     @property
     def Method(self):
         if not hasattr(self, "method"):
-            self.method = CMN.FUNC.parse_method_str_to_list(self.get_config("Common", "method"))
+            self.method = None
+            method_str = self.get_config("Common", "method")
+            if method_str is not None:
+                self.method = CMN.FUNC.parse_method_str_to_list()
             # self.method = [int(method_index_str) for method_index_str in self.get_config("Common", "method").split(",")]
         return self.method
 
@@ -99,8 +106,9 @@ class ScrapyConfigurer(object):
 
     @property
     def Time(self):
-        import pdb; pdb.set_trace()
+        # import pdb; pdb.set_trace()
         if not hasattr(self, "time"):
+            self.time = None
             # assert self.TimeType == CMN.DEF.DATA_TIME_DURATION_RANGE, "The time_range should be %d, not %d" % (CMN_DEF.DATA_TIME_DURATION_RANGE, self.TimeType)
             time_str = self.get_config("Common", "time")
 #             time_range_list = time_range_list_str.split(",")
@@ -113,7 +121,8 @@ class ScrapyConfigurer(object):
 #                 time_range_end = CMN.CLS.FinanceTimeBase.from_time_string(time_range_list[1])
 #             elif time_range_list_len == 1:
 #                 time_range_start = CMN.CLS.FinanceTimeBase.from_time_string(time_range_list[0])
-            self.time = CMN.FUNC.parse_time_range_str_to_object(time_str)
+            if time_str is not None:
+                self.time = CMN.FUNC.parse_time_range_str_to_object(time_str)
         return self.time
 
 
@@ -121,7 +130,10 @@ class ScrapyConfigurer(object):
     def Company(self):
         # return self._get_company()
         if not hasattr(self, "company"):
-            self.company = self.get_config("Common", "company")
+            self.company = None
+            company_str = self.get_config("Common", "company")
+            if company_str is not None:
+                self.company = company_str
         return self.company
 
 
