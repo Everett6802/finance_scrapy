@@ -19,6 +19,7 @@ class ScrapyMgr(object):
     def __init__(self, **cfg):
         self.xcfg = {
             "reserve_old_finance_folder": False,
+            "append_before": False,
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
             "config_filename": CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME,
@@ -157,9 +158,20 @@ class ScrapyMgr(object):
         return self.xcfg["disable_flush_scrapy_while_exception"]
 
 
+    def set_append_before_mode(self, append_before):
+        if append_before:
+            g_logger.debug("Set to Append Before Mode......")
+        self.xcfg["append_before"] = append_before
+
+
+    @property
+    def AppendBefore(self):
+        return self.xcfg["append_before"]
+
+
     def enable_dry_run(self, enable):
         if enable:
-            g_logger.debug("Enable Dry-Run ......")
+            g_logger.debug("Enable Dry-Run......")
         self.xcfg["dry_run_only"] = enable
 
 
@@ -191,6 +203,7 @@ class ScrapyMgr(object):
             "dry_run_only": self.xcfg["dry_run_only"],
             'finance_root_folderpath': self.xcfg['finance_root_folderpath'],
             "max_data_count": self.xcfg['max_data_count'],
+            "append_before": self.xcfg['append_before'],
         }
 
         # import pdb; pdb.set_trace()

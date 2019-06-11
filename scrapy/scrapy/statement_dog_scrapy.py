@@ -201,7 +201,11 @@ class StatementDogScrapy(ScrapyBase.ScrapyBase):
 		print ", ".join(cls.get_scrapy_method_list())
 
 
-	def __init__(self):
+	def __init__(self, **cfg):
+        super(StatementDogScrapy, self).__init__()
+# For the variables which are NOT changed during scraping
+        self.xcfg = self._update_cfg_dict(cfg)
+
 		self.webdriver = None
 		# self.csv_time_duration = None
 		# self.company_number = None

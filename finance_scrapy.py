@@ -27,6 +27,7 @@ def show_usage_and_exit():
     print "--update_csv_field\nDescription: Update the CSV file description\n"
     print "--no_scrapy\nDescription: Don't scrape Web data\n"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
+    print "--append_before\nDescription: Update the earlier scrapy data into database\n"
     print "--dry_run\nDescription: Dry-run only. Will NOT scrape data from the web\n"
     print "--finance_folderpath\nDescription: The finance root folder\nDefault: %s\n" % CMN.DEF.CSV_ROOT_FOLDERPATH
     # print "--dataset_finance_folderpath\nDescription: Set the finance root folder to the dataset folder\n"
@@ -115,6 +116,7 @@ def init_param():
     param_cfg["show_workday_calendar_range"] = False
     param_cfg["no_scrapy"] = False
     param_cfg["reserve_old"] = False
+    param_cfg["append_before"] = False
     param_cfg["dry_run"] = False
     # param_cfg["dataset_finance_folderpath"] = False
     param_cfg["finance_folderpath"] = None
@@ -159,6 +161,9 @@ def parse_param():
             index_offset = 1
         elif re.match("--reserve_old", sys.argv[index]):
             param_cfg["reserve_old"] = True
+            index_offset = 1
+        elif re.match("--append_before", sys.argv[index]):
+            param_cfg["append_before"] = True
             index_offset = 1
         elif re.match("--dry_run", sys.argv[index]):
             param_cfg["dry_run"] = True
@@ -265,6 +270,9 @@ def check_param():
         if not param_cfg["reserve_old"]:
             show_warn("reserve_old' argument should be TRUE since 'combination argument' is set")
             param_cfg["reserve_old"] = False
+        if not param_cfg["append_before"]:
+            show_warn("append_before' argument should be TRUE since 'combination argument' is set")
+            param_cfg["append_before"] = False
         if param_cfg["config_from_filename"]:
             show_warn("The 'config_from_filename' argument won't take effect since 'update_config_from_filename' is set")
             param_cfg["config_from_filename"] = None
@@ -332,6 +340,7 @@ def setup_param():
     else:
         g_mgr.set_scrapy_config(param_cfg["method"], param_cfg["company"], param_cfg["time"])
     g_mgr.reserve_old_finance_folder(param_cfg["reserve_old"])
+    g_mgr.set_append_before_mode(param_cfg["append_before"])
     g_mgr.enable_dry_run(param_cfg["dry_run"])
 
 

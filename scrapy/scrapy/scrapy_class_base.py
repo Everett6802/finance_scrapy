@@ -125,6 +125,19 @@ class ScrapyBase(object):
 
 
     @classmethod
+    def _update_cfg_dict(cls, cfg):
+        xcfg = {
+            "dry_run_only": False,
+            "append_before": False,
+            "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
+            # "config_filename": CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME,
+            "max_data_count": None
+        }
+        xcfg.update(cfg)
+        return xcfg
+
+
+    @classmethod
     def _write_scrapy_field_data_to_config(cls, csv_data_field_list, scrapy_method_index, finance_parent_folderpath):
         conf_folderpath = "%s/%s" % (finance_parent_folderpath, CMN.DEF.CSV_FIELD_DESCRIPTION_FOLDERNAME)
         conf_filename = ("%s" % CMN.DEF.SCRAPY_CSV_FILENAME[scrapy_method_index]) + CMN.DEF.CSV_COLUMN_DESCRIPTION_CONF_FILENAME_POSTFIX
@@ -193,7 +206,7 @@ class ScrapyBase(object):
                 if time_cfg_slice_size is not None:
                     g_logger.debug("%s don't need to set time slice size, just ignore......" % self.scrapy_method)
             # import pdb; pdb.set_trace()
-            with LIBS.CSVH.CSVHandler(self.scrapy_method, csv_parent_folderpath=self.xcfg['finance_root_folderpath'], company_number=company_number, company_group_number=company_group_number) as csv_handler:
+            with LIBS.CSVH.CSVHandler(self.scrapy_method, csv_parent_folderpath=self.xcfg['finance_root_folderpath'], company_number=company_number, company_group_number=company_group_number, append_before_mode=self.xcfg['append_before_mode']) as csv_handler:
 # Adjust the scrapy time range according to the CSV file
                 web2csv_time_duration_update_tuple = csv_handler.find_scrapy_time_range(time_cfg_start, time_cfg_end)
                 if web2csv_time_duration_update_tuple is None:

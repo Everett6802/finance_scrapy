@@ -408,13 +408,16 @@ class CMoneyScrapy(ScrapyBase.ScrapyBase):
 
 
     def __init__(self, **cfg):
+        super(CMoneyScrapy, self).__init__()
 # For the variables which are NOT changed during scraping
-        self.xcfg = {
-            "dry_run_only": False,
-            "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
-            "max_data_count": None,
-        }
-        self.xcfg.update(cfg)
+        # self.xcfg = {
+        #     "dry_run_only": False,
+        #     "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
+        #     "max_data_count": None,
+        # }
+        # self.xcfg.update(cfg)
+        self.xcfg = self._update_cfg_dict(cfg)
+
         # self.url = url
         self.webdriver = None
         # self.csv_time_duration = None
