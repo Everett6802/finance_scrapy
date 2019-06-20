@@ -897,7 +897,7 @@ def read_csv_time_duration_config_file(conf_filename, conf_folderpath):
     return csv_time_duration_dict
 
 
-def write_csv_time_duration(csv_time_duration_dict, conf_folderpath, conf_foldername, description_array=CMN_DEF.SCRAPY_METHOD_DESCRIPTION):
+def write_csv_time_duration(csv_time_duration_dict, conf_folderpath, conf_filename, description_array=CMN_DEF.SCRAPY_METHOD_DESCRIPTION):
     # import pdb; pdb.set_trace()
     if conf_filename is None:
         conf_filename = CMN_DEF.CSV_DATA_TIME_DURATION_FILENAME

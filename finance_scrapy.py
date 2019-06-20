@@ -16,7 +16,8 @@ g_logger = CMN.LOG.get_logger()
 param_cfg = {}
 combination_param_cfg = {}
 
-update_dataset_errmsg = None
+check_param_time_cnt = 0
+check_param_time_param_first = None
 
 
 def show_usage_and_exit():
@@ -47,11 +48,21 @@ def show_usage_and_exit():
     print "  Format4: Company code number/number range/group hybrid (ex. 2347,2100-2200,G12,2362,g2,1500-1510)"
     print ""
     print "-t | --time\nDescription: The time range\nCaution: Some Scrapy Methods can't set time range\nOnly take effect when config_from_filename is NOT set"
-    print "  Format1: start_time, end_time, time_slice"
-    print "  Format2: start_time, end_time"
+    print "  Format1: start_time,end_time,time_slice"
+    print "  Format2: start_time,end_time"
+    print "  Format1: start_time,,time_slice"
+    print "  Format2: start_time,"
+    print "  Format1: ,end_time,time_slice"
+    print "  Format2: ,end_time"
     print "--time_at\nDescription: The time\nCaution: Some Scrapy Methods can't set time\nOnly take effect when config_from_filename is NOT set"
-    print "  Format1: time, time_slice; Eqaul to --time time, time, time_slice"
-    print "  Format2: time; Eqaul to --time time, time"
+    print "  Format1: time,time_slice; Eqaul to --time time,time,time_slice"
+    print "  Format2: time; Eqaul to --time time,time"
+    print "--time_from\nDescription: From the time\nCaution: Some Scrapy Methods can't set time\nOnly take effect when config_from_filename is NOT set"
+    print "  Format1: time, time_slice; Eqaul to --time time,,time_slice"
+    print "  Format2: time; Eqaul to --time time,"
+    print "--time_until\nDescription: Util the time\nCaution: Some Scrapy Methods can't set time\nOnly take effect when config_from_filename is NOT set"
+    print "  Format1: time, time_slice; Eqaul to --time ,time,time_slice"
+    print "  Format2: time; Eqaul to --time ,time"
     print "--time_until_last\nDescription: The time range until last day"
     print ""
     print "--max_data_count\nDescription: Only scrape the latest N data\n"
@@ -66,11 +77,13 @@ def show_usage_and_exit():
         scrarpy_method_costant_cfg = CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG[scrapy_method]
         can_set_time_range = scrarpy_method_costant_cfg["can_set_time_range"]
         if not scrarpy_method_costant_cfg["need_company_number"]:
-            print "--update_%s\n--update_method%d\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s %s --reserve_old\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, ("--time_until_last" if can_set_time_range else ""))
+            print "--update_%s | --update_method%d\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s %s --reserve_old\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, ("--time_until_last" if can_set_time_range else ""))
             # print "--update_%s_from_file\n--update_method%d_from_file\nDescription: Update %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --config_from_filename\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
+            if can_set_time_range: print "--update_%s | --update_method%d --time_from ooo\nDescription: Update Older %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --append_before --time_from ooo\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
         else:
-            print "--update_company_%s\n--update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s %s --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, ("--time_until_last" if can_set_time_range else ""))
+            print "--update_company_%s | --update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s %s --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, ("--time_until_last" if can_set_time_range else ""))
             # print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --config_from_filename\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
+            if can_set_time_range: print "--update_company_%s | --update_company_method%d --time_from ooo\nDescription: Update Older %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --append_before --time_from ooo --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
     sys.exit(0)
 
 
@@ -110,6 +123,7 @@ def show_workday_calendar_range_and_exit():
 
 
 def init_param():
+    # import pdb; pdb.set_trace()
     param_cfg["silent"] = False
     param_cfg["help"] = False
     param_cfg["update_workday_calendar"] = False
@@ -125,6 +139,8 @@ def init_param():
     param_cfg["method"] = None
     param_cfg["company"] = None
     param_cfg["time_at"] = None
+    param_cfg["time_from"] = None
+    param_cfg["time_until"] = None
     param_cfg["time_until_last"] = False
     param_cfg["time"] = None
     param_cfg["max_data_count"] = None
@@ -137,12 +153,18 @@ def init_param():
     combination_param_cfg["update_dataset_company_list"] = None
     combination_param_cfg["update_dataset_time"] = None
     # combination_param_cfg['update_dataset_duplicate_setting'] = False
+    # check_param_time_cnt = 0
 
 
 def parse_param():
     argc = len(sys.argv)
     index = 1
     index_offset = None
+
+    
+    global check_param_time_cnt
+    global check_param_time_param_first
+
     # import pdb; pdb.set_trace()
     while index < argc:
         if not sys.argv[index].startswith('-'):
@@ -186,14 +208,35 @@ def parse_param():
         elif re.match("(-c|--company)", sys.argv[index]):
             param_cfg["company"] = sys.argv[index + 1]
             index_offset = 2
-        elif re.match("--time_until_last", sys.argv[index]):
-            param_cfg["time_until_last"] = True
-            index_offset = 1
         elif re.match("--time_at", sys.argv[index]):
             param_cfg["time_at"] = sys.argv[index + 1]
+            check_param_time_cnt += 1
+            if check_param_time_cnt == 1:
+                check_param_time_param_first = "time_at"
             index_offset = 2
+        elif re.match("--time_from", sys.argv[index]):
+            param_cfg["time_from"] = sys.argv[index + 1]
+            check_param_time_cnt += 1
+            if check_param_time_cnt == 1:
+                check_param_time_param_first = "time_from"
+            index_offset = 2
+        elif re.match("--time_until", sys.argv[index]):
+            param_cfg["time_until"] = sys.argv[index + 1]
+            check_param_time_cnt += 1
+            if check_param_time_cnt == 1:
+                check_param_time_param_first = "time_until"
+            index_offset = 2
+        elif re.match("--time_until_last", sys.argv[index]):
+            param_cfg["time_until_last"] = True
+            check_param_time_cnt += 1
+            if check_param_time_cnt == 1:
+                check_param_time_param_first = "time_until_last"
+            index_offset = 1
         elif re.match("(-t|--time)", sys.argv[index]):
             param_cfg["time"] = sys.argv[index + 1]
+            check_param_time_cnt += 1
+            if check_param_time_cnt == 1:
+                check_param_time_param_first = "time"
             index_offset = 2
         elif re.match("--max_data_count", sys.argv[index]):
             param_cfg["max_data_count"] = int(sys.argv[index + 1])
@@ -248,6 +291,7 @@ def check_param():
     # import pdb; pdb.set_trace()
     combination_argument = (combination_param_cfg["update_dataset_config_from_filename"] is not None) or (combination_param_cfg["update_dataset_method"] is not None)
     if combination_argument:
+        append_before = False
 # Disable the other parameters while combination argment is set
         if param_cfg["method"] is not None:
             show_warn("The 'method' argument won't take effect since 'combination argument' is set")
@@ -258,6 +302,13 @@ def check_param():
         if param_cfg["time_at"] is not None:
             show_warn("The 'time_at' argument is ignored since 'combination argument' is set")
             param_cfg["time_at"] = None
+        if param_cfg["time_from"] is not None:
+            # show_warn("The 'time_from' argument is ignored since 'combination argument' is set")
+            # param_cfg["time_from"] = None
+            append_before = True
+        if param_cfg["time_until"] is not None:
+            show_warn("The 'time_until' argument is ignored since 'combination argument' is set")
+            param_cfg["time_until"] = None
         if param_cfg["time_until_last"]:
             show_warn("The 'time_until_last' argument is ignored since 'combination argument' is set")
             param_cfg["time_until_last"] = False
@@ -286,13 +337,23 @@ def check_param():
                 show_warn("The 'update_dataset_method' argument won't take effect since 'update_config_from_filename' is set")
                 combination_param_cfg["update_dataset_method"] = None
             param_cfg["config_from_filename"] = combination_param_cfg["update_dataset_config_from_filename"]
+            if append_before:
+                show_warn("Append Before mode is NOT supported since 'update_config_from_filename' is set")
+                append_before = False
         else:
             param_cfg["method"] = combination_param_cfg["update_dataset_method"]
             method_index = int(param_cfg["method"])
             if CMN.FUNC.scrapy_method_need_company_number(method_index):
                 param_cfg["company"] = combination_param_cfg["update_dataset_company_list"]
-            if CMN.FUNC.scrapy_method_can_set_time_range(method_index):
-                param_cfg["time"] = combination_param_cfg["update_dataset_time"]
+            if append_before:
+                param_cfg["append_before"] = True
+                if param_cfg["time_from"].find(",") == -1:
+                    param_cfg["time"] = "{0},".format(param_cfg["time_from"])
+                else:
+                    [time_str, time_slice_str] = param_cfg["time_from"].split(",")
+                    param_cfg["time"] = "{0},,{1}".format(time_str, time_slice_str)
+            # if CMN.FUNC.scrapy_method_can_set_time_range(method_index):
+            #     param_cfg["time"] = combination_param_cfg["update_dataset_time"]
         # import pdb; pdb.set_trace()
         param_cfg["finance_folderpath"] = GV.FINANCE_DATASET_DATA_FOLDERPATH
         param_cfg["reserve_old"] = True
@@ -307,6 +368,12 @@ def check_param():
             if param_cfg["time_at"] is not None:
                 param_cfg["time_at"] = None
                 show_warn("The 'time_at' argument is ignored since 'config_from_file' is set")
+            if param_cfg["time_from"] is not None:
+                param_cfg["time_from"] = None
+                show_warn("The 'time_from' argument is ignored since 'config_from_file' is set")
+            if param_cfg["time_until"] is not None:
+                param_cfg["time_until"] = None
+                show_warn("The 'time_until' argument is ignored since 'config_from_file' is set")
             if param_cfg["time_until_last"]:
                 param_cfg["time_until_last"] = False
                 show_warn("The 'time_until_last' argument is ignored since 'config_from_file' is set")
@@ -318,16 +385,43 @@ def check_param():
             # if param_cfg["method"] is None:
             #     # import pdb; pdb.set_trace()
             #     param_cfg["method"] = ",".join(map(str, range(CMN.DEF.SCRAPY_METHOD_END)))
-            if param_cfg["time_at"] is not None:
-                if param_cfg["time"] is not None:
+            if check_param_time_cnt > 0:
+                if check_param_time_cnt > 1:
+                    show_warn("Multiple 'time' related arguments are set, only select the first one: %s" % check_param_time_param_first)
+                if check_param_time_param_first == "time_at":
+                    if param_cfg["time_at"].find(",") == -1:
+                        param_cfg["time"] = "{0},{0}".format(param_cfg["time_at"])
+                    else:
+                        [time_str, time_slice_str] = param_cfg["time_at"].split(",")
+                        param_cfg["time"] = "{0},{0},{1}".format(time_str, time_slice_str)
+                elif check_param_time_param_first == "time_from":
+                    if param_cfg["time_from"].find(",") == -1:
+                        param_cfg["time"] = "{0},".format(param_cfg["time_from"])
+                    else:
+                        [time_str, time_slice_str] = param_cfg["time_from"].split(",")
+                        param_cfg["time"] = "{0},,{1}".format(time_str, time_slice_str)
+                elif check_param_time_param_first == "time_until":
+                    if param_cfg["time_until"].find(",") == -1:
+                        param_cfg["time"] = ",{0}".format(param_cfg["time_until"])
+                    else:
+                        [time_str, time_slice_str] = param_cfg["time_until"].split(",")
+                        param_cfg["time"] = ",{0},{1}".format(time_str, time_slice_str)
+                elif check_param_time_param_first == "time_until_last":
                     param_cfg["time"] = None
-                    show_warn("The 'time' argument is ignored since 'time_at' is set")
-                param_cfg["time"] = param_cfg["time_at"].split(",")[0] + "," + param_cfg["time_at"]
-            if param_cfg["time_until_last"]:
-                if param_cfg["time"] is not None:
-                    param_cfg["time"] = None
-                    show_warn("The 'time' argument is ignored since 'time_until_last' is set")
-                    # param_cfg["time"] = ",%s," % CMN.FUNC.generate_today_time_str()
+                else:
+                    raise ValueError("Incorrect time argument: %s" % check_param_time_param_first)
+
+            # if param_cfg["time_at"] is not None:
+            #     if param_cfg["time"] is not None:
+            #         param_cfg["time"] = None
+            #         show_warn("The 'time' argument is ignored since 'time_at' is set")
+            #     param_cfg["time"] = param_cfg["time_at"].split(",")[0] + "," + param_cfg["time_at"]
+            # if param_cfg["time_until_last"]:
+            #     if param_cfg["time"] is not None:
+            #         param_cfg["time"] = None
+            #         show_warn("The 'time' argument is ignored since 'time_until_last' is set")
+            #         # param_cfg["time"] = ",%s," % CMN.FUNC.generate_today_time_str()
+
 
 def setup_param():
     # import pdb; pdb.set_trace()

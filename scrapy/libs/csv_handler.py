@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 
+import os
 import re
 import collections
 import company_profile as CompanyProfile
@@ -43,6 +44,7 @@ class CSVHandler(object):
     def __exit__(self, type, msg, traceback):
         self.__flush()
         if self.append_before_mode:
+            # import pdb; pdb.set_trace()
             self.__merge_append_before_files()
         return False
 
@@ -107,7 +109,7 @@ class CSVHandler(object):
 
     def __bak_name(self, name):
         return name + ".bak"
-s
+
 
     def find_scrapy_time_range(self, time_start, time_end):
         self.__get_old_csv_time_range()
@@ -115,17 +117,33 @@ s
         data_time_unit = CMN.DEF.SCRAPY_DATA_TIME_UNIT[self.scrapy_method_index]
         # import pdb; pdb.set_trace()
 # Caution: Need transfrom the time string from unicode to string
+# Assign the reason value if time_start/time_end is NOT set
+        if self.csv_time_duration_tuple is None:
+# No scraped data in dataset
 # Set the end time
-        if time_end is None:
-            time_end = CMN.FUNC.generate_today_time_str()
+            if time_end is None:
+                time_end = CMN.FUNC.generate_today_time_str()
+# Set the start time
+            if time_start is None:
+                time_start = time_end - CMN.DEF.DEF_TIME_RANGE_LIST[data_time_unit]
+        else:
+# Scraped data exist in dataset
+            if time_end is None and time_start is None:
+                time_start = self.csv_time_duration_tuple.time_duration_end
+                time_end = CMN.FUNC.generate_today_time_str()
+            elif time_end is None:
+                if self.append_before_mode:
+                    time_end = self.csv_time_duration_tuple.time_duration_start
+                else:
+                    time_end = CMN.FUNC.generate_today_time_str()
+            elif time_start is None:
+                time_start = self.csv_time_duration_tuple.time_duration_end
+        assert time_start is not None, "time_start should NOT be None"
+        assert time_end is not None, "time_end should NOT be None"
+# Set the end time to time object
         if type(time_end) is str: 
             time_end = CMN.CLS.FinanceTimeBase.from_time_string(time_end, data_time_unit)
-# Set the start time
-        if time_start is None:
-            if csv_old_data_exist:
-                time_start = self.csv_time_duration_tuple.time_duration_end
-            else:
-                time_start = time_end - CMN.DEF.DEF_TIME_RANGE_LIST[data_time_unit]
+# Set the start time to time object
         if type(time_start) is str: 
             time_start = CMN.CLS.FinanceTimeBase.from_time_string(time_start, data_time_unit)
 # Calculate the time range
@@ -259,12 +277,10 @@ s
         assert data_list is not None, "data_list should NOT be None"
         assert len(data_list) != 0, "The length of data_list should NOT be 0"
         self.__get_old_csv_time_range()
-        if self.append_direction != CMN.CLS.CSVTimeRangeUpdate.CSV_APPEND_NONE:
-            if self.csv_buffer_list_len >= self.flush_threshold:
-                self.__flush()
-        else:
-            assert self.csv_buffer_list is None, "csv_buffer_list should be None"
-            assert self.csv_buffer_list_len == 0, "csv_buffer_list_len should be 0"
+        if self.csv_buffer_list_len >= self.flush_threshold:
+            self.__flush()
+        if self.csv_buffer_list is None:
+            self.csv_buffer_list = []
 # Adjust the time range if the time unit is different if necessary
         if not CMN.FUNC.scrapy_method_is_scrapy_and_data_time_unit_the_same(self.scrapy_method_index):
             (time_start, time_end) = self.__adjust_time_range_for_different_time_unit(time_start, time_end)
@@ -321,7 +337,7 @@ s
             raise ValueError("Unsupport AppendDirection: %d" % web2csv_time_duration_update.AppendDirection)
         self.csv_buffer_list_len += count
 # Update the time duration
-        # import pdb; pdb.set_trace()__write(self, data_list, time_start, time_end, append_direction):
+        # import pdb; pdb.set_trace()
         self.append_before_csv_time_duration_tuple = new_extension_csv_time_duration_tuple
 
 
@@ -330,7 +346,7 @@ s
         if self.append_before_mode:
             self.__write_before(data_list, time_start, time_end)
         else:
-            self.__write_before(data_list, time_start, time_end, append_direction)
+            self.__write_normal(data_list, time_start, time_end, append_direction)
 
 
     def __adjust_time_range_for_different_time_unit(self, time_start, time_end):
@@ -378,30 +394,35 @@ s
 
 
     def __merge_append_before_files(self):
+        # import pdb; pdb.set_trace()
         assert self.append_before_mode, "Should be Append Before Mode"
+        bak_csv_filepath = self.__bak_name(self.csv_filepath)
+        if CMN.FUNC.check_file_exist(bak_csv_filepath):
 # Merge CSV data
-        assert CMN.FUNC.check_file_exist(filepath), "The CSV file[%s] does NOT exist !!!" % self.csv_filepath
-        CMN.FUNC.append_data_into_file(self.csv_filepath, self.__bak_name(self.csv_filepath))
-        CMN.FUNC.remove_file(self.csv_filepath)
-        CMN.FUNC.rename_file(self.__bak_name(self.csv_filepath), self.csv_filepath)
+            assert CMN.FUNC.check_file_exist(self.csv_filepath), "The CSV file[%s] does NOT exist !!!" % self.csv_filepath
+            CMN.FUNC.append_data_into_file(self.csv_filepath, self.__bak_name(self.csv_filepath))
+            CMN.FUNC.remove_file(self.csv_filepath)
+            CMN.FUNC.rename_file(self.__bak_name(self.csv_filepath), self.csv_filepath)
+# Ubuntu auto-gen, it's required to remote...
+            CMN.FUNC.remove_file_if_exist(self.csv_filepath + "~")
 # Merge CSV data time range
-        append_before_csv_time_duration_cfg_dict = CMN.FUNC.read_csv_time_duration_config_file(self.__bak_name(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME), self.csv_time_duration_folderpath)
-        csv_time_duration_cfg_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, self.csv_time_duration_folderpath)
-        if append_before_csv_time_duration_cfg_dict:
-            raise RuntimeError("Fail to read CSV time duration in %s" % self.__bak_name(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME))
-        if csv_time_duration_cfg_dict:
-            raise RuntimeError("Fail to read CSV time duration in %s" % CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME)
-        new_extension_csv_time_duration_tuple, _ = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
-            append_before_csv_time_duration_tuple.time_duration_start, 
-            append_before_csv_time_duration_tuple.time_duration_end,
-            self.csv_time_duration_cfg_dict[self.scrapy_method_index],
-            check_workday_continuity_funcptr=self.__check_workday_continuity,
-        )
-        self.csv_time_duration_cfg_dict[self.scrapy_method_index] = new_extension_csv_time_duration_tuple
-        CMN.FUNC.write_csv_time_duration(self.csv_time_duration_cfg_dict, self.csv_time_duration_folderpath, time_duration_filename)
-        csv_folderpath = os.path.dirname(os.path.realpath(self.csv_filepath))
-        csv_filepath = "%s/%s" % (csv_folderpath, CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME) 
-        CMN.FUNC.remove_file(self.__bak_name(csv_folderpath))
+            append_before_csv_time_duration_cfg_dict = CMN.FUNC.read_csv_time_duration_config_file(self.__bak_name(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME), self.csv_time_duration_folderpath)
+            csv_time_duration_cfg_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, self.csv_time_duration_folderpath)
+            if append_before_csv_time_duration_cfg_dict is None:
+                raise RuntimeError("Fail to read CSV time duration in %s" % self.__bak_name(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME))
+            if csv_time_duration_cfg_dict is None:
+                raise RuntimeError("Fail to read CSV time duration in %s" % CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME)
+            new_extension_csv_time_duration_tuple, _ = CMN.CLS.CSVTimeRangeUpdate.get_csv_time_duration_update(
+                append_before_csv_time_duration_cfg_dict[self.scrapy_method_index].time_duration_start, 
+                append_before_csv_time_duration_cfg_dict[self.scrapy_method_index].time_duration_end,
+                csv_time_duration_cfg_dict[self.scrapy_method_index],
+                check_workday_continuity_funcptr=self.__check_workday_continuity,
+            )
+            self.csv_time_duration_cfg_dict[self.scrapy_method_index] = new_extension_csv_time_duration_tuple
+            CMN.FUNC.write_csv_time_duration(self.csv_time_duration_cfg_dict, self.csv_time_duration_folderpath, CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME)
+            csv_folderpath = os.path.dirname(os.path.realpath(self.csv_filepath))
+            csv_filepath = "%s/%s" % (csv_folderpath, CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME) 
+            CMN.FUNC.remove_file(self.__bak_name(csv_filepath))
 
 
     @property

@@ -104,6 +104,8 @@ class ScrapyMgr(object):
                 "end": time_range_split[1] if len(time_range_split[1]) != 0 else None,
                 "slice_size": int(time_range_split[2]) if len(time_range_split) == 3 else None,
             }
+            g_logger.debug("time_cfg: %s" % self.time_cfg)
+            # import pdb; pdb.set_trace()
         else:
             self.time_cfg = None
 
