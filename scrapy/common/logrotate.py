@@ -144,7 +144,10 @@ class LogRotate(Thread):
         for index in range(rotate_count, 0, -1):
             old_filepath = self.__get_rotate_filepath(self.log_file_path, index)
             new_filepath = self.__get_rotate_filepath(self.log_file_path, index + 1)
-            os.rename(old_filepath, new_filepath)
+            try:
+                os.rename(old_filepath, new_filepath)
+            except OSError as e:
+                print "The file[%s] to be renamed does NOT exist" % old_filepath
 # Tar the current file
         tar_filepath = self.__get_rotate_filepath(self.log_file_path, 1)
         with tarfile.open(tar_filepath, "w:gz") as tar:

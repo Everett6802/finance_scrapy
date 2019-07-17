@@ -212,36 +212,34 @@ def find_investment_entry_point(company_number=None, data_time_unit=CMN.DEF.DATA
         DS_VS.show_plot()
 
 
-def find_future_index_amplitude_statistics():
+def find_future_index_amplitude_statistics(show_amplitude=True):
     df, _ = DS_LD.load_future_index_history()
 # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.diff.html
 # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.shift.html
-    # import pdb; pdb.set_trace()
-    df_new = pd.DataFrame(
-        {
-            'open': df['open'],
-            'high': df['high'],
-            'low': df['low'],
-            'close': df['close'],
-            'volume': df['volume (general hours trading)'],
-            'amp': df.apply(lambda x : (x['high'] - x['low']), axis=1)
-        }
-    )
-    df_new['prev_close'] = df['close'].shift(periods=1)
-    df_new['open_amp'] = df_new.apply(lambda x : abs(x['open'] - x['prev_close']), axis=1)
-    # import pdb; pdb.set_trace()
-    print "amplitude/volume corr: %f" % df_new['amp'].corr(df_new['volume'])
-    print "open amptitude/volume corr: %f" % df_new['open_amp'].corr(df_new['volume'])
-    print "open amptitude/amptitude corr: %f" % df_new['open_amp'].corr(df_new['amp'])
-
-    # df_new.sort_values('volume', ascending=False, inplace=True)
-    # import pdb; pdb.set_trace()
-    df_new_columns = ['open','high','low','close','volume','amp','open_amp']
-    for index, row in df_new.nlargest(20, 'volume').iterrows():
-        print "%s  %5d  %5d  %5d  %5d  %5d  %3d  %3d" % (index.strftime('%Y-%m-%d'), row['open'], row['high'], row['low'], row['close'], row['volume'], row['amp'], row['open_amp'])
-
-    
-
+    import pdb; pdb.set_trace()
+    if show_amplitude:
+        df_amplitude = pd.DataFrame(
+            {
+                'open': df['open'],
+                'high': df['high'],
+                'low': df['low'],
+                'close': df['close'],
+                'volume': df['volume (general hours trading)'],
+                'amp': df.apply(lambda x : (x['high'] - x['low']), axis=1)
+            }
+        )
+        df_amplitude['prev_close'] = df['close'].shift(periods=1)
+        df_amplitude['open_amp'] = df_amplitude.apply(lambda x : abs(x['open'] - x['prev_close']), axis=1)
+        # import pdb; pdb.set_trace()
+        print "amplitude/volume corr: %f" % df_amplitude['amp'].corr(df_amplitude['volume'])
+        print "open amptitude/volume corr: %f" % df_amplitude['open_amp'].corr(df_amplitude['volume'])
+        print "open amptitude/amptitude corr: %f" % df_amplitude['open_amp'].corr(df_amplitude['amp'])
+        # df_amplitude.sort_values('volume', ascending=False, inplace=True)
+        # import pdb; pdb.set_trace()
+        df_amplitude_columns = ['open','high','low','close','volume','amp','open_amp']
+        for index, row in df_amplitude.nlargest(20, 'volume').iterrows():
+            print "%s  %5d  %5d  %5d  %5d  %5d  %3d  %3d" % (index.strftime('%Y-%m-%d'), row['open'], row['high'], row['low'], row['close'], row['volume'], row['amp'], row['open_amp'])
+  
     # if DV.CAN_VISUALIZE:
-    #     DS_VS.plot_future_index_amplitude_statistics(df_new)
+    #     DS_VS.plot_future_index_amplitude_statistics(df_amplitude)
     #     DS_VS.show_plot()

@@ -217,9 +217,18 @@ def analyze_and_exit():
 
 
 if __name__ == "__main__":
-    import pdb; pdb.set_trace()
-    DS.AS.find_future_index_amplitude_statistics()
-    sys.exit(0)
+    # # # # DS.AS.find_future_index_amplitude_statistics()
+    # # # print CMN.FUNC.get_week_account_day()
+    # # # print CMN.FUNC.get_month_account_day()
+    # keyday_calendar = LIBS.KC.KeydayCalendar.Instance()
+    # # print keyday_calendar.get_first_keyday(keyday_calendar.TFEI_ACCOUNTING_DAY)
+    # # print keyday_calendar.get_last_keyday(keyday_calendar.TFEI_ACCOUNTING_DAY)
+    # time_start = keyday_calendar.get_first_keyday(keyday_calendar.TFEI_ACCOUNTING_DAY) - 2
+    # time_end = keyday_calendar.get_last_keyday(keyday_calendar.TFEI_ACCOUNTING_DAY) + 3
+    # for time_cur in LIBS.KC.KeydayNearestIterator(keyday_calendar.TFEI_ACCOUNTING_DAY, time_start, time_end):
+    #     print time_cur
+    # import pdb; pdb.set_trace()
+    # sys.exit(0)
 
 # Parse the parameters and apply to manager class
     init_param()

@@ -330,3 +330,15 @@ def load_dividend_history(company_number):
     }
     df.rename(columns=new_columns, inplace=True)
     return df, column_description_list
+
+
+def load_top10_oi_history():
+    # import pdb; pdb.set_trace()
+    df, column_description_list = load_market_hybrid(CMN.DEF.SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX)
+# 前十大"
+    new_columns={
+    	('%02d02' % CMN.DEF.SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX): 'top ten', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+    # import pdb; pdb.set_trace()
+    return df, column_description_list
