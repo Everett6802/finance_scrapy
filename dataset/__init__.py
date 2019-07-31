@@ -5,7 +5,8 @@ import common_class as CLS
 import dataset_loader as LD
 import dataset_visualization as VS
 import dataset_analysis as AS
+import dataset_conversion as CV
 # import dataset_class as CLS
 # import dataset_exception as EXCEPTION
 # import dataset_logging as LOG
-__all__ = ['DEF', 'VAR', 'FUNC', 'CLS', 'LD', 'VS', 'AS']
+__all__ = ['DEF', 'VAR', 'FUNC', 'CLS', 'LD', 'VS', 'AS', 'CV']

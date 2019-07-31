@@ -13,7 +13,7 @@ import scrapy.libs.company_group_set as CompanyGroupSet
 g_logger = CMN.LOG.get_logger()
 
 
-def show_usage():
+def show_usage_and_exit():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
     print "--cleanup_old_start_time\nDescription: Cleanup all the old company data start time in the disk"
@@ -36,6 +36,7 @@ def show_usage():
     print " 0: Show default info"
     print " 1: Show detailed info"
     print "==================================================="
+    sys.exit(0)
 
 
 def show_error_and_exit(errmsg):
@@ -57,8 +58,7 @@ def parse_param():
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
         # if re.match("(-h|--help)", sys.argv[index]):
         if sys.argv[index] == "--help" or sys.argv[index] == "-h":
-            show_usage()
-            sys.exit(0)
+            show_usage_and_exit()
         elif sys.argv[index] == "--cleanup_old_start_time":
             param_dict["cleanup_old_start_time"] = True
             index_offset = 1

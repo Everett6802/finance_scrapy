@@ -84,6 +84,7 @@ def show_usage_and_exit():
             print "--update_company_%s | --update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s %s --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, ("--time_until_last" if can_set_time_range else ""))
             # print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --config_from_filename\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
             if can_set_time_range: print "--update_company_%s | --update_company_method%d --time_from ooo\nDescription: Update Older %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --append_before --time_from ooo --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
+    print "============================================================="
     sys.exit(0)
 
 
