@@ -122,7 +122,7 @@ class CSVHandler(object):
 # No scraped data in dataset
 # Set the end time
             if time_end is None:
-                time_end = CMN.FUNC.generate_today_time_str()
+                time_end = CMN.CLS.FinanceTimeBase.from_time_string(CMN.FUNC.generate_today_time_str(), data_time_unit)
 # Set the start time
             if time_start is None:
                 time_start = time_end - CMN.DEF.DEF_TIME_RANGE_LIST[data_time_unit]

@@ -58,6 +58,7 @@ class CompanyProfile(object):
 
     def __init__(self):
         # import pdb; pdb.set_trace()
+        self.COMPANY_GROUP_ELEMENT_LEN = 2
         self.COMPANY_PROFILE_ELEMENT_LEN = 7
         self.COMPANY_PROFILE_ELEMENT_EX_LEN = self.COMPANY_PROFILE_ELEMENT_LEN + 2
         self.UNICODE_ENCODING_IN_FILE = CMN.DEF.UNICODE_ENCODING_IN_FILE
@@ -107,29 +108,33 @@ class CompanyProfile(object):
         return self.timeslice_generator
 
 
-    def __cleanup_company_profile_data_structure(self):
-        self.company_group_num2name_list = []
-        self.company_group_name2num_dict = {}
+    def __cleanup_company_profile_data_structure(self, need_update_company_group=False):
+        if need_update_company_group:
+            self.company_group_num2name_list = []
+            self.company_group_name2num_dict = {}
         self.company_group_profile_list = []
         self.company_profile_list = []
         self.company_profile_dict = {}
         self.__company_amount = 0
-        self.__company_group_size = 0
+        if need_update_company_group:
+            self.__company_group_size = 0
 
 
-    def renew_table(self, need_check_company_diff=True):
+    def renew_table(self, need_check_company_diff=True, need_update_company_group=False):
         # import pdb; pdb.set_trace()
         if not self.update_from_web:
-            self.__update_company_profile(True, need_check_company_diff)
+            self.__update_company_profile(True, need_check_company_diff, need_update_company_group)
         else:
             g_logger.info("The lookup table has already been the latest version !!!")
 
 
-    def __update_company_profile(self, need_update_from_web=True, need_check_company_diff=True):
+    def __update_company_profile(self, need_update_from_web=True, need_check_company_diff=True, need_update_company_group=False):
         # import pdb; pdb.set_trace()
+        if not need_update_company_group:
+            self.__update_company_group_from_file()
 # Update data from the file
         if not need_update_from_web:
-            need_update_from_web = self.__update_company_profile_from_file()
+            need_update_from_web = self.__update_company_profile_from_file(need_update_company_group)
             if need_check_company_diff and need_update_from_web:
                 g_logger.warn("Fail to find the older config from the file[%s]. No need to compare the difference" % CMN.DEF.COMPANY_PROFILE_CONF_FILENAME)
                 need_check_company_diff = False
@@ -141,7 +146,7 @@ class CompanyProfile(object):
                 # import pdb; pdb.set_trace()
                 old_company_profile_list = self.company_profile_list
 # Update data from the web
-            self.__update_company_profile_from_web()
+            self.__update_company_profile_from_web(need_update_company_group)
             cur_timestamp_str = CMN.FUNC.generate_cur_timestamp_str()
 # Compare the difference of company code number info
             if need_check_company_diff:
@@ -177,9 +182,31 @@ class CompanyProfile(object):
     #         CMN.FUNC.copy_file_if_exist(company_group_src_filepath, dst_folderpath)
 
 
-    def __update_company_profile_from_file(self):
+
+    def __update_company_group_from_file(self):
+        filepath = "%s/%s" % (GV.FINANCE_DATASET_CONF_FOLDERPATH, CMN.DEF.COMPANY_GROUP_CONF_FILENAME)
+        if not CMN.FUNC.check_file_exist(filepath):
+            g_logger.debug("The company group file[%s] does NOT exist......" % filepath)            
+            return
+
+        self.company_group_name2num_dict = {}
+        self.company_group_num2name_list = []
+        self.__company_group_size = 0
+        line_unicode_list = CMN.FUNC.unicode_read_config_file_lines(CMN.DEF.COMPANY_GROUP_CONF_FILENAME, GV.FINANCE_DATASET_CONF_FOLDERPATH)
+        for line_unicode in line_unicode_list:
+            element_list = re.split(r" ", line_unicode, re.U)
+            if len(element_list) != self.COMPANY_GROUP_ELEMENT_LEN:
+                raise ValueError("The Company Group length[%d] should be %d" % (len(element_list), self.COMPANY_GROUP_ELEMENT_LEN))
+            [company_group_number, company_group_name] = element_list
+            assert int(company_group_number) == len(self.company_group_num2name_list), "Incorrect company group number: %d, %d" % (int(company_group_number), len(self.company_group_num2name_list))
+            self.company_group_name2num_dict[company_group_name] = len(self.company_group_num2name_list)
+            self.company_group_num2name_list.append(company_group_name)
+        self.__company_group_size = len(self.company_group_num2name_list)
+
+
+    def __update_company_profile_from_file(self, need_update_company_group=False):
         # import pdb; pdb.set_trace()
-        self.__cleanup_company_profile_data_structure()
+        self.__cleanup_company_profile_data_structure(need_update_company_group)
         need_update_from_web = False
         # current_path = os.path.dirname(os.path.realpath(__file__))
         # [project_folder, lib_folder] = current_path.rsplit('/', 1)
@@ -213,22 +240,22 @@ class CompanyProfile(object):
             for line_unicode in line_unicode_list:
                 element_list = re.split(r",", line_unicode, re.U)
                 if len(element_list) != self.COMPANY_PROFILE_ELEMENT_EX_LEN:
-                    raise ValueError("The Company Code Number length[%d] should be %d" % (len(element_list), self.COMPANY_PROFILE_ELEMENT_EX_LEN))
+                    raise ValueError("The Company Profile length[%d] should be %d" % (len(element_list), self.COMPANY_PROFILE_ELEMENT_EX_LEN))
                 self.company_profile_dict[element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_CODE_NUMBER]] = element_list
                 self.company_profile_list.append(element_list)
                 company_group_name = element_list[COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NAME]
                 if self.company_group_name2num_dict.get(company_group_name, None) is None:
                     self.company_group_name2num_dict[company_group_name] = len(self.company_group_num2name_list)
                     self.company_group_num2name_list.append(company_group_name)
-                self.__company_group_size = len(self.company_group_num2name_list)
-                self.__company_amount = len(self.company_profile_list)
-                self.__generate_company_group_profile_list()
+            self.__company_group_size = len(self.company_group_num2name_list)
+            self.__company_amount = len(self.company_profile_list)
+            self.__generate_company_group_profile_list()
         return need_update_from_web
 
 
-    def __update_company_profile_from_web(self):
+    def __update_company_profile_from_web(self, need_update_company_group=False):
         # import pdb; pdb.set_trace()
-        self.__cleanup_company_profile_data_structure()
+        self.__cleanup_company_profile_data_structure(need_update_company_group)
         g_logger.debug("Try to Acquire the Company Code Number info from the web......")
         time_start_second = int(time.time())
         g_logger.debug("###### Get the Code Number of the Stock Exchange Company ######")
