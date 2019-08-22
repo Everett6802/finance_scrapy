@@ -361,6 +361,8 @@ SCRAPY_METHOD_SCRAPY_TIME_UNIT = [(cfg["scrapy_time_unit"] if cfg.has_key("scrap
 SCRAPY_TIME_SLICE_DEFUALT_SIZE = [(cfg["scrapy_time_slice_size"] if cfg.has_key("scrapy_time_slice_size") else None) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_CSV_FLUSH_THRESHOLD = [(cfg["csv_flush_threshold"] if cfg.has_key("csv_flush_threshold") else None) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
 SCRAPY_METHOD_NEED_SELECT_CLASS = [(True if type(cfg["class_name"]) is list else False) for cfg in SCRAPY_METHOD_CONSTANT_CFG.values()]
+MARKET_SCRAPY_METHOD_INDEX = [index for index, cfg in enumerate(SCRAPY_METHOD_CONSTANT_CFG.values()) if not cfg['need_company_number']]
+STOCK_SCRAPY_METHOD_INDEX = [index for index, cfg in enumerate(SCRAPY_METHOD_CONSTANT_CFG.values()) if cfg['need_company_number']]
 
 SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_NAME)
 SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX = SCRAPY_METHOD_NAME.index(SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_NAME)

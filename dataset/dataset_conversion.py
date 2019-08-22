@@ -41,6 +41,7 @@ def dataset_conversion_vix(src_filepath, dst_filepath):
 # Write data into the destination file
     df.to_csv(dst_filepath, columns=["Close", "Change%",])
 
+
 # data source: 
 # https://goodinfo.tw/StockInfo/ShowBuySaleChart.asp?STOCK_ID=2458&CHT_CAT=DATE
 # 顯示範圍: 一年=> export and copy the data from *.xls to *.csv manually

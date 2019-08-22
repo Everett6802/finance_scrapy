@@ -212,7 +212,7 @@ class ScrapyMgr(object):
         for i, method_index in enumerate(self.method_index_list):
             if i != 0:
                 sleep_time = 5
-                g_logger.debug("Sleep %d seconds before scraping %s......" % CMN.FUNC.get_method_index_from_description(method_index))
+                g_logger.debug("Sleep %d seconds before scraping %s......" % (sleep_time, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index]))
                 time.sleep(sleep_time)
             if CMN.FUNC.scrapy_method_need_select_class(method_index):
 # Check the field description file exist

@@ -18,7 +18,7 @@ combination_param_cfg = {}
 
 check_param_time_cnt = 0
 check_param_time_param_first = None
-
+set_combination_param = False
 
 def show_usage_and_exit():
     print "=========================== Usage ==========================="
@@ -84,6 +84,8 @@ def show_usage_and_exit():
             print "--update_company_%s | --update_company_method%d\nDescription: Update %s of specific companies\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s %s --reserve_old --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH, ("--time_until_last" if can_set_time_range else ""))
             # print "--update_company_%s_from_file\n--update_company_method%d_from_file\nDescription: Update %s of specific companies. Companies are from file\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --config_from_filename\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
             if can_set_time_range: print "--update_company_%s | --update_company_method%d --time_from ooo\nDescription: Update Older %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --append_before --time_from ooo --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
+    print "--update_methods\nDescription: Update dataset of all market methods"
+    print "--update_company_methods\nDescription: Update dataset of all stock methods of specific companies"
     print "============================================================="
     sys.exit(0)
 
@@ -153,6 +155,8 @@ def init_param():
     combination_param_cfg["update_dataset_method"] = None
     combination_param_cfg["update_dataset_company_list"] = None
     combination_param_cfg["update_dataset_time"] = None
+    combination_param_cfg["update_dataset_all_methods"] = False
+    # combination_param_cfg["update_dataset_company_methods"] = None
     # combination_param_cfg['update_dataset_duplicate_setting'] = False
     # check_param_time_cnt = 0
 
@@ -162,9 +166,9 @@ def parse_param():
     index = 1
     index_offset = None
 
-    
     global check_param_time_cnt
     global check_param_time_param_first
+    global set_combination_param
 
     # import pdb; pdb.set_trace()
     while index < argc:
@@ -247,36 +251,63 @@ def parse_param():
             index_offset = 1
         elif re.match("--update_config_from_filename", sys.argv[index]):
             # import pdb; pdb.set_trace()
-            combination_param_cfg['update_dataset_config_from_filename'] = sys.argv[index + 1]
+            if set_combination_param:
+                show_warn("combination argument can only be set ONCE")
+            else:
+                set_combination_param = True
+                combination_param_cfg['update_dataset_config_from_filename'] = sys.argv[index + 1]
             index_offset = 2
+        elif re.match("--update_company_methods", sys.argv[index]):
+            if set_combination_param:
+                show_warn("combination argument can only be set ONCE")
+            else:
+                set_combination_param = True
+                combination_param_cfg["update_dataset_all_methods"] = True
+                combination_param_cfg["update_dataset_company_list"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--update_methods", sys.argv[index]):
+            if set_combination_param:
+                show_warn("combination argument can only be set ONCE")
+            else:
+                set_combination_param = True
+                combination_param_cfg["update_dataset_all_methods"] = True
+            index_offset = 1
         elif re.match("--update", sys.argv[index]):
             # import pdb; pdb.set_trace()
             mobj = None
-            index_offset = 1
             if re.search("company", sys.argv[index]):
+                if set_combination_param:
+                    show_warn("combination argument can only be set ONCE")
+                else:
+                    set_combination_param = True
+                    if re.search("method", sys.argv[index]):
+                        mobj = re.match("--update_company_method([\d]{1,})", sys.argv[index])
+                        if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
+                        combination_param_cfg["update_dataset_method"] = mobj.group(1)
+                    else:
+                        mobj = re.match("--update_company_([\w]+)", sys.argv[index])
+                        if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
+                        combination_param_cfg["update_dataset_method"] = CMN.FUNC.scrapy_method_name_to_index(mobj.group(1).replace("_", " "))
+                    combination_param_cfg["update_dataset_company_list"] = sys.argv[index + 1]
+                    if not CMN.FUNC.scrapy_method_need_company_number(int(combination_param_cfg["update_dataset_method"])):
+                        raise ValueError("The method[%s:%s] Need Company number" % (combination_param_cfg["update_dataset_method"], CMN.DEF.SCRAPY_METHOD_NAME[int(mobj.group(1))]))
                 index_offset = 2
-                if re.search("method", sys.argv[index]):
-                    mobj = re.match("--update_company_method([\d]{1,})", sys.argv[index])
-                    if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
-                    combination_param_cfg['update_dataset_method'] = mobj.group(1)
-                else:
-                    mobj = re.match("--update_company_([\w]+)", sys.argv[index])
-                    if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
-                    combination_param_cfg['update_dataset_method'] = CMN.FUNC.scrapy_method_name_to_index(mobj.group(1).replace("_", " "))
-                combination_param_cfg['update_dataset_company_list'] = sys.argv[index + 1]
-                if not CMN.FUNC.scrapy_method_need_company_number(int(combination_param_cfg['update_dataset_method'])):
-                    raise ValueError("The method[%s:%s] Need Company number" % (combination_param_cfg['update_dataset_method'], CMN.DEF.SCRAPY_METHOD_NAME[int(mobj.group(1))]))
             else:
-                if re.search("method", sys.argv[index]):
-                    mobj = re.match("--update_method([\d]{1,})", sys.argv[index])
-                    if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
-                    combination_param_cfg['update_dataset_method'] = mobj.group(1)
+                if set_combination_param:
+                    show_warn("combination argument can only be set ONCE")
                 else:
-                    mobj = re.match("--update_([\w]+)", sys.argv[index])
-                    if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
-                    combination_param_cfg['update_dataset_method'] = CMN.FUNC.scrapy_method_name_to_index(mobj.group(1).replace("_", " "))
-                if CMN.FUNC.scrapy_method_need_company_number(int(mobj.group(1))):
-                    raise ValueError("The method[%s] Don't Need Company number" % combination_param_cfg['update_dataset_method'])
+                    set_combination_param = True
+                    if re.search("method", sys.argv[index]):
+                        mobj = re.match("--update_method([\d]{1,})", sys.argv[index])
+                        if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
+                        combination_param_cfg["update_dataset_method"] = mobj.group(1)
+                    else:
+                        mobj = re.match("--update_([\w]+)", sys.argv[index])
+                        if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
+                        combination_param_cfg["update_dataset_method"] = CMN.FUNC.scrapy_method_name_to_index(mobj.group(1).replace("_", " "))
+                    if CMN.FUNC.scrapy_method_need_company_number(int(mobj.group(1))):
+                        raise ValueError("The method[%s] Don't Need Company number" % combination_param_cfg["update_dataset_method"])
+                index_offset = 1
             if mobj is None: raise ValueError("Incorrect argument format: %s" % sys.argv[index])
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
@@ -284,13 +315,15 @@ def parse_param():
 
 
 def check_param():
+    global set_combination_param
+
     if param_cfg['help']:
         show_warn("Show Usage and Exit. Other parameters are ignored")
     if param_cfg['update_csv_field']:
         show_warn("Update CSV field description and Exit. Other parameters are ignored")
-
     # import pdb; pdb.set_trace()
-    combination_argument = (combination_param_cfg["update_dataset_config_from_filename"] is not None) or (combination_param_cfg["update_dataset_method"] is not None)
+    # combination_argument = (combination_param_cfg["update_dataset_config_from_filename"] is not None) or (combination_param_cfg["update_dataset_method"] is not None)
+    combination_argument = set_combination_param
     if combination_argument:
         append_before = False
 # Disable the other parameters while combination argment is set
@@ -342,10 +375,18 @@ def check_param():
                 show_warn("Append Before mode is NOT supported since 'update_config_from_filename' is set")
                 append_before = False
         else:
-            param_cfg["method"] = combination_param_cfg["update_dataset_method"]
-            method_index = int(param_cfg["method"])
-            if CMN.FUNC.scrapy_method_need_company_number(method_index):
-                param_cfg["company"] = combination_param_cfg["update_dataset_company_list"]
+            # import pdb; pdb.set_trace()
+            if combination_param_cfg["update_dataset_all_methods"]:
+                if combination_param_cfg["update_dataset_company_list"] is None:
+                    param_cfg["method"] = ",".join(map(str, CMN.DEF.MARKET_SCRAPY_METHOD_INDEX))
+                else:
+                    param_cfg["method"] = ",".join(map(str, CMN.DEF.STOCK_SCRAPY_METHOD_INDEX))
+                    param_cfg["company"] = combination_param_cfg["update_dataset_company_list"]
+            else:
+                param_cfg["method"] = combination_param_cfg["update_dataset_method"]
+                method_index = int(param_cfg["method"])
+                if CMN.FUNC.scrapy_method_need_company_number(method_index):
+                    param_cfg["company"] = combination_param_cfg["update_dataset_company_list"]
             if append_before:
                 param_cfg["append_before"] = True
                 if param_cfg["time_from"].find(",") == -1:
