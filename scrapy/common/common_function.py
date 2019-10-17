@@ -373,6 +373,7 @@ def get_scrapy_object(scrapy_class, **kwargs):
 
 
 def get_method_index_from_description(method_description, ignore_exception=False):
+    # import pdb; pdb.set_trace()
     method_index = -1
     try:
         method_index = CMN_DEF.SCRAPY_METHOD_DESCRIPTION.index(method_description)

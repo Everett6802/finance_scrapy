@@ -3,6 +3,7 @@
 
 import re
 import time
+import copy
 # Install selenium in Anaconda
 # conda install -c conda-forge selenium
 from selenium import webdriver
@@ -20,6 +21,50 @@ g_logger = CMN.LOG.get_logger()
 
 GOODINFO_STOCK_TABLE_DEF_TIME_UNIT = 0
 PRINT_SCRAPY = True
+
+
+def _scrape_financial_ratio_growth_rate_(driver, *args, **kwargs):
+    # import pdb; pdb.set_trace()
+    table_element = driver.find_element_by_class_name("solid_1_padding_4_4_tbl")
+    # thead_element = table_elements[3].find_element_by_tag_name("thead")
+    tbody_element = table_element.find_element_by_tag_name("tbody")
+    tr_elements = tbody_element.find_elements_by_tag_name("tr")
+
+# data time
+    data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
+    td_elements0 = tr_elements[0].find_elements_by_tag_name("td")
+    data_time_len = len(td_elements0) - 1
+    data_list = []
+    for index in range(data_time_len):
+        data_list.append([])
+        data_list[index].append(td_elements0[index + 1].text)
+# data name
+    # import pdb; pdb.set_trace()
+# search for the ranges which are interested in
+    search_range_title_name_list = [u"獲利季成長率", u"獲利年成長率", u"各項資產佔總資產比重",]
+    search_range_title_name_list_len = len(search_range_title_name_list)
+    search_range_title_index_list = []
+    for index, tr_element in enumerate(tr_elements):
+        td_elements = tr_element.find_elements_by_tag_name("td")
+        if td_elements[0].text in search_range_title_name_list:
+            search_range_title_index_list.append(index)
+            if len(search_range_title_index_list) >= search_range_title_name_list_len:
+                break
+    title_index_list = []
+    search_range_title_index_list_len = len(search_range_title_index_list)
+    for times in range(search_range_title_index_list_len - 1):
+        title_index_list.extend(range(search_range_title_index_list[times] + 1, search_range_title_index_list[times + 1]))
+    # for tr_element in tr_elements[1:]:
+    for title_index in title_index_list:
+        tr_element = tr_elements[title_index]
+        td_elements = tr_element.find_elements_by_tag_name("td")
+        data_name_list.append(td_elements[0].text)
+        for index, td_element in enumerate(td_elements[1:]):
+            data_list[index].append(td_element.text)
+        # data_element_list = []
+        # for td_element in td_elements[1:]:
+    data_list.reverse()
+    return (data_list, data_name_list)
 
 
 def _scrape_institutional_investor_net_buy_sell_(driver, *args, **kwargs):
@@ -48,7 +93,7 @@ def _scrape_institutional_investor_net_buy_sell_(driver, *args, **kwargs):
     td_elements1 = tr_elements[1].find_elements_by_tag_name("td")
     assert len(data_name_tmp_list) == len(td_elements1), "The length[%d, %d] is NOT identical" % (len(data_name_tmp_list), len(td_elements1))
     for index, td_element in enumerate(td_elements1):
-    	td_element_text = re.sub('\n', '', td_element.text)
+        td_element_text = re.sub('\n', '', td_element.text)
         data_name_list.append(u"%s:%s" % (data_name_tmp_list[index], td_element_text))
     # import pdb; pdb.set_trace()
 # data
@@ -103,6 +148,7 @@ class GoodInfoWebScrapyMeta(type):
 # market start
 # market end
 # stock start
+        "_scrape_financial_ratio_growth_rate_": _scrape_financial_ratio_growth_rate_,
         "_scrape_institutional_investor_net_buy_sell_": _scrape_institutional_investor_net_buy_sell_,
         "_scrape_legal_persion_buy_sell_accumulate_": _scrape_legal_persion_buy_sell_accumulate_,
 # stock end
@@ -117,22 +163,32 @@ class GoodInfoScrapy(ScrapyBase.ScrapyBase):
 
     __metaclass__ = GoodInfoWebScrapyMeta
 
-    __GOODINFO_ULR_PREFIX = "https://goodinfo.tw/StockInfo/"
+    __GOODINFO_HOME_ULR = "https://goodinfo.tw/StockInfo/"
 
     __MARKET_SCRAPY_CFG = {
     }
 
     __STOCK_SCRAPY_CFG = {
+        "financial ratio growth rate": { # 財務比率成長率
+            "url_format": __GOODINFO_HOME_ULR + "StockFinDetail.asp?STOCK_ID=%s",
+            "table_time_unit_url_list": ["&RPT_CAT=XX_M_QUAR", "&RPT_CAT=XX_M_QUAR_ACC", "&RPT_CAT=XX_M_YEAR",],
+            "table_time_unit_description_list": [u"季", u"累季", u"年",],
+        },
         "institutional investor net buy sell": { # 三大法人買賣超
-            "url_format": __GOODINFO_ULR_PREFIX + "ShowBuySaleChart.asp?STOCK_ID=%s",
+            "url_format": __GOODINFO_HOME_ULR + "ShowBuySaleChart.asp?STOCK_ID=%s",
             "table_time_unit_url_list": ["&CHT_CAT=DATE", "&CHT_CAT=WEEK", "&CHT_CAT=MONTH",],
             "table_time_unit_description_list": [u"日", u"週", u"月",],
         },
         "institutional investor net buy sell accumulate": { # 三大法人買賣超累計
-            "url_format": __GOODINFO_ULR_PREFIX + "ShowBuySaleChart.asp?STOCK_ID=%s",
+            "url_format": __GOODINFO_HOME_ULR + "ShowBuySaleChart.asp?STOCK_ID=%s",
             "table_time_unit_url_list": ["&CHT_CAT=DATE", "&CHT_CAT=WEEK", "&CHT_CAT=MONTH",],
             "table_time_unit_description_list": [u"日", u"週", u"月",],
         },
+    }
+
+    SCRAPY_TRANSFROM_CFG = {
+        "quarterly financial ratio growth rate": ["financial ratio growth rate", {"stock_time_unit": 0,}],
+        "yearly financial ratio growth rate": ["financial ratio growth rate", {"stock_time_unit": 2,}],
     }
 
     __MARKET_URL = {key: value["url"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
@@ -157,45 +213,20 @@ class GoodInfoScrapy(ScrapyBase.ScrapyBase):
     __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
     __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
 
+    SCRAPY_NEED_TRANSFROM_METHOD_LIST = SCRAPY_TRANSFROM_CFG.keys()
+    SCRAPY_TRANSFROM_METHOD_LIST = [value[0] for value in SCRAPY_TRANSFROM_CFG.values()]
+    SCRAPY_TRANSFROM_METHOD_CFG_LIST = [value[1] for value in SCRAPY_TRANSFROM_CFG.values()]
+
     __FUNC_PTR = {
 # market start
 # market end
 # stock start
+        "financial ratio growth rate": _scrape_financial_ratio_growth_rate_,
         "institutional investor net buy sell": _scrape_institutional_investor_net_buy_sell_,
         "institutional investor net buy sell accumulate": _scrape_legal_persion_buy_sell_accumulate_,
 # stock end
     }
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
-
-
-    # @classmethod
-    # def _transform_time_str2obj(cls, time_unit, time_str):
-    #     time_obj = None
-    #     # import pdb; pdb.set_trace()
-    #     if time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
-    #         time_obj = CMN.CLS.FinanceMonth(time_str)
-    #     # elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
-    #     #     time_obj = CMN.CLS.FinanceQuarter(time_str)
-    #     # elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
-    #     #     time_obj = CMN.CLS.FinanceYear(time_str)
-    #     else:
-    #         raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
-    #     return time_obj
-
-
-    # @classmethod
-    # def get_scrapy_method_list(cls):
-    #     return cls.__METHOD_NAME_LIST
-
-
-    # @classmethod
-    # def print_scrapy_method(cls):
-    #     print ", ".join(cls.__METHOD_NAME_LIST)
-
-
-    # @classmethod
-    # def print_scrapy_method_time_unit_description(cls, scrapy_method):
-    #     print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
     def __init__(self, **cfg):
@@ -209,13 +240,7 @@ class GoodInfoScrapy(ScrapyBase.ScrapyBase):
         # self.xcfg.update(cfg)
         self.xcfg = self._update_cfg_dict(cfg)
 
-        # self.url = url
         self.webdriver = None
-        # self.csv_time_duration = None
-        # self.company_number = None
-        # self.company_group_number = None
-        # self.is_annual = True
-
 
     def __enter__(self):
         self.webdriver = webdriver.Chrome()
@@ -231,88 +256,32 @@ class GoodInfoScrapy(ScrapyBase.ScrapyBase):
     def scrape_web(self, *args, **kwargs):
         url = None
         # import pdb; pdb.set_trace()
-        if self.__MARKET_URL.get(self.scrapy_method, None) is not None:
-            url = self.__MARKET_URL[self.scrapy_method]
-        elif self.__STOCK_URL_FORMAT.get(self.scrapy_method, None) is not None:
-            url_format = self.__STOCK_URL_FORMAT[self.scrapy_method]
+        scrapy_method = self.scrapy_method
+        scrapy_kwargs = copy.deepcopy(kwargs)
+        try:
+            scrapy_method_index = self.SCRAPY_NEED_TRANSFROM_METHOD_LIST.index(scrapy_method)
+            scrapy_method = self.SCRAPY_TRANSFROM_METHOD_LIST[scrapy_method_index]
+            scrapy_kwargs.update(self.SCRAPY_TRANSFROM_METHOD_CFG_LIST[scrapy_method_index])
+        except ValueError:
+            pass
+        finally:
+            if self.__MARKET_URL.get(scrapy_method, None) is not None:
+                url = self.__MARKET_URL[scrapy_method]
+            elif self.__STOCK_URL_FORMAT.get(scrapy_method, None) is not None:
+                url_format = self.__STOCK_URL_FORMAT[scrapy_method]
 # stock_time_unit
-            stock_time_unit = None
-            if kwargs.get("stock_time_unit", None) is not None:
-                stock_time_unit = kwargs["stock_time_unit"]
-            if stock_time_unit is None:
-                stock_time_unit = GOODINFO_STOCK_TABLE_DEF_TIME_UNIT
-            url_format += self.__STOCK_TIME_UNIT_URL_LIST[self.scrapy_method][stock_time_unit]
-            url = url_format % self.company_number
-        else:
-            raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
+                stock_time_unit = None
+                if scrapy_kwargs.get("stock_time_unit", None) is not None:
+                    stock_time_unit = scrapy_kwargs["stock_time_unit"]
+                if stock_time_unit is None:
+                    stock_time_unit = GOODINFO_STOCK_TABLE_DEF_TIME_UNIT
+                url_format += self.__STOCK_TIME_UNIT_URL_LIST[scrapy_method][stock_time_unit]
+                url = url_format % self.company_number
+            else:
+                raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
         self.webdriver.get(url)
         # kwargs['table_xpath'] = self.__STOCK_TABLE_XPATH[self.scrapy_method]
-        return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
-
-
-    # def update_csv_field(self):
-    #     _, csv_data_field_list = self.scrape_web()
-    #     self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
-
-
-    # @property
-    # def CSVTimeDuration(self):
-    #     return self.csv_time_duration
-
-    # @CSVTimeDuration.setter
-    # def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
-    # 	self.csv_time_duration = csv_time_duration
-
-
-    # @property
-    # def ScrapyMethod(self):
-    #     return self.scrapy_method
-
-    # @ScrapyMethod.setter
-    # def ScrapyMethod(self, value):
-    #     # try:
-    #     #     self.method_list.index(value)
-    #     # except ValueError:
-    #     #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
-    #     #     g_logger.error(errmsg)
-    #     #     raise ValueError(errmsg)
-    #     # self.scrapy_method = value
-    #     # if self.scrapy_method_index is not None:
-    #     #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
-    #     #     self.scrapy_method_index = None
-    #     # raise NotImplementedError
-    #     self._set_scrapy_method(self, value)
-
-
-    # @property
-    # def ScrapyMethodIndex(self):
-    #     return self.scrapy_method_index
-
-    # @ScrapyMethodIndex.setter
-    # def ScrapyMethodIndex(self, value):
-    #     # if CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
-    #     #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
-    #     # self.scrapy_method_index = value
-    #     # self.scrapy_method = CMN_DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
-    #     self._set_scrapy_method_index(self, value)
-
-
-    # @property
-    # def CompanyNumber(self):
-    #     return self.company_number
-
-    # @CompanyNumber.setter
-    # def CompanyNumber(self, company_number):
-    #     self.company_number = company_number
-
-
-    # @property
-    # def CompanyGroupNumber(self):
-    #     return self.company_group_number
-
-    # @CompanyGroupNumber.setter
-    # def CompanyGroupNumber(self, company_group_number):
-    #     self.company_group_number = company_group_number
+        return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **scrapy_kwargs)
 
 
 if __name__ == '__main__':

@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 
 import time
+import copy
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 # available since 2.4.0
@@ -13,273 +14,256 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import Select
 from selenium.webdriver.common.keys import Keys
 
+import scrapy.common as CMN
 import scrapy_class_base as ScrapyBase# as ScrapyBase
+g_logger = CMN.LOG.get_logger()
 
 STATEMENT_DOG_SHEET_INTERVAL_LAST_3_YEARS = 0
 STATEMENT_DOG_SHEET_INTERVAL_LAST_5_YEARS = 1
 STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS = 2
 STATEMENT_DOG_SHEET_INTERVAL_SELF_DEFINE = 3
+STATEMENT_DOG_USERNAME = "everett6802@hotmail.com"
+STATEMENT_DOG_PASSWORD = "ntza00010"
 PRINT_SCRAPY = True
 
 
-def __statementdog_menu_title(driver, menu_title_index):
-	elements = driver.find_elements_by_class_name("menu-title")
-	elements[menu_title_index].click()
+def _statementdog_login(driver):
+    # driver.get("http://www.statementdog.com/analysis")
+    # time.sleep(3)
+# Wait for button to login
+    wait = WebDriverWait(driver, 10)
+    element_table = wait.until(
+        EC.presence_of_element_located((By.ID, "member-login"))
+    )
+    login_btn = driver.find_element_by_id("member-login")
+    login_btn.click()
+    # time.sleep(5)
+# Wait for login dialog
+    wait = WebDriverWait(driver, 10)
+    element_table = wait.until(
+        EC.presence_of_element_located((By.ID, "user_email"))
+    )
+    email_input = driver.find_element_by_id("user_email")
+    email_input.send_keys(STATEMENT_DOG_USERNAME)
+    password_input = driver.find_element_by_id("user_password")
+    password_input.send_keys(STATEMENT_DOG_PASSWORD)
+    time.sleep(1)
+    password_input.submit()
+    time.sleep(3)
 
 
-def __statementdog_menu_list(driver, list_index):
-	# elements = driver.find_elements_by_class_name("menu_wrapper")
-	# items = elements[1].find_elements_by_tag_name("li")
-# menu-list, a ordered list
-	element = driver.find_element_by_xpath("//*[@id=\"content\"]/div[1]/div[1]/ol")
-	items = element.find_elements_by_tag_name("li")
-	items[list_index].click()
+def __swtich_report_menu(driver, report_menu_index):
+    report_menu = driver.find_element_by_id("report-menu")
+# Does NOT work
+    # report_menu_select = Select(report_menu)
+    # report_menu_select.selectByIndex(1)
+    report_menu_items = report_menu.find_elements_by_tag_name("li")
+    report_menu_items[report_menu_index].click()
 
 
-def __goto_statementdog_menu_list(driver, menu_title_index, list_index):
-	# __statementdog_stock_search(driver, company_search_string)
-	__statementdog_menu_title(driver, menu_title_index)
-	time.sleep(1)
-	__statementdog_menu_list(driver, list_index)
-	time.sleep(1)
-
-
-def __switch_sheet_interval(driver):
-	# element = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/div[1]")
-	# element = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/ul")
-	# import pdb; pdb.set_trace()
-	element_sheet_interval = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/div[1]")
-	try:
-		time.sleep(1)
-		# element_sheet_interval.text.encode('utf-8')
-		element_sheet_interval.click()
-	except Exception as e:
-# *** UnicodeEncodeError: 'ascii' codec can't encode characters in position 138-145: ordinal not in range(128)
-		print str(e)
-	element_sheet_interval_options = driver.find_element_by_xpath("//*[@id=\"report_title\"]/table/tbody/tr/td[1]/ul")
-# CAUTION: Can' explot 'Select', since the tag of the component is NOT 'Select'
-	# select = Select(element)
-	# select.selectByIndex(SC_DEF.STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS);
-	items = element_sheet_interval_options.find_elements_by_tag_name("li")
-	items[STATEMENT_DOG_SHEET_INTERVAL_LAST_8_YEARS].click()
-	# for item in items:
-	# 	print item.text
+def __swtich_sheet_interval(driver, sheet_interval_index):
+    sheet_interval = driver.find_element_by_class_name("sheet-ctrl-option-btn-group")
+    sheet_interval_items = sheet_interval.find_elements_by_tag_name("li")
+    sheet_interval_items[sheet_interval_index].click()
 
 
 def __parse_item_table(driver):
-	table_element = driver.find_element_by_id("itemTable")
-	td_elements = table_element.find_elements(By.TAG_NAME, "td")
-	data_name_list = []
-	for td_element in td_elements:
-		data_name_list.append(td_element.text)
-	return data_name_list
+    table_element = driver.find_element_by_id("itemTable")
+    td_elements = table_element.find_elements(By.TAG_NAME, "td")
+    data_name_list = []
+    for td_element in td_elements:
+        data_name_list.append(td_element.text)
+    return data_name_list
 
 
-def __parse_data_table(driver):
-	table_element = driver.find_element_by_id("dataTable")
-	tr_elements = table_element.find_elements(By.TAG_NAME, "tr")
-# # Time
-# 	data_time_list = []
-# 	th_elements = tr_elements[0].find_elements(By.TAG_NAME, "th")
-# 	for th_element in th_elements:
-# 		data_time_list.append(th_element.text)
-# # Data
-# 	data_list = []
-# 	for i in range(len(data_time_list)):
-# 		data_list.append([])
-# 	for tr_element in tr_elements[1:]:
-# 		td_elements = tr_element.find_elements(By.TAG_NAME, "td")
-# 		for index, td_element in enumerate(td_elements):
-# 			data_list[index].append(td_element.text)
-
-# 	return (data_list, data_time_list)
+def __parse_data_table(driver, max_data_count=None):
+    table_element = driver.find_element_by_id("dataTable")
+    tr_elements = table_element.find_elements(By.TAG_NAME, "tr")
 # Time
-	data_list = []
-	th_elements = tr_elements[0].find_elements(By.TAG_NAME, "th")
-	for th_element in th_elements:
-		data_list.append([th_element.text,])
+    data_list = []
+    th_elements = tr_elements[0].find_elements(By.TAG_NAME, "th")
+    for th_element in th_elements:
+        data_list.append([th_element.text,])
 # Data
-	for tr_element in tr_elements[1:]:
-		td_elements = tr_element.find_elements(By.TAG_NAME, "td")
-		for index, td_element in enumerate(td_elements):
-			data_list[index].append(td_element.text)
+    for tr_element in tr_elements[1:]:
+        td_elements = tr_element.find_elements(By.TAG_NAME, "td")
+        for index, td_element in enumerate(td_elements):
+            data_list[index].append(td_element.text)
+# Check if the latest data is empty
+    data_list_len = len(data_list)
+    if data_list_len > 0:
+        assert data_list_len >= 2, "Incorrect latest data: %s" % data_list
+        try:
+            float(data_list[-1][1])
+        except ValueError as e:
+            del data_list[-1]
+    start_data_index = 0
+    if max_data_count is not None:
+        max_data_count = min(max_data_count, data_list_len)
+    	start_data_index = -1 * max_data_count
+    return data_list[start_data_index:]
 
-	return data_list
 
+def __scrape_table_data(driver, report_menu_index, sheet_interval_index):
+    if report_menu_index is not None:
+        __swtich_report_menu(driver, report_menu_index)
+        time.sleep(1)
+    if sheet_interval_index is not None:
+        __sheet_interval_menu(driver, sheet_interval_index)
+        time.sleep(1)
 
-def __print_table_scrapy_result(data_list, data_name_list):
-	# import pdb; pdb.set_trace()
-	data_time_list_len = len(data_time_list)
-	print "  ".join(data_name_list)
-	for index in range(data_time_list_len):
-		print "%s: %s" % (data_time_list[index], "  ".join(data_list[index]))
-
-
-def __scrape_table_data(driver, menu_title_index, list_index, *args, **kwargs):
-# Switch the menu page
-	__goto_statementdog_menu_list(driver, menu_title_index, list_index)
-	import pdb; pdb.set_trace()
-	# __switch_sheet_interval(driver)
-# Wait for the table
-	wait = WebDriverWait(driver, 10)
-	element_table = wait.until(
-		EC.presence_of_element_located((By.ID, "datasheet"))
-	)
-
-	element = driver.find_element_by_class_name("sheet-ctrl-option-btn-group")
-	li = element.find_elements_by_tag_name("li")
-	try:
-		li[1].click()
-	except Exception as e:
-# *** UnicodeEncodeError: 'ascii' codec can't encode characters in position 138-145: ordinal not in range(128)
-		print str(e)
-
+    wait = WebDriverWait(driver, 10)
+    element_table = wait.until(
+        EC.presence_of_element_located((By.ID, "itemTable"))
+    )
 # Parse Table
-	data_name_list = __parse_item_table(driver)
-	data_list = __parse_data_table(driver)
-	if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_name_list)
-	return (data_list, data_name_list)
+    data_name_list = __parse_item_table(driver)
+    data_list = __parse_data_table(driver)
+    # if PRINT_SCRAPY: __print_table_scrapy_result(data_list, data_name_list)
+    return (data_list, data_name_list)
 
 
-def _scrape_income_statement_(driver, *args, **kwargs):
-	return __scrape_table_data(driver, 1, 3, *args, **kwargs)
-
-
-def _scrape_balance_sheet_asset_(driver, *args, **kwargs):
-	return __scrape_table_data(driver, 1, 4, *args, **kwargs)
-
-
-def _scrape_balance_sheet_liability_equity_(driver, *args, **kwargs):
-	return __scrape_table_data(driver, 1, 5, *args, **kwargs)
-
-
-def _scrape_cashflow_statement_(driver, *args, **kwargs):
-	return __scrape_table_data(driver, 1, 6, *args, **kwargs)
-
-
-def _scrape_dividend_(driver, *args, **kwargs):
-	return __scrape_table_data(driver, 1, 7, *args, **kwargs)
+def _scrape_monthly_revenue_growth_rate_(driver, report_menu_index, sheet_interval_index, *args, **kwargs):
+    # import pdb; pdb.set_trace()
+    data_list, data_name_list = __scrape_table_data(driver, report_menu_index, sheet_interval_index)
+    for data in data_list:
+        time_str = str(data[0])
+        assert len(time_str) == 6, "The length of the time string[%s] should be 6, not %d" % (time_str, len(time_str))
+        data[0] = CMN.DEF.MONTH_STRING_FORMAT % (int(time_str[0:4]), int(time_str[4:]))
+    return (data_list, data_name_list)
 
 
 class StatementDogWebScrapyMeta(type):
 
-	__ATTRS = {
-		"_scrape_income_statement_": _scrape_income_statement_,
-		"_scrape_balance_sheet_asset_": _scrape_balance_sheet_asset_,
-		"_scrape_balance_sheet_liability_equity_": _scrape_balance_sheet_liability_equity_,
-		"_scrape_cashflow_statement_": _scrape_cashflow_statement_,
-		"_scrape_dividend_": _scrape_dividend_,
-	}
+    __ATTRS = {
+        "_scrape_monthly_revenue_growth_rate_": _scrape_monthly_revenue_growth_rate_,
+    }
 
-	def __new__(mcs, name, bases, attrs):
-		attrs.update(mcs.__ATTRS)
-		return type.__new__(mcs, name, bases, attrs)
+    def __new__(mcs, name, bases, attrs):
+        attrs.update(mcs.__ATTRS)
+        return type.__new__(mcs, name, bases, attrs)
 
 
 class StatementDogScrapy(ScrapyBase.ScrapyBase):
 
-	__metaclass__ = StatementDogWebScrapyMeta
+    __metaclass__ = StatementDogWebScrapyMeta
 
-	__HOME_URL = 'https://statementdog.com/analysis'
-
-	__FUNC_PTR = {
-		"income statement": _scrape_income_statement_,
-		"balance sheet: asset": _scrape_balance_sheet_asset_,
-		"balance sheet: liability & equity": _scrape_balance_sheet_liability_equity_,
-		"cashflow statement": _scrape_cashflow_statement_,
-		"dividend": _scrape_dividend_,
-	}
+    __STATEMENT_DOG_HOME_URL = 'http://www.statementdog.com/analysis'
 
 
-	@classmethod
-	def get_scrapy_method_list(cls):
-		return cls.__FUNC_PTR.keys()
+    __MARKET_SCRAPY_CFG = {
+    }
+
+    __STOCK_SCRAPY_CFG = {
+        "monthly revenue growth rate": { # 月營收成長率
+            "url_format": __STATEMENT_DOG_HOME_URL + "/tpe/%s/monthly-revenue-growth-rate",
+            "report_menu_description_list": [u"單月營收年增率", u"單月每股營收年增率", u"單月營收月增率",],
+            # "report_menu_default_index": 0,
+            "sheet_interval_description_list": None, # Uselesss, only for compatibility
+            # "sheet_interval_default_index": None, # Uselesss, only for compatibility
+        },
+    }
+
+    SCRAPY_TRANSFROM_CFG = {
+    }
+
+    __MARKET_URL = {key: value["url"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    __MARKET_REPORT_MENU_DESCRIPTION = {key: value["report_menu_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    # __MARKET_REPORT_MENU_DEFAULT_INDEX = {key: value["report_menu_default_index"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    __MARKET_SHEET_INTERVAL_DESCRIPTION = {key: value["sheet_interval_description_list"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+    # __MARKET_SHEET_INTERVAL_DEFAULT_INDEX = {key: value["sheet_interval_default_index"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
+
+    __STOCK_URL_FORMAT = {key: value["url_format"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    __STOCK_REPORT_MENU_DESCRIPTION = {key: value["report_menu_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    # __STOCK_REPORT_MENU_DEFAULT_INDEX = {key: value["report_menu_default_index"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    __STOCK_SHEET_INTERVAL_DESCRIPTION = {key: value["sheet_interval_description_list"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+    # __STOCK_SHEET_INTERVAL_DEFAULT_INDEX = {key: value["sheet_interval_default_index"] for (key, value) in __STOCK_SCRAPY_CFG.items()}
+
+    __REPORT_MENU_DESCRIPTION = {}
+    __REPORT_MENU_DESCRIPTION.update(__MARKET_REPORT_MENU_DESCRIPTION)
+    __REPORT_MENU_DESCRIPTION.update(__STOCK_REPORT_MENU_DESCRIPTION)
+
+    # __REPORT_MENU_DEFAULT_INDEX = {}
+    # __REPORT_MENU_DEFAULT_INDEX.update(__MARKET_REPORT_MENU_DEFAULT_INDEX)
+    # __REPORT_MENU_DEFAULT_INDEX.update(__STOCK_REPORT_MENU_DEFAULT_INDEX)
+
+    __SHEET_INTERVAL_DESCRIPTION = {}
+    __SHEET_INTERVAL_DESCRIPTION.update(__MARKET_SHEET_INTERVAL_DESCRIPTION)
+    __SHEET_INTERVAL_DESCRIPTION.update(__STOCK_SHEET_INTERVAL_DESCRIPTION)
+
+    # __SHEET_INTERVAL_DEFAULT_INDEX = {}
+    # __SHEET_INTERVAL_DEFAULT_INDEX.update(__MARKET_SHEET_INTERVAL_DEFAULT_INDEX)
+    # __SHEET_INTERVAL_DEFAULT_INDEX.update(__STOCK_SHEET_INTERVAL_DEFAULT_INDEX)
+
+    SCRAPY_NEED_TRANSFROM_METHOD_LIST = SCRAPY_TRANSFROM_CFG.keys()
+    SCRAPY_TRANSFROM_METHOD_LIST = [value[0] for value in SCRAPY_TRANSFROM_CFG.values()]
+    SCRAPY_TRANSFROM_METHOD_CFG_LIST = [value[1] for value in SCRAPY_TRANSFROM_CFG.values()]
+
+    __FUNC_PTR = {
+        "monthly revenue growth rate": _scrape_monthly_revenue_growth_rate_,
+    }
 
 
-	@classmethod
-	def print_scrapy_method(cls):
-		print ", ".join(cls.get_scrapy_method_list())
-
-
-	def __init__(self, **cfg):
+    def __init__(self, **cfg):
         super(StatementDogScrapy, self).__init__()
 # For the variables which are NOT changed during scraping
         self.xcfg = self._update_cfg_dict(cfg)
 
-		self.webdriver = None
-		# self.csv_time_duration = None
-		# self.company_number = None
-		# self.company_group_number = None
-		self.company_number_changed = True
+        self.webdriver = None
 
 
-	def __enter__(self):
-		self.webdriver = webdriver.Chrome()
-		self.webdriver.get(self.__HOME_URL)
-		return self
+    def __enter__(self):
+        self.webdriver = webdriver.Chrome()
+        return self
 
 
-	def __exit__(self, type, msg, traceback):
-		if self.webdriver is not None:
-			self.webdriver.quit()
-		return False
+    def __exit__(self, type, msg, traceback):
+        if self.webdriver is not None:
+            self.webdriver.quit()
+        return False
 
 
-	def scrape_web(self, *args, **kwargs):
-		if self.company_number is None:
-			raise ValueError("Unknown company number !!!")
-		if self.__FUNC_PTR.get(self.scrapy_method, None) is None:
-			raise ValueError("The scrapy method[%s] is NOT defined" % self.scrapy_method)
+    def scrape_web(self, *args, **kwargs):
+# Login
+        self.webdriver.get(self.__STATEMENT_DOG_HOME_URL)
+        _statementdog_login(self.webdriver)
 
-		# print self.webdriver.title
-# Switch to certain a company
-		if self.company_number_changed:
-# Wait until the web element shows-up
-			# element = driver.find_element_by_id("stockid")
-			wait = WebDriverWait(self.webdriver, 10)
-			element_stockid = wait.until(
-			    EC.presence_of_element_located((By.ID, "stockid"))
-			)
+        url = None
+        # import pdb; pdb.set_trace()
+        scrapy_method = self.scrapy_method
+        scrapy_kwargs = copy.deepcopy(kwargs)
+        try:
+            scrapy_method_index = self.SCRAPY_NEED_TRANSFROM_METHOD_LIST.index(scrapy_method)
+            scrapy_method = self.SCRAPY_TRANSFROM_METHOD_LIST[scrapy_method_index]
+            scrapy_kwargs.update(self.SCRAPY_TRANSFROM_METHOD_CFG_LIST[scrapy_method_index])
+        except ValueError:
+            pass
+        finally:
+            if self.__MARKET_URL.get(scrapy_method, None) is not None:
+                url = self.__MARKET_URL[scrapy_method]
+            elif self.__STOCK_URL_FORMAT.get(scrapy_method, None) is not None:
+                url_format = self.__STOCK_URL_FORMAT[scrapy_method]
+                url = url_format % self.company_number
+            else:
+                raise ValueError("Unknown scrapy method: %s" % scrapy_method)
+        self.webdriver.get(url)
+        # scrapy_kwargs['table_xpath'] = self.__TABLE_XPATH[scrapy_method]
+        scrapy_kwargs['max_data_count'] = self.xcfg['max_data_count']
+        # import pdb; pdb.set_trace()
+        report_menu_index = None
+        if scrapy_kwargs.has_key("report_menu_index"):
+           report_menu_index = scrapy_kwargs.pop("report_menu_index")
+        sheet_interval_index = None
+        if scrapy_kwargs.has_key("sheet_interval_index"):
+           sheet_interval_index = scrapy_kwargs.pop("sheet_interval_index ")
+        return (self.__FUNC_PTR[scrapy_method])(self.webdriver, report_menu_index, sheet_interval_index, *args, **scrapy_kwargs)
 
-			element_stockid.clear()
-			time.sleep(1)
-			element_stockid.send_keys(self.company_number)
-			time.sleep(1)
-			element_stockid.send_keys(Keys.RETURN)
-			self.company_number_changed = False
-		self.webdriver.implicitly_wait(5) # seconds
-		return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
-
-
-	# @property
-	# def CSVTimeDuration(self):
-	# 	return self.csv_time_duration
-
-	# @CSVTimeDuration.setter
-	# def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
-	# 	self.csv_time_duration = csv_time_duration
-
-
-	# @property
-	# def CompanyNumber(self):
-	# 	if self.company_number is None:
-	# 		raise ValueError("self.company_number is NOT set")
-	# 	return self.company_number
 
 	@CompanyNumber.setter
 	def CompanyNumber(self, company_number):
 		if self.company_number != company_number:
 			self.company_number_changed = True
 		super(StatementDogScrapy, self).CompanyNumber = company_number
-
-
-	# @property
-	# def CompanyGroupNumber(self):
-	# 	return self.company_group_number
-
-	# @CompanyGroupNumber.setter
-	# def CompanyGroupNumber(self, company_group_number):
-	# 	self.company_group_number = company_group_number
 
 
 if __name__ == '__main__':

@@ -190,7 +190,7 @@ def find_312_month_yoy_revenue_growth(company_number, show_relation=False):
 
     if DV.CAN_VISUALIZE:
         if show_relation:
-            df_month_stock_price, _ = DS_LD.load_stock_price_history(company_number, data_time_unit=CMN.DEF.DATA_TIME_UNIT_MONTH)
+            df_month_stock_price, _ = DS_LD.load_stock_price_history(company_number, data_time_unit=CMN.DEF.DATA_TIME_UNIT_MOMTH)
             DS_VS.plot_312_month_revenue_growth_and_stock_price_relation(df_month_stock_price, df_revenue_growth, month_yoy_growth_3=month_yoy_growth_3, month_yoy_growth_12=month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title=company_number)
         else:
             DS_VS.plot_312_month_yoy_revenue_growth(df_revenue_growth, month_yoy_growth_3=month_yoy_growth_3, month_yoy_growth_12=month_yoy_growth_12, sign_change_positive_index=sign_change_positive_index, sign_change_negative_index=sign_change_negative_index, title=company_number)
@@ -216,7 +216,7 @@ def find_future_index_amplitude_statistics(show_amplitude=True):
     df, _ = DS_LD.load_future_index_history()
 # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.diff.html
 # https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.shift.html
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     if show_amplitude:
         df_amplitude = pd.DataFrame(
             {
@@ -243,3 +243,176 @@ def find_future_index_amplitude_statistics(show_amplitude=True):
     # if DV.CAN_VISUALIZE:
     #     DS_VS.plot_future_index_amplitude_statistics(df_amplitude)
     #     DS_VS.show_plot()
+
+
+def check_value_investment(company_number):
+    # import pdb; pdb.set_trace()
+# Load data
+# stock price
+    df_stock_price, _ = DS_LD.load_stock_price_history(company_number)
+    df_stock_price_len = len(df_stock_price)
+# dividend
+    df_dividend, _ = DS_LD.load_dividend_history(company_number)
+    df_dividend_len = len(df_dividend)
+# quarterly cashflow statement
+    df_quarterly_cashflow_statement, _ = DS_LD.load_quarterly_cashflow_statement_history(company_number)
+    df_quarterly_cashflow_statement_len = len(df_quarterly_cashflow_statement)
+# yearly cashflow statement
+    df_yearly_cashflow_statement, _ = DS_LD.load_yearly_cashflow_statement_history(company_number)
+    df_yearly_cashflow_statement_len = len(df_yearly_cashflow_statement)
+# revenue
+    df_revenue, _ = DS_LD.load_revenue_history(company_number)
+    df_revenue_len = len(df_revenue)
+# quarterly financial ratio
+    df_quarterly_financial_ratio, _ = DS_LD.load_quarterly_financial_ratio_history(company_number)
+    df_quarterly_financial_ratio_len = len(df_quarterly_financial_ratio)
+# yearly financial ratio
+    df_yearly_financial_ratio, _ = DS_LD.load_yearly_financial_ratio_history(company_number)
+    df_yearly_financial_ratio_len = len(df_yearly_financial_ratio)
+
+# stock price
+    stock_price_row_index = df_stock_price.index[-1]
+    stock_price_row_data = df_stock_price.ix[-1]
+    print "%s" % stock_price_row_index.strftime('%Y-%m-%d')
+    print "%s   %.2f   %d" % (PRICE(stock_price_row_data["close"]), stock_price_row_data["change"], int(stock_price_row_data["trade volume (share)"]/1000))
+    latest_four_quarterly_eps_sum = df_quarterly_financial_ratio["earnings per share"].ix[-4:].sum()
+    # import pdb; pdb.set_trace()
+    if latest_four_quarterly_eps_sum > 0.000:
+        # dividend_row_index = df_dividend.index[-1]
+        dividend_row_data = df_dividend.ix[-1]
+        # quarterly_financial_ratio_row_index = df_quarterly_financial_ratio.index[-1]
+        quarterly_financial_ratio_row_data = df_quarterly_financial_ratio.ix[-1]
+        revenue_row_data = df_revenue.ix[-1]
+        print "%.2f   %.2f   %.2f   %.2f%%   %.1f%%   %.1f%%   %.2f%%   %.2f   %.2f" % ((100.0 * dividend_row_data["dividend"] / stock_price_row_data["close"]), (stock_price_row_data["close"] / latest_four_quarterly_eps_sum), (stock_price_row_data["close"] / quarterly_financial_ratio_row_data["net asset value per share"]), quarterly_financial_ratio_row_data["debt ratio"], revenue_row_data["monthly MOM growth"], revenue_row_data["monthly YOY growth"], quarterly_financial_ratio_row_data["gross profit margin"], quarterly_financial_ratio_row_data["earnings per share"], latest_four_quarterly_eps_sum)
+    print ""
+# dividend
+    last_row_start_index = -1 * min(8, df_dividend_len)
+    print "*** Dividend ***"
+    print "cash dividend/stock dividend/dividend"
+    for i in range(last_row_start_index, 0):
+        row_index = df_dividend.index[i]
+        row_data = df_dividend.ix[i]
+        print "%s: %.1f   %.1f   %.1f" % (row_index.strftime('%Y'), row_data["cash dividend"], row_data["stock dividend"], row_data["dividend"])
+    print ""
+# EPS
+    last_row_start_index = -1 * min(8, df_yearly_financial_ratio_len)
+    print "*** Yearly EPS ***"
+    for i in range(last_row_start_index, 0):
+        row_index = df_yearly_financial_ratio.index[i]
+        row_data = df_yearly_financial_ratio.ix[i]
+        print "%s: %.2f" % (row_index.strftime('%Y'), row_data["earnings per share"])
+    print ""
+    last_row_start_index = -1 * min(8, df_quarterly_financial_ratio_len)
+    print "*** Quarterly EPS ***"
+    for i in range(last_row_start_index, 0):
+        row_index = df_quarterly_financial_ratio.index[i]
+        row_data = df_quarterly_financial_ratio.ix[i]
+        print "%dq%d: %.2f" % (row_index.year, row_index.quarter, row_data["earnings per share"])
+    print ""
+# revenue
+    # import pdb; pdb.set_trace()
+    last_row_start_index = -1 * min(12, df_revenue_len)
+    print "*** Revenue ***"
+    print "monthly revenue/monthly MOM growth/monthly YOY growth"
+    for i in range(last_row_start_index, 0):
+        row_index = df_revenue.index[i]
+        row_data = df_revenue.ix[i]
+        print "%s: %.1f   %.1f%%   %.1f%%" % (row_index.strftime('%Y-%m'), row_data["monthly revenue"], row_data["monthly MOM growth"], row_data["monthly YOY growth"])
+
+    latest_row_index = df_revenue.index[-1]
+    latest_row_data = df_revenue.ix[-1]
+    latest_row_yoy_growth = latest_row_data["monthly YOY growth"]
+    revenue_msg = None
+    if latest_row_yoy_growth > 9.99999:
+        negative2positive_growth = False
+        positive_growth_cnt = 0
+        for i in range(0, df_revenue_len):
+            index = -1 * (i + 1)
+            if df_revenue.ix[index]["monthly YOY growth"] > 9.99999:
+                positive_growth_cnt += 1
+            else:
+                break
+        if positive_growth_cnt == 1 and df_revenue_len >= 2:
+            if latest_row_data[-2]["monthly YOY growth"] < 0.00000:
+                negative2positive_growth = True
+        if negative2positive_growth:
+            revenue_msg = "\nSwitch to Postive Growth\n"
+        elif positive_growth_cnt > 1:
+            revenue_msg = "\nConsecutive Postive Growth: %d\n" % positive_growth_cnt
+    elif latest_row_yoy_growth < -9.99999:
+        positive2negative_growth = False
+        negative_growth_cnt = 0
+        for i in range(0, df_revenue_len):
+            index = -1 * (i + 1)
+            if df_revenue.ix[index]["monthly YOY growth"] < -9.99999:
+                negative_growth_cnt += 1
+            else:
+                break
+        if negative_growth_cnt == 1 and df_revenue_len >= 2:
+            if latest_row_data[-2]["monthly YOY growth"] > 0.00000:
+                positive2negative_growth = True
+        if positive2negative_growth:
+            revenue_msg = "\nSwitch to Negative Growth\n"
+        elif negative_growth_cnt > 1:
+            revenue_msg = "\nConsecutive Negative Growth: %d\n" % negative_growth_cnt
+    if revenue_msg is not None:
+        print revenue_msg
+    else:
+        print ""
+
+# cash flow statement
+    # import pdb; pdb.set_trace()
+    last_row_start_index = -1 * min(8, df_yearly_cashflow_statement_len)
+    print "*** Yearly Cash Flow Statement ***"
+    print "cash flow from operating activities/cash flow from investing activities/cash flow from financing activities/net cash flow/free cash flow"
+    for i in range(last_row_start_index, 0):
+        row_index = df_yearly_cashflow_statement.index[i]
+        row_data = df_yearly_cashflow_statement.ix[i]
+# row_index.show_stock_price_statistics_fiterime('%Yq%q') doesn't work
+        print "%s: %.1f   %.1f   %.1f   %.1f   %.1f" % (row_index.strftime('%Y'), row_data["cash flow from operating activities"], row_data["cash flow from investing activities"], row_data["cash flow from financing activities"],  row_data["net cash flow"], row_data["free cash flow"])
+    print ""
+    last_row_start_index = -1 * min(8, df_quarterly_cashflow_statement_len)
+    print "*** Quarterly Cash Flow Statement ***"
+    print "cash flow from operating activities/cash flow from investing activities/cash flow from financing activities/net cash flow/free cash flow"
+    for i in range(last_row_start_index, 0):
+        row_index = df_quarterly_cashflow_statement.index[i]
+        row_data = df_quarterly_cashflow_statement.ix[i]
+# row_index.show_stock_price_statistics_fiterime('%Yq%q') doesn't work
+        print "%dq%d: %.1f   %.1f   %.1f   %.1f   %.1f" % (row_index.year, row_index.quarter, row_data["cash flow from operating activities"], row_data["cash flow from investing activities"], row_data["cash flow from financing activities"],  row_data["net cash flow"], row_data["free cash flow"])
+    print ""
+
+# ROE
+    last_row_start_index = -1 * min(8, df_yearly_financial_ratio_len)
+    print "*** Yearly ROE ***"
+    print "ROE/net profit margin/total assets turnover ratio"
+    for i in range(last_row_start_index, 0):
+        row_index = df_yearly_financial_ratio.index[i]
+        row_data = df_yearly_financial_ratio.ix[i]
+        print "%s: %.2f   %.2f%%   %.2f" % (row_index.strftime('%Y'), row_data["return on equity"], row_data["net profit margin"], row_data["total assets turnover ratio"])
+    print ""
+    last_row_start_index = -1 * min(8, df_quarterly_financial_ratio_len)
+    print "*** Quarterly ROE ***"
+    print "ROE/net profit margin/total assets turnover ratio"
+    for i in range(last_row_start_index, 0):
+        row_index = df_quarterly_financial_ratio.index[i]
+        row_data = df_quarterly_financial_ratio.ix[i]
+        print "%dq%d: %.2f   %.2f%%   %.2f" % (row_index.year, row_index.quarter, row_data["return on equity"], row_data["net profit margin"], row_data["total assets turnover ratio"])
+    print ""
+
+# financial statement
+    last_row_start_index = -1 * min(8, df_yearly_financial_ratio_len)
+    print "*** Yearly Financial Statement ***"
+    print "net asset value per share/gross profit margin/operating profit margin/earnings per share/debt ratio"
+    for i in range(last_row_start_index, 0):
+        row_index = df_yearly_financial_ratio.index[i]
+        row_data = df_yearly_financial_ratio.ix[i]
+        print "%s: %.2f   %.2f%%   %.2f%%   %.2f   %.2f%%" % (row_index.strftime('%Y'), row_data["net asset value per share"], row_data["gross profit margin"], row_data["operating profit margin"], row_data["earnings per share"], row_data["debt ratio"])
+    print ""
+    last_row_start_index = -1 * min(8, df_quarterly_financial_ratio_len)
+    print "*** Quarterly Financial Statement ***"
+    print "net asset value per share/gross profit margin/operating profit margin/earnings per share/debt ratio"
+    for i in range(last_row_start_index, 0):
+        row_index = df_quarterly_financial_ratio.index[i]
+        row_data = df_quarterly_financial_ratio.ix[i]
+        print "%dq%d: %.2f   %.2f%%   %.2f%%   %.2f   %.2f%%" % (row_index.year, row_index.quarter, row_data["net asset value per share"], row_data["gross profit margin"], row_data["operating profit margin"], row_data["earnings per share"], row_data["debt ratio"])
+    print ""

@@ -25,10 +25,11 @@ def show_usage_and_exit():
     print ""
     print "-a | --analyze\nDescription: Analyze the dataset for the follow purpose:"
     print " 0: Find the support and resistance of a company"
-    print " 1: Find the jump gap of a company"
-    print " 2: Find the 3/12 monthly YOY revenue growth of a company"
+    # print " 1: Find the jump gap of a company"
+    # print " 2: Find the 3/12 monthly YOY revenue growth of a company"
+    print " 1: Check the value investment of a company"
     print "Default: 0\n"
-    print "--show_relation\nDescription: Show the releation with candle stick\nCation: Only take effect when the analyze argument is 2"
+    # print "--show_relation\nDescription: Show the releation with candle stick\nCation: Only take effect when the analyze argument is 2"
     sys.exit(0)
 
 
@@ -61,7 +62,7 @@ def init_param():
     param_cfg["visualize"] = False
     param_cfg["company"] = None
     param_cfg["analyze"] = None
-    param_cfg["show_relation"] = False
+    # param_cfg["show_relation"] = False
 
 
 def parse_param(early_parse=False):
@@ -88,10 +89,10 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["analyze"] = int(sys.argv[index + 1])
             index_offset = 2
-        elif re.match("(--show_relation)", sys.argv[index]):
-            if not early_parse:
-                param_cfg["show_relation"] = True
-            index_offset = 2
+        # elif re.match("(--show_relation)", sys.argv[index]):
+        #     if not early_parse:
+        #         param_cfg["show_relation"] = True
+        #     index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -104,10 +105,10 @@ def check_param():
     if param_cfg['analyze'] is None:
         param_cfg["analyze"] = DS.DEF.ANALYZE_DATASET_DEFAULT
         g_logger.info("Set the 'analyze' argument to default: %d" % DS.DEF.ANALYZE_DATASET_DEFAULT)
-    if param_cfg['analyze'] not in [DS.DEF.ANALYZE_DATASET_FIND_312_MONTHLY_YOY_REVENUE_GROWTH,]:
-        if param_cfg['show_relation']:
-            param_cfg['show_relation'] = False
-            g_logger.info("Set the 'show_relation' argument to False since the analyze argument is : %d" % param_cfg['analyze'])
+    # if param_cfg['analyze'] not in [DS.DEF.ANALYZE_DATASET_FIND_312_MONTHLY_YOY_REVENUE_GROWTH,]:
+    #     if param_cfg['show_relation']:
+    #         param_cfg['show_relation'] = False
+    #         g_logger.info("Set the 'show_relation' argument to False since the analyze argument is : %d" % param_cfg['analyze'])
 
 
 def setup_param():
@@ -115,7 +116,7 @@ def setup_param():
 
 
 def update_global_variable():
-    print DV.GLOBAL_VARIABLE_UPDATED
+    # print DV.GLOBAL_VARIABLE_UPDATED
     DV.CAN_VISUALIZE = param_cfg["visualize"]
     DV.GLOBAL_VARIABLE_UPDATED = True
 
@@ -124,14 +125,15 @@ def update_global_variable():
 def analyze_and_exit():
     FUNC_PTR_ARRAY = [
         DS.AS.find_support_resistance, 
-        DS.AS.find_jump_gap, 
-        DS.AS.find_312_month_yoy_revenue_growth,
+        # DS.AS.find_jump_gap, 
+        # DS.AS.find_312_month_yoy_revenue_growth,
+        DS.AS.check_value_investment,
     ]
     kwargs = {
         "company_number": param_cfg["company"],
     }
-    if param_cfg["show_relation"]:
-      kwargs["show_relation"] = param_cfg["show_relation"]
+    # if param_cfg["show_relation"]:
+    #   kwargs["show_relation"] = param_cfg["show_relation"]
     # import pdb; pdb.set_trace()
     # DS.AS.analyze_stock(company_number, cur_price)
     (FUNC_PTR_ARRAY[param_cfg["analyze"]])(**kwargs)
@@ -230,6 +232,7 @@ if __name__ == "__main__":
     # import pdb; pdb.set_trace()
     # sys.exit(0)
 
+    # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()
     # parse_param(True)

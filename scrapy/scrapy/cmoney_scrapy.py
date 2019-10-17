@@ -2,6 +2,7 @@
 # -*- coding: utf8 -*-
 
 import time
+import copy
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 # available since 2.4.0
@@ -81,7 +82,7 @@ def __parse_data_from_table0_element(table_element, max_data_count=None):
             time_str = "%s-%s" % (td_elements[0].text[0:4], td_elements[0].text[4:])
         data_element_list = [time_str,]
         for td_element in td_elements[1:]:
-            data_element_list.append(td_element.text)
+            data_element_list.append(td_element.text.replace(",",""))
         data_list.append(data_element_list)
     # import pdb; pdb.set_trace()
     return (data_list, data_name_list)
@@ -148,7 +149,7 @@ def __parse_data_from_table1_element(table_element, max_data_count=None):
             data_name_list.append(row_list[0])
             sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else row_list[1:]
             for index, data in enumerate(sub_row_list):
-                data_list[index].append(data)
+                data_list[index].append(data.replace(",",""))
     # import pdb; pdb.set_trace()
     return (data_list, data_name_list)
 
@@ -200,6 +201,7 @@ def _scrape_dividend_(driver, *args, **kwargs):
 
 
 def _scrape_revenue_(driver, *args, **kwargs):
+    # import pdb; pdb.set_trace()
     return __parse_data_from_table(driver, __parse_data_from_table0_element, *args, **kwargs)
 
 
@@ -235,6 +237,29 @@ def _scrape_solvency_(driver, *args, **kwargs):
     return __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
 
 
+def _scrape_financial_ratio_(driver, *args, **kwargs):
+    # import pdb; pdb.set_trace()
+    assert type(kwargs['table_xpath']) is list, "The 'table_xpath' argument type should be a list, not %s" % type(kwargs['table_xpath'])
+    table_xpath_list = kwargs['table_xpath']
+    total_data_list = None
+    total_data_list_len = 0
+    total_data_name_list = None
+    for table_xpath in table_xpath_list:
+        kwargs['table_xpath'] = table_xpath
+        data_list, data_name_list = __parse_data_from_table(driver, __parse_data_from_table1_element, *args, **kwargs)
+        if total_data_list is None:
+            total_data_list = data_list
+            total_data_name_list = data_name_list
+            total_data_list_len = len(total_data_list)
+        else:
+            assert total_data_list_len == len(data_list), "The data lengthes are NOT identical: %d, %d" % (total_data_list_len, len(data_list))
+            for index in range(total_data_list_len):
+                total_data_list[index].extend(data_list[index][1:])
+            total_data_name_list.extend(data_name_list[1:])
+    # import pdb; pdb.set_trace()
+    return total_data_list, total_data_name_list
+
+
 class CMoneyWebScrapyMeta(type):
 
     __ATTRS = {
@@ -251,6 +276,7 @@ class CMoneyWebScrapyMeta(type):
         "_scrape_management_capacity_": _scrape_management_capacity_,
         "_scrape_financial_structure_": _scrape_financial_structure_,
         "_scrape_solvency_": _scrape_solvency_,
+        "_scrape_financial_ratio_": _scrape_financial_ratio_,
 # stock end
     }
 
@@ -263,73 +289,94 @@ class CMoneyScrapy(ScrapyBase.ScrapyBase):
 
     __metaclass__ = CMoneyWebScrapyMeta
 
-    __CMONEY_ULR_PREFIX = "https://www.cmoney.tw/finance/"
+    __CMONEY_HOME_ULR = "https://www.cmoney.tw/finance/"
 
     __MARKET_SCRAPY_CFG = {
     }
 
     __STOCK_SCRAPY_CFG = {
         "dividend": { # 股利政策
-            "url_format": __CMONEY_ULR_PREFIX + "f00027.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00027.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div/div/div[2]/table",
             "table_time_unit_url_list": ["&o=1",], # Uselesss, only for compatibility
             "table_time_unit_description_list": [u"Dummy",], # Uselesss, only for compatibility
         },
         "revenue": { # 營收盈餘
-            "url_format": __CMONEY_ULR_PREFIX + "f00029.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00029.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[4]/article/div/div/div/table",
             "table_time_unit_url_list": ["&o=1", "&o=2",],
             "table_time_unit_description_list": [u"月營收", u"合併月營收",],
         },
         "income statement": {
-            "url_format": __CMONEY_ULR_PREFIX + "f00040.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00040.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div[2]/div/table",
             "table_time_unit_url_list": ["&o=4", "&o=3",],
             "table_time_unit_description_list": [u"季", u"年",],
         },
         "balance sheet": {
-            "url_format": __CMONEY_ULR_PREFIX + "f00041.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00041.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div[2]/div/table",
             "table_time_unit_url_list": ["&o=5", "&o=4", "&o=6",],
             "table_time_unit_description_list": [u"季合併損益表(單季)", u"年合併損益表",],
         },
         "cashflow statement": { # 現金流量表
-            "url_format": __CMONEY_ULR_PREFIX + "f00042.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00042.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li/article/div[2]/div/table",
             "table_time_unit_url_list": ["&o=5", "&o=4", "&o=6",],
             "table_time_unit_description_list": [u"季(單季)", u"年", u"季(累計)",],
         },
         "profitability": { # 獲利能力
-            "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[2]/article/div/div/div/table",
             "table_time_unit_url_list": ["&o=4", "&o=3",],
             "table_time_unit_description_list": [u"季", u"年",],
         },
         "business performance": { # 經營績效
-            "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[3]/article/div/div/div/table",
             "table_time_unit_url_list": ["&o=4", "&o=3",],
             "table_time_unit_description_list": [u"季", u"年",],
         },
         "management capacity": { # 經營能力
-            "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[4]/article/div/div/div/table",
             "table_time_unit_url_list": ["&o=4", "&o=3",],
             "table_time_unit_description_list": [u"季", u"年",],
         },
         "financial structure": { # 財務結構
-            "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[5]/article/div/div/div/table",
             "table_time_unit_url_list": ["&o=4", "&o=3",],
             "table_time_unit_description_list": [u"季", u"年",],
         },
         "solvency": { # 償債能力
-            "url_format": __CMONEY_ULR_PREFIX + "f00043.aspx?s=%s",
+            "url_format": __CMONEY_HOME_ULR + "f00043.aspx?s=%s",
             "table_xpath": "//*[@id=\"MainContent\"]/ul/li[6]/article/div/div/div/table",
             "table_time_unit_url_list": ["&o=4", "&o=3",],
             "table_time_unit_description_list": [u"季", u"年",],
             "table_time_order_reserved": True,
         },
+# Multiple tables
+        "financial ratio": { # 財務比率: 獲利能力,經營績效,經營能力,財務結構,償債能力
+            "url_format": __CMONEY_HOME_ULR + "f00043.aspx?s=%s",
+            "table_xpath": [
+                "//*[@id=\"MainContent\"]/ul/li[2]/article/div/div/div/table",
+                "//*[@id=\"MainContent\"]/ul/li[3]/article/div/div/div/table",
+                "//*[@id=\"MainContent\"]/ul/li[4]/article/div/div/div/table",
+                "//*[@id=\"MainContent\"]/ul/li[5]/article/div/div/div/table",
+                "//*[@id=\"MainContent\"]/ul/li[6]/article/div/div/div/table",
+            ],
+            "table_time_unit_url_list": ["&o=4", "&o=3",],
+            "table_time_unit_description_list": [u"季", u"年",],
+            "table_time_order_reserved": True,
+        },
+    }
+
+    SCRAPY_TRANSFROM_CFG = {
+        "quarterly cashflow statement": ["cashflow statement", {"stock_time_unit": 0,}],
+        "yearly cashflow statement": ["cashflow statement", {"stock_time_unit": 1,}],
+        "quarterly financial ratio": ["financial ratio", {"stock_time_unit": 0,}],
+        "yearly financial ratio": ["financial ratio", {"stock_time_unit": 1,}],
     }
 
     __MARKET_URL = {key: value["url"] for (key, value) in __MARKET_SCRAPY_CFG.items()}
@@ -354,6 +401,11 @@ class CMoneyScrapy(ScrapyBase.ScrapyBase):
     __TIME_UNIT_DESCRIPTION_LIST.update(__MARKET_TIME_UNIT_DESCRIPTION_LIST)
     __TIME_UNIT_DESCRIPTION_LIST.update(__STOCK_TIME_UNIT_DESCRIPTION_LIST)
 
+
+    SCRAPY_NEED_TRANSFROM_METHOD_LIST = SCRAPY_TRANSFROM_CFG.keys()
+    SCRAPY_TRANSFROM_METHOD_LIST = [value[0] for value in SCRAPY_TRANSFROM_CFG.values()]
+    SCRAPY_TRANSFROM_METHOD_CFG_LIST = [value[1] for value in SCRAPY_TRANSFROM_CFG.values()]
+
     __FUNC_PTR = {
 # market start
 # market end
@@ -368,43 +420,10 @@ class CMoneyScrapy(ScrapyBase.ScrapyBase):
         "management capacity": _scrape_management_capacity_,
         "financial structure": _scrape_financial_structure_,
         "solvency": _scrape_solvency_,
+        "financial ratio": _scrape_financial_ratio_,
 # stock end
     }
     __METHOD_NAME_LIST = __FUNC_PTR.keys()
-
-
-    # @classmethod
-    # def _transform_time_str2obj(cls, time_unit, time_str):
-    #     time_obj = None
-    #     # import pdb; pdb.set_trace()
-    #     if time_unit == CMN.DEF.DATA_TIME_UNIT_MONTH:
-    #         # year_str = time_str[0:4]
-    #         # month_str = time_str[4:]
-    #         # month_time_str = "%s-%s" % (time_str[0:4], time_str[4:])
-    #         time_obj = CMN.CLS.FinanceMonth(time_str)
-    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_QUARTER:
-    #         time_obj = CMN.CLS.FinanceQuarter(time_str)
-    #     elif time_unit == CMN.DEF.DATA_TIME_UNIT_YEAR:
-    #         time_obj = CMN.CLS.FinanceYear(time_str)
-    #     else:
-    #         raise ValueError("Unsupport time unit[%d] for transform" % time_unit)
-    #     return time_obj
-
-
-    # @classmethod
-    # def get_scrapy_method_list(cls):
-    #     # return cls.__FUNC_PTR.keys()
-    #     return cls.__METHOD_NAME_LIST
-
-
-    # @classmethod
-    # def print_scrapy_method(cls):
-    #     print ", ".join(cls.__METHOD_NAME_LIST)
-
-
-    # @classmethod
-    # def print_scrapy_method_time_unit_description(cls, scrapy_method):
-    #     print ", ".join(cls.__TIME_UNIT_DESCRIPTION_LIST[scrapy_method])
 
 
     def __init__(self, **cfg):
@@ -441,90 +460,34 @@ class CMoneyScrapy(ScrapyBase.ScrapyBase):
     def scrape_web(self, *args, **kwargs):
         url = None
         # import pdb; pdb.set_trace()
-        if self.__MARKET_URL.get(self.scrapy_method, None) is not None:
-            url = self.__MARKET_URL[self.scrapy_method]
-        elif self.__STOCK_URL_FORMAT.get(self.scrapy_method, None) is not None:
-            url_format = self.__STOCK_URL_FORMAT[self.scrapy_method]
+        scrapy_method = self.scrapy_method
+        scrapy_kwargs = copy.deepcopy(kwargs)
+        try:
+            scrapy_method_index = self.SCRAPY_NEED_TRANSFROM_METHOD_LIST.index(scrapy_method)
+            scrapy_method = self.SCRAPY_TRANSFROM_METHOD_LIST[scrapy_method_index]
+            scrapy_kwargs.update(self.SCRAPY_TRANSFROM_METHOD_CFG_LIST[scrapy_method_index])
+        except ValueError:
+            pass
+        finally:
+            if self.__MARKET_URL.get(scrapy_method, None) is not None:
+                url = self.__MARKET_URL[scrapy_method]
+            elif self.__STOCK_URL_FORMAT.get(scrapy_method, None) is not None:
+                url_format = self.__STOCK_URL_FORMAT[scrapy_method]
 # stock_time_unit
-            stock_time_unit = None
-            if kwargs.get("stock_time_unit", None) is not None:
-                stock_time_unit = kwargs["stock_time_unit"]
-            if stock_time_unit is None:
-                stock_time_unit = CMONEY_STOCK_TABLE_DEF_TIME_UNIT
-            url_format += self.__STOCK_TIME_UNIT_URL_LIST[self.scrapy_method][stock_time_unit]
-            url = url_format % self.company_number
-        else:
-            raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
+                stock_time_unit = None
+                if scrapy_kwargs.get("stock_time_unit", None) is not None:
+                    stock_time_unit = scrapy_kwargs["stock_time_unit"]
+                if stock_time_unit is None:
+                    stock_time_unit = CMONEY_STOCK_TABLE_DEF_TIME_UNIT
+                url_format += self.__STOCK_TIME_UNIT_URL_LIST[scrapy_method][stock_time_unit]
+                url = url_format % self.company_number
+            else:
+                raise ValueError("Unknown scrapy method: %s" % scrapy_method)
         self.webdriver.get(url)
-        kwargs['table_xpath'] = self.__TABLE_XPATH[self.scrapy_method]
-        kwargs['max_data_count'] = self.xcfg['max_data_count']
+        scrapy_kwargs['table_xpath'] = self.__TABLE_XPATH[scrapy_method]
+        scrapy_kwargs['max_data_count'] = self.xcfg['max_data_count']
         # import pdb; pdb.set_trace()
-        return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
-
-
-    # def update_csv_field(self):
-    #     _, csv_data_field_list = self.scrape_web()
-    #     self._write_scrapy_field_data_to_config(csv_data_field_list, self.scrapy_method_index, self.xcfg['finance_root_folderpath'])
-
-
-    # @property
-    # def CSVTimeDuration(self):
-    #     return self.csv_time_duration
-
-    # @CSVTimeDuration.setter
-    # def CSVTimeDurationCSVTimeDuration(self, csv_time_duration):
-    # 	self.csv_time_duration = csv_time_duration
-
-
-    # @property
-    # def ScrapyMethod(self):
-    #     return self.scrapy_method
-
-    # @ScrapyMethod.setter
-    # def ScrapyMethod(self, value):
-    #     # try:
-    #     #     self.method_list.index(value)
-    #     # except ValueError:
-    #     #     errmsg = "The method[%s] is NOT support in %s" % (value, CMN.FUNC.get_instance_class_name(self))
-    #     #     g_logger.error(errmsg)
-    #     #     raise ValueError(errmsg)
-    #     # self.scrapy_method = value
-    #     # if self.scrapy_method_index is not None:
-    #     #     g_logger.warn("The {0}::scrapy_method_index is reset since the {0}::scrapy_method is set ONLY".format(CMN.FUNC.get_instance_class_name(self)))
-    #     #     self.scrapy_method_index = None
-    #     # raise NotImplementedError
-    #     self._set_scrapy_method(self, value)
-
-
-    # @property
-    # def ScrapyMethodIndex(self):
-    #     return self.scrapy_method_index
-
-    # @ScrapyMethodIndex.setter
-    # def ScrapyMethodIndex(self, value):
-    #     # if CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[value]['class_name'] != CMN.FUNC.get_instance_class_name(self):
-    #     #     raise ValueError("The scrapy index[%d] is NOT supported by the Scrapy class: %s" % (value, CMN.FUNC.get_instance_class_name(self)))
-    #     # self.scrapy_method_index = value
-    #     # self.scrapy_method = CMN.DEF.SCRAPY_CLASS_CONSTANT_CFG[self.scrapy_method_index]['scrapy_class_method']
-    #     self._set_scrapy_method_index(self, value)
-
-
-    # @property
-    # def CompanyNumber(self):
-    #     return self.company_number
-
-    # @CompanyNumber.setter
-    # def CompanyNumber(self, company_number):
-    #     self.company_number = company_number
-
-
-    # @property
-    # def CompanyGroupNumber(self):
-    #     return self.company_group_number
-
-    # @CompanyGroupNumber.setter
-    # def CompanyGroupNumber(self, company_group_number):
-    #     self.company_group_number = company_group_number
+        return (self.__FUNC_PTR[scrapy_method])(self.webdriver, *args, **scrapy_kwargs)
 
 
 if __name__ == '__main__':

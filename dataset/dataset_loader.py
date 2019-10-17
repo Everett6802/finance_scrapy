@@ -221,9 +221,10 @@ def load_stock_price_history(company_number, overwrite_stock_price_list=None, da
 # Format: Date O:OpenPrice H:HighPrice L:LowPrice C:ClosePrice; Ex. 180613 O:98.6 H: 100.5 L: 97.9 C 99.9
     df, column_description_list = load_stock_hybrid(CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX, company_number)
     # df.rename(columns={'0903': 'open', '0904': 'high', '0905': 'low', '0906': 'close', '0907': 'change', '0908': 'volume'}, inplace=True)
-# "成交張數", "開盤價", "最高價", "最低價", "收盤價", "漲跌價差",
+# "成交股數", "成交金額", "開盤價", "最高價", "最低價", "收盤價", "漲跌價差",
     new_columns={
-    	('%02d01' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'volume', 
+    	('%02d01' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'trade volume (share)', 
+    	('%02d02' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'turnover in value', 
     	('%02d03' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'open', 
     	('%02d04' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'high', 
     	('%02d05' % CMN.DEF.SCRAPY_METHOD_STOCK_PRICE_AND_VOLUME_INDEX): 'low', 
@@ -281,55 +282,97 @@ def load_stock_price_history(company_number, overwrite_stock_price_list=None, da
 
 
 def load_revenue_history(company_number):
-    df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX, company_number)
-# "單月營收", "單月年增率",
+    df, column_description_list = load_stock_hybrid(CMN.DEF.SCRAPY_METHOD_REVENUE_INDEX, company_number)
+# "單月營收", "單月月增率", "單月年增率",
     new_columns={
-    	('%02d01' % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX): 'monthly revenue', 
-    	('%02d03' % SL.DEF.SCRAPY_MEMTHOD_REVENUE_INDEX): 'monthly YOY growth', 
+    	('%02d01' % CMN.DEF.SCRAPY_METHOD_REVENUE_INDEX): 'monthly revenue', 
+    	('%02d02' % CMN.DEF.SCRAPY_METHOD_REVENUE_INDEX): 'monthly MOM growth', 
+    	('%02d03' % CMN.DEF.SCRAPY_METHOD_REVENUE_INDEX): 'monthly YOY growth', 
     }
     df.rename(columns=new_columns, inplace=True)
     return df, column_description_list
 
 
-def load_profitability_history(company_number):
-    df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX, company_number)
-# "毛利率", "營業利益率", '稅後純益率', "股東權益報酬率", '每股淨值', '每股稅後盈餘'
+def __load_cashflow_statement_history(company_number, cashflow_statement_scrapy_method_index):
+    df, column_description_list = load_stock_hybrid(cashflow_statement_scrapy_method_index, company_number)
+# "營業活動現金流量", "投資活動現金流量", '理財活動現金流量', "淨現金流量", 自由現金流量'
     new_columns={
-        ('%02d01' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'gross profit margin', 
-        ('%02d02' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'operating profit margin', 
-        # ('%02d03' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'net profit margin', 
-        ('%02d04' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'net profit margin', 
-        ('%02d05' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'return on equity', 
-        ('%02d08' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'net asset value of each share', 
-        ('%02d09' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'earnings per share', 
+        # ('%02d01' % CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX): 'gross profit margin', 
+        ('%02d02' % cashflow_statement_scrapy_method_index): 'cash flow from operating activities', 
+        ('%02d03' % cashflow_statement_scrapy_method_index): 'cash flow from investing activities', 
+        ('%02d04' % cashflow_statement_scrapy_method_index): 'cash flow from financing activities', 
+        ('%02d05' % cashflow_statement_scrapy_method_index): 'net cash flow', 
+        ('%02d07' % cashflow_statement_scrapy_method_index): 'free cash flow', 
     }
     df.rename(columns=new_columns, inplace=True)
     return df, column_description_list
 
 
-def load_cashflow_statement_history(company_number):
-    df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX, company_number)
-# "營業活動現金流量", "投資活動現金流量", '理財活動現金流量', "自由現金流量'
-    new_columns={
-        # ('%02d01' % SL.DEF.SCRAPY_MEMTHOD_PROFITABILITY_INDEX): 'gross profit margin', 
-        ('%02d02' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'cash flow from operating activities', 
-        ('%02d03' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'cash flow from investing activities', 
-        ('%02d04' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'cash flow from financing activities', 
-        ('%02d07' % SL.DEF.SCRAPY_MEMTHOD_CASHFLOW_STATEMENT_INDEX): 'free cash flow', 
-    }
-    df.rename(columns=new_columns, inplace=True)
-    return df, column_description_list
+def load_quarterly_cashflow_statement_history(company_number):
+	return __load_cashflow_statement_history(company_number, CMN.DEF.SCRAPY_METHOD_QUARTERLY_CASHFLOW_STATEMENT_INDEX)
+
+
+def load_yearly_cashflow_statement_history(company_number):
+	return __load_cashflow_statement_history(company_number, CMN.DEF.SCRAPY_METHOD_YEARLY_CASHFLOW_STATEMENT_INDEX)
 
 
 def load_dividend_history(company_number):
-    df, column_description_list = load_selenium_stock_hybrid(SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX, company_number)
-# "現金股利", "股票股利合計'
+    df, column_description_list = load_stock_hybrid(CMN.DEF.SCRAPY_METHOD_DIVIDEND_INDEX, company_number)
+# "現金股利", "股票股利合計", "股利合計",
     new_columns={
-        ('%02d01' % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX): 'cash dividend', 
-        ('%02d04' % SL.DEF.SCRAPY_MEMTHOD_DIVIDEND_INDEX): 'stock dividend', 
+        ('%02d01' % CMN.DEF.SCRAPY_METHOD_DIVIDEND_INDEX): 'cash dividend', 
+        ('%02d04' % CMN.DEF.SCRAPY_METHOD_DIVIDEND_INDEX): 'stock dividend', 
+    	('%02d05' % CMN.DEF.SCRAPY_METHOD_DIVIDEND_INDEX): 'dividend', 
     }
     df.rename(columns=new_columns, inplace=True)
     return df, column_description_list
+
+
+# def load_profitability_history(company_number):
+#     df, column_description_list = load_stock_hybrid(CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX, company_number)
+# # "毛利率", "營業利益率", '稅後純益率', "股東權益報酬率", '每股淨值', '每股稅後盈餘'
+#     new_columns={
+#         ('%02d01' % CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX): 'gross profit margin', 
+#         ('%02d02' % CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX): 'operating profit margin', 
+#         # ('%02d03' % CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX): 'net profit margin', 
+#         ('%02d04' % CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX): 'net profit margin', 
+#         ('%02d05' % CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX): 'return on equity', 
+#         ('%02d08' % CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX): 'net asset value of each share', 
+#         ('%02d09' % CMN.DEF.SCRAPY_METHOD_PROFITABILITY_INDEX): 'earnings per share', 
+#     }
+#     df.rename(columns=new_columns, inplace=True)
+#     return df, column_description_list
+
+
+def __load_financial_ratio_history(company_number, financial_ratio_scrapy_method_index):
+    df, column_description_list = load_stock_hybrid(financial_ratio_scrapy_method_index, company_number)
+# 獲利能力: "毛利率", "營業利益率", '稅後純益率', "股東權益報酬率", '每股淨值', '每股稅後盈餘'
+# 經營能力: "總資產週轉率"
+# 償債能力: "負債比率"
+    new_columns={
+# 獲利能力: 
+        ('%02d01' % financial_ratio_scrapy_method_index): 'gross profit margin', 
+        ('%02d02' % financial_ratio_scrapy_method_index): 'operating profit margin', 
+        # ('%02d03' % CMN.DEF.SCRAPY_METHOD_FINANCIAL_RATIO_INDEX): 'net profit margin', 
+        ('%02d04' % financial_ratio_scrapy_method_index): 'net profit margin', 
+        ('%02d05' % financial_ratio_scrapy_method_index): 'return on equity', 
+        ('%02d08' % financial_ratio_scrapy_method_index): 'net asset value per share', 
+        ('%02d09' % financial_ratio_scrapy_method_index): 'earnings per share', 
+# 經營能力:
+        ('%02d18' % financial_ratio_scrapy_method_index): 'total assets turnover ratio', 
+# 償債能力:
+        ('%02d22' % financial_ratio_scrapy_method_index): 'debt ratio', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+    return df, column_description_list
+
+
+def load_quarterly_financial_ratio_history(company_number):
+	return __load_financial_ratio_history(company_number, CMN.DEF.SCRAPY_METHOD_QUARTERLY_FINANCIAL_RATIO_INDEX)
+
+
+def load_yearly_financial_ratio_history(company_number):
+	return __load_financial_ratio_history(company_number, CMN.DEF.SCRAPY_METHOD_YEARLY_FINANCIAL_RATIO_INDEX)
 
 
 def load_top10_oi_history():

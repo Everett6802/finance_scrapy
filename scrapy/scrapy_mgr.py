@@ -255,7 +255,7 @@ class ScrapyMgr(object):
                         web_scrapy_object.scrape_web_to_csv(*self.scrapy_obj_args, **self.scrapy_obj_kwargs)
                     else:
 # Stock
-                        for company_group_number, company_number_list in  self.company_group_set.items():
+                        for company_group_number, company_number_list in self.company_group_set.items():
                             for company_number in company_number_list:
 # Update the config of the scrapy object
                                 web_scrapy_object.CompanyNumber = company_number

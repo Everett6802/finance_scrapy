@@ -246,7 +246,8 @@ class ScrapyBase(object):
                 web2csv_time_duration_update_tuple = csv_handler.find_scrapy_time_range(time_start, time_end)
                 if web2csv_time_duration_update_tuple is None:
                     g_logger.debug(u"The data[%s] is Update-to-Date" % CMN.FUNC.assemble_scrapy_method_description(self.scrapy_method_index, company_number))
-                    return 
+                    return
+                # import pdb; pdb.set_trace()
                 csv_handler.write(csv_data_list, time_start, time_end, CMN.DEF.TIME_OVERLAP_AFTER) 
 
 

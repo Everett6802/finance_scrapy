@@ -585,6 +585,7 @@ class FinanceMonth(FinanceTimeBase):
     def get_value_tuple(self):
         return (self.year, self.month)
 
+
     def get_last_date_of_month(self):
         return calendar.monthrange(self.year, self.month)[1]
 
