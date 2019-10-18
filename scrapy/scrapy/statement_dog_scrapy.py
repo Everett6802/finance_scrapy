@@ -133,10 +133,32 @@ def _scrape_monthly_revenue_growth_rate_(driver, report_menu_index, sheet_interv
     return (data_list, data_name_list)
 
 
+def _scrape_eps_growth_rate_(driver, report_menu_index, sheet_interval_index, *args, **kwargs):
+    # import pdb; pdb.set_trace()
+    data_list, data_name_list = __scrape_table_data(driver, report_menu_index, sheet_interval_index)
+    for data in data_list:
+        time_str = str(data[0])
+        assert len(time_str) == 5, "The length of the time string[%s] should be 5, not %d" % (time_str, len(time_str))
+        data[0] = CMN.DEF.QUARTER_STRING_FORMAT % (int(time_str[0:4]), int(time_str[4:]))
+    return (data_list, data_name_list)
+
+
+def _scrape_net_asset_value_(driver, report_menu_index, sheet_interval_index, *args, **kwargs):
+    # import pdb; pdb.set_trace()
+    data_list, data_name_list = __scrape_table_data(driver, report_menu_index, sheet_interval_index)
+    for data in data_list:
+        time_str = str(data[0])
+        assert len(time_str) == 5, "The length of the time string[%s] should be 5, not %d" % (time_str, len(time_str))
+        data[0] = CMN.DEF.QUARTER_STRING_FORMAT % (int(time_str[0:4]), int(time_str[4:]))
+    return (data_list, data_name_list)
+
+
 class StatementDogWebScrapyMeta(type):
 
     __ATTRS = {
         "_scrape_monthly_revenue_growth_rate_": _scrape_monthly_revenue_growth_rate_,
+        "_scrape_eps_growth_rate_": _scrape_eps_growth_rate_,
+        "_scrape_net_asset_value_": _scrape_net_asset_value_,
     }
 
     def __new__(mcs, name, bases, attrs):
@@ -160,6 +182,20 @@ class StatementDogScrapy(ScrapyBase.ScrapyBase):
             "report_menu_description_list": [u"單月營收年增率", u"單月每股營收年增率", u"單月營收月增率",],
             # "report_menu_default_index": 0,
             "sheet_interval_description_list": None, # Uselesss, only for compatibility
+            # "sheet_interval_default_index": None, # Uselesss, only for compatibility
+        },
+        "eps growth rate": { # 每股盈餘成長率
+            "url_format": __STATEMENT_DOG_HOME_URL + "/tpe/%s/eps-growth-rate",
+            "report_menu_description_list": [u"EPS年增率", u"EPS季增率",],
+            # "report_menu_default_index": 0,
+            "sheet_interval_description_list": [u"季報", u"年報",]
+            # "sheet_interval_default_index": None, # Uselesss, only for compatibility
+        },
+        "net asset value": { # 每股淨值
+            "url_format": __STATEMENT_DOG_HOME_URL + "/tpe/%s/nav",
+            "report_menu_description_list": None, # Uselesss, only for compatibility,
+            # "report_menu_default_index": 0,
+            "sheet_interval_description_list": [u"季報", u"年報",]
             # "sheet_interval_default_index": None, # Uselesss, only for compatibility
         },
     }
@@ -201,6 +237,8 @@ class StatementDogScrapy(ScrapyBase.ScrapyBase):
 
     __FUNC_PTR = {
         "monthly revenue growth rate": _scrape_monthly_revenue_growth_rate_,
+        "eps growth rate": _scrape_eps_growth_rate_,
+        "net asset value": _scrape_net_asset_value_,
     }
 
 
