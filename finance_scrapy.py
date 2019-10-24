@@ -24,8 +24,13 @@ def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "-h | --help\nDescription: The usage\nCaution: Ignore other parameters when set\n"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set\n"
-    print "--show_workday_calendar_range\nDescription: Show the date range of the workday calendar only\nCaution: The canlendar is updated before display. Ignore other parameters when set"
+    print "--show_workday_calendar_range\nDescription: Show the date range of the workday calendar only\nCaution: The canlendar is updated before display. Ignore other parameters when set\n"
+    print "--show_data_time_range\nDescription: Show the time range of the market data in the dataset\nCaution: Ignore other parameters when set\n"
+    print "--show_company_data_time_range\nDescription: Show the time range of the specific company data in the dataset\nCaution: Ignore other parameters when set\n"
+    print "--remove_data\nDescription: Remove the market data in the dataset\nCaution: Ignore other parameters when set\n"
+    print "--remove_company_data\nDescription: Remove the specific company data in the dataset\nCaution: Ignore other parameters when set\n"
     print "--update_csv_field\nDescription: Update the CSV file description\n"
+    print ""
     print "--no_scrapy\nDescription: Don't scrape Web data\n"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--append_before\nDescription: Update the earlier scrapy data into database\n"
@@ -107,22 +112,9 @@ def show_error(msg):
     if not param_cfg["silent"]:
         sys.stderr.write(msg + "\n")
 
-
 def show_error_and_exit(errmsg):
     show_error(errmsg)
     sys.exit(1)
-
-
-def update_workday_calendar_and_exit():
-    workday_calendar = LIBS.WC.WorkdayCanlendar.Instance()
-    sys.exit(0)
-
-
-def show_workday_calendar_range_and_exit():
-    workday_calendar = LIBS.WC.WorkdayCanlendar.Instance()
-    msg = "The time range of the workday calendar: %s - %s" % (workday_calendar.FirstWorkday, workday_calendar.LastWorkday)
-    show_info(msg)
-    sys.exit(0)
 
 
 def init_param():
@@ -131,6 +123,10 @@ def init_param():
     param_cfg["help"] = False
     param_cfg["update_workday_calendar"] = False
     param_cfg["show_workday_calendar_range"] = False
+    param_cfg["show_data_time_range"] = False
+    param_cfg["show_data_time_range_company_list"] = None
+    param_cfg["remove_data"] = False
+    param_cfg["remove_data_company_list"] = None
     param_cfg["no_scrapy"] = False
     param_cfg["reserve_old"] = False
     param_cfg["append_before"] = False
@@ -182,6 +178,20 @@ def parse_param():
             index_offset = 1
         elif re.match("--show_workday_calendar_range", sys.argv[index]):
             param_cfg["show_workday_calendar_range"] = True
+            index_offset = 1
+        elif re.match("--show_company_data_time_range", sys.argv[index]):
+            param_cfg["show_data_time_range"] = True
+            param_cfg["show_data_time_range_company_list"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--show_data_time_range", sys.argv[index]):
+            param_cfg["show_data_time_range"] = True
+            index_offset = 1
+        elif re.match("--remove_company_data", sys.argv[index]):
+            param_cfg["remove_data"] = True
+            param_cfg["remove_data_company_list"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--remove_data", sys.argv[index]):
+            param_cfg["remove_data"] = True
             index_offset = 1
         elif re.match("--no_scrapy", sys.argv[index]):
             param_cfg["no_scrapy"] = True
@@ -317,10 +327,16 @@ def parse_param():
 def check_param():
     global set_combination_param
 
-    if param_cfg['help']:
+    if param_cfg["help"]:
         show_warn("Show Usage and Exit. Other parameters are ignored")
-    if param_cfg['update_csv_field']:
+    if param_cfg["update_csv_field"]:
         show_warn("Update CSV field description and Exit. Other parameters are ignored")
+    if param_cfg["show_workday_calendar_range"]:
+        show_warn("Show workday calendar range and Exit. Other parameters are ignored")
+    if param_cfg["show_data_time_range"]:
+        show_warn("Show data time range and Exit. Other parameters are ignored")
+    if param_cfg['remove_data']:
+        show_warn("Remove data and Exit. Other parameters are ignored")
     # import pdb; pdb.set_trace()
     # combination_argument = (combination_param_cfg["update_dataset_config_from_filename"] is not None) or (combination_param_cfg["update_dataset_method"] is not None)
     combination_argument = set_combination_param
@@ -486,9 +502,84 @@ def update_global_variable():
     GV.GLOBAL_VARIABLE_UPDATED = True
 
 
+def update_workday_calendar_and_exit():
+    workday_calendar = LIBS.WC.WorkdayCanlendar.Instance()
+    sys.exit(0)
+
+
+def show_workday_calendar_range_and_exit():
+    workday_calendar = LIBS.WC.WorkdayCanlendar.Instance()
+    msg = "The time range of the workday calendar: %s - %s" % (workday_calendar.FirstWorkday, workday_calendar.LastWorkday)
+    show_info(msg)
+    sys.exit(0)
+
+
 def update_csv_field_and_exit():
     show_info("*** Update the field descriptions to Dataset: %s ***" % g_mgr.FinanceRootFolderPath)
     g_mgr.update_csv_field()
+    sys.exit(0)
+
+
+def show_data_time_range_and_exit():
+    show_company = False
+    company_number_list = None
+    if param_cfg["show_data_time_range_company_list"] is not None:
+        show_company = True
+        company_number_list = param_cfg["show_data_time_range_company_list"].split(",")
+    # import pdb; pdb.set_trace()
+    if param_cfg["finance_folderpath"] is None:
+        param_cfg["finance_folderpath"] = GV.FINANCE_DATASET_DATA_FOLDERPATH
+    g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
+    print "\n* Dataset: %s\n" % param_cfg["finance_folderpath"]
+    csv_time_range_ret = g_mgr.get_csv_time_range(company_number_list)
+    if not show_company:
+# market
+        print "==========  Market  =========="
+        if csv_time_range_ret is None:
+            print " No Data !!!"
+        else:
+            for method_index, time_duration_tuple in csv_time_range_ret.items():
+                print "%s:  %s %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
+        print ""
+    else:
+# stock
+        company_number_list_len = len(company_number_list)
+        for company_number in company_number_list:
+            print "==========  Company %s  ==========" % company_number
+            csv_time_duration_cfg_dict = csv_time_range_ret[company_number]
+            if csv_time_duration_cfg_dict is None:
+                print " No Data !!!"
+            else:
+                for method_index, time_duration_tuple in csv_time_duration_cfg_dict.items():
+                    print "%s:  %s %s" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index], time_duration_tuple.time_duration_start, time_duration_tuple.time_duration_end)
+            print ""
+    sys.exit(0)
+
+
+def remove_data_and_exit():
+    show_company = False
+    company_number_list = None
+    if param_cfg["remove_data_company_list"] is not None:
+        show_company = True
+        company_number_list = param_cfg["remove_data_company_list"].split(",")
+    import pdb; pdb.set_trace()
+    if param_cfg["finance_folderpath"] is None:
+        param_cfg["finance_folderpath"] = GV.FINANCE_DATASET_DATA_FOLDERPATH
+    g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
+    print "\n* Dataset: %s\n" % param_cfg["finance_folderpath"]
+    remove_data_ret = g_mgr.remove_csv_data(company_number_list)
+    if not show_company:
+# market
+        print "==========  Market  =========="
+        print " Remove Successfully" if remove_data_ret else " No Data !!!"
+        print ""
+    else:
+# stock
+        company_number_list_len = len(company_number_list)
+        for company_number in company_number_list:
+            print "==========  Company %s  ==========" % company_number
+            print " Remove Successfully" if remove_data_ret[company_number] else " No Data !!!"
+            print ""
     sys.exit(0)
 
 
@@ -554,6 +645,10 @@ if __name__ == "__main__":
         update_workday_calendar_and_exit()
     if param_cfg["show_workday_calendar_range"]:
         show_workday_calendar_range_and_exit()
+    if param_cfg["show_data_time_range"]:
+        show_data_time_range_and_exit()
+    if param_cfg["remove_data"]:
+        remove_data_and_exit()
     # import pdb; pdb.set_trace()
 # Setup the parameters for the manager
     setup_param()

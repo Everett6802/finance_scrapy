@@ -283,3 +283,46 @@ class ScrapyMgr(object):
                     web_scrapy_object.CompanyNumber = CMN.DEF.SCCRAPY_CLASS_COMPANY_NUMBER
                     web_scrapy_object.CompanyGroupNumber = CMN.DEF.SCCRAPY_CLASS_COMPANY_GROUP_NUMBER            
                 web_scrapy_object.update_csv_field_description()
+
+
+    def get_csv_time_range(self, company_number_list=None):
+        # import pdb; pdb.set_trace()
+        csv_time_range_ret = None
+        if company_number_list is None:
+# market
+            # csv_time_duration_folderpath = CMN.FUNC.get_finance_data_folderpath(self.xcfg["finance_root_folderpath"])
+            csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(None, self.xcfg["finance_root_folderpath"])
+            csv_time_range_ret = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
+        else:
+# stock
+            if type(company_number_list) is str:
+                company_number_list = [company_number_list,]
+            csv_time_range_dict = {}
+            for company_number in company_number_list:
+                company_group_number = self.__get_company_profile().lookup_company_group_number(company_number)
+                # csv_time_duration_folderpath = CMN.FUNC.get_finance_data_folderpath(self.xcfg["finance_root_folderpath"], company_group_number, company_number)
+                csv_time_duration_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(None, self.xcfg["finance_root_folderpath"], company_group_number, company_number)
+                csv_time_duration_cfg_dict = CMN.FUNC.read_csv_time_duration_config_file(CMN.DEF.CSV_DATA_TIME_DURATION_FILENAME, csv_time_duration_folderpath)
+                csv_time_range_dict[company_number] = csv_time_duration_cfg_dict
+            csv_time_range_ret = csv_time_range_dict
+        return csv_time_range_ret
+
+
+    def remove_csv_data(self, company_number_list=None):
+        # import pdb; pdb.set_trace()
+        remove_data_ret = None
+        if company_number_list is None:
+# market
+            data_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(None, self.xcfg["finance_root_folderpath"])
+            remove_data_ret = CMN.FUNC.remove_folder_if_exist(data_folderpath)
+        else:
+# stock
+            if type(company_number_list) is str:
+                company_number_list = [company_number_list,]
+            remove_data_dict = {}
+            for company_number in company_number_list:
+                company_group_number = self.__get_company_profile().lookup_company_group_number(company_number)
+                data_folderpath = CMN.FUNC.get_finance_data_csv_folderpath(None, self.xcfg["finance_root_folderpath"], company_group_number, company_number)
+                remove_data_dict[company_number] = CMN.FUNC.remove_folder_if_exist(data_folderpath)
+            remove_data_ret = remove_data_dict
+        return remove_data_ret

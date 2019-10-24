@@ -1506,7 +1506,11 @@ def get_finance_data_folderpath(finance_parent_folderpath, company_group_number=
 
 
 def get_finance_data_csv_folderpath(method_index, finance_parent_folderpath, company_group_number=None, company_number=None):
-    need_company_number = scrapy_method_need_company_number(method_index)
+    need_company_number = None
+    if method_index is None:
+        need_company_number = True if (company_group_number is not None and company_group_number is not None) else False
+    else:
+        need_company_number = scrapy_method_need_company_number(method_index)
     if not need_company_number:
 # Market mode
         if company_group_number is not None:
