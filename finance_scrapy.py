@@ -29,6 +29,7 @@ def show_usage_and_exit():
     print "--show_company_data_time_range\nDescription: Show the time range of the specific company data in the dataset\nCaution: Ignore other parameters when set\n"
     print "--remove_data\nDescription: Remove the market data in the dataset\nCaution: Ignore other parameters when set\n"
     print "--remove_company_data\nDescription: Remove the specific company data in the dataset\nCaution: Ignore other parameters when set\n"
+    print "--show_scrapy_method_metadata\nDescription: Show the metadata of the scrapy method\nCaution: Ignore other parameters when set\n"
     print "--update_csv_field\nDescription: Update the CSV file description\n"
     print ""
     print "--no_scrapy\nDescription: Don't scrape Web data\n"
@@ -127,6 +128,7 @@ def init_param():
     param_cfg["show_data_time_range_company_list"] = None
     param_cfg["remove_data"] = False
     param_cfg["remove_data_company_list"] = None
+    param_cfg["show_scrapy_method_metadata"] = False
     param_cfg["no_scrapy"] = False
     param_cfg["reserve_old"] = False
     param_cfg["append_before"] = False
@@ -192,6 +194,9 @@ def parse_param():
             index_offset = 2
         elif re.match("--remove_data", sys.argv[index]):
             param_cfg["remove_data"] = True
+            index_offset = 1
+        elif re.match("--show_scrapy_method_metadata", sys.argv[index]):
+            param_cfg["show_scrapy_method_metadata"] = True
             index_offset = 1
         elif re.match("--no_scrapy", sys.argv[index]):
             param_cfg["no_scrapy"] = True
@@ -562,7 +567,7 @@ def remove_data_and_exit():
     if param_cfg["remove_data_company_list"] is not None:
         show_company = True
         company_number_list = param_cfg["remove_data_company_list"].split(",")
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
     if param_cfg["finance_folderpath"] is None:
         param_cfg["finance_folderpath"] = GV.FINANCE_DATASET_DATA_FOLDERPATH
     g_mgr.set_finance_root_folderpath(param_cfg["finance_folderpath"])
@@ -580,6 +585,25 @@ def remove_data_and_exit():
             print "==========  Company %s  ==========" % company_number
             print " Remove Successfully" if remove_data_ret[company_number] else " No Data !!!"
             print ""
+    sys.exit(0)
+
+
+def show_scrapy_method_metadata_and_exit():
+    scrapy_method_cnt = 0
+    for scrapy_method_name, scrapy_method_cfg in CMN.DEF.SCRAPY_METHOD_CONSTANT_CFG.items():
+        print "***  %s [%d]  ***" % (scrapy_method_name, scrapy_method_cnt)
+        print "Description: %s" % scrapy_method_cfg["description"]
+        print "Module Name/Class Name: %s/%s" % (scrapy_method_cfg["module_name"], scrapy_method_cfg["class_name"])
+        scrapy_time_unit = scrapy_method_cfg.get("scrapy_time_unit", None)
+        if scrapy_time_unit is None:
+            scrapy_time_unit = scrapy_method_cfg["data_time_unit"]
+        else:
+            scrapy_time_unit = CMN.DEF.TIMESLICE_GENERATE_TO_TIME_UNIT_MAPPING[scrapy_method_cfg["scrapy_time_unit"]]
+
+        print "Scrapy/Data Time Unit: %s/%s" % (CMN.DEF.DATA_TIME_UNIT_DESCRIPTION[scrapy_time_unit], CMN.DEF.DATA_TIME_UNIT_DESCRIPTION[scrapy_method_cfg["data_time_unit"]])
+        print "Set Time Range: %s" % ("Yes" if scrapy_method_cfg["can_set_time_range"] else "No")
+        print ""
+        scrapy_method_cnt += 1
     sys.exit(0)
 
 
@@ -649,6 +673,8 @@ if __name__ == "__main__":
         show_data_time_range_and_exit()
     if param_cfg["remove_data"]:
         remove_data_and_exit()
+    if param_cfg["show_scrapy_method_metadata"]:
+        show_scrapy_method_metadata_and_exit()
     # import pdb; pdb.set_trace()
 # Setup the parameters for the manager
     setup_param()

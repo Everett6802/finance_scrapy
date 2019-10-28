@@ -62,8 +62,7 @@ def parse_param():
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
         # if re.match("(-h|--help)", sys.argv[index]):
         if sys.argv[index] == "--help" or sys.argv[index] == "-h":
-            show_usage()
-            sys.exit(0)
+            show_usage_and_exit()
         elif sys.argv[index] == "--convert_vix":
             param_cfg["convert_vix"] = []
             param_cfg["convert_vix"].append(sys.argv[index + 1])
