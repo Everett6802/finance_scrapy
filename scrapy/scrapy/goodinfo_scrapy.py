@@ -70,10 +70,13 @@ def _scrape_financial_ratio_growth_rate_(driver, *args, **kwargs):
 def _scrape_institutional_investor_net_buy_sell_(driver, *args, **kwargs):
     # import pdb; pdb.set_trace()
     data_list = []
-    table_elements = driver.find_elements_by_class_name("solid_1_padding_4_0_tbl")
-    thead_element = table_elements[3].find_element_by_tag_name("thead")
-    tbody_elements = table_elements[3].find_elements_by_tag_name("tbody")
+    # table_elements = driver.find_elements_by_class_name("solid_1_padding_4_0_tbl")
+    # thead_element = table_elements[3].find_element_by_tag_name("thead")
+    # tbody_elements = table_elements[3].find_elements_by_tag_name("tbody")
 
+    table_element = driver.find_element_by_class_name("solid_1_padding_4_1_tbl")
+    thead_element = table_element.find_element_by_tag_name("thead")
+    tbody_elements = table_element.find_elements_by_tag_name("tbody")
     # th_elements = tr_elements[0].find_elements_by_tag_name("th")
     # data_name_list = [CMN.DEF.DATE_IN_CHINESE,]
     # for th_element in th_elements[1:]:
