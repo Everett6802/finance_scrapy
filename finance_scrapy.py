@@ -10,9 +10,12 @@ from scrapy import common as CMN
 from scrapy.common.common_variable import GlobalVar as GV
 from scrapy import libs as LIBS
 import scrapy.scrapy_mgr as MGR
+import scrapy.libs.company_profile as CompanyProfile
+
 
 g_mgr = None
 g_logger = CMN.LOG.get_logger()
+g_company_profile_obj = None
 param_cfg = {}
 combination_param_cfg = {}
 
@@ -92,6 +95,12 @@ def show_usage_and_exit():
             if can_set_time_range: print "--update_company_%s | --update_company_method%d --time_from ooo\nDescription: Update Older %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --append_before --time_from ooo --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
     print "--update_methods\nDescription: Update dataset of all market methods"
     print "--update_company_methods\nDescription: Update dataset of all stock methods of specific companies"
+    for time_unit_description in CMN.DEF.DATA_TIME_UNIT_DESCRIPTION:
+        time_unit_description = time_unit_description.lower()
+        print "--update_{0}_methods\nDescription: Update dataset of market methods where the time units are equal to {0}".format(time_unit_description)
+        print "--update_company_{0}_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are equal to {0}".format(time_unit_description)
+        print "--update_gt_{0}_methods\nDescription: Update dataset of market methods where the time units are greater than {0}".format(time_unit_description)
+        print "--update_company_gt_{0}_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are greater than {0}".format(time_unit_description)
     print "============================================================="
     sys.exit(0)
 
@@ -154,6 +163,7 @@ def init_param():
     combination_param_cfg["update_dataset_company_list"] = None
     combination_param_cfg["update_dataset_time"] = None
     combination_param_cfg["update_dataset_all_methods"] = False
+    combination_param_cfg["update_dataset_time_unit_filter"] = None
     # combination_param_cfg["update_dataset_company_methods"] = None
     # combination_param_cfg['update_dataset_duplicate_setting'] = False
     # check_param_time_cnt = 0
@@ -272,20 +282,30 @@ def parse_param():
                 set_combination_param = True
                 combination_param_cfg['update_dataset_config_from_filename'] = sys.argv[index + 1]
             index_offset = 2
-        elif re.match("--update_company_methods", sys.argv[index]):
+        # elif re.match("--update_company_methods", sys.argv[index]):
+        elif re.match("--update_company_([\w_]*)methods", sys.argv[index]):
             if set_combination_param:
                 show_warn("combination argument can only be set ONCE")
             else:
                 set_combination_param = True
                 combination_param_cfg["update_dataset_all_methods"] = True
                 combination_param_cfg["update_dataset_company_list"] = sys.argv[index + 1]
+                # import pdb; pdb.set_trace()
+                time_unit_filter = re.match("--update_company_([\w_]*)methods", sys.argv[index]).group(1).rstrip("_")
+                if len(time_unit_filter) > 0:
+                    combination_param_cfg["update_dataset_time_unit_filter"] = time_unit_filter
             index_offset = 2
-        elif re.match("--update_methods", sys.argv[index]):
+        # elif re.match("--update_methods", sys.argv[index]):
+        elif re.match("--update_([\w_]*)methods", sys.argv[index]):
+            # import pdb; pdb.set_trace()
             if set_combination_param:
                 show_warn("combination argument can only be set ONCE")
             else:
                 set_combination_param = True
                 combination_param_cfg["update_dataset_all_methods"] = True
+                time_unit_filter = re.match("--update_([\w_]*)methods", sys.argv[index]).group(1).rstrip("_")
+                if len(time_unit_filter) > 0:
+                    combination_param_cfg["update_dataset_time_unit_filter"] = time_unit_filter
             index_offset = 1
         elif re.match("--update", sys.argv[index]):
             # import pdb; pdb.set_trace()
@@ -550,7 +570,7 @@ def show_data_time_range_and_exit():
 # stock
         company_number_list_len = len(company_number_list)
         for company_number in company_number_list:
-            print "==========  Company %s  ==========" % company_number
+            print "==========  Company %s[%s]  ==========" % (company_number, get_specific_company_profile_string(company_number))
             csv_time_duration_cfg_dict = csv_time_range_ret[company_number]
             if csv_time_duration_cfg_dict is None:
                 print " No Data !!!"
@@ -582,7 +602,7 @@ def remove_data_and_exit():
 # stock
         company_number_list_len = len(company_number_list)
         for company_number in company_number_list:
-            print "==========  Company %s  ==========" % company_number
+            print "==========  Company %s[%s]  ==========" % (company_number, get_specific_company_profile_string(company_number))
             print " Remove Successfully" if remove_data_ret[company_number] else " No Data !!!"
             print ""
     sys.exit(0)
@@ -605,6 +625,22 @@ def show_scrapy_method_metadata_and_exit():
         print ""
         scrapy_method_cnt += 1
     sys.exit(0)
+
+
+def get_specific_company_profile_string(company_number):
+    global g_company_profile_obj
+    if g_company_profile_obj is None:
+        g_company_profile_obj = CompanyProfile.CompanyProfile.Instance()
+    company_profile_element_list = g_company_profile_obj.lookup_company_profile(company_number)
+    specific_company_profile_string = " ".join(
+        [
+            company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_NAME],
+            company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET_TYPE],
+            company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY],
+            company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER],
+        ]
+    )
+    return specific_company_profile_string
 
 
 def record_exe_time(action):
@@ -659,6 +695,7 @@ if __name__ == "__main__":
         # "finance_root_folderpath": param_cfg["finance_folderpath"],
         # "config_filename": param_cfg["config_from_filename"],
         "max_data_count": param_cfg["max_data_count"],
+        "time_unit_filter": combination_param_cfg["update_dataset_time_unit_filter"],
     }
     g_mgr = MGR.ScrapyMgr(**update_cfg)
 # Check the parameters for the manager

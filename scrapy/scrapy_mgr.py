@@ -23,7 +23,8 @@ class ScrapyMgr(object):
             "dry_run_only": False,
             "finance_root_folderpath": CMN.DEF.CSV_ROOT_FOLDERPATH,
             "config_filename": CMN.DEF.FINANCE_SCRAPY_CONF_FILENAME,
-            "max_data_count": None
+            "max_data_count": None,
+            "time_unit_filter": None,
         }
         self.xcfg.update(cfg)
 
@@ -73,6 +74,30 @@ class ScrapyMgr(object):
         # CMN.FUNC.delete_finance_data_folder(self.__get_finance_root_folderpath(finance_root_folderpath), company_group_number=-1)
         # CMN.FUNC.delete_finance_stock_data_folders(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize)
         CMN.FUNC.remove_finance_file_system(self.__get_finance_root_folderpath(finance_root_folderpath), self.__get_company_profile().CompanyGroupSize, need_field_description=True)
+
+
+    def __check_time_unit_filter(self, method_index):
+        # import pdb; pdb.set_trace()
+        if self.xcfg["time_unit_filter"] is None:
+            return True
+        data_time_unit = CMN.DEF.SCRAPY_DATA_TIME_UNIT[method_index]
+        time_unit_str = self.xcfg["time_unit_filter"]
+        is_greater_than = False
+        if self.xcfg["time_unit_filter"].startswith("gt_"):
+            is_greater_than = True
+            time_unit_str = time_unit_str.split("_")[1]
+        time_unit_str_index = None
+        try:
+            time_unit_str_index = CMN.DEF.DATA_TIME_UNIT_DESCRIPTION.index(time_unit_str.capitalize())
+        except ValueError as e:
+            g_logger.debug("Incorrect time unit string: %s" % self.xcfg["time_unit_filter"])
+        if is_greater_than:
+            if data_time_unit > time_unit_str_index:
+                return True
+        else:
+            if data_time_unit == time_unit_str_index:
+                return True
+        return False
 
 
 
@@ -209,11 +234,17 @@ class ScrapyMgr(object):
         }
 
         # import pdb; pdb.set_trace()
+        first_scrapy = True
         for i, method_index in enumerate(self.method_index_list):
-            if i != 0:
+            if not self.__check_time_unit_filter(method_index):
+                g_logger.debug("Skip scrapping: %s[%s]......" % (CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index], CMN.DEF.DATA_TIME_UNIT_DESCRIPTION[CMN.DEF.SCRAPY_DATA_TIME_UNIT[method_index]]))
+                continue
+            if not first_scrapy:
                 sleep_time = 5
                 g_logger.debug("Sleep %d seconds before scraping %s......" % (sleep_time, CMN.DEF.SCRAPY_METHOD_DESCRIPTION[method_index]))
                 time.sleep(sleep_time)
+            if first_scrapy:
+                first_scrapy = False
             if CMN.FUNC.scrapy_method_need_select_class(method_index):
 # Check the field description file exist
                 if not self.check_csv_field_description_exist(method_index, self.xcfg['finance_root_folderpath']):
