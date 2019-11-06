@@ -22,6 +22,11 @@ STATEMENT_DOG_SHEET_INTERVAL_SELF_DEFINE = 3
 PRINT_SCRAPY = True
 
 
+###############################################
+### THIS WEBSITE IS NOT SUITABLE FOR SCRAPY ###
+### IT RESTRICTS THE SCRAPY TIMES EVERY DAY ###
+###############################################
+
 def __statementdog_menu_title(driver, menu_title_index):
 	elements = driver.find_elements_by_class_name("menu-title")
 	elements[menu_title_index].click()

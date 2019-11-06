@@ -23,8 +23,27 @@ check_param_time_cnt = 0
 check_param_time_param_first = None
 set_combination_param = False
 
-def show_usage_and_exit():
-    print "=========================== Usage ==========================="
+SHOW_USAGE_ALL = 0
+SHOW_USAGE_AFTER_EXECUTION = 1
+SHOW_USAGE_SCRAPY_ARGUMENT = 2
+SHOW_USAGE_COMBINATION_ARGUMENT = 3
+SHOW_USAGE_SIZE =  4
+SHOW_USAGE_BIT_ALL = 0x1
+SHOW_USAGE_BIT_AFTER_EXECUTION = 0x1 << 1
+SHOW_USAGE_BIT_SCRAPY_ARGUMENT = 0x1 << 2
+SHOW_USAGE_BIT_COMBINATION_ARGUMENT = 0x1 << 3
+SHOW_USAGE_BIT_LIST = [
+    SHOW_USAGE_BIT_ALL,
+    SHOW_USAGE_BIT_AFTER_EXECUTION,
+    SHOW_USAGE_BIT_SCRAPY_ARGUMENT,
+    SHOW_USAGE_BIT_COMBINATION_ARGUMENT,
+]
+# SHOW_USAGE_MASK_ALL = SHOW_USAGE_BIT_ALL
+SHOW_USAGE_MASK_AFTER_EXECUTION = (SHOW_USAGE_BIT_AFTER_EXECUTION |SHOW_USAGE_BIT_ALL)
+SHOW_USAGE_MASK_SCRAPY_ARGUMENT = (SHOW_USAGE_BIT_SCRAPY_ARGUMENT |SHOW_USAGE_BIT_ALL)
+SHOW_USAGE_MASK_COMBINATION_ARGUMENT = (SHOW_USAGE_BIT_COMBINATION_ARGUMENT |SHOW_USAGE_BIT_ALL)
+
+def show_usage_of_after_execution():
     print "-h | --help\nDescription: The usage\nCaution: Ignore other parameters when set\n"
     print "--update_workday_calendar\nDescription: Update the workday calendar only\nCaution: Ignore other parameters when set\n"
     print "--show_workday_calendar_range\nDescription: Show the date range of the workday calendar only\nCaution: The canlendar is updated before display. Ignore other parameters when set\n"
@@ -34,7 +53,9 @@ def show_usage_and_exit():
     print "--remove_company_data\nDescription: Remove the specific company data in the dataset\nCaution: Ignore other parameters when set\n"
     print "--show_scrapy_method_metadata\nDescription: Show the metadata of the scrapy method\nCaution: Ignore other parameters when set\n"
     print "--update_csv_field\nDescription: Update the CSV file description\n"
-    print ""
+
+
+def show_usage_of_scrapy_argument():
     print "--no_scrapy\nDescription: Don't scrape Web data\n"
     print "--reserve_old\nDescription: Reserve the old destination finance folders if exist\nDefault exmaples: %s, %s\n" % (CMN.DEF.CSV_ROOT_FOLDERPATH, CMN.DEF.CSV_DST_MERGE_ROOT_FOLDERPATH)
     print "--append_before\nDescription: Update the earlier scrapy data into database\n"
@@ -76,7 +97,9 @@ def show_usage_and_exit():
     print ""
     print "--max_data_count\nDescription: Only scrape the latest N data\n"
     print "--enable_company_not_found_exception\nDescription: Enable the mechanism that the exception is rasied while encoutering the unknown company code number\n"
-# Combination argument
+
+
+def show_usage_of_combination_argument():
     print "Combination argument:\n Caution: Exclusive. Only the first combination argument takes effect. Some related arguments may be overwriten"
     print "--update_config_from_filename\nDescription: Update dataset from config file\nCaution: This arugment is equal to the argument combination as below: --finance_folderpath %s --reserve_old --config_from_filename xxx\n" % GV.FINANCE_DATASET_DATA_FOLDERPATH
     print "*** Scrapy Method ***"
@@ -101,6 +124,22 @@ def show_usage_and_exit():
         print "--update_company_{0}_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are equal to {0}".format(time_unit_description)
         print "--update_gt_{0}_methods\nDescription: Update dataset of market methods where the time units are greater than {0}".format(time_unit_description)
         print "--update_company_gt_{0}_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are greater than {0}".format(time_unit_description)
+
+
+def show_usage_and_exit(show_usage_bit=SHOW_USAGE_BIT_ALL):
+    print "=========================== Usage ==========================="
+# Exit after execution
+    if show_usage_bit & SHOW_USAGE_MASK_AFTER_EXECUTION:
+        show_usage_of_after_execution()
+        print ""
+# Scrapy argument
+    if show_usage_bit & SHOW_USAGE_MASK_SCRAPY_ARGUMENT:
+        show_usage_of_scrapy_argument()
+        print ""
+# Combination argument
+    if show_usage_bit & SHOW_USAGE_MASK_COMBINATION_ARGUMENT:
+        show_usage_of_combination_argument()
+        print ""
     print "============================================================="
     sys.exit(0)
 
@@ -131,6 +170,7 @@ def init_param():
     # import pdb; pdb.set_trace()
     param_cfg["silent"] = False
     param_cfg["help"] = False
+    param_cfg["show_help_bit"] = SHOW_USAGE_BIT_ALL
     param_cfg["update_workday_calendar"] = False
     param_cfg["show_workday_calendar_range"] = False
     param_cfg["show_data_time_range"] = False
@@ -182,7 +222,11 @@ def parse_param():
     while index < argc:
         if not sys.argv[index].startswith('-'):
             show_error_and_exit("Incorrect Parameter format: %s" % sys.argv[index])
-        if re.match("(-h|--help)", sys.argv[index]):
+        if re.match("(-hs|--help_short)", sys.argv[index]):
+            param_cfg["help"] = True
+            param_cfg["show_help_bit"] = SHOW_USAGE_BIT_LIST[int(sys.argv[index + 1])]
+            index_offset = 2
+        elif re.match("(-h|--help)", sys.argv[index]):
             param_cfg["help"] = True
             index_offset = 1
         elif re.match("--update_workday_calendar", sys.argv[index]):
@@ -701,7 +745,7 @@ if __name__ == "__main__":
 # Check the parameters for the manager
     check_param()
     if param_cfg["help"]:
-        show_usage_and_exit()
+        show_usage_and_exit(param_cfg["show_help_bit"])
     if param_cfg["update_workday_calendar"]:
         update_workday_calendar_and_exit()
     if param_cfg["show_workday_calendar_range"]:

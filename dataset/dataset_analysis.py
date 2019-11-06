@@ -269,7 +269,11 @@ def check_value_investment(company_number):
 # yearly financial ratio
     df_yearly_financial_ratio, _ = DS_LD.load_yearly_financial_ratio_history(company_number)
     df_yearly_financial_ratio_len = len(df_yearly_financial_ratio)
+# eps growth rate
+    df_eps_growth_rate, _ = DS_LD.load_yearly_financial_ratio_history(company_number)
+    df_eps_growth_rate_len = len(df_eps_growth_rate)
 
+    # import pdb; pdb.set_trace()
 # stock price
     stock_price_row_index = df_stock_price.index[-1]
     stock_price_row_data = df_stock_price.ix[-1]

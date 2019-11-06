@@ -322,7 +322,7 @@ def load_dividend_history(company_number):
     new_columns={
         ('%02d01' % CMN.DEF.SCRAPY_METHOD_DIVIDEND_INDEX): 'cash dividend', 
         ('%02d04' % CMN.DEF.SCRAPY_METHOD_DIVIDEND_INDEX): 'stock dividend', 
-    	('%02d05' % CMN.DEF.SCRAPY_METHOD_DIVIDEND_INDEX): 'dividend', 
+        ('%02d05' % CMN.DEF.SCRAPY_METHOD_DIVIDEND_INDEX): 'dividend', 
     }
     df.rename(columns=new_columns, inplace=True)
     return df, column_description_list
@@ -373,6 +373,7 @@ def load_quarterly_financial_ratio_history(company_number):
 
 def load_yearly_financial_ratio_history(company_number):
 	return __load_financial_ratio_history(company_number, CMN.DEF.SCRAPY_METHOD_YEARLY_FINANCIAL_RATIO_INDEX)
+
 
 
 def load_top10_oi_history():

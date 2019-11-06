@@ -27,6 +27,11 @@ STATEMENT_DOG_PASSWORD = "ntza00010"
 PRINT_SCRAPY = True
 
 
+###############################################
+### THIS WEBSITE IS NOT SUITABLE FOR SCRAPY ###
+### IT RESTRICTS THE SCRAPY TIMES EVERY DAY ###
+###############################################
+
 def _statementdog_login(driver):
     # driver.get("http://www.statementdog.com/analysis")
     # time.sleep(3)
@@ -248,6 +253,7 @@ class StatementDogScrapy(ScrapyBase.ScrapyBase):
         self.xcfg = self._update_cfg_dict(cfg)
 
         self.webdriver = None
+        self.need_login = True
 
 
     def __enter__(self):
@@ -263,8 +269,10 @@ class StatementDogScrapy(ScrapyBase.ScrapyBase):
 
     def scrape_web(self, *args, **kwargs):
 # Login
-        self.webdriver.get(self.__STATEMENT_DOG_HOME_URL)
-        _statementdog_login(self.webdriver)
+        if self.need_login:
+            self.need_login = False
+            self.webdriver.get(self.__STATEMENT_DOG_HOME_URL)
+            _statementdog_login(self.webdriver)
 
         url = None
         # import pdb; pdb.set_trace()
