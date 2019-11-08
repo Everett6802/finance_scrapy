@@ -118,12 +118,17 @@ def show_usage_of_combination_argument():
             if can_set_time_range: print "--update_company_%s | --update_company_method%d --time_from ooo\nDescription: Update Older %s\nCaution: This arugment is equal to the argument combination as below: --method %d --finance_folderpath %s --reserve_old --append_before --time_from ooo --company xxxx\n" % (csv_filename, scrapy_method_index, scrapy_method, scrapy_method_index, GV.FINANCE_DATASET_DATA_FOLDERPATH)
     print "--update_methods\nDescription: Update dataset of all market methods"
     print "--update_company_methods\nDescription: Update dataset of all stock methods of specific companies"
-    for time_unit_description in CMN.DEF.DATA_TIME_UNIT_DESCRIPTION:
-        time_unit_description = time_unit_description.lower()
-        print "--update_{0}_methods\nDescription: Update dataset of market methods where the time units are equal to {0}".format(time_unit_description)
-        print "--update_company_{0}_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are equal to {0}".format(time_unit_description)
-        print "--update_gt_{0}_methods\nDescription: Update dataset of market methods where the time units are greater than {0}".format(time_unit_description)
-        print "--update_company_gt_{0}_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are greater than {0}".format(time_unit_description)
+    # for time_unit_description in CMN.DEF.DATA_TIME_UNIT_DESCRIPTION:
+    #     time_unit_description = time_unit_description.lower()
+    #     print "--update_{0}_methods\nDescription: Update dataset of market methods where the time units are equal to {0}".format(time_unit_description)
+    #     print "--update_company_{0}_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are equal to {0}".format(time_unit_description)
+    #     print "--update_gt_{0}_methods\nDescription: Update dataset of market methods where the time units are greater than {0}".format(time_unit_description)
+    #     print "--update_company_gt_{0}_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are greater than {0}".format(time_unit_description)
+    print "--update_(time_unit)_methods\nDescription: Update dataset of market methods where the time units are equal to (time_unit)"
+    print "--update_company_(time_unit)_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are equal to (time_unit)"
+    print "--update_gt_(time_unit)_methods\nDescription: Update dataset of market methods where the time units are greater than (time_unit)"
+    print "--update_company_gt_(time_unit)_methods\nDescription: Update dataset of all stock methods of specific companies where the time units are greater than (time_unit)"
+    print "(time_unit) list: %s" % ", ".join(CMN.DEF.DATA_TIME_UNIT_DESCRIPTION).lower()
 
 
 def show_usage_and_exit(show_usage_bit=SHOW_USAGE_BIT_ALL):

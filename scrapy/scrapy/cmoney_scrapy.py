@@ -27,6 +27,7 @@ PRINT_SCRAPY = False
 
 
 def __parse_data_from_table0_element(table_element, max_data_count=None):
+    # import pdb; pdb.set_trace()
 # Parse the data in the table
     tr_elements = table_element.find_elements_by_tag_name("tr")
 # Parse the data name
@@ -82,7 +83,10 @@ def __parse_data_from_table0_element(table_element, max_data_count=None):
             time_str = "%s-%s" % (td_elements[0].text[0:4], td_elements[0].text[4:])
         data_element_list = [time_str,]
         for td_element in td_elements[1:]:
-            data_element_list.append(td_element.text.replace(",",""))
+            if td_element.text.startswith("--"):
+                data_element_list.append(0.0)
+            else:
+                data_element_list.append(td_element.text.replace(",",""))
         data_list.append(data_element_list)
     # import pdb; pdb.set_trace()
     return (data_list, data_name_list)
@@ -149,7 +153,10 @@ def __parse_data_from_table1_element(table_element, max_data_count=None):
             data_name_list.append(row_list[0])
             sub_row_list = row_list[1:table_column_end_index] if max_data_count is not None else row_list[1:]
             for index, data in enumerate(sub_row_list):
-                data_list[index].append(data.replace(",",""))
+                if data.startswith("--"):
+                    data_list[index].append(0.0)
+                else:
+                    data_list[index].append(data.replace(",",""))
     # import pdb; pdb.set_trace()
     return (data_list, data_name_list)
 

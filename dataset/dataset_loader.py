@@ -375,6 +375,28 @@ def load_yearly_financial_ratio_history(company_number):
 	return __load_financial_ratio_history(company_number, CMN.DEF.SCRAPY_METHOD_YEARLY_FINANCIAL_RATIO_INDEX)
 
 
+def load_quarterly_financial_ratio_growth_rate_history(company_number):
+    df, column_description_list = load_stock_hybrid(CMN.DEF.SCRAPY_METHOD_QUARTERLY_FINANCIAL_RATIO_GROWTH_RATE_INDEX, company_number)
+    # import pdb; pdb.set_trace()
+# "每股稅後盈餘季成長率", "每股稅後盈餘年成長率'
+    new_columns={
+        ('%02d07' % CMN.DEF.SCRAPY_METHOD_QUARTERLY_FINANCIAL_RATIO_GROWTH_RATE_INDEX): 'eps quarterly growth rate', 
+        ('%02d14' % CMN.DEF.SCRAPY_METHOD_QUARTERLY_FINANCIAL_RATIO_GROWTH_RATE_INDEX): 'eps yearly growth rate', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+    return df, column_description_list
+
+
+def load_yearly_financial_ratio_growth_rate_history(company_number):
+    df, column_description_list = load_stock_hybrid(CMN.DEF.SCRAPY_METHOD_YEARLY_FINANCIAL_RATIO_GROWTH_RATE_INDEX, company_number)
+    # import pdb; pdb.set_trace()
+# "每股稅後盈餘年成長率'
+    new_columns={
+        ('%02d07' % CMN.DEF.SCRAPY_METHOD_YEARLY_FINANCIAL_RATIO_GROWTH_RATE_INDEX): 'eps yearly growth rate', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+    return df, column_description_list
+
 
 def load_top10_oi_history():
     # import pdb; pdb.set_trace()

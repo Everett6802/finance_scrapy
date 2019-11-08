@@ -4,6 +4,7 @@ import numpy as np
 import pandas as pd
 
 from scrapy import common as CMN
+import scrapy.libs.company_profile as CompanyProfile
 import common_definition as DS_CMN_DEF
 # import common_variable as DS_CMN_VAR
 import common_function as DS_CMN_FUNC
@@ -245,6 +246,46 @@ def find_future_index_amplitude_statistics(show_amplitude=True):
     #     DS_VS.show_plot()
 
 
+def __check_growth(df, df_len, field_name, positive_growth_thres=9.99999, negative_growth_thres=-9.99999):
+    latest_row_index = df.index[-1]
+    latest_row_data = df.ix[-1]
+    latest_row_growth = latest_row_data[field_name]
+    check_growth_msg = None
+    if latest_row_growth > positive_growth_thres:
+        negative2positive_growth = False
+        positive_growth_cnt = 0
+        for i in range(0, df_len):
+            index = -1 * (i + 1)
+            if df.ix[index][field_name] > positive_growth_thres:
+                positive_growth_cnt += 1
+            else:
+                break
+        if positive_growth_cnt == 1 and df_len >= 2:
+            if df.ix[-2][field_name] < 0.00000:
+                negative2positive_growth = True
+        if negative2positive_growth:
+            check_growth_msg = "\nSwitch to Postive Growth\n"
+        elif positive_growth_cnt > 1:
+            check_growth_msg = "\nConsecutive Postive Growth: %d\n" % positive_growth_cnt
+    elif latest_row_growth < negative_growth_thres:
+        positive2negative_growth = False
+        negative_growth_cnt = 0
+        for i in range(0, df_len):
+            index = -1 * (i + 1)
+            if df.ix[index][field_name] < negative_growth_thres:
+                negative_growth_cnt += 1
+            else:
+                break
+        if negative_growth_cnt == 1 and df_len >= 2:
+            if df.ix[-2][field_name] > 0.00000:
+                positive2negative_growth = True
+        if positive2negative_growth:
+            check_growth_msg = "\nSwitch to Negative Growth\n"
+        elif negative_growth_cnt > 1:
+            check_growth_msg = "\nConsecutive Negative Growth: %d\n" % negative_growth_cnt
+    return check_growth_msg
+
+
 def check_value_investment(company_number):
     # import pdb; pdb.set_trace()
 # Load data
@@ -269,16 +310,31 @@ def check_value_investment(company_number):
 # yearly financial ratio
     df_yearly_financial_ratio, _ = DS_LD.load_yearly_financial_ratio_history(company_number)
     df_yearly_financial_ratio_len = len(df_yearly_financial_ratio)
-# eps growth rate
-    df_eps_growth_rate, _ = DS_LD.load_yearly_financial_ratio_history(company_number)
-    df_eps_growth_rate_len = len(df_eps_growth_rate)
+# quarterly financial ratio growth rate
+    df_quarterly_financial_ratio_growth_rate, _ = DS_LD.load_quarterly_financial_ratio_growth_rate_history(company_number)
+    df_quarterly_financial_ratio_growth_rate_len = len(df_quarterly_financial_ratio_growth_rate)
+# yearly financial ratio growth rate
+    df_yearly_financial_ratio_growth_rate, _ = DS_LD.load_yearly_financial_ratio_growth_rate_history(company_number)
+    df_yearly_financial_ratio_growth_rate_len = len(df_yearly_financial_ratio_growth_rate)
 
     # import pdb; pdb.set_trace()
 # stock price
+    company_profile_element_list = CompanyProfile.CompanyProfile.Instance().lookup_company_profile(company_number)
+    specific_company_profile_string = " ".join(
+        [
+            company_number,
+            company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_COMPANY_NAME],
+            company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_MARKET_TYPE],
+            company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY],
+            company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER],
+        ]
+    )
     stock_price_row_index = df_stock_price.index[-1]
     stock_price_row_data = df_stock_price.ix[-1]
-    print "%s" % stock_price_row_index.strftime('%Y-%m-%d')
+    print "%s  %s\n" % (stock_price_row_index.strftime('%Y-%m-%d'), specific_company_profile_string)
+    print "close/change/trade volume"
     print "%s   %.2f   %d" % (PRICE(stock_price_row_data["close"]), stock_price_row_data["change"], int(stock_price_row_data["trade volume (share)"]/1000))
+    print ""
     latest_four_quarterly_eps_sum = df_quarterly_financial_ratio["earnings per share"].ix[-4:].sum()
     # import pdb; pdb.set_trace()
     if latest_four_quarterly_eps_sum > 0.000:
@@ -287,8 +343,9 @@ def check_value_investment(company_number):
         # quarterly_financial_ratio_row_index = df_quarterly_financial_ratio.index[-1]
         quarterly_financial_ratio_row_data = df_quarterly_financial_ratio.ix[-1]
         revenue_row_data = df_revenue.ix[-1]
+        print "dividend yield/PER/PBR/debt ratio/monthly MOM growth/monthly YOY growth/gross profit margin/EPS/latest four quarterly eps sum"
         print "%.2f   %.2f   %.2f   %.2f%%   %.1f%%   %.1f%%   %.2f%%   %.2f   %.2f" % ((100.0 * dividend_row_data["dividend"] / stock_price_row_data["close"]), (stock_price_row_data["close"] / latest_four_quarterly_eps_sum), (stock_price_row_data["close"] / quarterly_financial_ratio_row_data["net asset value per share"]), quarterly_financial_ratio_row_data["debt ratio"], revenue_row_data["monthly MOM growth"], revenue_row_data["monthly YOY growth"], quarterly_financial_ratio_row_data["gross profit margin"], quarterly_financial_ratio_row_data["earnings per share"], latest_four_quarterly_eps_sum)
-    print ""
+        print ""
 # dividend
     last_row_start_index = -1 * min(8, df_dividend_len)
     print "*** Dividend ***"
@@ -299,20 +356,40 @@ def check_value_investment(company_number):
         print "%s: %.1f   %.1f   %.1f" % (row_index.strftime('%Y'), row_data["cash dividend"], row_data["stock dividend"], row_data["dividend"])
     print ""
 # EPS
-    last_row_start_index = -1 * min(8, df_yearly_financial_ratio_len)
+    # import pdb; pdb.set_trace()
+    last_row_start_index = -1 * min(8, df_yearly_financial_ratio_len, df_yearly_financial_ratio_growth_rate_len)
+# Check data alignment
+    assert df_yearly_financial_ratio.index[-1] == df_yearly_financial_ratio_growth_rate.index[-1], "The data time(%d, %d) is NOT idential" % (df_yearly_financial_ratio.index[-1] == df_yearly_financial_ratio_growth_rate.index[-1])
     print "*** Yearly EPS ***"
+    print "EPS/EPS YOY growth"
     for i in range(last_row_start_index, 0):
         row_index = df_yearly_financial_ratio.index[i]
         row_data = df_yearly_financial_ratio.ix[i]
-        print "%s: %.2f" % (row_index.strftime('%Y'), row_data["earnings per share"])
-    print ""
-    last_row_start_index = -1 * min(8, df_quarterly_financial_ratio_len)
+        row_index1 = df_yearly_financial_ratio_growth_rate.index[i]
+        row_data1 = df_yearly_financial_ratio_growth_rate.ix[i]
+        print "%s: %.2f %.2f%%" % (row_index.strftime('%Y'), row_data["earnings per share"], row_data1["eps yearly growth rate"])
+    # import pdb; pdb.set_trace()
+    yearly_eps_growth_msg = __check_growth(df_yearly_financial_ratio_growth_rate, df_yearly_financial_ratio_growth_rate_len, "eps yearly growth rate")
+    if yearly_eps_growth_msg is not None:
+        print yearly_eps_growth_msg
+    else:
+        print ""
+    # import pdb; pdb.set_trace()
+    last_row_start_index = -1 * min(8, df_quarterly_financial_ratio_len, df_quarterly_financial_ratio_growth_rate_len)
     print "*** Quarterly EPS ***"
+    print "EPS/EPS YOY growth"
     for i in range(last_row_start_index, 0):
         row_index = df_quarterly_financial_ratio.index[i]
         row_data = df_quarterly_financial_ratio.ix[i]
-        print "%dq%d: %.2f" % (row_index.year, row_index.quarter, row_data["earnings per share"])
-    print ""
+        row_index1 = df_quarterly_financial_ratio_growth_rate.index[i]
+        row_data1 = df_quarterly_financial_ratio_growth_rate.ix[i]
+        print "%dq%d: %.2f %.2f%%" % (row_index.year, row_index.quarter, row_data["earnings per share"], row_data1["eps yearly growth rate"])
+    # import pdb; pdb.set_trace()
+    quarterly_eps_growth_msg = __check_growth(df_quarterly_financial_ratio_growth_rate, df_quarterly_financial_ratio_growth_rate_len, "eps yearly growth rate")
+    if quarterly_eps_growth_msg is not None:
+        print quarterly_eps_growth_msg
+    else:
+        print ""
 # revenue
     # import pdb; pdb.set_trace()
     last_row_start_index = -1 * min(12, df_revenue_len)
@@ -322,45 +399,9 @@ def check_value_investment(company_number):
         row_index = df_revenue.index[i]
         row_data = df_revenue.ix[i]
         print "%s: %.1f   %.1f%%   %.1f%%" % (row_index.strftime('%Y-%m'), row_data["monthly revenue"], row_data["monthly MOM growth"], row_data["monthly YOY growth"])
-
-    latest_row_index = df_revenue.index[-1]
-    latest_row_data = df_revenue.ix[-1]
-    latest_row_yoy_growth = latest_row_data["monthly YOY growth"]
-    revenue_msg = None
-    if latest_row_yoy_growth > 9.99999:
-        negative2positive_growth = False
-        positive_growth_cnt = 0
-        for i in range(0, df_revenue_len):
-            index = -1 * (i + 1)
-            if df_revenue.ix[index]["monthly YOY growth"] > 9.99999:
-                positive_growth_cnt += 1
-            else:
-                break
-        if positive_growth_cnt == 1 and df_revenue_len >= 2:
-            if latest_row_data[-2]["monthly YOY growth"] < 0.00000:
-                negative2positive_growth = True
-        if negative2positive_growth:
-            revenue_msg = "\nSwitch to Postive Growth\n"
-        elif positive_growth_cnt > 1:
-            revenue_msg = "\nConsecutive Postive Growth: %d\n" % positive_growth_cnt
-    elif latest_row_yoy_growth < -9.99999:
-        positive2negative_growth = False
-        negative_growth_cnt = 0
-        for i in range(0, df_revenue_len):
-            index = -1 * (i + 1)
-            if df_revenue.ix[index]["monthly YOY growth"] < -9.99999:
-                negative_growth_cnt += 1
-            else:
-                break
-        if negative_growth_cnt == 1 and df_revenue_len >= 2:
-            if latest_row_data[-2]["monthly YOY growth"] > 0.00000:
-                positive2negative_growth = True
-        if positive2negative_growth:
-            revenue_msg = "\nSwitch to Negative Growth\n"
-        elif negative_growth_cnt > 1:
-            revenue_msg = "\nConsecutive Negative Growth: %d\n" % negative_growth_cnt
-    if revenue_msg is not None:
-        print revenue_msg
+    revenue_growth_msg = __check_growth(df_revenue, df_revenue_len, "monthly YOY growth")
+    if revenue_growth_msg is not None:
+        print revenue_growth_msg
     else:
         print ""
 
