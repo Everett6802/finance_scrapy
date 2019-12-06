@@ -20,15 +20,13 @@ def show_usage_and_exit():
     print "=========================== Usage ==========================="
     print "-h | --help\nDescription: The usage\nCaution: Ignore other parameters when set\n"
     print "-v | --visualize\nDescription: Visualize the graphes while running script on Jupyter Notebook\n"
-    print "-c | --company\nDescription: The company to be analyzed"
+    print "-c | --company\nDescription: The company list for analysis"
     print "  Format: Company code number (ex. 2347)"
     print ""
     print "-a | --analyze\nDescription: Analyze the dataset for the follow purpose:"
-    print " 0: Find the support and resistance of a company"
-    # print " 1: Find the jump gap of a company"
-    # print " 2: Find the 3/12 monthly YOY revenue growth of a company"
-    print " 1: Check the value investment of a company"
-    print "Default: 0\n"
+    for index, method_description in enumerate(DS.DEF.ANALYZE_METHOD_DESCRITPION):
+        print "  %d: %s" % (index, method_description)
+    print " Default: 0\n"
     # print "--show_relation\nDescription: Show the releation with candle stick\nCation: Only take effect when the analyze argument is 2"
     sys.exit(0)
 
@@ -99,12 +97,12 @@ def parse_param(early_parse=False):
 
 
 def check_param():    
-    if param_cfg["company"] is None:
-        param_cfg["company"] = None
-        show_error_and_exit("The 'company' argument is NOT set")
     if param_cfg['analyze'] is None:
-        param_cfg["analyze"] = DS.DEF.ANALYZE_DATASET_DEFAULT
-        g_logger.info("Set the 'analyze' argument to default: %d" % DS.DEF.ANALYZE_DATASET_DEFAULT)
+        param_cfg["analyze"] = DS.DEF.ANALYZE_METHOD_DEFAULT
+        g_logger.info("Set the 'analyze' argument to default: %d" % DS.DEF.ANALYZE_METHOD_DEFAULT)
+    if param_cfg["analyze"] in [DS.DEF.ANALYZE_SHOW_VALUE_INVESTMENT_REPORT, DS.DEF.ANALYZE_EMAIL_VALUE_INVESTMENT_REPORT,]:
+        if param_cfg["company"] is None:
+            show_error_and_exit("The 'company' argument is NOT set")
     # if param_cfg['analyze'] not in [DS.DEF.ANALYZE_DATASET_FIND_312_MONTHLY_YOY_REVENUE_GROWTH,]:
     #     if param_cfg['show_relation']:
     #         param_cfg['show_relation'] = False
@@ -121,34 +119,55 @@ def update_global_variable():
     DV.GLOBAL_VARIABLE_UPDATED = True
 
 
+def analyze_show_value_investment_report(**kwargs):
+    company_number_list = kwargs["company"].split(",")
+    company_number_list_len = len(company_number_list)
+    for index, company_number in enumerate(company_number_list):
+        if index != 0:
+            print "\n################################################################################\n################################################################################\n\n"
+        DS.AS.show_value_investment_report(company_number)
+
+
+def analyze_email_value_investment_report(**kwargs):
+    company_number_list = kwargs["company"].split(",")
+    company_number_list_len = len(company_number_list)
+# Generate the temporary file about the value investment report
+    # import pdb; pdb.set_trace()
+    temporary_filepath = None
+    for index, company_number in enumerate(company_number_list):
+        if index == 0:
+            temporary_filepath = DS.AS.write_value_investment_report(company_number)
+        else:
+            DS.AS.write_value_investment_report(
+                company_number, 
+                file_attribute="a", 
+                splitter="\n--------------------------------------------------------------------------------\n\n"
+            )
+# Email the report
+    # import pdb; pdb.set_trace()
+    with LIBS.MH.MailHandler(address=my_address, password=my_password) as mail_handler:
+        LIBS.MH.MailHandler.parse_value_investment_report(mail_handler, temporary_filepath, )
+        mail_handler.Subject = "Stock Daily Report"
+        mail_handler.send("html")
+    CMN.FUNC.remove_file_if_exist(temporary_filepath)
+
+
 def analyze_and_exit():
     FUNC_PTR_ARRAY = [
-        DS.AS.find_support_resistance, 
+        # DS.AS.find_support_resistance, 
         # DS.AS.find_jump_gap, 
         # DS.AS.find_312_month_yoy_revenue_growth,
-        DS.AS.check_value_investment,
+        analyze_show_value_investment_report,
+        analyze_email_value_investment_report,
     ]
     kwargs = {
-        "company_number": param_cfg["company"],
+        "company": param_cfg["company"],
     }
     (FUNC_PTR_ARRAY[param_cfg["analyze"]])(**kwargs)
     sys.exit(0)
 
 
 if __name__ == "__main__":
-    # # # # DS.AS.find_future_index_amplitude_statistics()
-    # # # print CMN.FUNC.get_week_account_day()
-    # # # print CMN.FUNC.get_month_account_day()
-    # keyday_calendar = LIBS.KC.KeydayCalendar.Instance()
-    # # print keyday_calendar.get_first_keyday(keyday_calendar.TFEI_ACCOUNTING_DAY)
-    # # print keyday_calendar.get_last_keyday(keyday_calendar.TFEI_ACCOUNTING_DAY)
-    # time_start = keyday_calendar.get_first_keyday(keyday_calendar.TFEI_ACCOUNTING_DAY) - 2
-    # time_end = keyday_calendar.get_last_keyday(keyday_calendar.TFEI_ACCOUNTING_DAY) + 3
-    # for time_cur in LIBS.KC.KeydayNearestIterator(keyday_calendar.TFEI_ACCOUNTING_DAY, time_start, time_end):
-    #     print time_cur
-    # import pdb; pdb.set_trace()
-    # sys.exit(0)
-
     # import pdb; pdb.set_trace()
 # Parse the parameters and apply to manager class
     init_param()

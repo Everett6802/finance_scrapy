@@ -5,6 +5,7 @@ import pandas as pd
 
 from scrapy import common as CMN
 import scrapy.libs.company_profile as CompanyProfile
+import scrapy.libs.data_writer as DataWriter
 import common_definition as DS_CMN_DEF
 # import common_variable as DS_CMN_VAR
 import common_function as DS_CMN_FUNC
@@ -264,9 +265,9 @@ def __check_growth(df, df_len, field_name, positive_growth_thres=9.99999, negati
             if df.ix[-2][field_name] < 0.00000:
                 negative2positive_growth = True
         if negative2positive_growth:
-            check_growth_msg = "\nSwitch to Postive Growth\n"
+            check_growth_msg = "\n>>> Switch to Postive Growth <<<\n"
         elif positive_growth_cnt > 1:
-            check_growth_msg = "\nConsecutive Postive Growth: %d\n" % positive_growth_cnt
+            check_growth_msg = "\n>>> Consecutive Postive Growth: %d <<<\n" % positive_growth_cnt
     elif latest_row_growth < negative_growth_thres:
         positive2negative_growth = False
         negative_growth_cnt = 0
@@ -280,13 +281,13 @@ def __check_growth(df, df_len, field_name, positive_growth_thres=9.99999, negati
             if df.ix[-2][field_name] > 0.00000:
                 positive2negative_growth = True
         if positive2negative_growth:
-            check_growth_msg = "\nSwitch to Negative Growth\n"
+            check_growth_msg = "\n>>> Switch to Negative Growth <<<\n"
         elif negative_growth_cnt > 1:
-            check_growth_msg = "\nConsecutive Negative Growth: %d\n" % negative_growth_cnt
+            check_growth_msg = "\n>>> Consecutive Negative Growth: %d <<<\n" % negative_growth_cnt
     return check_growth_msg
 
 
-def check_value_investment(company_number):
+def generate_value_investment_report(company_number, data_writer, simplified_version=False):
     # import pdb; pdb.set_trace()
 # Load data
 # stock price
@@ -328,13 +329,12 @@ def check_value_investment(company_number):
             company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_INDUSTRY],
             company_profile_element_list[CompanyProfile.COMPANY_PROFILE_ENTRY_FIELD_INDEX_GROUP_NUMBER],
         ]
-    )
+    ).encode(CMN.DEF.URL_ENCODING_UTF8)
     stock_price_row_index = df_stock_price.index[-1]
     stock_price_row_data = df_stock_price.ix[-1]
-    print "%s  %s\n" % (stock_price_row_index.strftime('%Y-%m-%d'), specific_company_profile_string)
-    print "close/change/trade volume"
-    print "%s   %.2f   %d" % (PRICE(stock_price_row_data["close"]), stock_price_row_data["change"], int(stock_price_row_data["trade volume (share)"]/1000))
-    print ""
+    data_writer.write("%s  %s\n" % (stock_price_row_index.strftime('%Y-%m-%d'), specific_company_profile_string))
+    data_writer.write("close/change/trade volume")
+    data_writer.write("%s   %.2f   %d\n" % (PRICE(stock_price_row_data["close"]), stock_price_row_data["change"], int(stock_price_row_data["trade volume (share)"]/1000)))
     latest_four_quarterly_eps_sum = df_quarterly_financial_ratio["earnings per share"].ix[-4:].sum()
     # import pdb; pdb.set_trace()
     if latest_four_quarterly_eps_sum > 0.000:
@@ -343,121 +343,141 @@ def check_value_investment(company_number):
         # quarterly_financial_ratio_row_index = df_quarterly_financial_ratio.index[-1]
         quarterly_financial_ratio_row_data = df_quarterly_financial_ratio.ix[-1]
         revenue_row_data = df_revenue.ix[-1]
-        print "dividend yield/PER/PBR/debt ratio/monthly MOM growth/monthly YOY growth/gross profit margin/EPS/latest four quarterly eps sum"
-        print "%.2f   %.2f   %.2f   %.2f%%   %.1f%%   %.1f%%   %.2f%%   %.2f   %.2f" % ((100.0 * dividend_row_data["dividend"] / stock_price_row_data["close"]), (stock_price_row_data["close"] / latest_four_quarterly_eps_sum), (stock_price_row_data["close"] / quarterly_financial_ratio_row_data["net asset value per share"]), quarterly_financial_ratio_row_data["debt ratio"], revenue_row_data["monthly MOM growth"], revenue_row_data["monthly YOY growth"], quarterly_financial_ratio_row_data["gross profit margin"], quarterly_financial_ratio_row_data["earnings per share"], latest_four_quarterly_eps_sum)
-        print ""
+        data_writer.write("dividend yield/PER/PBR/debt ratio/monthly MOM growth/monthly YOY growth/gross profit margin/EPS/latest four quarterly eps sum")
+        data_writer.write("%.2f   %.2f   %.2f   %.2f%%   %.1f%%   %.1f%%   %.2f%%   %.2f   %.2f" % ((100.0 * dividend_row_data["dividend"] / stock_price_row_data["close"]), (stock_price_row_data["close"] / latest_four_quarterly_eps_sum), (stock_price_row_data["close"] / quarterly_financial_ratio_row_data["net asset value per share"]), quarterly_financial_ratio_row_data["debt ratio"], revenue_row_data["monthly MOM growth"], revenue_row_data["monthly YOY growth"], quarterly_financial_ratio_row_data["gross profit margin"], quarterly_financial_ratio_row_data["earnings per share"], latest_four_quarterly_eps_sum))
+        data_writer.newline()
+    if simplified_version:
+        return
 # dividend
     last_row_start_index = -1 * min(8, df_dividend_len)
-    print "*** Dividend ***"
-    print "cash dividend/stock dividend/dividend"
+    data_writer.write("*** Dividend ***")
+    data_writer.write("cash dividend/stock dividend/dividend")
     for i in range(last_row_start_index, 0):
         row_index = df_dividend.index[i]
         row_data = df_dividend.ix[i]
-        print "%s: %.1f   %.1f   %.1f" % (row_index.strftime('%Y'), row_data["cash dividend"], row_data["stock dividend"], row_data["dividend"])
-    print ""
+        data_writer.write("%s: %.1f   %.1f   %.1f" % (row_index.strftime('%Y'), row_data["cash dividend"], row_data["stock dividend"], row_data["dividend"]))
+    data_writer.newline()
 # EPS
     # import pdb; pdb.set_trace()
     last_row_start_index = -1 * min(8, df_yearly_financial_ratio_len, df_yearly_financial_ratio_growth_rate_len)
 # Check data alignment
     assert df_yearly_financial_ratio.index[-1] == df_yearly_financial_ratio_growth_rate.index[-1], "The data time(%d, %d) is NOT idential" % (df_yearly_financial_ratio.index[-1] == df_yearly_financial_ratio_growth_rate.index[-1])
-    print "*** Yearly EPS ***"
-    print "EPS/EPS YOY growth"
+    data_writer.write("*** Yearly EPS ***")
+    data_writer.write("EPS/EPS YOY growth")
     for i in range(last_row_start_index, 0):
         row_index = df_yearly_financial_ratio.index[i]
         row_data = df_yearly_financial_ratio.ix[i]
         row_index1 = df_yearly_financial_ratio_growth_rate.index[i]
         row_data1 = df_yearly_financial_ratio_growth_rate.ix[i]
-        print "%s: %.2f %.2f%%" % (row_index.strftime('%Y'), row_data["earnings per share"], row_data1["eps yearly growth rate"])
+        data_writer.write("%s: %.2f %.2f%%" % (row_index.strftime('%Y'), row_data["earnings per share"], row_data1["eps yearly growth rate"]))
     # import pdb; pdb.set_trace()
     yearly_eps_growth_msg = __check_growth(df_yearly_financial_ratio_growth_rate, df_yearly_financial_ratio_growth_rate_len, "eps yearly growth rate")
     if yearly_eps_growth_msg is not None:
-        print yearly_eps_growth_msg
+        data_writer.write(yearly_eps_growth_msg)
     else:
-        print ""
+        data_writer.newline()
     # import pdb; pdb.set_trace()
     last_row_start_index = -1 * min(8, df_quarterly_financial_ratio_len, df_quarterly_financial_ratio_growth_rate_len)
-    print "*** Quarterly EPS ***"
-    print "EPS/EPS YOY growth"
+    data_writer.write("*** Quarterly EPS ***")
+    data_writer.write("EPS/EPS YOY growth")
     for i in range(last_row_start_index, 0):
         row_index = df_quarterly_financial_ratio.index[i]
         row_data = df_quarterly_financial_ratio.ix[i]
         row_index1 = df_quarterly_financial_ratio_growth_rate.index[i]
         row_data1 = df_quarterly_financial_ratio_growth_rate.ix[i]
-        print "%dq%d: %.2f %.2f%%" % (row_index.year, row_index.quarter, row_data["earnings per share"], row_data1["eps yearly growth rate"])
+        data_writer.write("%dq%d: %.2f %.2f%%" % (row_index.year, row_index.quarter, row_data["earnings per share"], row_data1["eps yearly growth rate"]))
     # import pdb; pdb.set_trace()
     quarterly_eps_growth_msg = __check_growth(df_quarterly_financial_ratio_growth_rate, df_quarterly_financial_ratio_growth_rate_len, "eps yearly growth rate")
     if quarterly_eps_growth_msg is not None:
-        print quarterly_eps_growth_msg
+        data_writer.write(quarterly_eps_growth_msg)
     else:
-        print ""
+        data_writer.newline()
 # revenue
     # import pdb; pdb.set_trace()
     last_row_start_index = -1 * min(12, df_revenue_len)
-    print "*** Revenue ***"
-    print "monthly revenue/monthly MOM growth/monthly YOY growth"
+    data_writer.write("*** Revenue ***")
+    data_writer.write("monthly revenue/monthly MOM growth/monthly YOY growth")
     for i in range(last_row_start_index, 0):
         row_index = df_revenue.index[i]
         row_data = df_revenue.ix[i]
-        print "%s: %.1f   %.1f%%   %.1f%%" % (row_index.strftime('%Y-%m'), row_data["monthly revenue"], row_data["monthly MOM growth"], row_data["monthly YOY growth"])
+        data_writer.write("%s: %.1f   %.1f%%   %.1f%%" % (row_index.strftime('%Y-%m'), row_data["monthly revenue"], row_data["monthly MOM growth"], row_data["monthly YOY growth"]))
     revenue_growth_msg = __check_growth(df_revenue, df_revenue_len, "monthly YOY growth")
     if revenue_growth_msg is not None:
-        print revenue_growth_msg
+        data_writer.write(revenue_growth_msg)
     else:
-        print ""
+        data_writer.newline()
 
 # cash flow statement
     # import pdb; pdb.set_trace()
     last_row_start_index = -1 * min(8, df_yearly_cashflow_statement_len)
-    print "*** Yearly Cash Flow Statement ***"
-    print "cash flow from operating activities/cash flow from investing activities/cash flow from financing activities/net cash flow/free cash flow"
+    data_writer.write("*** Yearly Cash Flow Statement ***")
+    data_writer.write("cash flow from operating activities/cash flow from investing activities/cash flow from financing activities/net cash flow/free cash flow")
     for i in range(last_row_start_index, 0):
         row_index = df_yearly_cashflow_statement.index[i]
         row_data = df_yearly_cashflow_statement.ix[i]
 # row_index.show_stock_price_statistics_fiterime('%Yq%q') doesn't work
-        print "%s: %.1f   %.1f   %.1f   %.1f   %.1f" % (row_index.strftime('%Y'), row_data["cash flow from operating activities"], row_data["cash flow from investing activities"], row_data["cash flow from financing activities"],  row_data["net cash flow"], row_data["free cash flow"])
-    print ""
+        data_writer.write("%s: %.1f   %.1f   %.1f   %.1f   %.1f" % (row_index.strftime('%Y'), row_data["cash flow from operating activities"], row_data["cash flow from investing activities"], row_data["cash flow from financing activities"],  row_data["net cash flow"], row_data["free cash flow"]))
+    data_writer.newline()
     last_row_start_index = -1 * min(8, df_quarterly_cashflow_statement_len)
-    print "*** Quarterly Cash Flow Statement ***"
-    print "cash flow from operating activities/cash flow from investing activities/cash flow from financing activities/net cash flow/free cash flow"
+    data_writer.write("*** Quarterly Cash Flow Statement ***")
+    data_writer.write("cash flow from operating activities/cash flow from investing activities/cash flow from financing activities/net cash flow/free cash flow")
     for i in range(last_row_start_index, 0):
         row_index = df_quarterly_cashflow_statement.index[i]
         row_data = df_quarterly_cashflow_statement.ix[i]
 # row_index.show_stock_price_statistics_fiterime('%Yq%q') doesn't work
-        print "%dq%d: %.1f   %.1f   %.1f   %.1f   %.1f" % (row_index.year, row_index.quarter, row_data["cash flow from operating activities"], row_data["cash flow from investing activities"], row_data["cash flow from financing activities"],  row_data["net cash flow"], row_data["free cash flow"])
-    print ""
+        data_writer.write("%dq%d: %.1f   %.1f   %.1f   %.1f   %.1f" % (row_index.year, row_index.quarter, row_data["cash flow from operating activities"], row_data["cash flow from investing activities"], row_data["cash flow from financing activities"],  row_data["net cash flow"], row_data["free cash flow"]))
+    data_writer.newline()
 
 # ROE
     last_row_start_index = -1 * min(8, df_yearly_financial_ratio_len)
-    print "*** Yearly ROE ***"
-    print "ROE/net profit margin/total assets turnover ratio"
+    data_writer.write("*** Yearly ROE ***")
+    data_writer.write("ROE/net profit margin/total assets turnover ratio")
     for i in range(last_row_start_index, 0):
         row_index = df_yearly_financial_ratio.index[i]
         row_data = df_yearly_financial_ratio.ix[i]
-        print "%s: %.2f   %.2f%%   %.2f" % (row_index.strftime('%Y'), row_data["return on equity"], row_data["net profit margin"], row_data["total assets turnover ratio"])
-    print ""
+        data_writer.write("%s: %.2f   %.2f%%   %.2f" % (row_index.strftime('%Y'), row_data["return on equity"], row_data["net profit margin"], row_data["total assets turnover ratio"]))
+    data_writer.newline()
     last_row_start_index = -1 * min(8, df_quarterly_financial_ratio_len)
-    print "*** Quarterly ROE ***"
-    print "ROE/net profit margin/total assets turnover ratio"
+    data_writer.write("*** Quarterly ROE ***")
+    data_writer.write("ROE/net profit margin/total assets turnover ratio")
     for i in range(last_row_start_index, 0):
         row_index = df_quarterly_financial_ratio.index[i]
         row_data = df_quarterly_financial_ratio.ix[i]
-        print "%dq%d: %.2f   %.2f%%   %.2f" % (row_index.year, row_index.quarter, row_data["return on equity"], row_data["net profit margin"], row_data["total assets turnover ratio"])
-    print ""
+        data_writer.write("%dq%d: %.2f   %.2f%%   %.2f" % (row_index.year, row_index.quarter, row_data["return on equity"], row_data["net profit margin"], row_data["total assets turnover ratio"]))
+    data_writer.newline()
 
 # financial statement
     last_row_start_index = -1 * min(8, df_yearly_financial_ratio_len)
-    print "*** Yearly Financial Statement ***"
-    print "net asset value per share/gross profit margin/operating profit margin/earnings per share/debt ratio"
+    data_writer.write("*** Yearly Financial Statement ***")
+    data_writer.write("net asset value per share/gross profit margin/operating profit margin/earnings per share/debt ratio")
     for i in range(last_row_start_index, 0):
         row_index = df_yearly_financial_ratio.index[i]
         row_data = df_yearly_financial_ratio.ix[i]
-        print "%s: %.2f   %.2f%%   %.2f%%   %.2f   %.2f%%" % (row_index.strftime('%Y'), row_data["net asset value per share"], row_data["gross profit margin"], row_data["operating profit margin"], row_data["earnings per share"], row_data["debt ratio"])
-    print ""
+        data_writer.write("%s: %.2f   %.2f%%   %.2f%%   %.2f   %.2f%%" % (row_index.strftime('%Y'), row_data["net asset value per share"], row_data["gross profit margin"], row_data["operating profit margin"], row_data["earnings per share"], row_data["debt ratio"]))
+    data_writer.newline()
     last_row_start_index = -1 * min(8, df_quarterly_financial_ratio_len)
-    print "*** Quarterly Financial Statement ***"
-    print "net asset value per share/gross profit margin/operating profit margin/earnings per share/debt ratio"
+    data_writer.write("*** Quarterly Financial Statement ***")
+    data_writer.write("net asset value per share/gross profit margin/operating profit margin/earnings per share/debt ratio")
     for i in range(last_row_start_index, 0):
         row_index = df_quarterly_financial_ratio.index[i]
         row_data = df_quarterly_financial_ratio.ix[i]
-        print "%dq%d: %.2f   %.2f%%   %.2f%%   %.2f   %.2f%%" % (row_index.year, row_index.quarter, row_data["net asset value per share"], row_data["gross profit margin"], row_data["operating profit margin"], row_data["earnings per share"], row_data["debt ratio"])
-    print ""
+        data_writer.write("%dq%d: %.2f   %.2f%%   %.2f%%   %.2f   %.2f%%" % (row_index.year, row_index.quarter, row_data["net asset value per share"], row_data["gross profit margin"], row_data["operating profit margin"], row_data["earnings per share"], row_data["debt ratio"]))
+    data_writer.newline()
+
+
+def show_value_investment_report(company_number, simplified_version=False):
+    with DataWriter.DataWriter() as data_writer:
+        generate_value_investment_report(company_number, data_writer, simplified_version)
+
+
+def write_value_investment_report(company_number, filename=None, folder_path=None, file_attribute="w", splitter=None, simplified_version=False):
+    if filename is None:
+        filename = DS_CMN_DEF.VALUE_INVESTMENT_REPORT_TMP_FILENAME
+    filepath = None
+    with DataWriter.DataWriter(filename, folder_path, file_attribute) as data_writer:
+        if splitter is not None:
+            data_writer.write(splitter, newline=False)
+        generate_value_investment_report(company_number, data_writer, simplified_version)
+        filepath = data_writer.FilePath
+
+    return filepath
