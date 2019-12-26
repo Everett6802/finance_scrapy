@@ -16,9 +16,10 @@ g_logger = CMN.LOG.get_logger()
 def show_usage_and_exit():
     print "====================== Usage ======================"
     print "-h --help\nDescription: The usage\nCaution: Ignore other parameters when set"
+# Download the VIX history data manually from the site: http://www.cboe.com/products/vix-index-volatility/vix-options-and-futures/vix-index/vix-historical-data 
     print "--convert_vix\nDescription: Convert VIX history data to the standard dataset format"
     print "--convert_institutional_investor_net_buy_sell\nDescription: Convert Institutional Investor Net Buy Sell history data to the standard dataset format"
-    print "  Format: source_filepath destination_filepath (ex. /home/super/Downloadsvixcurrent.csv /home/super/source/finance_dataset/data/market/vix_history.csv)"
+    print "  Format: source_filepath destination_filepath (ex. /home/super/vixcurrent.csv /home/super/source/finance_dataset/data/market/vix_history.csv)"
     sys.exit(0)
 
 
@@ -30,6 +31,7 @@ def show_error_and_exit(errmsg):
 
 
 def convert_vix_and_exit():
+    # import pdb; pdb.set_trace()
     [src_filepath, dst_filepath] = param_cfg["convert_vix"]
     DS.CV.dataset_conversion_vix(src_filepath, dst_filepath)
     sys.exit(0)

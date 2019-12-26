@@ -344,6 +344,8 @@ def generate_value_investment_report(company_number, data_writer, simplified_ver
         quarterly_financial_ratio_row_data = df_quarterly_financial_ratio.ix[-1]
         revenue_row_data = df_revenue.ix[-1]
         data_writer.write("dividend yield/PER/PBR/debt ratio/monthly MOM growth/monthly YOY growth/gross profit margin/EPS/latest four quarterly eps sum")
+        # import pdb; pdb.set_trace()
+        # print "%s   %s   %s   %s   %s   %s   %s   %s   %s" % (type(100.0 * dividend_row_data["dividend"] / stock_price_row_data["close"]), type(stock_price_row_data["close"] / latest_four_quarterly_eps_sum), type(stock_price_row_data["close"] / quarterly_financial_ratio_row_data["net asset value per share"]), type(quarterly_financial_ratio_row_data["debt ratio"]), type(revenue_row_data["monthly MOM growth"]), type(revenue_row_data["monthly YOY growth"]), type(quarterly_financial_ratio_row_data["gross profit margin"]), type(quarterly_financial_ratio_row_data["earnings per share"]), type(latest_four_quarterly_eps_sum))
         data_writer.write("%.2f   %.2f   %.2f   %.2f%%   %.1f%%   %.1f%%   %.2f%%   %.2f   %.2f" % ((100.0 * dividend_row_data["dividend"] / stock_price_row_data["close"]), (stock_price_row_data["close"] / latest_four_quarterly_eps_sum), (stock_price_row_data["close"] / quarterly_financial_ratio_row_data["net asset value per share"]), quarterly_financial_ratio_row_data["debt ratio"], revenue_row_data["monthly MOM growth"], revenue_row_data["monthly YOY growth"], quarterly_financial_ratio_row_data["gross profit margin"], quarterly_financial_ratio_row_data["earnings per share"], latest_four_quarterly_eps_sum))
         data_writer.newline()
     if simplified_version:

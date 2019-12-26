@@ -3,6 +3,7 @@
 
 import time
 import copy
+import re
 from selenium import webdriver
 from selenium.common.exceptions import TimeoutException
 # available since 2.4.0
@@ -83,7 +84,8 @@ def __parse_data_from_table0_element(table_element, max_data_count=None):
             time_str = "%s-%s" % (td_elements[0].text[0:4], td_elements[0].text[4:])
         data_element_list = [time_str,]
         for td_element in td_elements[1:]:
-            if td_element.text.startswith("--"):
+            # if td_element.text.startswith("--"):
+            if re.search("--", td_element.text) is not None:
                 data_element_list.append(0.0)
             else:
                 data_element_list.append(td_element.text.replace(",",""))

@@ -27,7 +27,8 @@ def show_usage_and_exit():
     for index, method_description in enumerate(DS.DEF.ANALYZE_METHOD_DESCRITPION):
         print "  %d: %s" % (index, method_description)
     print " Default: 0\n"
-    # print "--show_relation\nDescription: Show the releation with candle stick\nCation: Only take effect when the analyze argument is 2"
+    print "--email_address\nDescription: Email address"
+    print "--email_password\nDescription: Email password"
     sys.exit(0)
 
 
@@ -60,7 +61,8 @@ def init_param():
     param_cfg["visualize"] = False
     param_cfg["company"] = None
     param_cfg["analyze"] = None
-    # param_cfg["show_relation"] = False
+    param_cfg["email_address"] = None
+    param_cfg["email_password"] = None
 
 
 def parse_param(early_parse=False):
@@ -87,10 +89,14 @@ def parse_param(early_parse=False):
             if not early_parse:
                 param_cfg["analyze"] = int(sys.argv[index + 1])
             index_offset = 2
-        # elif re.match("(--show_relation)", sys.argv[index]):
-        #     if not early_parse:
-        #         param_cfg["show_relation"] = True
-        #     index_offset = 2
+        elif re.match("--email_address", sys.argv[index]):
+            if not early_parse:
+                param_cfg["email_address"] = sys.argv[index + 1]
+            index_offset = 2
+        elif re.match("--email_password", sys.argv[index]):
+            if not early_parse:
+                param_cfg["email_password"] = sys.argv[index + 1]
+            index_offset = 2
         else:
             show_error_and_exit("Unknown Parameter: %s" % sys.argv[index])
         index += index_offset
@@ -103,6 +109,11 @@ def check_param():
     if param_cfg["analyze"] in [DS.DEF.ANALYZE_SHOW_VALUE_INVESTMENT_REPORT, DS.DEF.ANALYZE_EMAIL_VALUE_INVESTMENT_REPORT,]:
         if param_cfg["company"] is None:
             show_error_and_exit("The 'company' argument is NOT set")
+        if param_cfg["analyze"] == DS.DEF.ANALYZE_EMAIL_VALUE_INVESTMENT_REPORT:
+            if param_cfg["email_address"] is None:
+                show_error_and_exit("The 'email_address' argument is NOT set")
+            if param_cfg["email_password"] is None:
+                show_error_and_exit("The 'email_password' argument is NOT set")
     # if param_cfg['analyze'] not in [DS.DEF.ANALYZE_DATASET_FIND_312_MONTHLY_YOY_REVENUE_GROWTH,]:
     #     if param_cfg['show_relation']:
     #         param_cfg['show_relation'] = False
@@ -145,7 +156,9 @@ def analyze_email_value_investment_report(**kwargs):
             )
 # Email the report
     # import pdb; pdb.set_trace()
-    with LIBS.MH.MailHandler(address=my_address, password=my_password) as mail_handler:
+    email_address = kwargs["email_address"]
+    email_password = kwargs["email_password"]
+    with LIBS.MH.MailHandler(address=email_address, password=email_password) as mail_handler:
         LIBS.MH.MailHandler.parse_value_investment_report(mail_handler, temporary_filepath, )
         mail_handler.Subject = "Stock Daily Report"
         mail_handler.send("html")
@@ -162,6 +175,8 @@ def analyze_and_exit():
     ]
     kwargs = {
         "company": param_cfg["company"],
+        "email_address": param_cfg.get("email_address", None),
+        "email_password": param_cfg.get("email_password", None),
     }
     (FUNC_PTR_ARRAY[param_cfg["analyze"]])(**kwargs)
     sys.exit(0)
