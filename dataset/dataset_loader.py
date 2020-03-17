@@ -195,6 +195,20 @@ def transfrom_stock_price_time_unit(df, data_time_unit=CMN.DEF.DATA_TIME_UNIT_DA
     return df
 
 
+def load_taiwan_weighted_index_history():
+    # import pdb; pdb.set_trace()
+    df, column_description_list = load_market_hybrid(CMN.DEF.SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX)
+# "成交金額", "發行量加權股價指數", "漲跌點數"
+    new_columns={
+        ('%02d02' % CMN.DEF.SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX): 'turnover', 
+        ('%02d04' % CMN.DEF.SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX): 'taiex', 
+        ('%02d05' % CMN.DEF.SCRAPY_METHOD_TAIWAN_WEIGHTED_INDEX_AND_VOLUME_INDEX): 'change', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+    # import pdb; pdb.set_trace()
+    return df, column_description_list
+
+
 def load_future_index_history():
     # import pdb; pdb.set_trace()
     df, column_description_list = load_market_hybrid(CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX)
@@ -209,6 +223,47 @@ def load_future_index_history():
     	('%02d07' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'volume (after hours trading)',
     	('%02d08' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'volume (general hours trading)',
     	('%02d09' % CMN.DEF.SCRAPY_METHOD_TAIWAN_FUTURE_INDEX_AND_LOT_INDEX): 'total volume',  
+    }
+    df.rename(columns=new_columns, inplace=True)
+    # import pdb; pdb.set_trace()
+    return df, column_description_list
+
+
+def load_put_call_ratio_history():
+    # import pdb; pdb.set_trace()
+    df, column_description_list = load_market_hybrid(CMN.DEF.SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_INDEX)
+# "買賣權未平倉量比率%"
+    new_columns={
+        ('%02d06' % CMN.DEF.SCRAPY_METHOD_OPTION_PUT_CALL_RATIO_INDEX): 'put call ratio', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+    # import pdb; pdb.set_trace()
+    return df, column_description_list
+
+
+def load_open_interest_history():
+    # import pdb; pdb.set_trace()
+    df, column_description_list = load_market_hybrid(CMN.DEF.SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX)
+# "前五大", "前十大", "外資", "投信", "自營商"
+    new_columns={
+        ('%02d01' % CMN.DEF.SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX): 'top 5', 
+        ('%02d02' % CMN.DEF.SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX): 'top 10', 
+        ('%02d05' % CMN.DEF.SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX): 'foreign investor', 
+        ('%02d06' % CMN.DEF.SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX): 'investment trust', 
+        ('%02d07' % CMN.DEF.SCRAPY_METHOD_TFE_OPEN_INTEREST_INDEX): 'dealer', 
+    }
+    df.rename(columns=new_columns, inplace=True)
+    # import pdb; pdb.set_trace()
+    return df, column_description_list
+
+
+def load_vix_history():
+    # import pdb; pdb.set_trace()
+    df, column_description_list = load_market_hybrid(CMN.DEF.SCRAPY_METHOD_VIX_INDEX)
+# "指數", "漲跌比例"
+    new_columns={
+        ('%02d01' % CMN.DEF.SCRAPY_METHOD_VIX_INDEX): 'index', 
+        ('%02d02' % CMN.DEF.SCRAPY_METHOD_VIX_INDEX): 'change%', 
     }
     df.rename(columns=new_columns, inplace=True)
     # import pdb; pdb.set_trace()

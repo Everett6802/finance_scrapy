@@ -541,6 +541,31 @@ def plot_future_index_amplitude_statistics(df):
     sns.heatmap(df.corr(), annot=True)
 
 
+def plot_chip_analysis(df_open_interest):
+    fig, axs = plt.subplots(2, 3, figsize=(15, 9))
+    # import pdb; pdb.set_trace()
+    draw_leading_factor1(axs[0][0], df_open_interest)
+
+
+def draw_leading_factor1(fig_ax, df, df_data_len=14, ma_period=10):
+    df_data_len = min(len(df), df_data_len)
+    if df_data_len == 0:
+        g_logger.warn("The data is empty")
+        return
+
+    start_index = -1 * df_data_len
+    time_format = '%m%d'
+    index_list = [date.strftime(time_format) for date in df.index[start_index:]]
+    value_list = df["top 10"].values[start_index:]
+    value_sma_list = DS_CMN_FUNC.get_dataset_sma(df, "top 10", ma_period)[start_index:]
+    import pdb; pdb.set_trace()
+    # df_draw = pd.DataFrame({"value": value_list, "sma": value_sma_list}, index=index_list)
+    # # fig_ax.bar(label_list, value_list)
+    # df_draw.plot(ax=fig_ax, kind='bar', grid=True)
+    df_draw = pd.DataFrame({"value": value_list, "sma": value_sma_list, "index": index_list})
+    df_draw[["index", "value",]].plot(ax=fig_ax, x="index", kind='bar', grid=True, legend=False)
+    df_draw[["index", "sma",]].plot(ax=fig_ax, x="index", linestyle='-', marker='o', grid=True, legend=False)
+
 
 def save_plot(filepath, data_count=0):
     dpi = 100

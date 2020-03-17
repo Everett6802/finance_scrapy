@@ -783,6 +783,9 @@ class FinanceYear(FinanceTimeBase):
                 if isinstance(args[0], str):
                     mobj = CMN_FUNC.check_year_str_format(args[0])
                     self.setup_year_value(mobj.group(0))
+                elif isinstance(args[0], int):
+                    mobj = CMN_FUNC.check_year_str_format(str(args[0]))
+                    self.setup_year_value(mobj.group(0))
                 elif isinstance(args[0], datetime) or isinstance(args[0], FinanceMonth):
                     self.setup_year_value(args[0].year)
                 else:
@@ -790,6 +793,7 @@ class FinanceYear(FinanceTimeBase):
             else:
                 format_unsupport = True
             if format_unsupport:
+                # import pdb; pdb.set_trace()
                 raise ValueError("Unsupport argument format: %s" % [type(data) for data in args])
         except ValueError as e:
             raise e
@@ -813,14 +817,14 @@ class FinanceYear(FinanceTimeBase):
         if not isinstance(year_delta, int):
             raise TypeError('The type[%s] of the delta argument is NOT int' % type(year_delta))
         new_year = self.year + year_delta
-        return FinanceYear(year)
+        return FinanceYear(self.year)
 
 
     def __sub__(self, year_delta):
         if not isinstance(year_delta, int):
             raise TypeError('The type[%s] of the delta argument is NOT int' % type(year_delta))
         new_year = self.year - year_delta
-        return FinanceYear(year)
+        return FinanceYear(self.year)
 
 
     def to_string(self):

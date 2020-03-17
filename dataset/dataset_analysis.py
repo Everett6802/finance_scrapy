@@ -483,3 +483,58 @@ def write_value_investment_report(company_number, filename=None, folder_path=Non
         filepath = data_writer.FilePath
 
     return filepath
+
+
+def generate_chip_analysis_report(data_writer):
+    # import pdb; pdb.set_trace()
+# Load data
+# taiwan weighted index
+    df_taiwan_weighted_index, _ = DS_LD.load_taiwan_weighted_index_history()
+    df_taiwan_weighted_index_len = len(df_taiwan_weighted_index)
+# future index
+    df_future_index, _ = DS_LD.load_future_index_history()
+    df_future_index_len = len(df_future_index)
+# put call ratio
+    df_put_call_ratio, _ = DS_LD.load_put_call_ratio_history()
+    df_put_call_ratio_len = len(df_put_call_ratio)
+# open interest
+    df_open_interest, _ = DS_LD.load_open_interest_history()
+    df_open_interest_len = len(df_open_interest)
+# vix
+    df_vix, _ = DS_LD.load_vix_history()
+    df_vix_len = len(df_vix)
+
+# index
+    taiwan_weighted_index_row_index = df_taiwan_weighted_index.index[-1]
+    taiwan_weighted_index_row_data = df_taiwan_weighted_index.ix[-1]
+    future_index_row_index = df_future_index.index[-1]
+    future_index_row_data = df_future_index.ix[-1]
+    date_str = taiwan_weighted_index_row_index.strftime('%Y-%m-%d')
+    if date_str != future_index_row_index.strftime('%Y-%m-%d'):
+        raise ValueError("The dates[%s, %s] are NOT identical" % (date_str, future_index_row_index.strftime('%Y-%m-%d')))
+
+    # import pdb; pdb.set_trace()
+    data_writer.write("%s\n" % date_str)
+    data_writer.write("*Future Index*   close/change/change%/total volume")
+    future_index_change_sign = ""
+    if future_index_row_data["change"] >= 0.01:
+        future_index_change_sign = "+"
+    elif future_index_row_data["change"] <= -0.01:
+        future_index_change_sign = "-"
+    data_writer.write("%d   %s%d   %.2f%%   %d" % (future_index_row_data["close"], future_index_change_sign, future_index_row_data["change"], future_index_row_data["change%"], future_index_row_data["total volume"]))
+    data_writer.write("*Taiwan Weighted Index*   close/change/turnover")
+    data_writer.write("%.2f   %.2f   %.2fE\n" % (taiwan_weighted_index_row_data["taiex"], taiwan_weighted_index_row_data["change"], taiwan_weighted_index_row_data["turnover"] / 100000000.0))
+
+    DS_VS.plot_chip_analysis(df_open_interest)
+    print df_open_interest["top 10"].ix[-1]
+        # if DV.CAN_VISUALIZE:
+    DS_VS.show_plot()
+
+
+def show_chip_analysis_report():
+    with DataWriter.DataWriter() as data_writer:
+        generate_chip_analysis_report(data_writer)
+
+
+def write_chip_analysis_report():
+    pass

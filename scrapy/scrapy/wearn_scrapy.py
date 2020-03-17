@@ -24,9 +24,9 @@ PRINT_SCRAPY = True
 def _scrape_tfe_open_interest_(driver, *args, **kwargs):
     # import pdb; pdb.set_trace()
 # Wait for the table
-    wait = WebDriverWait(driver, 10)
+    wait = WebDriverWait(driver, 15)
     table_element = wait.until(
-        EC.presence_of_element_located((By.XPATH, "/html/body/div[4]/table"))
+        EC.presence_of_element_located((By.XPATH, "/html/body/div[3]/table"))
     )
 
     tr_elements = table_element.find_elements_by_tag_name("tr")

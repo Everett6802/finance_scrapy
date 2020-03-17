@@ -165,6 +165,14 @@ def analyze_email_value_investment_report(**kwargs):
     CMN.FUNC.remove_file_if_exist(temporary_filepath)
 
 
+def analyze_show_chip_analysis_report(**kwargs):
+    DS.AS.show_chip_analysis_report()
+
+
+def analyze_email_chip_analysis_report(**kwargs):
+    DS.AS.write_chip_analysis_report()
+
+
 def analyze_and_exit():
     FUNC_PTR_ARRAY = [
         # DS.AS.find_support_resistance, 
@@ -172,6 +180,8 @@ def analyze_and_exit():
         # DS.AS.find_312_month_yoy_revenue_growth,
         analyze_show_value_investment_report,
         analyze_email_value_investment_report,
+        analyze_show_chip_analysis_report,
+        analyze_email_chip_analysis_report,
     ]
     kwargs = {
         "company": param_cfg["company"],

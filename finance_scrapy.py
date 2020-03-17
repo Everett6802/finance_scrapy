@@ -724,7 +724,6 @@ def do_scrapy():
 #     show_info("* Update the CSV field from the website...... DONE!!!")
 
 
-
 if __name__ == "__main__":
     # sys.exit(0)
 

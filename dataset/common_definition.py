@@ -12,12 +12,16 @@ import getpass
 
 ANALYZE_SHOW_VALUE_INVESTMENT_REPORT = 0
 ANALYZE_EMAIL_VALUE_INVESTMENT_REPORT = 1
-ANALYZE_METHOD_SIZE = 2
+ANALYZE_SHOW_CHIP_ANALYSIS_REPORT = 2
+ANALYZE_EMAIL_CHIP_ANALYSIS_REPORT = 3
+ANALYZE_METHOD_SIZE = 4
 ANALYZE_METHOD_DEFAULT = ANALYZE_SHOW_VALUE_INVESTMENT_REPORT
 
 ANALYZE_METHOD_DESCRITPION = [
 	"Show the value investment of the companies",
 	"Email the value investment of the companies",
+	"Show the chip analysis of the market",
+	"Email the chip analysis of the market",
 ]
 
 SHOW_MAIN_NO_KEY_SUPPORT_RESISTANCE = 0
