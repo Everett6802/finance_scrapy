@@ -541,30 +541,123 @@ def plot_future_index_amplitude_statistics(df):
     sns.heatmap(df.corr(), annot=True)
 
 
-def plot_chip_analysis(df_open_interest):
-    fig, axs = plt.subplots(2, 3, figsize=(15, 9))
+def plot_chip_analysis(df_vix, df_open_interest, df_put_call_ratio):
+    def generate_x_tick_label(df):
+        INTERVAL = 2
+        df_len = len(df)
+        interval_num = df_len % INTERVAL
+        x_tick = []
+        x_tick_label = []
+        for index, df_date in enumerate(df.index):
+            if index % INTERVAL != interval_num:
+                continue
+            x_tick.append(df.index[index])
+            x_tick_label.append(df.index[index].strftime("%m%d"))
+        return x_tick, x_tick_label
+
+    fig, axs = plt.subplots(2, 2, figsize=(15, 9))
     # import pdb; pdb.set_trace()
-    draw_leading_factor1(axs[0][0], df_open_interest)
+    draw_leading_factor1(axs[0][0], df_open_interest, generate_x_tick_label=generate_x_tick_label)
+    draw_leading_factor2(axs[0][1], df_put_call_ratio)
+    draw_vix(axs[1][0], df_vix)
+    draw_foreign_investor_oi(axs[1][1], df_open_interest)
 
 
-def draw_leading_factor1(fig_ax, df, df_data_len=14, ma_period=10):
-    df_data_len = min(len(df), df_data_len)
+def draw_leading_factor1(fig_ax, df, generate_x_tick_label=None):
+    def color_function(index, value_list):
+        if value_list[index] > 0:
+            return 'r'
+        elif value_list[index] < 0:
+            return 'g'
+        return 'w'
+
+    df_data_len = min(len(df), DS_CMN_DEF.LEADING_INDICATOR1_MAX_DATA_COUNT_IN_GRAPH)
     if df_data_len == 0:
-        g_logger.warn("The data is empty")
+        g_logger.warn("The data of Leading Factor1 is empty")
         return
 
     start_index = -1 * df_data_len
     time_format = '%m%d'
     index_list = [date.strftime(time_format) for date in df.index[start_index:]]
     value_list = df["top 10"].values[start_index:]
-    value_sma_list = DS_CMN_FUNC.get_dataset_sma(df, "top 10", ma_period)[start_index:]
-    import pdb; pdb.set_trace()
+    value_sma_list = DS_CMN_FUNC.get_dataset_sma(df, "top 10", DS_CMN_DEF.LEADING_INDICATOR1_SMA)[start_index:]
     # df_draw = pd.DataFrame({"value": value_list, "sma": value_sma_list}, index=index_list)
     # # fig_ax.bar(label_list, value_list)
     # df_draw.plot(ax=fig_ax, kind='bar', grid=True)
+
+    bar_colors = [color_function(i, value_list) for i, _ in enumerate(index_list)]
+
     df_draw = pd.DataFrame({"value": value_list, "sma": value_sma_list, "index": index_list})
-    df_draw[["index", "value",]].plot(ax=fig_ax, x="index", kind='bar', grid=True, legend=False)
-    df_draw[["index", "sma",]].plot(ax=fig_ax, x="index", linestyle='-', marker='o', grid=True, legend=False)
+    if generate_x_tick_label is None:
+        df_draw[["index", "value",]].plot(ax=fig_ax, x="index", kind='bar', color=bar_colors, grid=True, legend=False)
+        df_draw[["index", "sma",]].plot(ax=fig_ax, x="index", linestyle='-', grid=True, legend=False)
+    else:
+        df_draw[["index", "value",]].plot(ax=fig_ax, x="index", kind='bar', color=bar_colors, grid=True, legend=False)
+        df_draw[["index", "sma",]].plot(ax=fig_ax, x="index", linestyle='-', grid=True, legend=False)
+        x_tick, x_tick_label = generate_x_tick_label(df[start_index:])
+        # import pdb; pdb.set_trace()
+        fig_ax.set_xticks(x_tick)
+        fig_ax.set_xticklabels(x_tick_label)
+
+
+def draw_leading_factor2(fig_ax, df):
+    df_data_len = min(len(df), DS_CMN_DEF.LEADING_INDICATOR2_MAX_DATA_COUNT_IN_GRAPH)
+    if df_data_len == 0:
+        g_logger.warn("The data of Leading Factor2 is empty")
+        return
+
+    start_index = -1 * df_data_len
+    time_format = '%m%d'
+    index_list = [date.strftime(time_format) for date in df.index[start_index:]]
+    value_list = df["put call ratio"].values[start_index:] / 2
+    value_sma_list = DS_CMN_FUNC.get_dataset_sma(df, "put call ratio", DS_CMN_DEF.LEADING_INDICATOR2_SMA, handler_func_ptr=lambda x: x / 2)[start_index:]
+    df_draw = pd.DataFrame({
+        "value": value_list, 
+        "sma": value_sma_list, 
+        "red threshold": [DS_CMN_DEF.LEADING_INDICATOR2_RED_THRESHOLD,] * df_data_len,
+        "green threshold": [DS_CMN_DEF.LEADING_INDICATOR2_GREEN_THRESHOLD,] * df_data_len,
+        "index": index_list
+        })
+    df_draw[["index", "value",]].plot(ax=fig_ax, x="index", kind='bar', color='m', grid=True, legend=False)
+    df_draw[["index", "sma",]].plot(ax=fig_ax, x="index", linestyle='-', grid=True, legend=False)
+    df_draw[["index", "red threshold",]].plot(ax=fig_ax, x="index", color='r', linestyle='-', grid=True, legend=False)
+    df_draw[["index", "green threshold",]].plot(ax=fig_ax, x="index", color='g', linestyle='-', grid=True, legend=False)
+
+    # fig_ax.plot([index_list[0], index_list[-1]], [DS_CMN_DEF.LEADING_INDICATOR2_RED_THRESHOLD, DS_CMN_DEF.LEADING_INDICATOR2_RED_THRESHOLD], color='r')
+    # fig_ax.plot([index_list[0], index_list[-1]], [DS_CMN_DEF.LEADING_INDICATOR2_RED_THRESHOLD, DS_CMN_DEF.LEADING_INDICATOR2_GREEN_THRESHOLD], color='g')
+
+
+def draw_vix(fig_ax, df):
+    df_data_len = min(len(df), DS_CMN_DEF.VIX_MAX_DATA_COUNT_IN_GRAPH)
+    if df_data_len == 0:
+        g_logger.warn("The data of VIX is empty")
+        return
+
+    start_index = -1 * df_data_len
+    time_format = '%m%d'
+    index_list = [date.strftime(time_format) for date in df.index[start_index:]]
+    value1_list = df["index"].values[start_index:]
+    value2_list = df["change%"].values[start_index:]
+    # value_sma_list = DS_CMN_FUNC.get_dataset_sma(df, "index", ma_period)[start_index:]
+    df_draw = pd.DataFrame({"value1": value1_list, "value2": value2_list, "index": index_list})
+    df_draw[["index", "value1",]].plot(ax=fig_ax, x="index", kind='bar', grid=True, legend=False)
+    df_draw[["index", "value2",]].plot(ax=fig_ax, x="index", linestyle='-', grid=True, legend=False)
+
+
+def draw_foreign_investor_oi(fig_ax, df):
+    df_data_len = min(len(df), DS_CMN_DEF.FOREIGN_INVESTOR_OI_MAX_DATA_COUNT_IN_GRAPH)
+    if df_data_len == 0:
+        g_logger.warn("The data of Foreign Investor OI is empty")
+        return
+
+    start_index = -1 * df_data_len
+    time_format = '%m%d'
+    index_list = [date.strftime(time_format) for date in df.index[start_index:]]
+    value_list = df["foreign investor"].values[start_index:]
+    value_sma_list = DS_CMN_FUNC.get_dataset_sma(df, "foreign investor", DS_CMN_DEF.FOREIGN_INVESTOR_OI_SMA)[start_index:]
+    df_draw = pd.DataFrame({"value": value_list, "sma": value_sma_list, "index": index_list})
+    df_draw[["index", "value",]].plot(ax=fig_ax, x="index", kind='bar', grid=True, legend=False, color='r')
+    df_draw[["index", "sma",]].plot(ax=fig_ax, x="index", linestyle='-', grid=True, legend=False)
 
 
 def save_plot(filepath, data_count=0):

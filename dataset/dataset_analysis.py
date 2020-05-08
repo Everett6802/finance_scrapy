@@ -2,6 +2,7 @@
 
 import numpy as np
 import pandas as pd
+import talib
 
 from scrapy import common as CMN
 import scrapy.libs.company_profile as CompanyProfile
@@ -524,10 +525,81 @@ def generate_chip_analysis_report(data_writer):
     data_writer.write("%d   %s%d   %.2f%%   %d" % (future_index_row_data["close"], future_index_change_sign, future_index_row_data["change"], future_index_row_data["change%"], future_index_row_data["total volume"]))
     data_writer.write("*Taiwan Weighted Index*   close/change/turnover")
     data_writer.write("%.2f   %.2f   %.2fE\n" % (taiwan_weighted_index_row_data["taiex"], taiwan_weighted_index_row_data["change"], taiwan_weighted_index_row_data["turnover"] / 100000000.0))
+# VIX
+    vix_row_data = df_vix.ix[-1]
+    vix_index = vix_row_data["index"]
+    vix_change_percentage = vix_row_data["change%"]
+    data_writer.write("*VIX*   index/change%")
+    data_writer.write("%.2f   %.2f\n" % (vix_index, vix_change_percentage))
+    vix_msg = ""
+    if vix_change_percentage >= 10.0:
+        vix_msg += "Increase more than 10 percent; "
+    elif vix_change_percentage <= -10.0:
+        vix_msg += "Decrease more than 10 percent; "
+    if vix_index >= DS_CMN_DEF.VIX_GREEN_LINE_THRESHOLD:
+        vix_msg += "Above the green line; "
+    elif vix_index <= DS_CMN_DEF.VIX_RED_LINE_THRESHOLD:
+        vix_msg += "Below the red line; "
+    else:
+        vix_msg += "Between the green and red lines; "
+    if len(vix_msg) != 0:
+        data_writer.write("%s\n" % vix_msg)
+# Leading indicator 1
+    # import pdb; pdb.set_trace()
+    open_interest_row_data = df_open_interest.ix[-1]
+    leading_indicator1 = open_interest_row_data["top 10"]
+    data_writer.write("*Leading Indicator1*   index")
+    data_writer.write("%.2f\n" % leading_indicator1)
+    # leading_indicator1_sma = talib.SMA(df_open_interest["top 10"].values, timeperiod=DS_CMN_DEF.LEADING_INDICATOR1_SMA)
+    leading_indicator1_sma = DS_CMN_FUNC.get_dataset_sma(df_open_interest, "top 10", DS_CMN_DEF.LEADING_INDICATOR1_SMA)
+    leading_indicator1_msg = ""
+    if len(leading_indicator1_sma) != 0:
+        if leading_indicator1 > leading_indicator1_sma[-1]:
+            leading_indicator1_msg += ("Above the %dMA; " % DS_CMN_DEF.LEADING_INDICATOR1_SMA)
+        if leading_indicator1 < leading_indicator1_sma[-1]:
+            leading_indicator1_msg += ("Below the %dMA; " % DS_CMN_DEF.LEADING_INDICATOR1_SMA)
+    if len(leading_indicator1_msg) != 0:
+        data_writer.write("%s\n" % leading_indicator1_msg)
+# Leading indicator 2
+    put_call_ratio_row_data = df_put_call_ratio.ix[-1]
+    leading_indicator2 = put_call_ratio_row_data["put call ratio"] / 2
+    data_writer.write("*Leading Indicator2*   index")
+    data_writer.write("%.2f\n" % leading_indicator2)
+    # leading_indicator2_sma = talib.SMA(df_put_call_ratio["put call ratio"] / 2, timeperiod=DS_CMN_DEF.LEADING_INDICATOR2_SMA)
+    leading_indicator2_sma = DS_CMN_FUNC.get_dataset_sma(df_put_call_ratio, "put call ratio", DS_CMN_DEF.LEADING_INDICATOR2_SMA, handler_func_ptr=lambda x: x / 2)
+    leading_indicator2_msg = ""
+    if len(leading_indicator2_sma) != 0:
+        if leading_indicator2 > leading_indicator2_sma[-1]:
+            leading_indicator2_msg += ("Above the %dMA; " % DS_CMN_DEF.LEADING_INDICATOR2_SMA)
+        if leading_indicator2 < leading_indicator2_sma[-1]:
+            leading_indicator2_msg += ("Below the %dMA; " % DS_CMN_DEF.LEADING_INDICATOR2_SMA)
+    if leading_indicator2 >= DS_CMN_DEF.LEADING_INDICATOR2_RED_THRESHOLD:
+        leading_indicator2_msg += "Above the red line; "
+    elif leading_indicator2 <= DS_CMN_DEF.LEADING_INDICATOR2_GREEN_THRESHOLD:
+        leading_indicator2_msg += "Below the green line; "
+    else:
+        leading_indicator2_msg += "Between the red and green lines; " 
+    if len(leading_indicator2_msg) != 0:
+        data_writer.write("%s\n" % leading_indicator2_msg)
+# Foreign investor OI
+    open_interest_row_data = df_open_interest.ix[-1]
+    foreign_investor_oi = open_interest_row_data["foreign investor"]
+    data_writer.write("*Foreign Investor OI*   value")
+    data_writer.write("%.2f\n" % foreign_investor_oi)
+    # foreign_investor_oi_sma = talib.SMA(df_open_interest["foreign investor"], timeperiod=DS_CMN_DEF.FOREIGN_INVESTOR_OI_SMA)
+    foreign_investor_oi_sma = DS_CMN_FUNC.get_dataset_sma(df_open_interest, "foreign investor", DS_CMN_DEF.FOREIGN_INVESTOR_OI_SMA)
+    foreign_investor_oi_msg = ""
+    if len(foreign_investor_oi_sma) != 0:
+        if foreign_investor_oi > foreign_investor_oi_sma[-1]:
+            foreign_investor_oi_msg += ("Above the %dMA; " % DS_CMN_DEF.FOREIGN_INVESTOR_OI_SMA)
+        if foreign_investor_oi < foreign_investor_oi_sma[-1]:
+            foreign_investor_oi_msg += ("Below the %dMA; " % DS_CMN_DEF.FOREIGN_INVESTOR_OI_SMA)
+    if len(foreign_investor_oi_msg) != 0:
+        data_writer.write("%s\n" % foreign_investor_oi_msg)
 
-    DS_VS.plot_chip_analysis(df_open_interest)
-    print df_open_interest["top 10"].ix[-1]
-        # if DV.CAN_VISUALIZE:
+    DS_VS.plot_chip_analysis(df_vix, df_open_interest, df_put_call_ratio)
+    # print df_open_interest["top 10"].ix[-1]
+    # if DV.CAN_VISUALIZE:
     DS_VS.show_plot()
 
 

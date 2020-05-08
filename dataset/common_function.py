@@ -22,7 +22,7 @@ def print_dataset_metadata(df, column_description_list):
         print u"%s: %s" % (df.columns[index - 1], column_description_list[index])
 
 
-def get_dataset_sma(df, column_name, timeperiod=20):
+def get_dataset_sma(df, column_name, timeperiod=20, handler_func_ptr=None):
     SMA = None
     data_array = df[column_name].as_matrix()
     try:
@@ -37,6 +37,8 @@ def get_dataset_sma(df, column_name, timeperiod=20):
         data_array = data_array.astype('float64', copy=False)
         SMA = talib.SMA(data_array, timeperiod=timeperiod)
     # import pdb; pdb.set_trace()
+    if handler_func_ptr is not None:
+        SMA = handler_func_ptr(SMA)
     return SMA
 
 
