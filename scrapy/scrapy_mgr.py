@@ -231,6 +231,7 @@ class ScrapyMgr(object):
             'finance_root_folderpath': self.xcfg['finance_root_folderpath'],
             "max_data_count": self.xcfg['max_data_count'],
             "append_before": self.xcfg['append_before'],
+            "max_data_count": self.xcfg["max_data_count"],
         }
 
         # import pdb; pdb.set_trace()

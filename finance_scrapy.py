@@ -732,6 +732,7 @@ if __name__ == "__main__":
     parse_param()
     update_global_variable()
 
+    # import pdb; pdb.set_trace()
     update_cfg = {
         "reserve_old_finance_folder": param_cfg["reserve_old"],
         # "dry_run_only": param_cfg["dry_run"],

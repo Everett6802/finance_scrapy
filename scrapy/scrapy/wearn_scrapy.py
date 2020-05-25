@@ -18,7 +18,6 @@ import scrapy.common as CMN
 import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
-PRINT_SCRAPY = True
 
 
 def _scrape_tfe_open_interest_(driver, *args, **kwargs):

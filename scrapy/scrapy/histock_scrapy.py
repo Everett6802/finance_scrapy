@@ -3,6 +3,7 @@
 
 import re
 import time
+import copy
 # Install selenium in Anaconda
 # conda install -c conda-forge selenium
 from selenium import webdriver
@@ -19,13 +20,13 @@ import scrapy.common as CMN
 import scrapy_class_base as ScrapyBase# as ScrapyBase
 g_logger = CMN.LOG.get_logger()
 
-PRINT_SCRAPY = True
 WEEKLY_STRIKE_PRICE_RANGE = 1000
 STRIKE_PRICE_RANGE = 1500
 MAX_DATA_DAY_NUMBER = 6
-DEF_SCRAPY_DAY_COUNT = 1
+DEF_MAX_DATA_COUNT = 1
 
 
+# max_data_count: scrape the latest N data
 def __parse_table(driver, date_index, date_string, tr_elements, *args, **kwargs):
     strike_price_range = kwargs.get("strike_price_range", 1000)
 
@@ -110,16 +111,17 @@ def __parse_table(driver, date_index, date_string, tr_elements, *args, **kwargs)
 
 def __parse_option_open_interest_table(driver, *args, **kwargs):
     # import pdb; pdb.set_trace()
-    scrapy_day_count = kwargs.get("scrapy_day_count", DEF_SCRAPY_DAY_COUNT)
-    assert 1 <= scrapy_day_count <= MAX_DATA_DAY_NUMBER, "scrapy_day_count[%d] should be in the range: [1, %d]" % (scrapy_day_count, MAX_DATA_DAY_NUMBER)
+    max_data_count = kwargs.get("max_data_count", DEF_MAX_DATA_COUNT)
+    assert 1 <= max_data_count <= MAX_DATA_DAY_NUMBER, "max_data_count[%d] should be in the range: [1, %d]" % (max_data_count, MAX_DATA_DAY_NUMBER)
     wait = WebDriverWait(driver, 15)
 
     data_list = [] 
     data_name_list = None
-    for count in range(scrapy_day_count):
+    for count in range(max_data_count):
+        # import pdb; pdb.set_trace()
         index = MAX_DATA_DAY_NUMBER - 1 - count
 # Select the date
-        if count != 1:
+        if count != 0:
             xpath = "//*[@id='CPHB1_Options1_rdoDates_%d']" % index
             date_input = driver.find_element_by_xpath(xpath)
             # print date_input.get_attribute("value") // Can get the date string
@@ -138,9 +140,17 @@ def __parse_option_open_interest_table(driver, *args, **kwargs):
         is_weekly = kwargs.get("is_weekly", False)
         option_select_index = 0
         if is_weekly:
-            option_select_index = weekly_option_count - 1
+            # import pdb; pdb.set_trace()
+            if weekly_option_count == 0:
+                option_select_index = 0
+            else:
+                option_select_index = weekly_option_count - 1
         else:
-            option_select_index = weekly_option_count
+            if weekly_option_count == 0:
+                option_select_index = 1
+            else:
+                option_select_index = weekly_option_count
+        # print "option_item_list: %s, option_select_index: %d" % (option_item_list, option_select_index)
 # Select the expiry date
         table_element = None
         if option_select_index != 0:
@@ -160,11 +170,13 @@ def __parse_option_open_interest_table(driver, *args, **kwargs):
         date_element_list = map(int, date_label.text.split("/"))
         assert len(date_element_list) == 3, "date_element_list[%s] length should be 3" % date_element_list
         date_string = CMN.DEF.DATE_STRING_FORMAT % (date_element_list[0], date_element_list[1], date_element_list[2])
+        # print "date string: %s" % date_string
         single_date_data_list, data_name_list_tmp = __parse_table(driver, count, date_string, tr_elements, **kwargs)
         data_list.append(single_date_data_list)
         if data_name_list is None:
             data_name_list = data_name_list_tmp
     # import pdb; pdb.set_trace()
+    data_list.reverse()
     return (data_list, data_name_list)
 
 
@@ -195,6 +207,7 @@ class HiStockScrapyMeta(type):
         return type.__new__(mcs, name, bases, attrs)
 
 
+# max_data_count: scrape the latest N data
 class HiStockScrapy(ScrapyBase.ScrapyBase):
 
     __metaclass__ = HiStockScrapyMeta
@@ -248,20 +261,22 @@ class HiStockScrapy(ScrapyBase.ScrapyBase):
     def scrape_web(self, *args, **kwargs):
         url = None
         # import pdb; pdb.set_trace()
+        scrapy_kwargs = copy.deepcopy(kwargs)
+        scrapy_kwargs["max_data_count"] = self.xcfg["max_data_count"]
         if self.__MARKET_URL.get(self.scrapy_method, None) is not None:
             url = self.__MARKET_URL[self.scrapy_method]
         else:
             raise ValueError("Unknown scrapy method: %s" % self.scrapy_method)
         self.webdriver.get(url)
         # kwargs['table_xpath'] = self.__STOCK_TABLE_XPATH[self.scrapy_method]
-        return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **kwargs)
+        return (self.__FUNC_PTR[self.scrapy_method])(self.webdriver, *args, **scrapy_kwargs)
 
 
 if __name__ == '__main__':
     with HiStockScrapy() as histock:
         # histock.CompanyNumber = "6274"
         kwargs = {
-            "scrapy_day_count": 2
+            "max_data_count": 2
         }
         data_list, data_name_list = histock.scrape("option open interest", **kwargs)
         # kwargs["table_data_count"] = 2
